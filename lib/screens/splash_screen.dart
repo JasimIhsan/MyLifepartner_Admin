@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'My Life Partner',
+                'My Life Partner Again',
                 style: GoogleFonts.poppins(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
