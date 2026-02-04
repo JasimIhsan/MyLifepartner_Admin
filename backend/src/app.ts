@@ -13,9 +13,11 @@ const app = express();
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+console.log(`👉 BEFORE`);
 app.use(cors({ origin: true, credentials: true }));
 app.use(helmet());
 
+console.log(`👉 AFTER`);
 // Logger middleware
 const stream = {
    write: (message: string) => {
@@ -25,11 +27,11 @@ const stream = {
 app.use(morgan("dev", { stream }));
 
 // Routes
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
    res.status(200).json({ status: "UP", message: "Server is running" });
 });
 
-app.use("/api/v1", indexRoute);
+app.use("/api", indexRoute);
 
 // Error Middleware
 app.use(errorMiddleware);
