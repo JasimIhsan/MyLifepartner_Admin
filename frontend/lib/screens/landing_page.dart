@@ -1,11 +1,66 @@
+import 'dart:developer';
+
 import 'package:animate_do/animate_do.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../services/api_service.dart';
 import 'login_page.dart';
 
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
+
+  @override
+  State<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  bool _isLoading = false;
+  String? _apiResponse;
+  String? _error;
+
+  // Function to test API using Dio package
+  Future<void> _fetchUserDio() async {
+    setState(() {
+      _isLoading = true;
+      _apiResponse = null;
+      _error = null;
+    });
+
+    try {
+      // Use the singleton ApiService
+      // Note: The base URL is already configured in ApiService, so we only need the path
+      final response = await ApiService.client.get('/health');
+
+      // Optional delay (for demo only)
+      await Future.delayed(const Duration(seconds: 3));
+
+      final data = response.data;
+
+      setState(() {
+        _apiResponse = data is Map && data['message'] != null
+            ? "Success: ${data['message']}"
+            : "Success: $data";
+      });
+
+      log("Dio Success: $data");
+    } on DioException catch (e) {
+      setState(() {
+        _error = e.response?.data?.toString() ?? "Network error";
+      });
+      log("Dio Error: ${e.message}");
+    } catch (e) {
+      setState(() {
+        _error = "Unexpected error: $e";
+      });
+      log("Unknown Error: $e");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +96,48 @@ class LandingPage extends StatelessWidget {
                 delay: const Duration(milliseconds: 200),
                 child: Column(
                   children: [
+                    if (_isLoading) const CircularProgressIndicator(),
+                    if (_apiResponse != null)
+                      Text(
+                        _apiResponse!,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+                    const SizedBox(height: 16),
+                    if (_error != null)
+                      Text(
+                        _error!,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.red,
+                        ),
+                      ),
+                    if (!_isLoading)
+                      ElevatedButton(
+                        onPressed: () async {
+                          await _fetchUserDio();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: Text(
+                          "Test API",
+                          style: GoogleFonts.poppins(
+                            color: const Color.fromRGBO(255, 255, 255, 1),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 16),
                     Text(
                       "Connect with people\nwho share your values",
                       textAlign: TextAlign.center,

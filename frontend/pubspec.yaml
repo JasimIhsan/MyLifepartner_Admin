@@ -38,6 +38,8 @@ dependencies:
    pinput: ^6.0.1
    animate_do: ^4.2.0
    phone_form_field: ^10.0.17
+   http: ^1.6.0
+   dio: ^5.9.1
 
 dev_dependencies:
    flutter_test:
