@@ -1,10 +1,9 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/services/api_service.dart';
-import 'package:pinput/pinput.dart';
 
+import '../widgets/otp/otp_form.dart';
+import '../widgets/otp/otp_header.dart';
 import 'home_page.dart';
 
 class OtpPage extends StatefulWidget {
@@ -106,23 +105,6 @@ class _OtpPageState extends State<OtpPage> {
 
   @override
   Widget build(BuildContext context) {
-    const focusedBorderColor = Color.fromRGBO(23, 171, 144, 1);
-    const fillColor = Color.fromRGBO(243, 246, 249, 0);
-    const borderColor = Color.fromRGBO(23, 171, 144, 0.4);
-
-    final defaultPinTheme = PinTheme(
-      width: 56,
-      height: 56,
-      textStyle: GoogleFonts.poppins(
-        fontSize: 22,
-        color: const Color.fromRGBO(30, 60, 87, 1),
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: borderColor),
-      ),
-    );
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -154,18 +136,8 @@ class _OtpPageState extends State<OtpPage> {
                         vertical: 24.0,
                       ),
                       child: isWeb
-                          ? _buildWebLayout(
-                              size,
-                              defaultPinTheme,
-                              focusedBorderColor,
-                              fillColor,
-                            )
-                          : _buildMobileLayout(
-                              size,
-                              defaultPinTheme,
-                              focusedBorderColor,
-                              fillColor,
-                            ),
+                          ? _buildWebLayout(size)
+                          : _buildMobileLayout(size),
                     ),
                   ),
                 ),
@@ -177,254 +149,51 @@ class _OtpPageState extends State<OtpPage> {
     );
   }
 
-  Widget _buildWebLayout(
-    Size size,
-    PinTheme defaultPinTheme,
-    Color focusedBorderColor,
-    Color fillColor,
-  ) {
+  Widget _buildWebLayout(Size size) {
     return Row(
       children: [
         Expanded(
           flex: 1,
-          child: FadeInLeft(
-            duration: const Duration(milliseconds: 1000),
-            child: Container(
-              padding: const EdgeInsets.all(40),
-              decoration: BoxDecoration(
-                color: Colors.deepPurple.shade50,
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.shield_rounded,
-                    size: 150,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  const SizedBox(height: 32),
-                  Text(
-                    "Account Verification",
-                    style: GoogleFonts.poppins(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "We've sent a 6-digit code via ${widget.verificationMethod} to your phone. Please enter it to verify your identity.",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          child: OtpWebBanner(verificationMethod: widget.verificationMethod),
         ),
         const SizedBox(width: 80),
         Expanded(
           flex: 1,
-          child: _buildOtpForm(
-            true,
-            defaultPinTheme,
-            focusedBorderColor,
-            fillColor,
+          child: OtpForm(
+            formKey: formKey,
+            pinController: pinController,
+            focusNode: focusNode,
+            isWeb: true,
+            isLoading: _isLoading,
+            phoneNumber: widget.phoneNumber,
+            onResend: _resendOtp,
+            onVerify: _verifyOtp,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMobileLayout(
-    Size size,
-    PinTheme defaultPinTheme,
-    Color focusedBorderColor,
-    Color fillColor,
-  ) {
+  Widget _buildMobileLayout(Size size) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildOtpHeader(),
-        const SizedBox(height: 48),
-        _buildOtpForm(false, defaultPinTheme, focusedBorderColor, fillColor),
-      ],
-    );
-  }
-
-  Widget _buildOtpHeader() {
-    return FadeInDown(
-      duration: const Duration(milliseconds: 800),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Verification",
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Enter the code sent via ${widget.verificationMethod} to",
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
-          ),
-          Text(
-            widget.phoneNumber,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOtpForm(
-    bool isWeb,
-    PinTheme defaultPinTheme,
-    Color focusedBorderColor,
-    Color fillColor,
-  ) {
-    return FadeInUp(
-      duration: const Duration(milliseconds: 1000),
-      delay: const Duration(milliseconds: 200),
-      child: Form(
-        key: formKey,
-        child: Column(
-          crossAxisAlignment: isWeb
-              ? CrossAxisAlignment.start
-              : CrossAxisAlignment.center,
-          children: [
-            if (isWeb) ...[
-              Text(
-                "Verify Code",
-                style: GoogleFonts.poppins(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 12),
-              RichText(
-                text: TextSpan(
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    color: Colors.grey[600],
-                  ),
-                  children: [
-                    const TextSpan(text: "Resent to "),
-                    TextSpan(
-                      text: widget.phoneNumber,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 48),
-            ],
-            Center(
-              child: Pinput(
-                length: 6,
-                controller: pinController,
-                focusNode: focusNode,
-                defaultPinTheme: defaultPinTheme,
-                separatorBuilder: (index) => const SizedBox(width: 8),
-                validator: (value) {
-                  if (value == null || value.length < 6) {
-                    return 'Please enter 6-digit OTP';
-                  }
-                  return null;
-                },
-                hapticFeedbackType: HapticFeedbackType.lightImpact,
-                onCompleted: (pin) {
-                  _verifyOtp(pin);
-                },
-                focusedPinTheme: defaultPinTheme.copyWith(
-                  decoration: defaultPinTheme.decoration!.copyWith(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: focusedBorderColor),
-                  ),
-                ),
-                submittedPinTheme: defaultPinTheme.copyWith(
-                  decoration: defaultPinTheme.decoration!.copyWith(
-                    color: fillColor,
-                    borderRadius: BorderRadius.circular(19),
-                    border: Border.all(color: focusedBorderColor),
-                  ),
-                ),
-                errorPinTheme: defaultPinTheme.copyBorderWith(
-                  border: Border.all(color: Colors.redAccent),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Center(
-              child: TextButton(
-                onPressed: _isLoading ? null : _resendOtp,
-                child: Text(
-                  "Resend Code",
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        focusNode.unfocus();
-                        if (formKey.currentState!.validate()) {
-                          _verifyOtp(pinController.text);
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 2,
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text(
-                        "Verify",
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-              ),
-            ),
-          ],
+        OtpHeader(
+          verificationMethod: widget.verificationMethod,
+          phoneNumber: widget.phoneNumber,
         ),
-      ),
+        const SizedBox(height: 48),
+        OtpForm(
+          formKey: formKey,
+          pinController: pinController,
+          focusNode: focusNode,
+          isWeb: false,
+          isLoading: _isLoading,
+          phoneNumber: widget.phoneNumber,
+          onResend: _resendOtp,
+          onVerify: _verifyOtp,
+        ),
+      ],
     );
   }
 }
