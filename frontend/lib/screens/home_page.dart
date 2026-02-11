@@ -2,149 +2,449 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth > 900;
+
+        return Scaffold(
+          backgroundColor: Colors.white,
+          appBar: isWeb ? _buildWebAppBar() : _buildMobileAppBar(),
+          body: Row(
+            children: [
+              if (isWeb) _buildNavigationRail(),
+              Expanded(
+                child: SafeArea(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.all(isWeb ? 40.0 : 20.0),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 1200),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildHeader(isWeb),
+                              const SizedBox(height: 32),
+                              _buildPremiumCard(isWeb),
+                              const SizedBox(height: 48),
+                              _buildMatchesSection(isWeb),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          bottomNavigationBar: isWeb ? null : _buildBottomNavigationBar(),
+        );
+      },
+    );
+  }
+
+  PreferredSizeWidget _buildMobileAppBar() {
+    return AppBar(
+      title: Text(
+        'My Life Partner',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+      ),
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'My Life Partner Again',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+      elevation: 0,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined, color: Colors.black),
+          onPressed: () {},
         ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.black),
-            onPressed: () {},
+      ],
+    );
+  }
+
+  PreferredSizeWidget _buildWebAppBar() {
+    return AppBar(
+      title: Padding(
+        padding: const EdgeInsets.only(left: 20),
+        child: Text(
+          'My Life Partner',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+      ),
+      toolbarHeight: 80,
+      backgroundColor: Colors.white,
+      elevation: 0.5,
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined, color: Colors.black),
+          onPressed: () {},
+        ),
+        const SizedBox(width: 20),
+        const CircleAvatar(
+          radius: 20,
+          backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=me'),
+        ),
+        const SizedBox(width: 40),
+      ],
+    );
+  }
+
+  Widget _buildNavigationRail() {
+    return NavigationRail(
+      selectedIndex: _selectedIndex,
+      onDestinationSelected: (int index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      labelType: NavigationRailLabelType.all,
+      backgroundColor: Colors.grey[50],
+      selectedIconTheme: IconThemeData(color: Theme.of(context).primaryColor),
+      unselectedIconTheme: const IconThemeData(color: Colors.grey),
+      selectedLabelTextStyle: GoogleFonts.poppins(
+        color: Theme.of(context).primaryColor,
+        fontWeight: FontWeight.w600,
+      ),
+      unselectedLabelTextStyle: GoogleFonts.poppins(
+        color: Colors.grey,
+        fontWeight: FontWeight.w500,
+      ),
+      destinations: const [
+        NavigationRailDestination(
+          icon: Icon(Icons.home_filled),
+          label: Text('Home'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.favorite_border),
+          label: Text('Matches'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.message_outlined),
+          label: Text('Chat'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.person_outline),
+          label: Text('Profile'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      onTap: (index) {
+        setState(() {
+          _selectedIndex = index;
+        });
+      },
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: Colors.deepPurple,
+      unselectedItemColor: Colors.grey,
+      selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+      unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.favorite_border),
+          label: 'Matches',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.message_outlined),
+          label: 'Chat',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline),
+          label: 'Profile',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeader(bool isWeb) {
+    return FadeInLeft(
+      duration: const Duration(milliseconds: 800),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Find your\nPerfect Match",
+            style: GoogleFonts.poppins(
+              fontSize: isWeb ? 48 : 32,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Someone special is waiting for you.",
+            style: GoogleFonts.poppins(
+              fontSize: isWeb ? 18 : 16,
+              color: Colors.grey[600],
+            ),
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+
+  Widget _buildPremiumCard(bool isWeb) {
+    return FadeInUp(
+      duration: const Duration(milliseconds: 1000),
+      delay: const Duration(milliseconds: 200),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(isWeb ? 40 : 20),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Colors.deepPurple, Colors.indigo],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.deepPurple.withValues(alpha: 0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
           children: [
-            FadeInLeft(
-              child: Text(
-                "Find your\nPartner",
-                style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                  height: 1.2,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            FadeInUp(
-              delay: const Duration(milliseconds: 200),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.deepPurple, Colors.deepPurpleAccent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.deepPurple.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Premium Membership",
-                            style: GoogleFonts.poppins(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Unlock all features and find your match faster.",
-                            style: GoogleFonts.poppins(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Icon(
-                      Icons.workspace_premium,
-                      color: Colors.white,
-                      size: 40,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-            Text(
-              "Recommended Matches",
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
             Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.search_off, size: 64, color: Colors.grey[300]),
-                    const SizedBox(height: 16),
-                    Text(
-                      "No matches found yet",
-                      style: GoogleFonts.poppins(
-                        color: Colors.grey,
-                        fontSize: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Premium Membership",
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontSize: isWeb ? 28 : 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Unlock all features and find your match faster with priority listing.",
+                    style: GoogleFonts.poppins(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: isWeb ? 18 : 14,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.deepPurple,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  ],
-                ),
+                    child: Text(
+                      "Upgrade Now",
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
+            ),
+            if (isWeb) const SizedBox(width: 40),
+            Icon(
+              Icons.workspace_premium_rounded,
+              color: Colors.white,
+              size: isWeb ? 120 : 60,
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.grey,
-        selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            label: 'Matches',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.message_outlined),
-            label: 'Chat',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            label: 'Profile',
-          ),
-        ],
+    );
+  }
+
+  Widget _buildMatchesSection(bool isWeb) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "Recommended Matches",
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            TextButton(
+              onPressed: () {},
+              child: Text(
+                "See all",
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        isWeb ? _buildWebGrid() : _buildMobileList(),
+      ],
+    );
+  }
+
+  Widget _buildWebGrid() {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 24,
+        mainAxisSpacing: 24,
+        childAspectRatio: 0.8,
+      ),
+      itemCount: 6,
+      itemBuilder: (context, index) => _buildMatchCard(index, true),
+    );
+  }
+
+  Widget _buildMobileList() {
+    return ListView.separated(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: 4,
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
+      itemBuilder: (context, index) => _buildMatchCard(index, false),
+    );
+  }
+
+  Widget _buildMatchCard(int index, bool isWeb) {
+    final names = [
+      "Sarah Johnson",
+      "Michael Chen",
+      "Emma Wilson",
+      "David Smith",
+      "Sophia Lee",
+      "James Brown",
+    ];
+    final ages = ["26", "29", "25", "31", "27", "30"];
+    final locations = [
+      "New York, NY",
+      "San Francisco, CA",
+      "London, UK",
+      "Austin, TX",
+      "Seattle, WA",
+      "Chicago, IL",
+    ];
+
+    return FadeInUp(
+      duration: const Duration(milliseconds: 600),
+      delay: Duration(milliseconds: 100 * index),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.grey.shade100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+              child: Image.network(
+                'https://i.pravatar.cc/300?u=$index',
+                height: isWeb ? 220 : 180,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "${names[index % names.length]}, ${ages[index % ages.length]}",
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Icon(
+                        Icons.favorite_border,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.location_on_outlined,
+                        color: Colors.grey,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        locations[index % locations.length],
+                        style: GoogleFonts.poppins(
+                          color: Colors.grey,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple.shade50,
+                        foregroundColor: Colors.deepPurple,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        "View Profile",
+                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
