@@ -13,11 +13,9 @@ const app = express();
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-console.log(`👉 BEFORE`);
 app.use(cors({ origin: true, credentials: true }));
 app.use(helmet());
 
-console.log(`👉 AFTER`);
 // Logger middleware
 const stream = {
    write: (message: string) => {
