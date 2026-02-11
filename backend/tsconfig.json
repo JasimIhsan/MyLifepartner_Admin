@@ -2,7 +2,21 @@
    "extends": "./tsconfig.build.json",
    "compilerOptions": {
       "noEmit": true,
-      "rootDir": "."
+      "rootDir": ".",
+      "baseUrl": ".",
+      "paths": {
+         "@/*": ["./src/*"],
+         "@config/*": ["./src/config/*"],
+         "@controllers/*": ["./src/controllers/*"],
+         "@middlewares/*": ["./src/middlewares/*"],
+         "@models/*": ["./src/models/*"],
+         "@routes/*": ["./src/routes/*"],
+         "@services/*": ["./src/services/*"],
+         "@utils/*": ["./src/utils/*"]
+      }
+   },
+   "ts-node": {
+      "require": ["tsconfig-paths/register"]
    },
    "include": ["src/**/*", "prisma.config.ts"]
 }

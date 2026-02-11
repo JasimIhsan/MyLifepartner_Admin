@@ -1,11 +1,11 @@
+import userRepository from "@/repositories/user.repository";
+import { ApiError } from "@/utils/ApiError";
 import { Prisma, User } from "@prisma/client";
-import userRepository from "../repositories/user.repository";
-import { ApiError } from "../utils/ApiError";
 
 class UserService {
    public async createUser(userData: Prisma.UserCreateInput): Promise<User> {
-      if (await userRepository.findByEmail(userData.email)) {
-         throw new ApiError(409, `User with email ${userData.email} already exists`);
+      if (await userRepository.findByMobileNumber(userData.mobileNumber)) {
+         throw new ApiError(409, `User with mobile number ${userData.mobileNumber} already exists`);
       }
       return await userRepository.create(userData);
    }

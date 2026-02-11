@@ -1,12 +1,12 @@
+import errorMiddleware from "@/middlewares/error.middleware";
+import logger from "@/utils/logger";
 import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
-import errorMiddleware from "./middlewares/error.middleware";
-import logger from "./utils/logger";
 
 // Import routes (will be added later)
-import indexRoute from "./routes/index.route";
+import indexRoute from "@/routes/index.route";
 
 const app = express();
 

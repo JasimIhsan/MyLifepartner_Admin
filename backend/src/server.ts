@@ -1,7 +1,7 @@
+import env from "@/config/env";
+import prisma from "@/config/prisma";
+import logger from "@/utils/logger";
 import app from "./app";
-import env from "./config/env";
-import prisma from "./config/prisma";
-import logger from "./utils/logger";
 
 const validateDatabaseConnection = async () => {
    try {
