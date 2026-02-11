@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
 import userService from "../../services/user.service";
 import { ApiResponse } from "../../utils/ApiResponse";
@@ -6,19 +7,19 @@ import { asyncHandler } from "../../utils/asyncHandler";
 class UserController {
    public getUsers = asyncHandler(async (req: Request, res: Response) => {
       const findAllUsersData = await userService.getUsers();
-      res.status(200).json(new ApiResponse(200, findAllUsersData, "findAll"));
+      res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, findAllUsersData, "findAll"));
    });
 
    public getUserById = asyncHandler(async (req: Request, res: Response) => {
       const userId = Number(req.params.id);
       const findOneUserData = await userService.getUserById(userId);
-      res.status(200).json(new ApiResponse(200, findOneUserData, "findOne"));
+      res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, findOneUserData, "findOne"));
    });
 
    public createUser = asyncHandler(async (req: Request, res: Response) => {
       const userData = req.body;
       const createUserData = await userService.createUser(userData);
-      res.status(201).json(new ApiResponse(201, createUserData, "created"));
+      res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, createUserData, "created"));
    });
 }
 
