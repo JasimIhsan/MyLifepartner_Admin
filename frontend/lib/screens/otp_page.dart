@@ -7,7 +7,12 @@ import 'home_page.dart';
 
 class OtpPage extends StatefulWidget {
   final String phoneNumber;
-  const OtpPage({super.key, required this.phoneNumber});
+  final String verificationMethod;
+  const OtpPage({
+    super.key,
+    required this.phoneNumber,
+    required this.verificationMethod,
+  });
 
   @override
   State<OtpPage> createState() => _OtpPageState();
@@ -135,7 +140,7 @@ class _OtpPageState extends State<OtpPage> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    "We've sent a 6-digit code to your phone. Please enter it to verify your identity.",
+                    "We've sent a 6-digit code via ${widget.verificationMethod} to your phone. Please enter it to verify your identity.",
                     textAlign: TextAlign.center,
                     style: GoogleFonts.poppins(
                       fontSize: 16,
@@ -193,7 +198,7 @@ class _OtpPageState extends State<OtpPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            "Enter the code sent to",
+            "Enter the code sent via ${widget.verificationMethod} to",
             style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
           ),
           Text(

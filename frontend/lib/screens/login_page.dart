@@ -240,13 +240,7 @@ class _LoginPageState extends State<LoginPage> {
               child: ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            OtpPage(phoneNumber: _phoneNumber.international),
-                      ),
-                    );
+                    _showOtpMethodSelection(isWeb);
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -291,6 +285,175 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showOtpMethodSelection(bool isWeb) {
+    if (isWeb) {
+      _showWebOtpDialog();
+    } else {
+      _showMobileOtpBottomSheet();
+    }
+  }
+
+  void _showWebOtpDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: Text(
+          "Verify your number",
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "Choose how you'd like to receive the 6-digit verification code.",
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 24),
+            _buildOtpMethodOption(
+              icon: Icons.chat_bubble_outline_rounded,
+              title: "WhatsApp",
+              subtitle: "Send OTP via WhatsApp",
+              onTap: () => _navigateToOtp("WhatsApp"),
+            ),
+            const SizedBox(height: 12),
+            _buildOtpMethodOption(
+              icon: Icons.sms_outlined,
+              title: "SMS",
+              subtitle: "Send OTP via SMS",
+              onTap: () => _navigateToOtp("SMS"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showMobileOtpBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.45,
+        minChildSize: 0.3,
+        maxChildSize: 0.5,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: ListView(
+            controller: scrollController,
+            children: [
+              const SizedBox(height: 12),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 32),
+              Text(
+                "Verify your number",
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                "Choose how you'd like to receive the code",
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildOtpMethodOption(
+                icon: Icons.chat_bubble_outline_rounded,
+                title: "WhatsApp",
+                subtitle: "Get code on WhatsApp",
+                onTap: () => _navigateToOtp("WhatsApp"),
+              ),
+              const SizedBox(height: 16),
+              _buildOtpMethodOption(
+                icon: Icons.sms_outlined,
+                title: "SMS",
+                subtitle: "Get code via SMS",
+                onTap: () => _navigateToOtp("SMS"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOtpMethodOption({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        leading: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.deepPurple.shade50,
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Icon(icon, color: Colors.deepPurple, size: 28),
+        ),
+        title: Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            color: Colors.black87,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600]),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 18,
+          color: Colors.grey[400],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToOtp(String method) {
+    Navigator.pop(context); // Close sheet/dialog
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OtpPage(
+          phoneNumber: _phoneNumber.international,
+          verificationMethod: method,
         ),
       ),
     );
