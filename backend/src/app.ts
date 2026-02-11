@@ -10,6 +10,9 @@ import indexRoute from "@/routes/index.route";
 
 const app = express();
 
+// Trust proxy for IP detection behind Vercel/Cloudflare
+app.set("trust proxy", true);
+
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

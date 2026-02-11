@@ -11,6 +11,8 @@ class OtpService {
    sendOtp = async (mobileNumber: string, sendOption: string) => {
       const otp = this.generateOtp();
 
+      console.log(`👉 OTP : `, otp);
+
       // Store OTP in cache with expiry
       await cacheService.setCache(CACHE_KEYS.OTP(mobileNumber), otp, OTP_CONFIG.EXPIRY);
 

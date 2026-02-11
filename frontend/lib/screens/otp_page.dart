@@ -1,6 +1,8 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/services/api_service.dart';
 import 'package:pinput/pinput.dart';
 
 import 'home_page.dart';
@@ -22,6 +24,78 @@ class _OtpPageState extends State<OtpPage> {
   final pinController = TextEditingController();
   final focusNode = FocusNode();
   final formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  Future<void> _verifyOtp(String pin) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final response = await ApiService.client.post(
+        "/user/auth/login",
+        data: {"mobileNumber": widget.phoneNumber, "otp": pin},
+      );
+
+      debugPrint("Login Response: ${response.data}");
+
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      debugPrint("Login Error: $e");
+      String errorMessage = "Invalid OTP. Please try again.";
+      if (e is DioException && e.response != null) {
+        errorMessage = e.response?.data['message'] ?? errorMessage;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _resendOtp() async {
+    try {
+      await ApiService.client.post(
+        "/user/auth/send-otp",
+        data: {
+          "mobileNumber": widget.phoneNumber,
+          "sendOption": widget.verificationMethod.toLowerCase(),
+        },
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("OTP resent successfully"),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Resend OTP Error: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Failed to resend OTP"),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -268,23 +342,14 @@ class _OtpPageState extends State<OtpPage> {
                 defaultPinTheme: defaultPinTheme,
                 separatorBuilder: (index) => const SizedBox(width: 8),
                 validator: (value) {
-                  return value == '123456' ? null : 'Pin is incorrect';
+                  if (value == null || value.length < 6) {
+                    return 'Please enter 6-digit OTP';
+                  }
+                  return null;
                 },
                 hapticFeedbackType: HapticFeedbackType.lightImpact,
                 onCompleted: (pin) {
-                  if (pin == '123456') {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Incorrect OTP entered'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
+                  _verifyOtp(pin);
                 },
                 focusedPinTheme: defaultPinTheme.copyWith(
                   decoration: defaultPinTheme.decoration!.copyWith(
@@ -307,9 +372,7 @@ class _OtpPageState extends State<OtpPage> {
             const SizedBox(height: 24),
             Center(
               child: TextButton(
-                onPressed: () {
-                  // Resend OTP logic
-                },
+                onPressed: _isLoading ? null : _resendOtp,
                 child: Text(
                   "Resend Code",
                   style: GoogleFonts.poppins(
@@ -325,16 +388,14 @@ class _OtpPageState extends State<OtpPage> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  focusNode.unfocus();
-                  formKey.currentState!.validate();
-                  if (pinController.text == '123456') {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  }
-                },
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        focusNode.unfocus();
+                        if (formKey.currentState!.validate()) {
+                          _verifyOtp(pinController.text);
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   shape: RoundedRectangleBorder(
@@ -342,14 +403,23 @@ class _OtpPageState extends State<OtpPage> {
                   ),
                   elevation: 2,
                 ),
-                child: Text(
-                  "Verify",
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        "Verify",
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ],

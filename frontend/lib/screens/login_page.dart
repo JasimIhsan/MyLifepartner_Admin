@@ -1,6 +1,8 @@
 import 'package:animate_do/animate_do.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/services/api_service.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
 import 'otp_page.dart';
@@ -14,10 +16,84 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  PhoneNumber _phoneNumber = const PhoneNumber(
-    isoCode: IsoCode.IN,
-    nsn: "9876543210",
-  );
+  late final PhoneController _phoneController;
+  PhoneNumber _phoneNumber = const PhoneNumber(isoCode: IsoCode.US, nsn: "");
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneController = PhoneController(initialValue: _phoneNumber);
+    _detectCountry();
+  }
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _detectCountry() async {
+    try {
+      final response = await ApiService.client.get("/user/auth/detect-country");
+      final data = response.data['data'];
+      if (data != null && data['countryCode'] != null) {
+        final String code = data['countryCode'];
+        final detectedIsoCode = IsoCode.values.firstWhere(
+          (e) => e.name.toUpperCase() == code.toUpperCase(),
+          orElse: () => IsoCode.IN,
+        );
+
+        if (mounted) {
+          setState(() {
+            _phoneNumber = PhoneNumber(isoCode: detectedIsoCode, nsn: "");
+            _phoneController.value = _phoneNumber;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("Country detection failed: $e");
+    }
+  }
+
+  Future<bool> _sendOtp(String method) async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final response = await ApiService.client.post(
+        "/user/auth/send-otp",
+        data: {
+          "mobileNumber": "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
+          "sendOption": method.toLowerCase(),
+        },
+      );
+
+      debugPrint("OTP Response: ${response.data}");
+      return true;
+    } catch (e) {
+      debugPrint("Send OTP Error: $e");
+      String errorMessage = "Failed to send OTP. Please try again.";
+      if (e is DioException && e.response != null) {
+        errorMessage = e.response?.data['message'] ?? errorMessage;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+      return false;
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +289,7 @@ class _LoginPageState extends State<LoginPage> {
             //   },
             // ),
             PhoneFormField(
-              initialValue: _phoneNumber,
+              controller: _phoneController,
               validator: PhoneValidator.compose([
                 PhoneValidator.required(
                   context,
@@ -228,9 +304,7 @@ class _LoginPageState extends State<LoginPage> {
                   ? const CountrySelectorNavigator.dialog()
                   : const CountrySelectorNavigator.draggableBottomSheet(),
               onChanged: (value) {
-                setState(() {
-                  _phoneNumber = value;
-                });
+                _phoneNumber = value;
               },
             ),
             const SizedBox(height: 24),
@@ -238,11 +312,13 @@ class _LoginPageState extends State<LoginPage> {
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _showOtpMethodSelection(isWeb);
-                  }
-                },
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        if (_formKey.currentState!.validate()) {
+                          _showOtpMethodSelection(isWeb);
+                        }
+                      },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   shape: RoundedRectangleBorder(
@@ -250,14 +326,23 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   elevation: 2,
                 ),
-                child: Text(
-                  "Send OTP",
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text(
+                        "Send OTP",
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
             const SizedBox(height: 24),
@@ -446,16 +531,20 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _navigateToOtp(String method) {
+  void _navigateToOtp(String method) async {
     Navigator.pop(context); // Close sheet/dialog
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => OtpPage(
-          phoneNumber: _phoneNumber.international,
-          verificationMethod: method,
+    final bool success = await _sendOtp(method);
+
+    if (success && mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtpPage(
+            phoneNumber: "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
+            verificationMethod: method,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 }
