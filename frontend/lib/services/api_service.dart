@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 /// Service class for handling API requests using the Dio package.
 /// This class is implemented as a Singleton to ensure only one instance
@@ -20,7 +21,9 @@ class ApiService {
     dio = Dio(
       BaseOptions(
         // The base URL for your API. All requests will be relative to this URL.
-        baseUrl: 'http://localhost:3000/api',
+        baseUrl: defaultTargetPlatform == TargetPlatform.android
+            ? 'http://10.0.2.2:3000/api'
+            : 'http://localhost:3000/api',
 
         // Timeout for opening the connection to the server.
         connectTimeout: const Duration(seconds: 10),
