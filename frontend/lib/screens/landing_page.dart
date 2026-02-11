@@ -64,136 +64,196 @@ class _LandingPageState extends State<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              FadeInDown(
-                duration: const Duration(milliseconds: 1200),
-                child: Container(
-                  height: size.height * 0.45,
-                  decoration: BoxDecoration(
-                    color: Colors.deepPurple.shade50,
-                    borderRadius: BorderRadius.circular(30),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Determine if we are on a "web" (wide) screen or mobile
+            final bool isWeb = constraints.maxWidth > 900;
+            final size = MediaQuery.of(context).size;
+
+            debugPrint("Size: $size");
+            debugPrint("Constraints: $constraints");
+
+            return SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isWeb ? 80.0 : 24.0,
+                    vertical: 30.0,
                   ),
                   child: Center(
-                    child: Icon(
-                      Icons.diversity_1_rounded,
-                      size: 120,
-                      color: Theme.of(context).primaryColor,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1200),
+                      child: isWeb
+                          ? _buildWebLayout(size)
+                          : _buildMobileLayout(size, constraints),
                     ),
                   ),
                 ),
               ),
-              FadeInUp(
-                duration: const Duration(milliseconds: 1200),
-                delay: const Duration(milliseconds: 200),
-                child: Column(
-                  children: [
-                    if (_isLoading) const CircularProgressIndicator(),
-                    if (_apiResponse != null)
-                      Text(
-                        _apiResponse!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    if (_error != null)
-                      Text(
-                        _error!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.red,
-                        ),
-                      ),
-                    if (!_isLoading)
-                      ElevatedButton(
-                        onPressed: () async {
-                          await _fetchUserDio();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: Text(
-                          "Test API",
-                          style: GoogleFonts.poppins(
-                            color: const Color.fromRGBO(255, 255, 255, 1),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Connect with people\nwho share your values",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                        height: 1.2,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      "Join the community of millions of people who have found their life partner.",
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: Colors.grey[600],
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 48),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 56,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const LoginPage(),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).primaryColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: Text(
-                          "Get Started",
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebLayout(Size size) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(flex: 5, child: _buildHeroSection(size, true)),
+        const SizedBox(width: 80),
+        Expanded(flex: 4, child: _buildContentSection(true)),
+      ],
+    );
+  }
+
+  Widget _buildMobileLayout(Size size, BoxConstraints constraints) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _buildHeroSection(size, false),
+        const SizedBox(height: 30),
+        _buildContentSection(false),
+      ],
+    );
+  }
+
+  Widget _buildHeroSection(Size size, bool isWeb) {
+    return FadeInDown(
+      duration: const Duration(milliseconds: 1200),
+      child: Container(
+        height: isWeb ? size.height * 0.7 : size.height * 0.45,
+        constraints: isWeb ? const BoxConstraints(minHeight: 500) : null,
+        decoration: BoxDecoration(
+          color: Colors.deepPurple.shade50,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.diversity_1_rounded,
+            size: isWeb ? 200 : 120,
+            color: Theme.of(context).primaryColor,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildContentSection(bool isWeb) {
+    return FadeInUp(
+      duration: const Duration(milliseconds: 1200),
+      delay: const Duration(milliseconds: 200),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: isWeb
+            ? CrossAxisAlignment.start
+            : CrossAxisAlignment.center,
+        children: [
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
+          if (_apiResponse != null)
+            Align(
+              alignment: isWeb ? Alignment.centerLeft : Alignment.center,
+              child: Text(
+                _apiResponse!,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                ),
+              ),
+            ),
+          const SizedBox(height: 16),
+          if (_error != null)
+            Align(
+              alignment: isWeb ? Alignment.centerLeft : Alignment.center,
+              child: Text(
+                _error!,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red,
+                ),
+              ),
+            ),
+          if (!_isLoading)
+            Align(
+              alignment: isWeb ? Alignment.centerLeft : Alignment.center,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await _fetchUserDio();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  elevation: 2,
+                ),
+                child: Text(
+                  "Test API",
+                  style: GoogleFonts.poppins(
+                    color: const Color.fromRGBO(255, 255, 255, 1),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 16),
+          Text(
+            "Connect with people\nwho share your values",
+            textAlign: isWeb ? TextAlign.left : TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: isWeb ? 42 : 26,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Join the community of millions of people who have found their life partner.",
+            textAlign: isWeb ? TextAlign.left : TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: isWeb ? 18 : 15,
+              color: Colors.grey[600],
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 48),
+          SizedBox(
+            width: isWeb ? 300 : double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 2,
+              ),
+              child: Text(
+                "Get Started",
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
