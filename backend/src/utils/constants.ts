@@ -10,7 +10,7 @@ export const TOKEN_EXPIRY = {
 
 export const OTP_CONFIG = {
    EXPIRY: 300, // 5 minutes in seconds
-   DEFAULT_OTP: "123456",
+   DEFAULT_OTP: "111111",
 };
 
 export const HTTP_STATUS = {

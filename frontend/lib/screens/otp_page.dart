@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../widgets/otp/otp_form.dart';
 import '../widgets/otp/otp_header.dart';
@@ -37,11 +38,17 @@ class _OtpPageState extends State<OtpPage> {
 
       debugPrint("Login Response: ${response.data}");
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
-        );
+      if (response.data["success"]) {
+        final sharedPrefs = await SharedPreferences.getInstance();
+        sharedPrefs.setBool("isLoggedIn", true);
+
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+            ModalRoute.withName('/'),
+          );
+        }
       }
     } catch (e) {
       debugPrint("Login Error: $e");

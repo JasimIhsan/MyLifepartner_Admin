@@ -1,6 +1,8 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/screens/landing_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -66,8 +68,18 @@ class _HomePageState extends State<HomePage> {
       elevation: 0,
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_outlined, color: Colors.black),
-          onPressed: () {},
+          icon: const Icon(Icons.exit_to_app_outlined, color: Colors.black),
+          onPressed: () async {
+            final sharedPrefs = await SharedPreferences.getInstance();
+            sharedPrefs.clear();
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LandingPage()),
+                ModalRoute.withName('/'),
+              );
+            }
+          },
         ),
       ],
     );

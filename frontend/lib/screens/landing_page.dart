@@ -1,66 +1,11 @@
-import 'dart:developer';
-
 import 'package:animate_do/animate_do.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../services/api_service.dart';
 import 'login_page.dart';
 
-class LandingPage extends StatefulWidget {
+class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
-
-  @override
-  State<LandingPage> createState() => _LandingPageState();
-}
-
-class _LandingPageState extends State<LandingPage> {
-  bool _isLoading = false;
-  String? _apiResponse;
-  String? _error;
-
-  // Function to test API using Dio package
-  Future<void> _fetchUserDio() async {
-    setState(() {
-      _isLoading = true;
-      _apiResponse = null;
-      _error = null;
-    });
-
-    try {
-      // Use the singleton ApiService
-      // Note: The base URL is already configured in ApiService, so we only need the path
-      final response = await ApiService.client.get('/health');
-
-      // Optional delay (for demo only)
-      await Future.delayed(const Duration(seconds: 3));
-
-      final data = response.data;
-
-      setState(() {
-        _apiResponse = data is Map && data['message'] != null
-            ? "Success: ${data['message']}"
-            : "Success: $data";
-      });
-
-      log("Dio Success: $data");
-    } on DioException catch (e) {
-      setState(() {
-        _error = e.response?.data?.toString() ?? "Network error";
-      });
-      log("Dio Error: ${e.message}");
-    } catch (e) {
-      setState(() {
-        _error = "Unexpected error: $e";
-      });
-      log("Unknown Error: $e");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,8 +33,8 @@ class _LandingPageState extends State<LandingPage> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1200),
                       child: isWeb
-                          ? _buildWebLayout(size)
-                          : _buildMobileLayout(size, constraints),
+                          ? _buildWebLayout(context, size)
+                          : _buildMobileLayout(context, size, constraints),
                     ),
                   ),
                 ),
@@ -101,29 +46,33 @@ class _LandingPageState extends State<LandingPage> {
     );
   }
 
-  Widget _buildWebLayout(Size size) {
+  Widget _buildWebLayout(BuildContext ctx, Size size) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Expanded(flex: 5, child: _buildHeroSection(size, true)),
+        Expanded(flex: 5, child: _buildHeroSection(ctx, size, true)),
         const SizedBox(width: 80),
-        Expanded(flex: 4, child: _buildContentSection(true)),
+        Expanded(flex: 4, child: _buildContentSection(ctx, true)),
       ],
     );
   }
 
-  Widget _buildMobileLayout(Size size, BoxConstraints constraints) {
+  Widget _buildMobileLayout(
+    BuildContext ctx,
+    Size size,
+    BoxConstraints constraints,
+  ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildHeroSection(size, false),
+        _buildHeroSection(ctx, size, false),
         const SizedBox(height: 30),
-        _buildContentSection(false),
+        _buildContentSection(ctx, false),
       ],
     );
   }
 
-  Widget _buildHeroSection(Size size, bool isWeb) {
+  Widget _buildHeroSection(BuildContext ctx, size, bool isWeb) {
     return FadeInDown(
       duration: const Duration(milliseconds: 1200),
       child: Container(
@@ -137,14 +86,14 @@ class _LandingPageState extends State<LandingPage> {
           child: Icon(
             Icons.diversity_1_rounded,
             size: isWeb ? 200 : 120,
-            color: Theme.of(context).primaryColor,
+            color: Theme.of(ctx).primaryColor,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildContentSection(bool isWeb) {
+  Widget _buildContentSection(BuildContext ctx, bool isWeb) {
     return FadeInUp(
       duration: const Duration(milliseconds: 1200),
       delay: const Duration(milliseconds: 200),
@@ -154,57 +103,6 @@ class _LandingPageState extends State<LandingPage> {
             ? CrossAxisAlignment.start
             : CrossAxisAlignment.center,
         children: [
-          if (_isLoading) const Center(child: CircularProgressIndicator()),
-          if (_apiResponse != null)
-            Align(
-              alignment: isWeb ? Alignment.centerLeft : Alignment.center,
-              child: Text(
-                _apiResponse!,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
-          if (_error != null)
-            Align(
-              alignment: isWeb ? Alignment.centerLeft : Alignment.center,
-              child: Text(
-                _error!,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red,
-                ),
-              ),
-            ),
-          if (!_isLoading)
-            Align(
-              alignment: isWeb ? Alignment.centerLeft : Alignment.center,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await _fetchUserDio();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  elevation: 2,
-                ),
-                child: Text(
-                  "Test API",
-                  style: GoogleFonts.poppins(
-                    color: const Color.fromRGBO(255, 255, 255, 1),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          const SizedBox(height: 16),
           Text(
             "Connect with people\nwho share your values",
             textAlign: isWeb ? TextAlign.left : TextAlign.center,
@@ -232,12 +130,12 @@ class _LandingPageState extends State<LandingPage> {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
-                  context,
+                  ctx,
                   MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Theme.of(ctx).primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
