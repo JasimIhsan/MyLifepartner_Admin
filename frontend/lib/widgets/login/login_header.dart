@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 
 class LoginHeader extends StatelessWidget {
   const LoginHeader({super.key});
@@ -17,13 +18,16 @@ class LoginHeader extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             "Enter your mobile number to continue.",
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
+import '../core/app_colors.dart';
 import '../widgets/login/login_form.dart';
 import '../widgets/login/login_header.dart';
 import '../widgets/login/otp_method_selector.dart';
@@ -82,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -99,14 +100,14 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Colors.black,
+            color: AppColors.textPrimary,
           ),
           onPressed: () => Navigator.pop(context),
         ),

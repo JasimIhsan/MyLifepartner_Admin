@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
 class LoginForm extends StatelessWidget {
@@ -123,7 +124,7 @@ class LoginForm extends StatelessWidget {
                   child: Text(
                     "Sign Up",
                     style: GoogleFonts.poppins(
-                      color: Theme.of(context).primaryColor,
+                      color: AppColors.primary,
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
                     ),

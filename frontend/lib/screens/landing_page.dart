@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'login_page.dart';
+import '../core/app_colors.dart';
 
 class LandingPage extends StatelessWidget {
   const LandingPage({super.key});
@@ -10,7 +11,7 @@ class LandingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -79,14 +80,14 @@ class LandingPage extends StatelessWidget {
         height: isWeb ? size.height * 0.7 : size.height * 0.45,
         constraints: isWeb ? const BoxConstraints(minHeight: 500) : null,
         decoration: BoxDecoration(
-          color: Colors.deepPurple.shade50,
+          color: AppColors.primaryLight,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Center(
           child: Icon(
             Icons.diversity_1_rounded,
             size: isWeb ? 200 : 120,
-            color: Theme.of(ctx).primaryColor,
+            color: AppColors.primary,
           ),
         ),
       ),
@@ -109,7 +110,7 @@ class LandingPage extends StatelessWidget {
             style: GoogleFonts.poppins(
               fontSize: isWeb ? 42 : 26,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
+              color: AppColors.textPrimary,
               height: 1.2,
             ),
           ),
@@ -119,7 +120,7 @@ class LandingPage extends StatelessWidget {
             textAlign: isWeb ? TextAlign.left : TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: isWeb ? 18 : 15,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
               height: 1.5,
             ),
           ),
@@ -135,7 +136,7 @@ class LandingPage extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(ctx).primaryColor,
+                backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -146,7 +147,7 @@ class LandingPage extends StatelessWidget {
                 style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  color: AppColors.textWhite,
                 ),
               ),
             ),

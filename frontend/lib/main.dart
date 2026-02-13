@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 
 import 'screens/splash_screen.dart';
 
@@ -16,13 +17,16 @@ class MyApp extends StatelessWidget {
       title: 'My Life Partner Again',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          surface: AppColors.background,
+        ),
         useMaterial3: true,
         textTheme: GoogleFonts.poppinsTextTheme(),
-        scaffoldBackgroundColor: Colors.white,
+        scaffoldBackgroundColor: AppColors.background,
         appBarTheme: const AppBarTheme(
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.background,
           centerTitle: true,
         ),
       ),

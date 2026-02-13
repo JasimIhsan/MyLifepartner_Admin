@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/landing_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,7 +22,7 @@ class _HomePageState extends State<HomePage> {
         final bool isWeb = constraints.maxWidth > 900;
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: AppColors.background,
           appBar: isWeb ? _buildWebAppBar() : _buildMobileAppBar(),
           body: Row(
             children: [
@@ -64,11 +65,14 @@ class _HomePageState extends State<HomePage> {
         'My Life Partner',
         style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       elevation: 0,
       actions: [
         IconButton(
-          icon: const Icon(Icons.exit_to_app_outlined, color: Colors.black),
+          icon: const Icon(
+            Icons.exit_to_app_outlined,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () async {
             final sharedPrefs = await SharedPreferences.getInstance();
             sharedPrefs.clear();
@@ -95,11 +99,14 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       toolbarHeight: 80,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       elevation: 0.5,
       actions: [
         IconButton(
-          icon: const Icon(Icons.notifications_outlined, color: Colors.black),
+          icon: const Icon(
+            Icons.notifications_outlined,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () {},
         ),
         const SizedBox(width: 20),
@@ -121,15 +128,15 @@ class _HomePageState extends State<HomePage> {
         });
       },
       labelType: NavigationRailLabelType.all,
-      backgroundColor: Colors.grey[50],
-      selectedIconTheme: IconThemeData(color: Theme.of(context).primaryColor),
-      unselectedIconTheme: const IconThemeData(color: Colors.grey),
+      backgroundColor: AppColors.background, // Or surfaceVariant
+      selectedIconTheme: IconThemeData(color: AppColors.primary),
+      unselectedIconTheme: const IconThemeData(color: AppColors.unselectedIcon),
       selectedLabelTextStyle: GoogleFonts.poppins(
-        color: Theme.of(context).primaryColor,
+        color: AppColors.primary,
         fontWeight: FontWeight.w600,
       ),
       unselectedLabelTextStyle: GoogleFonts.poppins(
-        color: Colors.grey,
+        color: AppColors.textSecondary,
         fontWeight: FontWeight.w500,
       ),
       destinations: const [
@@ -162,8 +169,8 @@ class _HomePageState extends State<HomePage> {
         });
       },
       type: BottomNavigationBarType.fixed,
-      selectedItemColor: Colors.deepPurple,
-      unselectedItemColor: Colors.grey,
+      selectedItemColor: AppColors.primary,
+      unselectedItemColor: AppColors.unselectedIcon,
       selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
       unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
       items: const [
@@ -195,7 +202,7 @@ class _HomePageState extends State<HomePage> {
             style: GoogleFonts.poppins(
               fontSize: isWeb ? 48 : 32,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: AppColors.textPrimary,
               height: 1.1,
             ),
           ),
@@ -204,7 +211,7 @@ class _HomePageState extends State<HomePage> {
             "Someone special is waiting for you.",
             style: GoogleFonts.poppins(
               fontSize: isWeb ? 18 : 16,
-              color: Colors.grey[600],
+              color: AppColors.textSecondary,
             ),
           ),
         ],
@@ -221,14 +228,14 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.all(isWeb ? 40 : 20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Colors.deepPurple, Colors.indigo],
+            colors: [AppColors.primary, AppColors.primaryDark],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.deepPurple.withValues(alpha: 0.3),
+              color: AppColors.primary.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -243,7 +250,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     "Premium Membership",
                     style: GoogleFonts.poppins(
-                      color: Colors.white,
+                      color: AppColors.textWhite,
                       fontSize: isWeb ? 28 : 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -252,7 +259,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     "Unlock all features and find your match faster with priority listing.",
                     style: GoogleFonts.poppins(
-                      color: Colors.white.withValues(alpha: 0.8),
+                      color: AppColors.textWhite.withValues(alpha: 0.8),
                       fontSize: isWeb ? 18 : 14,
                     ),
                   ),
@@ -260,8 +267,8 @@ class _HomePageState extends State<HomePage> {
                   ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.deepPurple,
+                      backgroundColor: AppColors.surface,
+                      foregroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -281,7 +288,7 @@ class _HomePageState extends State<HomePage> {
             if (isWeb) const SizedBox(width: 40),
             Icon(
               Icons.workspace_premium_rounded,
-              color: Colors.white,
+              color: AppColors.textWhite,
               size: isWeb ? 120 : 60,
             ),
           ],
@@ -302,7 +309,7 @@ class _HomePageState extends State<HomePage> {
               style: GoogleFonts.poppins(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
             ),
             TextButton(
@@ -369,12 +376,12 @@ class _HomePageState extends State<HomePage> {
       delay: Duration(milliseconds: 100 * index),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: Colors.grey.shade100),
+          border: Border.all(color: AppColors.divider),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+              color: AppColors.shadowColor,
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
@@ -410,7 +417,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       const Icon(
                         Icons.favorite_border,
-                        color: Colors.grey,
+                        color: AppColors.unselectedIcon,
                         size: 20,
                       ),
                     ],
@@ -420,14 +427,14 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       const Icon(
                         Icons.location_on_outlined,
-                        color: Colors.grey,
+                        color: AppColors.unselectedIcon,
                         size: 14,
                       ),
                       const SizedBox(width: 4),
                       Text(
                         locations[index % locations.length],
                         style: GoogleFonts.poppins(
-                          color: Colors.grey,
+                          color: AppColors.unselectedIcon,
                           fontSize: 13,
                         ),
                       ),
@@ -439,8 +446,8 @@ class _HomePageState extends State<HomePage> {
                     child: ElevatedButton(
                       onPressed: () {},
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple.shade50,
-                        foregroundColor: Colors.deepPurple,
+                        backgroundColor: AppColors.primaryLight,
+                        foregroundColor: AppColors.primary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
