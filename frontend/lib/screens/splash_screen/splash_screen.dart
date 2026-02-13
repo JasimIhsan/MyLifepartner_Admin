@@ -1,10 +1,11 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mylifepartner/screens/home_page.dart';
+import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'landing_page.dart';
+import '../landing_screen/landing_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -35,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: Center(
         child: FadeInDown(
           duration: const Duration(milliseconds: 1500),
@@ -43,23 +44,22 @@ class _SplashScreenState extends State<SplashScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               // You can replace this Icon with an Image.asset later
-              Icon(
-                Icons.favorite_rounded,
-                size: 100,
-                color: Theme.of(context).primaryColor,
-              ),
+              Icon(Icons.favorite_rounded, size: 100, color: AppColors.primary),
               const SizedBox(height: 20),
               Text(
                 'My Life Partner Again',
                 style: GoogleFonts.poppins(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColors.textPrimary,
                 ),
               ),
               Text(
                 'Find your perfect match',
-                style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey),
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                ),
               ),
             ],
           ),

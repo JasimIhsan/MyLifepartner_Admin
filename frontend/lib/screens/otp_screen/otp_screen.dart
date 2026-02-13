@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../widgets/otp/otp_form.dart';
-import '../widgets/otp/otp_header.dart';
-import 'home_page.dart';
+import 'widgets/otp_form.dart';
+import 'widgets/otp_header.dart';
+import '../home_screen/home_screen.dart';
 
 class OtpPage extends StatefulWidget {
   final String phoneNumber;

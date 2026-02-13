@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
-import '../core/app_colors.dart';
-import '../widgets/login/login_form.dart';
-import '../widgets/login/login_header.dart';
-import '../widgets/login/otp_method_selector.dart';
-import 'otp_page.dart';
+import '../../core/app_colors.dart';
+import 'widgets/login_form.dart';
+import 'widgets/login_header.dart';
+import 'widgets/otp_method_selector.dart';
+import '../otp_screen/otp_screen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
