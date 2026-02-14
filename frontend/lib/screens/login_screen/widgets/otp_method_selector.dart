@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 
 class OtpMethodSelector {
   static void show(
@@ -31,7 +32,10 @@ class OtpMethodSelector {
           children: [
             Text(
               "Choose how you'd like to receive the 6-digit verification code.",
-              style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[600]),
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 24),
             OtpMethodOption(
@@ -67,7 +71,7 @@ class OtpMethodSelector {
         maxChildSize: 0.5,
         builder: (context, scrollController) => Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -80,7 +84,7 @@ class OtpMethodSelector {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: AppColors.divider,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -91,7 +95,7 @@ class OtpMethodSelector {
                 style: GoogleFonts.poppins(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -99,7 +103,7 @@ class OtpMethodSelector {
                 "Choose how you'd like to receive the code",
                 style: GoogleFonts.poppins(
                   fontSize: 15,
-                  color: Colors.grey[600],
+                  color: AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 32),
@@ -142,9 +146,9 @@ class OtpMethodOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200),
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: AppColors.divider),
       ),
       child: ListTile(
         onTap: onTap,
@@ -153,27 +157,30 @@ class OtpMethodOption extends StatelessWidget {
         leading: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.deepPurple.shade50,
+            color: AppColors.primaryLight,
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Icon(icon, color: Colors.deepPurple, size: 28),
+          child: Icon(icon, color: AppColors.primary, size: 28),
         ),
         title: Text(
           title,
           style: GoogleFonts.poppins(
             fontWeight: FontWeight.w600,
             fontSize: 17,
-            color: Colors.black87,
+            color: AppColors.textPrimary,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600]),
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: AppColors.textSecondary,
+          ),
         ),
         trailing: Icon(
           Icons.arrow_forward_ios_rounded,
           size: 18,
-          color: Colors.grey[400],
+          color: AppColors.unselectedIcon,
         ),
       ),
     );
