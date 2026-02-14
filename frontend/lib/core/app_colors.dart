@@ -2,18 +2,20 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Primary Brand Colors
-  static const Color primary = Colors.deepPurple;
-  static const Color primaryDark = Colors.indigo;
-  static const Color primaryLight = Color(0xFFEDE7F6); // deepPurple.shade50
+  static const Color primary = Color(0xFFB88973);
+  static const Color primaryDark = Color(0xFF8D6E63);
+  static const Color primaryLight = Color(0xFFFBEFEA); // Light brownish tint
 
   // Background Colors
-  static const Color background = Colors.white;
+  static const Color background = Color(0xFFFDF5F2);
   static const Color surface = Colors.white;
+  static const Color inputBackground = Colors.white;
 
   // Text Colors
-  static const Color textPrimary = Colors.black;
+  static const Color textPrimary = Color(0xFF4E342E); // Dark brown-black
   static const Color textSecondary = Color(0xFF757575); // Colors.grey[600]
   static const Color textWhite = Colors.white;
+  static const Color onPrimary = Colors.white;
 
   // Status Colors
   static const Color error = Colors.redAccent;

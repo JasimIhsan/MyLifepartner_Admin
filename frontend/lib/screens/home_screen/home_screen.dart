@@ -250,7 +250,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     "Premium Membership",
                     style: GoogleFonts.poppins(
-                      color: AppColors.textWhite,
+                      color: AppColors.onPrimary,
                       fontSize: isWeb ? 28 : 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -259,7 +259,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     "Unlock all features and find your match faster with priority listing.",
                     style: GoogleFonts.poppins(
-                      color: AppColors.textWhite.withValues(alpha: 0.8),
+                      color: AppColors.onPrimary.withValues(alpha: 0.8),
                       fontSize: isWeb ? 18 : 14,
                     ),
                   ),
