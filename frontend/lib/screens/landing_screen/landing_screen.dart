@@ -83,12 +83,10 @@ class LandingPage extends StatelessWidget {
           color: AppColors.primaryLight,
           borderRadius: BorderRadius.circular(30),
         ),
-        child: Center(
-          child: Icon(
-            Icons.diversity_1_rounded,
-            size: isWeb ? 200 : 120,
-            color: AppColors.primary,
-          ),
+        child: Image.asset(
+          "assets/icons/app_logo.png",
+          height: 100,
+          width: 100,
         ),
       ),
     );

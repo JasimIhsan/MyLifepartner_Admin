@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
+import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../landing_screen/landing_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -26,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
           context,
           MaterialPageRoute(
             builder: (context) =>
-                isLoggedIn ? const HomePage() : const LandingPage(),
+                isLoggedIn ? const HomePage() : const LoginPage(),
           ),
         );
       }
@@ -37,32 +36,84 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: Center(
-        child: FadeInDown(
-          duration: const Duration(milliseconds: 1500),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // You can replace this Icon with an Image.asset later
-              Icon(Icons.favorite_rounded, size: 100, color: AppColors.primary),
-              const SizedBox(height: 20),
-              Text(
-                'My Life Partner Again',
-                style: GoogleFonts.poppins(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+      body: SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FadeInDown(
+                    duration: const Duration(milliseconds: 1200),
+                    child: Container(
+                      // padding: const EdgeInsets.all(20),
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          "assets/icons/app_logo.png",
+                          width: 120,
+                          height: 120,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  FadeInUp(
+                    duration: const Duration(milliseconds: 1200),
+                    delay: const Duration(milliseconds: 200),
+                    child: Column(
+                      children: [
+                        Text(
+                          'My Life Partner Again',
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Find your perfect match',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            FadeIn(
+              duration: const Duration(milliseconds: 1500),
+              delay: const Duration(milliseconds: 1000),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 50),
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      AppColors.primary.withValues(alpha: 0.6),
+                    ),
+                  ),
                 ),
               ),
-              Text(
-                'Find your perfect match',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
