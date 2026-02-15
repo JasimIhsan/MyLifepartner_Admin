@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+   backend:
+      build: .
+      ports:
+         - "3000:3000"
+      environment:
+         - NODE_ENV=development
+         - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mylifepartner?schema=public
+         - REDIS_URL=redis://redis:6379
+         - JWT_SECRET=supersecret # Replace with a real secret in production
+      depends_on:
+         - postgres
+         - redis
+      networks:
+         - app-network
+
+   postgres:
+      image: postgres:15-alpine
+      restart: always
+      environment:
+         - POSTGRES_USER=postgres
+         - POSTGRES_PASSWORD=postgres
+         - POSTGRES_DB=mylifepartner
+      ports:
+         - "5432:5432"
+      volumes:
+         - postgres-data:/var/lib/postgresql/data
+      networks:
+         - app-network
+
+   redis:
+      image: redis:alpine
+      restart: always
+      ports:
+         - "6379:6379"
+      volumes:
+         - redis-data:/data
+      networks:
+         - app-network
+
+networks:
+   app-network:
+      driver: bridge
+
+volumes:
+   postgres-data:
+   redis-data:
