@@ -22,6 +22,12 @@ class OtpService {
       return otp;
    };
 
+   resendOtp = async (mobileNumber: string, sendOption: string) => {
+      // For resend, we might want to invalidate the old one or just overwrite it.
+      // Overwriting is simpler and handles "resend" effectively.
+      return this.sendOtp(mobileNumber, sendOption);
+   };
+
    verifyOtp = async (mobileNumber: string, otp: string): Promise<boolean> => {
       const storedOtp = await cacheService.getCache(CACHE_KEYS.OTP(mobileNumber));
 

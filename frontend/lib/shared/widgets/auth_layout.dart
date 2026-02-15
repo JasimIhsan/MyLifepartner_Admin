@@ -144,7 +144,7 @@ class AuthLayout extends StatelessWidget {
               child: FadeInDown(
                 duration: const Duration(milliseconds: 1000),
                 child: Stack(
-                  fit: StackFit.expand,
+                  fit: StackFit.passthrough,
                   children: [
                     Image.asset(
                       'assets/icons/background.png',

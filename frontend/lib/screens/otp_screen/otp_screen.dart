@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mylifepartner/screens/login_screen/widgets/otp_method_selector.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
-import 'package:mylifepartner/services/api_service.dart';
+import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/widgets/auth_layout.dart';
@@ -26,6 +27,7 @@ class OtpPage extends StatefulWidget {
 }
 
 class _OtpPageState extends State<OtpPage> {
+  final AuthRepository _authRepository = AuthRepository();
   final pinController = TextEditingController();
   final focusNode = FocusNode();
   final formKey = GlobalKey<FormState>();
@@ -62,14 +64,14 @@ class _OtpPageState extends State<OtpPage> {
       _isLoading = true;
     });
     try {
-      final response = await ApiService.client.post(
-        "/user/auth/login",
-        data: {"mobileNumber": widget.phoneNumber, "otp": pin},
+      final response = await _authRepository.verifyOtp(
+        mobileNumber: widget.phoneNumber,
+        otp: pin,
       );
 
-      debugPrint("Login Response: ${response.data}");
+      debugPrint("Login Response: $response");
 
-      if (response.data["success"]) {
+      if (response["success"] == true) {
         final sharedPrefs = await SharedPreferences.getInstance();
         sharedPrefs.setBool("isLoggedIn", true);
 
@@ -107,36 +109,41 @@ class _OtpPageState extends State<OtpPage> {
   Future<void> _resendOtp() async {
     if (!_isResendEnabled) return;
 
-    try {
-      await ApiService.client.post(
-        "/user/auth/send-otp",
-        data: {
-          "mobileNumber": widget.phoneNumber,
-          "sendOption": widget.verificationMethod.toLowerCase(),
-        },
-      );
+    final bool isWeb = MediaQuery.of(context).size.width > 900;
 
-      _startTimer();
+    OtpMethodSelector.show(
+      context,
+      isWeb: isWeb,
+      onMethodSelected: (method) async {
+        try {
+          await _authRepository.resendOtp(
+            mobileNumber: widget.phoneNumber,
+            sendOption: method.toLowerCase(),
+          );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("OTP resent successfully"),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      debugPrint("Resend OTP Error: $e");
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Failed to resend OTP"),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    }
+          _startTimer();
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("OTP resent successfully"),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        } catch (e) {
+          debugPrint("Resend OTP Error: $e");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Failed to resend OTP"),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        }
+      },
+    );
   }
 
   @override

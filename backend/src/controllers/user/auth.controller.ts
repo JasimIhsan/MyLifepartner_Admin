@@ -39,6 +39,22 @@ class AuthController {
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { otp }, "Otp sent successfully"));
    });
 
+   resendOtp = asyncHandler(async (req: Request, res: Response) => {
+      const { mobileNumber, sendOption } = req.body;
+      console.log(`👉 Resending OTP to : ${mobileNumber} via ${sendOption}`);
+
+      if (!mobileNumber) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Mobile number is required");
+      }
+      if (!sendOption) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Send option is required");
+      }
+
+      const otp = await otpService.resendOtp(mobileNumber, sendOption);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { otp }, "Otp resent successfully"));
+   });
+
    detectCountry = asyncHandler(async (req: Request, res: Response) => {
       // 1. Try platform headers first (Cloudflare / Vercel)
       const countryCodeHeader = (req.headers["cf-ipcountry"] || req.headers["x-vercel-ip-country"]) as string;
