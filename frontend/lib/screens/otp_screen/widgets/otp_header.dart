@@ -39,11 +39,12 @@ class OtpHeader extends StatelessWidget {
         const SizedBox(height: 12),
         Text.rich(
           TextSpan(
-            text: "We’ve sent a 6-digit code to ",
+            text:
+                "We’ve sent a 6-digit verification code via $verificationMethod to ",
             style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600]),
             children: [
               TextSpan(
-                text: _maskedPhoneNumber + ".",
+                text: "$_maskedPhoneNumber.",
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
