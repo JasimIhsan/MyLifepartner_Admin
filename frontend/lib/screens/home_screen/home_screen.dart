@@ -2,7 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
+import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
             if (mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) => const LandingPage()),
+                MaterialPageRoute(builder: (context) => const LoginPage()),
                 ModalRoute.withName('/'),
               );
             }
