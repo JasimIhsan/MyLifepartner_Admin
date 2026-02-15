@@ -1,4 +1,4 @@
-enum AnswerType { TEXT, SINGLE_CHOICE, MULTI_CHOICE, RATING, BOOLEAN }
+enum AnswerType { text, singleChoice, multiChoice, rating, boolean }
 
 class ProfileQuestion {
   final int id;
@@ -57,17 +57,17 @@ class ProfileQuestion {
   static AnswerType _parseAnswerType(String type) {
     switch (type) {
       case 'TEXT':
-        return AnswerType.TEXT;
+        return AnswerType.text;
       case 'SINGLE_CHOICE':
-        return AnswerType.SINGLE_CHOICE;
+        return AnswerType.singleChoice;
       case 'MULTI_CHOICE':
-        return AnswerType.MULTI_CHOICE;
+        return AnswerType.multiChoice;
       case 'RATING':
-        return AnswerType.RATING;
+        return AnswerType.rating;
       case 'BOOLEAN':
-        return AnswerType.BOOLEAN;
+        return AnswerType.boolean;
       default:
-        return AnswerType.TEXT;
+        return AnswerType.text;
     }
   }
 }

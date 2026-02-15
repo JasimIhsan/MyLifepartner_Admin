@@ -46,7 +46,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
     } else {
       // If answer changed externally (or we just typed), sync if needed
       if (widget.currentAnswer != oldWidget.currentAnswer) {
-        if (widget.question.answerType == AnswerType.TEXT) {
+        if (widget.question.answerType == AnswerType.text) {
           String newText = '';
           if (widget.currentAnswer is String) {
             newText = widget.currentAnswer;
@@ -126,15 +126,15 @@ class _QuestionWidgetState extends State<QuestionWidget> {
 
   Widget _buildAnswerInput() {
     switch (widget.question.answerType) {
-      case AnswerType.TEXT:
+      case AnswerType.text:
         return _buildTextInput();
-      case AnswerType.SINGLE_CHOICE:
+      case AnswerType.singleChoice:
         return _buildSingleChoiceInput();
-      case AnswerType.MULTI_CHOICE:
+      case AnswerType.multiChoice:
         return _buildMultiChoiceInput();
-      case AnswerType.RATING:
+      case AnswerType.rating:
         return _buildRatingInput();
-      case AnswerType.BOOLEAN:
+      case AnswerType.boolean:
         return _buildBooleanInput();
     }
   }
@@ -167,7 +167,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withOpacity(0.1)
+                  ? AppColors.primary.withValues(alpha: 0.1)
                   : Colors.white,
               border: Border.all(
                 color: isSelected ? AppColors.primary : AppColors.borderColor,
@@ -247,21 +247,49 @@ class _QuestionWidgetState extends State<QuestionWidget> {
   Widget _buildBooleanInput() {
     return Column(
       children: [
-        RadioListTile<bool>(
-          title: const Text("Yes"),
-          value: true,
-          groupValue: widget.currentAnswer,
-          onChanged: (val) => widget.onAnswerChanged(val),
-          activeColor: AppColors.primary,
-        ),
-        RadioListTile<bool>(
-          title: const Text("No"),
-          value: false,
-          groupValue: widget.currentAnswer,
-          onChanged: (val) => widget.onAnswerChanged(val),
-          activeColor: AppColors.primary,
-        ),
+        _buildBooleanOption("Yes", true),
+        _buildBooleanOption("No", false),
       ],
+    );
+  }
+
+  Widget _buildBooleanOption(String label, bool value) {
+    final isSelected = widget.currentAnswer == value;
+    return GestureDetector(
+      onTap: () => widget.onAnswerChanged(value),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.white,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.borderColor,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Padding(
+                padding: EdgeInsets.only(left: 8.0),
+                child: Icon(Icons.check_circle, color: AppColors.primary),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

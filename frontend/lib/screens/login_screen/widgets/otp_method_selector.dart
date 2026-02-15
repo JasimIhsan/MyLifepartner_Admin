@@ -142,7 +142,9 @@ class _OtpMethodSelectionContentState
               backgroundColor: const Color(
                 0xFFA67C68,
               ), // Brown color from screenshot
-              disabledBackgroundColor: const Color(0xFFA67C68).withOpacity(0.5),
+              disabledBackgroundColor: const Color(
+                0xFFA67C68,
+              ).withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -194,8 +196,8 @@ class _OtpMethodSelectionContentState
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isWhatsApp
-                    ? Colors.green.withOpacity(0.1)
-                    : const Color(0xFFA67C68).withOpacity(0.1),
+                    ? Colors.green.withValues(alpha: 0.1)
+                    : const Color(0xFFA67C68).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

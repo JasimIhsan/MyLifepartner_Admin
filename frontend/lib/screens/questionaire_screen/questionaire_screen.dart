@@ -171,7 +171,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) => Container(
+      builder: (sheetContext) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -416,11 +416,11 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
         actions: [
           TextButton(
             onPressed: () async {
+              final nav = Navigator.of(context);
               final sharedPrefs = await SharedPreferences.getInstance();
               await sharedPrefs.clear();
               if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
+                nav.pushAndRemoveUntil(
                   MaterialPageRoute(builder: (context) => const LoginPage()),
                   (route) => false,
                 );
@@ -500,8 +500,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
-                          disabledBackgroundColor: AppColors.primary
-                              .withOpacity(0.5),
+                          disabledBackgroundColor: AppColors.primary.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                         child: _isSaving
                             ? const SizedBox(
