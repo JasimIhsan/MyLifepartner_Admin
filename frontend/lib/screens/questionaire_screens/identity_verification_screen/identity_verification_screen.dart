@@ -58,8 +58,9 @@ class _IdentityVerificationScreenState
 
     try {
       final questions = await _repository.getQuestions(_currentSectionOrder);
+
+      // 1. Check if questions list is empty
       if (questions.isEmpty) {
-        // If no questions returned for section 1, maybe error or empty.
         // If for section > 1, means we are done.
         if (_currentSectionOrder > 1) {
           _handleCompletion(silent: _isFirstLoad);
@@ -73,7 +74,34 @@ class _IdentityVerificationScreenState
         }
       }
 
-      // Populate local cache with saved answers
+      // 2. Check if THIS section is fully completed
+      bool allAnswered = true;
+      for (final q in questions) {
+        if (q.savedAnswer == null) {
+          allAnswered = false;
+          break;
+        }
+      }
+
+      // 3. If fully answered, auto-advance to next section (Recursive)
+      if (allAnswered) {
+        // Cache answers just in case we need them or for back nav (optional)
+        for (final q in questions) {
+          _answers[q.id] = q.savedAnswer;
+        }
+
+        _currentSectionOrder++;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('currentSectionOrder', _currentSectionOrder);
+
+        // Recursive call to get next section
+        if (mounted) {
+          await _fetchQuestions();
+        }
+        return;
+      }
+
+      // 4. If NOT fully answered, show this section
       int firstUnansweredIndex = -1;
       for (int i = 0; i < questions.length; i++) {
         final q = questions[i];
@@ -89,10 +117,12 @@ class _IdentityVerificationScreenState
       if (firstUnansweredIndex != -1) {
         newIndex = firstUnansweredIndex;
       } else {
-        // All answered? Go to last one or maybe section complete?
+        // Should be covered by "allAnswered" check above,
+        // but as a fallback, go to last one.
         newIndex = questions.length - 1;
       }
 
+      if (!mounted) return;
       setState(() {
         _questions = questions;
         _currentIndex = newIndex;
@@ -101,6 +131,7 @@ class _IdentityVerificationScreenState
         _isFirstLoad = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _errorMessage = e.toString().replaceAll('Exception: ', '');
         _isLoading = false;
