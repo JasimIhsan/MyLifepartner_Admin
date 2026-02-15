@@ -3,20 +3,18 @@ import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/profile_question.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/questionaire_screens/widgets/question_widget.dart';
+import 'package:mylifepartner/screens/questionaire_screen/widgets/question_widget.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class IdentityVerificationScreen extends StatefulWidget {
-  const IdentityVerificationScreen({super.key});
+class QuestionaireScreen extends StatefulWidget {
+  const QuestionaireScreen({super.key});
 
   @override
-  State<IdentityVerificationScreen> createState() =>
-      _IdentityVerificationScreenState();
+  State<QuestionaireScreen> createState() => _QuestionaireScreenState();
 }
 
-class _IdentityVerificationScreenState
-    extends State<IdentityVerificationScreen> {
+class _QuestionaireScreenState extends State<QuestionaireScreen> {
   final ProfileRepository _repository = ProfileRepository();
   List<ProfileQuestion> _questions = [];
   bool _isLoading = true;
@@ -33,6 +31,8 @@ class _IdentityVerificationScreenState
   // Map<questionId, answer>
   final Map<int, dynamic> _answers = {};
 
+  int _totalSections = 0;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +41,14 @@ class _IdentityVerificationScreenState
 
   Future<void> _loadSavedState() async {
     final prefs = await SharedPreferences.getInstance();
+
+    // Fetch total sections first (or in parallel)
+    try {
+      _totalSections = await _repository.getTotalSectionsCount();
+    } catch (e) {
+      debugPrint("Failed to fetch total sections: $e");
+    }
+
     int? savedSection = prefs.getInt('currentSectionOrder');
     if (savedSection != null) {
       _currentSectionOrder = savedSection;
@@ -270,20 +278,33 @@ class _IdentityVerificationScreenState
       await _repository.saveAnswer(question.id, _currentAnswer);
       _answers[question.id] = _currentAnswer; // Cache it
 
-      if (_currentIndex < _questions.length - 1) {
+      // Check if this is the absolute last question of the last section
+      bool isLastQuestionOfSection = _currentIndex == _questions.length - 1;
+      bool isLastSection = _currentSectionOrder == _totalSections;
+
+      if (isLastQuestionOfSection) {
+        if (isLastSection) {
+          // COMPLETE THE PROFILE
+          setState(() {
+            _isSaving = false;
+          });
+          _handleCompletion(silent: false);
+        } else {
+          // Move to next section
+          _currentSectionOrder++;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt('currentSectionOrder', _currentSectionOrder);
+
+          await _fetchQuestions();
+          setState(() {
+            _isSaving = false;
+          });
+        }
+      } else {
+        // Just move to next question in same section
         setState(() {
           _currentIndex++;
           _currentAnswer = _answers[_questions[_currentIndex].id];
-          _isSaving = false;
-        });
-      } else {
-        // Finished current section, load next
-        _currentSectionOrder++;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('currentSectionOrder', _currentSectionOrder);
-
-        await _fetchQuestions();
-        setState(() {
           _isSaving = false;
         });
       }
@@ -306,17 +327,18 @@ class _IdentityVerificationScreenState
         _currentIndex--;
         _currentAnswer = _answers[_questions[_currentIndex].id];
       });
-    } else if (_currentSectionOrder > 1) {
-      // Go back to previous section?
-      // This is complex because we need to re-fetch previous section.
-      // For now, let's just allow back within section.
-      // Or implement full back navigation later.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Cannot go back to previous section yet."),
-        ),
-      );
     } else {
+      // User is at the first question of the current section.
+      // Requirements: "user only can goback to the current section... he can't go back to 2nd or 1st section"
+      // So if _currentIndex == 0, we do nothing or pop if it's the very first section?
+      // Actually usually Back on first screen pops the screen.
+      // But if it's Section 3, Q1 -> Back logic says "cannot go back".
+      // AppBar leading is hidden in that case anyway.
+      // But if hardware back button is pressed:
+
+      // If we want to allow popping the screen to go back to previous screen (Login? Home?), we can.
+      // But if we want to restrict going to PREVIOUS QUESTIONS of PREVIOUS SECTIONS, we just don't decrement section order.
+
       Navigator.pop(context);
     }
   }
@@ -324,11 +346,6 @@ class _IdentityVerificationScreenState
   @override
   Widget build(BuildContext context) {
     // Calculate progress
-    // We don't know total questions across all sections easily without fetching structure first.
-    // So let's show progress within current section or just a loader.
-    // User requested "progress on the appbar".
-    // Let's assume progress = (currentIndex + 1) / questions.length for this section.
-
     double progress = 0.0;
     if (_questions.isNotEmpty) {
       progress = (_currentIndex + 1) / _questions.length;
@@ -359,13 +376,22 @@ class _IdentityVerificationScreenState
       }
     }
 
+    // Determine if it's the last question of the last section
+    bool isLastQuestion = false;
+    if (_questions.isNotEmpty && _currentIndex == _questions.length - 1) {
+      if (_currentSectionOrder == _totalSections) {
+        isLastQuestion = true;
+      }
+    }
+
     return Scaffold(
       backgroundColor: AppColors.primaryLight,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: AppColors.primaryLight,
         elevation: 0,
-        leading: (_currentIndex > 0 || _currentSectionOrder > 1)
+        // Only show back button if we are NOT at the start of the section
+        leading: (_currentIndex > 0)
             ? IconButton(
                 icon: const Icon(
                   Icons.arrow_back,
@@ -486,9 +512,11 @@ class _IdentityVerificationScreenState
                                   strokeWidth: 2,
                                 ),
                               )
-                            : const Text(
-                                "Continue",
-                                style: TextStyle(
+                            : Text(
+                                isLastQuestion
+                                    ? "Complete Profile"
+                                    : "Continue",
+                                style: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

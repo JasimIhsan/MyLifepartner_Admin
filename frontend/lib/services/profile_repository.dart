@@ -5,6 +5,32 @@ import 'package:mylifepartner/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileRepository {
+  Future<int> getTotalSectionsCount() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      // final userId = prefs.getInt('userId'); // Not strictly needed for general structure if public
+
+      final response = await ApiService.client.get(
+        '/user/profile/sections',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        return data.length;
+      } else {
+        throw Exception('Failed to load sections count');
+      }
+    } catch (e) {
+      // Return a default or rethrow.
+      // If we fail, maybe default to 999 so we don't prematurely show "Complete"
+      // or 0 to handle error in UI.
+      debugPrint('Error fetching sections count: $e');
+      return 0;
+    }
+  }
+
   Future<List<ProfileQuestion>> getQuestions(int sectionOrder) async {
     try {
       final prefs = await SharedPreferences.getInstance();
