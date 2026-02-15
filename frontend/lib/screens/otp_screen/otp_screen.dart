@@ -1,19 +1,24 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'widgets/otp_form.dart';
-import 'widgets/otp_header.dart';
+import '../../shared/widgets/auth_layout.dart';
 import '../home_screen/home_screen.dart';
+import 'widgets/otp_form.dart';
 
 class OtpPage extends StatefulWidget {
   final String phoneNumber;
   final String verificationMethod;
+  final String code;
   const OtpPage({
     super.key,
     required this.phoneNumber,
     required this.verificationMethod,
+    required this.code,
   });
 
   @override
@@ -25,6 +30,32 @@ class _OtpPageState extends State<OtpPage> {
   final focusNode = FocusNode();
   final formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+
+  Timer? _timer;
+  int _remainingSeconds = 30;
+  bool get _isResendEnabled => _remainingSeconds == 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    setState(() {
+      _remainingSeconds = 30;
+    });
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_remainingSeconds > 0) {
+        setState(() {
+          _remainingSeconds--;
+        });
+      } else {
+        _timer?.cancel();
+      }
+    });
+  }
 
   Future<void> _verifyOtp(String pin) async {
     setState(() {
@@ -74,6 +105,8 @@ class _OtpPageState extends State<OtpPage> {
   }
 
   Future<void> _resendOtp() async {
+    if (!_isResendEnabled) return;
+
     try {
       await ApiService.client.post(
         "/user/auth/send-otp",
@@ -82,6 +115,9 @@ class _OtpPageState extends State<OtpPage> {
           "sendOption": widget.verificationMethod.toLowerCase(),
         },
       );
+
+      _startTimer();
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -107,100 +143,44 @@ class _OtpPageState extends State<OtpPage> {
   void dispose() {
     pinController.dispose();
     focusNode.dispose();
+    _timer?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: Colors.black,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth > 900;
-            final size = MediaQuery.of(context).size;
-
-            return SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 1200),
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isWeb ? 80.0 : 24.0,
-                        vertical: 24.0,
-                      ),
-                      child: isWeb
-                          ? _buildWebLayout(size)
-                          : _buildMobileLayout(size),
-                    ),
-                  ),
-                ),
+    return AuthLayout(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final bool isWeb = MediaQuery.of(context).size.width > 900;
+          return Column(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              OtpHeader(
+                verificationMethod: widget.verificationMethod,
+                phoneNumber: widget.phoneNumber,
+                isWeb: isWeb,
+                code: widget.code,
               ),
-            );
-          },
-        ),
+              const SizedBox(height: 32),
+              OtpForm(
+                formKey: formKey,
+                pinController: pinController,
+                focusNode: focusNode,
+                isWeb: isWeb,
+                isLoading: _isLoading,
+                phoneNumber: widget.phoneNumber,
+                onResend: _resendOtp,
+                onVerify: _verifyOtp,
+                timerValue: _remainingSeconds,
+                isResendEnabled: _isResendEnabled,
+              ),
+            ],
+          );
+        },
       ),
-    );
-  }
-
-  Widget _buildWebLayout(Size size) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 1,
-          child: OtpWebBanner(verificationMethod: widget.verificationMethod),
-        ),
-        const SizedBox(width: 80),
-        Expanded(
-          flex: 1,
-          child: OtpForm(
-            formKey: formKey,
-            pinController: pinController,
-            focusNode: focusNode,
-            isWeb: true,
-            isLoading: _isLoading,
-            phoneNumber: widget.phoneNumber,
-            onResend: _resendOtp,
-            onVerify: _verifyOtp,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMobileLayout(Size size) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        OtpHeader(
-          verificationMethod: widget.verificationMethod,
-          phoneNumber: widget.phoneNumber,
-        ),
-        const SizedBox(height: 48),
-        OtpForm(
-          formKey: formKey,
-          pinController: pinController,
-          focusNode: focusNode,
-          isWeb: false,
-          isLoading: _isLoading,
-          phoneNumber: widget.phoneNumber,
-          onResend: _resendOtp,
-          onVerify: _verifyOtp,
-        ),
-      ],
     );
   }
 }

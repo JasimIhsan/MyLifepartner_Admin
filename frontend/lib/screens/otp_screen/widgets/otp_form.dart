@@ -12,6 +12,8 @@ class OtpForm extends StatelessWidget {
   final String phoneNumber;
   final VoidCallback onResend;
   final Function(String) onVerify;
+  final int timerValue;
+  final bool isResendEnabled;
 
   const OtpForm({
     super.key,
@@ -23,24 +25,26 @@ class OtpForm extends StatelessWidget {
     required this.phoneNumber,
     required this.onResend,
     required this.onVerify,
+    required this.timerValue,
+    required this.isResendEnabled,
   });
 
   @override
   Widget build(BuildContext context) {
-    const focusedBorderColor = Color.fromRGBO(23, 171, 144, 1);
-    const fillColor = Color.fromRGBO(243, 246, 249, 0);
-    const borderColor = Color.fromRGBO(23, 171, 144, 0.4);
+    // Colors are now used directly or defined in AppColors/Theme
 
     final defaultPinTheme = PinTheme(
-      width: 56,
-      height: 56,
+      width: 50,
+      height: 50,
       textStyle: GoogleFonts.poppins(
         fontSize: 22,
-        color: const Color.fromRGBO(30, 60, 87, 1),
+        color: Colors.black,
+        fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: borderColor),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
       ),
     );
 
@@ -50,40 +54,8 @@ class OtpForm extends StatelessWidget {
       child: Form(
         key: formKey,
         child: Column(
-          crossAxisAlignment: isWeb
-              ? CrossAxisAlignment.start
-              : CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (isWeb) ...[
-              Text(
-                "Verify Code",
-                style: GoogleFonts.poppins(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 12),
-              RichText(
-                text: TextSpan(
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    color: Colors.grey[600],
-                  ),
-                  children: [
-                    const TextSpan(text: "Resent to "),
-                    TextSpan(
-                      text: phoneNumber,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 48),
-            ],
             Center(
               child: Pinput(
                 length: 6,
@@ -101,15 +73,13 @@ class OtpForm extends StatelessWidget {
                 onCompleted: onVerify,
                 focusedPinTheme: defaultPinTheme.copyWith(
                   decoration: defaultPinTheme.decoration!.copyWith(
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: focusedBorderColor),
+                    border: Border.all(color: const Color(0xFFA67C68)),
                   ),
                 ),
                 submittedPinTheme: defaultPinTheme.copyWith(
                   decoration: defaultPinTheme.decoration!.copyWith(
-                    color: fillColor,
-                    borderRadius: BorderRadius.circular(19),
-                    border: Border.all(color: focusedBorderColor),
+                    color: const Color(0xFFA67C68).withValues(alpha: 0.1),
+                    border: Border.all(color: const Color(0xFFA67C68)),
                   ),
                 ),
                 errorPinTheme: defaultPinTheme.copyBorderWith(
@@ -118,38 +88,69 @@ class OtpForm extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Timer / Resend Text
             Center(
-              child: TextButton(
-                onPressed: isLoading ? null : onResend,
-                child: Text(
-                  "Resend Code",
+              child: Text.rich(
+                TextSpan(
+                  text: "Didn't receive a code? ",
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    color: Colors.grey[600],
                   ),
+                  children: [
+                    if (isResendEnabled)
+                      WidgetSpan(
+                        child: GestureDetector(
+                          onTap: onResend,
+                          child: Text(
+                            "Resend",
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFA67C68),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      TextSpan(
+                        text:
+                            "Resent in 00.${timerValue.toString().padLeft(2, '0')}", // Assuming timer < 60s
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
+
             const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
-                onPressed: isLoading
-                    ? null
-                    : () {
+                onPressed: _isVerifyButtonEnabled()
+                    ? () {
                         focusNode.unfocus();
                         if (formKey.currentState!.validate()) {
                           onVerify(pinController.text);
                         }
-                      },
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).primaryColor,
+                  backgroundColor: const Color(0xFFA67C68),
+                  disabledBackgroundColor: const Color(
+                    0xFFA67C68,
+                  ).withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  elevation: 2,
+                  elevation: 0,
                 ),
                 child: isLoading
                     ? const SizedBox(
@@ -174,5 +175,9 @@ class OtpForm extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool _isVerifyButtonEnabled() {
+    return !isLoading;
   }
 }

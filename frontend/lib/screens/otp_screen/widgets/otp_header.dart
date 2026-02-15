@@ -2,46 +2,57 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/app_colors.dart';
+
 class OtpHeader extends StatelessWidget {
   final String verificationMethod;
   final String phoneNumber;
+  final String code;
+  final bool isWeb;
 
   const OtpHeader({
     super.key,
+    required this.isWeb,
+    required this.code,
     required this.verificationMethod,
     required this.phoneNumber,
   });
 
+  String get _maskedPhoneNumber {
+    if (phoneNumber.length <= 4) return phoneNumber;
+    return "$code******${phoneNumber.substring(phoneNumber.length - 4)}";
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FadeInDown(
-      duration: const Duration(milliseconds: 800),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Verification",
-            style: GoogleFonts.poppins(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Enter Verification Code",
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
-          const SizedBox(height: 8),
-          Text(
-            "Enter the code sent via $verificationMethod to",
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+        ),
+        const SizedBox(height: 12),
+        Text.rich(
+          TextSpan(
+            text: "We’ve sent a 6-digit code to ",
+            style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600]),
+            children: [
+              TextSpan(
+                text: _maskedPhoneNumber + ".",
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
           ),
-          Text(
-            phoneNumber,
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -58,31 +69,30 @@ class OtpWebBanner extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(40),
         decoration: BoxDecoration(
-          color: Colors.deepPurple.shade50,
+          color: AppColors.primaryLight,
           borderRadius: BorderRadius.circular(30),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.shield_rounded,
-              size: 150,
-              color: Theme.of(context).primaryColor,
-            ),
+            Icon(Icons.shield_rounded, size: 150, color: AppColors.primary),
             const SizedBox(height: 32),
             Text(
               "Account Verification",
               style: GoogleFonts.poppins(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               "We've sent a 6-digit code via $verificationMethod to your phone. Please enter it to verify your identity.",
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                color: AppColors.textSecondary,
+              ),
             ),
           ],
         ),
