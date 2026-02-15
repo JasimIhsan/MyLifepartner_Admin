@@ -5,6 +5,7 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 
 class AuthController {
    login = asyncHandler(async (req: Request, res: Response) => {
@@ -20,7 +21,9 @@ class AuthController {
 
       const user = await userService.findOrCreateUser(mobileNumber);
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user }, "User login success"));
+      const token = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "30d" });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user, token }, "User login success"));
    });
 
    sendOtp = asyncHandler(async (req: Request, res: Response) => {

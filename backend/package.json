@@ -44,5 +44,8 @@
       "pg": "^8.18.0",
       "winston": "^3.19.0",
       "zod": "^4.3.6"
+   },
+   "prisma": {
+      "seed": "ts-node prisma/seed.ts"
    }
 }

@@ -7,14 +7,65 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  mobileNumber String   @unique
-  email        String?  @unique
-  name         String?
-  isVerified   Boolean  @default(false)
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 Int          @id @default(autoincrement())
+  mobileNumber       String       @unique
+  email              String?      @unique
+  name               String?
+  isVerified         Boolean      @default(false)
+  isProfileCompleted Boolean      @default(false)
+  role               Role         @default(USER)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  answers            UserAnswer[]
+}
+
+model ProfileSection {
+  id        Int               @id @default(autoincrement())
+  key       String            @unique // e.g. "emotional_maturity"
+  title     String
+  orderNo   Int               @default(0)
+  questions ProfileQuestion[]
+
+  @@map("profile_sections")
+}
+
+model ProfileQuestion {
+  id         Int            @id @default(autoincrement())
+  sectionId  Int
+  section    ProfileSection @relation(fields: [sectionId], references: [id])
+  question   String
+  answerType AnswerType
+  options    Json? // JSONB for choices/options
+  minWords   Int?
+  weight     Int            @default(1)
+  isRequired Boolean        @default(true)
+  orderNo    Int            @default(0)
+  isActive   Boolean        @default(true)
+  answers    UserAnswer[]
+
+  @@map("profile_questions")
+}
+
+model UserAnswer {
+  id         Int             @id @default(autoincrement())
+  userId     Int
+  user       User            @relation(fields: [userId], references: [id])
+  questionId Int
+  question   ProfileQuestion @relation(fields: [questionId], references: [id])
+  answer     Json // JSONB for the answer content
+  score      Int?
+  createdAt  DateTime        @default(now())
+
+  @@unique([userId, questionId]) // One answer per question per user
+  @@map("user_answers")
+}
+
+enum AnswerType {
+  TEXT
+  SINGLE_CHOICE
+  MULTI_CHOICE
+  RATING
+  BOOLEAN
 }
 
 enum Role {
