@@ -19,6 +19,14 @@ export class ProfileService {
       return sections;
    }
 
+   async getSections() {
+      return await this.profileRepository.getSections();
+   }
+
+   async getQuestionsBySectionOrder(sectionOrder: number, userId: number) {
+      return await this.profileRepository.getQuestionsBySectionByOrder(sectionOrder, userId);
+   }
+
    async getUserAnswers(userId: number) {
       return await this.profileRepository.getUserAnswers(userId);
    }

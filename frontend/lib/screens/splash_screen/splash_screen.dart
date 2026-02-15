@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/screens/questionaire_screens/identity_verification_screen/identity_verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -20,12 +21,17 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () async {
       final sharedPrefs = await SharedPreferences.getInstance();
       final isLoggedIn = sharedPrefs.getBool("isLoggedIn") ?? false;
+      final isProfileCompleted =
+          sharedPrefs.getBool("isProfileCompleted") ?? false;
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                isLoggedIn ? const HomePage() : const LoginPage(),
+            builder: (context) => isLoggedIn && isProfileCompleted
+                ? const HomePage()
+                : !isProfileCompleted && isLoggedIn
+                ? const IdentityVerificationScreen()
+                : const LoginPage(),
           ),
         );
       }

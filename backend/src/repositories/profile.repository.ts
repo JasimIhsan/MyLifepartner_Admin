@@ -13,6 +13,36 @@ export class ProfileRepository {
       });
    }
 
+   async getSections() {
+      return prisma.profileSection.findMany({
+         orderBy: { orderNo: "asc" },
+      });
+   }
+
+   async getQuestionsBySectionByOrder(sectionOrder: number, userId: number) {
+      return prisma.profileQuestion.findMany({
+         where: {
+            section: {
+               orderNo: sectionOrder,
+            },
+            isActive: true,
+         },
+         orderBy: { orderNo: "asc" },
+         include: {
+            section: true,
+            answers: {
+               where: {
+                  userId: userId,
+               },
+               select: {
+                  answer: true,
+                  score: true,
+               },
+            },
+         },
+      });
+   }
+
    async getUserAnswers(userId: number) {
       return prisma.userAnswer.findMany({
          where: { userId },

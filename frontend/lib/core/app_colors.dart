@@ -25,4 +25,5 @@ class AppColors {
   static const Color divider = Color(0xFFEEEEEE); // Colors.grey.shade100
   static const Color unselectedIcon = Colors.grey;
   static const Color shadowColor = Color(0x0D000000); // Black with low opacity
+  static const Color borderColor = Color(0xFFE0E0E0);
 }

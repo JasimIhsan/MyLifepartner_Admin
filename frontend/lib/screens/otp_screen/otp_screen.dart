@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/screens/login_screen/widgets/otp_method_selector.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
+import 'package:mylifepartner/screens/questionaire_screens/identity_verification_screen/identity_verification_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -75,12 +76,29 @@ class _OtpPageState extends State<OtpPage> {
         final sharedPrefs = await SharedPreferences.getInstance();
         sharedPrefs.setBool("isLoggedIn", true);
 
-        if (mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-            ModalRoute.withName('/'),
-          );
+        final user = response["data"]["user"];
+        // final token = response["token"];
+        sharedPrefs.setInt("userId", user["id"]);
+        if (user["isProfileCompleted"] == false) {
+          sharedPrefs.setBool("isProfileCompleted", false);
+          if (mounted) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const IdentityVerificationScreen(),
+              ),
+              ModalRoute.withName('/'),
+            );
+          }
+        } else {
+          sharedPrefs.setBool("isProfileCompleted", true);
+          if (mounted) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (context) => const HomePage()),
+              ModalRoute.withName('/'),
+            );
+          }
         }
       }
     } catch (e) {

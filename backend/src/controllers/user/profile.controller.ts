@@ -9,10 +9,23 @@ const profileService = new ProfileService();
 export const getQuestions = asyncHandler(async (req: Request, res: Response) => {
    // @ts-ignore - Assuming auth middleware adds user to req
    const userId = req.params.userId;
+   const { sectionOrder } = req.query;
+
    if (!userId) throw new ApiError(401, "Unauthorized");
 
-   const data = await profileService.getProfileStructure(Number(userId));
+   let data;
+   if (sectionOrder) {
+      data = await profileService.getQuestionsBySectionOrder(Number(sectionOrder), Number(userId));
+   } else {
+      data = await profileService.getProfileStructure(Number(userId));
+   }
+
    res.status(200).json(new ApiResponse(200, data, "Questions fetched successfully"));
+});
+
+export const getSections = asyncHandler(async (req: Request, res: Response) => {
+   const data = await profileService.getSections();
+   res.status(200).json(new ApiResponse(200, data, "Sections fetched successfully"));
 });
 
 export const getAnswers = asyncHandler(async (req: Request, res: Response) => {
@@ -26,15 +39,16 @@ export const getAnswers = asyncHandler(async (req: Request, res: Response) => {
 
 export const saveAnswer = asyncHandler(async (req: Request, res: Response) => {
    // @ts-ignore
-   const userId = req.params.userId;
+   const { userId, questionId } = req.params;
    if (!userId) throw new ApiError(401, "Unauthorized");
 
-   const { questionId } = req.params;
    const { answer } = req.body;
 
-   if (!questionId || !answer) {
-      throw new ApiError(400, "Question ID and answer are required");
+   if (!questionId || answer == null) {
+      throw new ApiError(400, "You need to select an answer to proceed");
    }
+
+   console.log(`👉 Saving answer`);
 
    const result = await profileService.saveAnswer(Number(userId), parseInt(questionId as string), answer);
    res.status(200).json(new ApiResponse(200, result, "Answer saved successfully"));
