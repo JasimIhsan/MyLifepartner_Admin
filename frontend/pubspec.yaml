@@ -36,7 +36,7 @@ dependencies:
    cupertino_icons: ^1.0.8
    google_fonts: ^8.0.0
    pinput: ^6.0.1
-   animate_do: ^4.2.0
+
    phone_form_field: ^10.0.17
    http: ^1.6.0
    dio: ^5.9.1

@@ -1,4 +1,3 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
@@ -192,107 +191,100 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeader(bool isWeb) {
-    return FadeInLeft(
-      duration: const Duration(milliseconds: 800),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Find your\nPerfect Match",
-            style: GoogleFonts.poppins(
-              fontSize: isWeb ? 48 : 32,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-              height: 1.1,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Find your\nPerfect Match",
+          style: GoogleFonts.poppins(
+            fontSize: isWeb ? 48 : 32,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+            height: 1.1,
           ),
-          const SizedBox(height: 8),
-          Text(
-            "Someone special is waiting for you.",
-            style: GoogleFonts.poppins(
-              fontSize: isWeb ? 18 : 16,
-              color: AppColors.textSecondary,
-            ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Someone special is waiting for you.",
+          style: GoogleFonts.poppins(
+            fontSize: isWeb ? 18 : 16,
+            color: AppColors.textSecondary,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildPremiumCard(bool isWeb) {
-    return FadeInUp(
-      duration: const Duration(milliseconds: 1000),
-      delay: const Duration(milliseconds: 200),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(isWeb ? 40 : 20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.primaryDark],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isWeb ? 40 : 20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
           ),
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Premium Membership",
-                    style: GoogleFonts.poppins(
-                      color: AppColors.onPrimary,
-                      fontSize: isWeb ? 28 : 20,
-                      fontWeight: FontWeight.bold,
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Premium Membership",
+                  style: GoogleFonts.poppins(
+                    color: AppColors.onPrimary,
+                    fontSize: isWeb ? 28 : 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "Unlock all features and find your match faster with priority listing.",
+                  style: GoogleFonts.poppins(
+                    color: AppColors.onPrimary.withValues(alpha: 0.8),
+                    fontSize: isWeb ? 18 : 14,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.surface,
+                    foregroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    "Unlock all features and find your match faster with priority listing.",
-                    style: GoogleFonts.poppins(
-                      color: AppColors.onPrimary.withValues(alpha: 0.8),
-                      fontSize: isWeb ? 18 : 14,
-                    ),
+                  child: Text(
+                    "Upgrade Now",
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "Upgrade Now",
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-            if (isWeb) const SizedBox(width: 40),
-            Icon(
-              Icons.workspace_premium_rounded,
-              color: AppColors.textWhite,
-              size: isWeb ? 120 : 60,
-            ),
-          ],
-        ),
+          ),
+          if (isWeb) const SizedBox(width: 40),
+          Icon(
+            Icons.workspace_premium_rounded,
+            color: AppColors.textWhite,
+            size: isWeb ? 120 : 60,
+          ),
+        ],
       ),
     );
   }
@@ -371,99 +363,93 @@ class _HomePageState extends State<HomePage> {
       "Chicago, IL",
     ];
 
-    return FadeInUp(
-      duration: const Duration(milliseconds: 600),
-      delay: Duration(milliseconds: 100 * index),
-      child: Container(
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.divider),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadowColor,
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.divider),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowColor,
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            child: Image.network(
+              'https://i.pravatar.cc/300?u=$index',
+              height: isWeb ? 220 : 180,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
-              child: Image.network(
-                'https://i.pravatar.cc/300?u=$index',
-                height: isWeb ? 220 : 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "${names[index % names.length]}, ${ages[index % ages.length]}",
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Icon(
-                        Icons.favorite_border,
-                        color: AppColors.unselectedIcon,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        color: AppColors.unselectedIcon,
-                        size: 14,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        locations[index % locations.length],
-                        style: GoogleFonts.poppins(
-                          color: AppColors.unselectedIcon,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryLight,
-                        foregroundColor: AppColors.primary,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        "View Profile",
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${names[index % names.length]}, ${ages[index % ages.length]}",
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const Icon(
+                      Icons.favorite_border,
+                      color: AppColors.unselectedIcon,
+                      size: 20,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      color: AppColors.unselectedIcon,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      locations[index % locations.length],
+                      style: GoogleFonts.poppins(
+                        color: AppColors.unselectedIcon,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryLight,
+                      foregroundColor: AppColors.primary,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      "View Profile",
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

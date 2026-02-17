@@ -1,4 +1,3 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
@@ -52,69 +51,58 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  FadeInDown(
-                    duration: const Duration(milliseconds: 1200),
-                    child: Container(
-                      // padding: const EdgeInsets.all(20),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white,
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          "assets/icons/app_logo.png",
-                          width: 120,
-                          height: 120,
-                          fit: BoxFit.contain,
-                        ),
+                  Container(
+                    // padding: const EdgeInsets.all(20),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Image.asset(
+                        "assets/icons/app_logo.png",
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
                   const SizedBox(height: 40),
-                  FadeInUp(
-                    duration: const Duration(milliseconds: 1200),
-                    delay: const Duration(milliseconds: 200),
-                    child: Column(
-                      children: [
-                        Text(
-                          'My Life Partner Again',
-                          style: GoogleFonts.poppins(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            letterSpacing: 0.5,
-                          ),
+                  Column(
+                    children: [
+                      Text(
+                        'My Life Partner Again',
+                        style: GoogleFonts.poppins(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          letterSpacing: 0.5,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Find your perfect match',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.3,
-                          ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Find your perfect match',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                          letterSpacing: 0.3,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            FadeIn(
-              duration: const Duration(milliseconds: 1500),
-              delay: const Duration(milliseconds: 1000),
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 50),
-                child: SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.primary.withValues(alpha: 0.6),
-                    ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 50),
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.primary.withValues(alpha: 0.6),
                   ),
                 ),
               ),

@@ -1,4 +1,3 @@
-import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -74,84 +73,73 @@ class LandingPage extends StatelessWidget {
   }
 
   Widget _buildHeroSection(BuildContext ctx, size, bool isWeb) {
-    return FadeInDown(
-      duration: const Duration(milliseconds: 1200),
-      child: Container(
-        height: isWeb ? size.height * 0.7 : size.height * 0.45,
-        constraints: isWeb ? const BoxConstraints(minHeight: 500) : null,
-        decoration: BoxDecoration(
-          color: AppColors.primaryLight,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child: Image.asset(
-          "assets/icons/app_logo.png",
-          height: 100,
-          width: 100,
-        ),
+    return Container(
+      height: isWeb ? size.height * 0.7 : size.height * 0.45,
+      constraints: isWeb ? const BoxConstraints(minHeight: 500) : null,
+      decoration: BoxDecoration(
+        color: AppColors.primaryLight,
+        borderRadius: BorderRadius.circular(30),
       ),
+      child: Image.asset("assets/icons/app_logo.png", height: 100, width: 100),
     );
   }
 
   Widget _buildContentSection(BuildContext ctx, bool isWeb) {
-    return FadeInUp(
-      duration: const Duration(milliseconds: 1200),
-      delay: const Duration(milliseconds: 200),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: isWeb
-            ? CrossAxisAlignment.start
-            : CrossAxisAlignment.center,
-        children: [
-          Text(
-            "Connect with people\nwho share your values",
-            textAlign: isWeb ? TextAlign.left : TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: isWeb ? 42 : 26,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-              height: 1.2,
-            ),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: isWeb
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.center,
+      children: [
+        Text(
+          "Connect with people\nwho share your values",
+          textAlign: isWeb ? TextAlign.left : TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: isWeb ? 42 : 26,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            height: 1.2,
           ),
-          const SizedBox(height: 16),
-          Text(
-            "Join the community of millions of people who have found their life partner.",
-            textAlign: isWeb ? TextAlign.left : TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: isWeb ? 18 : 15,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          "Join the community of millions of people who have found their life partner.",
+          textAlign: isWeb ? TextAlign.left : TextAlign.center,
+          style: GoogleFonts.poppins(
+            fontSize: isWeb ? 18 : 15,
+            color: AppColors.textSecondary,
+            height: 1.5,
           ),
-          const SizedBox(height: 48),
-          SizedBox(
-            width: isWeb ? 300 : double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  ctx,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 2,
+        ),
+        const SizedBox(height: 48),
+        SizedBox(
+          width: isWeb ? 300 : double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                ctx,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Text(
-                "Get Started",
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onPrimary,
-                ),
+              elevation: 2,
+            ),
+            child: Text(
+              "Get Started",
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.onPrimary,
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
