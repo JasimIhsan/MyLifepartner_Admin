@@ -31,7 +31,8 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
   // Map<questionId, answer>
   final Map<int, dynamic> _answers = {};
 
-  int _totalSections = 0;
+  List<String> _sectionNames = [];
+  int get _totalSections => _sectionNames.length;
 
   @override
   void initState() {
@@ -44,9 +45,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
     // Fetch total sections first (or in parallel)
     try {
-      _totalSections = await _repository.getTotalSectionsCount();
+      _sectionNames = await _repository.getSectionNames();
     } catch (e) {
-      debugPrint("Failed to fetch total sections: $e");
+      debugPrint("Failed to fetch sections: $e");
     }
 
     int? savedSection = prefs.getInt('currentSectionOrder');
@@ -390,6 +391,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
         automaticallyImplyLeading: false,
         backgroundColor: AppColors.primaryLight,
         elevation: 0,
+        toolbarHeight: 100,
         // Only show back button if we are NOT at the start of the section
         leading: (_currentIndex > 0)
             ? IconButton(
@@ -402,15 +404,120 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
             : null,
         title: Column(
           children: [
+            // Section name stepper
+            if (_sectionNames.isNotEmpty)
+              SizedBox(
+                height: 28,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _sectionNames.length,
+                  separatorBuilder: (_, __) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                    child: Icon(
+                      Icons.chevron_right,
+                      size: 14,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  itemBuilder: (context, index) {
+                    final sectionNum = index + 1;
+                    final isCompleted = sectionNum < _currentSectionOrder;
+                    final isCurrent = sectionNum == _currentSectionOrder;
+                    return Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isCurrent
+                              ? AppColors.primary
+                              : isCompleted
+                              ? AppColors.success.withValues(alpha: 0.12)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(12),
+                          border: isCompleted
+                              ? Border.all(
+                                  color: AppColors.success.withValues(
+                                    alpha: 0.4,
+                                  ),
+                                  width: 1,
+                                )
+                              : isCurrent
+                              ? null
+                              : Border.all(color: Colors.grey[300]!, width: 1),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isCompleted)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 4.0),
+                                child: Icon(
+                                  Icons.check_circle,
+                                  size: 12,
+                                  color: AppColors.success,
+                                ),
+                              ),
+                            Text(
+                              _sectionNames[index],
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: isCurrent || isCompleted
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isCurrent
+                                    ? Colors.white
+                                    : isCompleted
+                                    ? AppColors.success
+                                    : AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: 8),
+            // Question progress bar within section
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.grey[300],
                 color: AppColors.primary,
-                minHeight: 8,
+                minHeight: 6,
               ),
             ),
+            // Labels row
+            if (_questions.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (_totalSections > 0)
+                      Text(
+                        'Section $_currentSectionOrder of $_totalSections',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    Text(
+                      'Question ${_currentIndex + 1} of ${_questions.length}',
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
         actions: [

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/services/api_service.dart';
+import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
 import '../../core/app_colors.dart';
@@ -76,8 +77,8 @@ class _LoginPageState extends State<LoginPage> {
     } catch (e) {
       debugPrint("Send OTP Error: $e");
       String errorMessage = "Failed to send OTP. Please try again.";
-      if (e is DioException && e.response != null) {
-        errorMessage = e.response?.data['message'] ?? errorMessage;
+      if (e is DioException) {
+        errorMessage = getDioErrorMessage(e);
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -260,7 +261,6 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _navigateToOtp(String method) async {
-    Navigator.pop(context); // Close sheet/dialog
     final bool success = await _sendOtp(method);
 
     if (success && mounted) {

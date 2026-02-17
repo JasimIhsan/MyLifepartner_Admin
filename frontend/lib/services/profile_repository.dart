@@ -1,15 +1,15 @@
 import 'package:dio/dio.dart';
+import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mylifepartner/models/profile_question.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileRepository {
-  Future<int> getTotalSectionsCount() async {
+  Future<List<String>> getSectionNames() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-      // final userId = prefs.getInt('userId'); // Not strictly needed for general structure if public
 
       final response = await ApiService.client.get(
         '/user/profile/sections',
@@ -18,16 +18,13 @@ class ProfileRepository {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
-        return data.length;
+        return data.map<String>((s) => s['title'] as String).toList();
       } else {
-        throw Exception('Failed to load sections count');
+        throw Exception('Failed to load sections');
       }
     } catch (e) {
-      // Return a default or rethrow.
-      // If we fail, maybe default to 999 so we don't prematurely show "Complete"
-      // or 0 to handle error in UI.
-      debugPrint('Error fetching sections count: $e');
-      return 0;
+      debugPrint('Error fetching sections: $e');
+      return [];
     }
   }
 
@@ -61,13 +58,9 @@ class ProfileRepository {
         throw Exception('Failed to load questions');
       }
     } on DioException catch (e) {
-      if (e.response != null && e.response!.data != null) {
-        final data = e.response!.data;
-        if (data is Map && data.containsKey('message')) {
-          throw Exception(data['message']);
-        }
-      }
-      throw Exception('Error fetching questions: ${e.message}');
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error fetching questions'),
+      );
     } catch (e) {
       throw Exception('Error fetching questions: $e');
     }
@@ -93,13 +86,7 @@ class ProfileRepository {
         throw Exception('Failed to save answer');
       }
     } on DioException catch (e) {
-      if (e.response != null && e.response!.data != null) {
-        final data = e.response!.data;
-        if (data is Map && data.containsKey('message')) {
-          throw Exception(data['message']);
-        }
-      }
-      throw Exception('Error saving answer: ${e.message}');
+      throw Exception(getDioErrorMessage(e, fallback: 'Error saving answer'));
     } catch (e) {
       throw Exception('Error saving answer: $e');
     }
@@ -124,13 +111,9 @@ class ProfileRepository {
         throw Exception('Failed to complete profile');
       }
     } on DioException catch (e) {
-      if (e.response != null && e.response!.data != null) {
-        final data = e.response!.data;
-        if (data is Map && data.containsKey('message')) {
-          throw Exception(data['message']);
-        }
-      }
-      throw Exception('Error completing profile: ${e.message}');
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error completing profile'),
+      );
     } catch (e) {
       throw Exception('Error completing profile: $e');
     }

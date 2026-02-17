@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
+import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/screens/login_screen/widgets/otp_method_selector.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
@@ -104,8 +105,8 @@ class _OtpPageState extends State<OtpPage> {
     } catch (e) {
       debugPrint("Login Error: $e");
       String errorMessage = "Invalid OTP. Please try again.";
-      if (e is DioException && e.response != null) {
-        errorMessage = e.response?.data['message'] ?? errorMessage;
+      if (e is DioException) {
+        errorMessage = getDioErrorMessage(e, fallback: errorMessage);
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -151,10 +152,14 @@ class _OtpPageState extends State<OtpPage> {
           }
         } catch (e) {
           debugPrint("Resend OTP Error: $e");
+          String errorMessage = "Failed to resend OTP";
+          if (e is DioException) {
+            errorMessage = getDioErrorMessage(e, fallback: errorMessage);
+          }
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Failed to resend OTP"),
+              SnackBar(
+                content: Text(errorMessage),
                 backgroundColor: Colors.redAccent,
               ),
             );
