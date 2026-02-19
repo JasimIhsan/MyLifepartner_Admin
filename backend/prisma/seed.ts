@@ -26,11 +26,12 @@ async function main() {
       // ============================================================
       const section1 = await prisma.profileSection.upsert({
          where: { key: "identity_seriousness" },
-         update: { title: "Identity & Seriousness Verification", orderNo: 1 },
+         update: { title: "Identity & Seriousness Verification", orderNo: 1, isPrimary: true },
          create: {
             key: "identity_seriousness",
             title: "Identity & Seriousness Verification",
             orderNo: 1,
+            isPrimary: true,
          },
       });
 

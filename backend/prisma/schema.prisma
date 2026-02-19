@@ -24,6 +24,7 @@ model ProfileSection {
   key       String            @unique // e.g. "emotional_maturity"
   title     String
   orderNo   Int               @default(0)
+  isPrimary Boolean           @default(false)
   questions ProfileQuestion[]
 
   @@map("profile_sections")

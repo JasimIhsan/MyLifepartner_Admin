@@ -1,24 +1,26 @@
 import 'package:dio/dio.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mylifepartner/models/profile_question.dart';
+import 'package:mylifepartner/models/profile_section.dart';
 import 'package:mylifepartner/services/api_service.dart';
+import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileRepository {
-  Future<List<String>> getSectionNames() async {
+  Future<List<ProfileSection>> getSections() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
       final response = await ApiService.client.get(
         '/user/profile/sections',
+        queryParameters: {'isPrimary': true},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = response.data['data'];
-        return data.map<String>((s) => s['title'] as String).toList();
+        return data.map((json) => ProfileSection.fromJson(json)).toList();
       } else {
         throw Exception('Failed to load sections');
       }

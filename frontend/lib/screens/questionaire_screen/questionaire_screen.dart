@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/profile_question.dart';
+import 'package:mylifepartner/models/profile_section.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/widgets/question_widget.dart';
@@ -31,8 +32,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
   // Map<questionId, answer>
   final Map<int, dynamic> _answers = {};
 
-  List<String> _sectionNames = [];
-  int get _totalSections => _sectionNames.length;
+  List<ProfileSection> _allSections = [];
+  List<ProfileSection> _primarySections = [];
+  int get _totalSections => _primarySections.length;
 
   @override
   void initState() {
@@ -45,7 +47,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
     // Fetch total sections first (or in parallel)
     try {
-      _sectionNames = await _repository.getSectionNames();
+      _allSections = await _repository.getSections();
+      _primarySections = _allSections.where((s) => s.isPrimary).toList();
+      _primarySections.sort((a, b) => a.orderNo.compareTo(b.orderNo));
     } catch (e) {
       debugPrint("Failed to fetch sections: $e");
     }
@@ -157,6 +161,8 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
     if (!mounted) return;
 
     if (silent) {
+      if (!mounted) return;
+
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
@@ -203,6 +209,10 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                     // Call API to mark profile as completed in backend
                     await _repository.completeProfile();
 
+                    // // Clear session and navigate to Login
+                    // final prefs = await SharedPreferences.getInstance();
+                    // await prefs.clear();
+
                     if (!mounted) return;
                     Navigator.pushAndRemoveUntil(
                       context,
@@ -225,7 +235,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                   ),
                 ),
                 child: const Text(
-                  "Continue to Home",
+                  "Continue to Login",
                   style: TextStyle(
                     fontSize: 16,
                     color: Colors.white,
@@ -393,24 +403,23 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
         elevation: 0,
         toolbarHeight: 100,
         // Only show back button if we are NOT at the start of the section
-        leading: (_currentIndex > 0)
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: AppColors.textPrimary,
-                ),
-                onPressed: _onBack,
-              )
-            : null,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () {
+            if (_currentIndex > 0) {
+              _onBack();
+            }
+          },
+        ),
         title: Column(
           children: [
             // Section name stepper
-            if (_sectionNames.isNotEmpty)
+            if (_primarySections.isNotEmpty)
               SizedBox(
                 height: 28,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _sectionNames.length,
+                  itemCount: _primarySections.length,
                   separatorBuilder: (_, __) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 2.0),
                     child: Icon(
@@ -460,7 +469,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                                 ),
                               ),
                             Text(
-                              _sectionNames[index],
+                              _primarySections[index].title,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: isCurrent || isCompleted

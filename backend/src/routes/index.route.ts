@@ -1,5 +1,5 @@
 import adminRoute from "@/routes/admin/auth.route";
-import profileRoute from "@/routes/profile.routes";
+import profileRoute from "@/routes/user/user.profile.routes";
 import userAuthRoute from "@/routes/user/user.auth.route";
 import userRoute from "@/routes/user/user.route";
 import { Router } from "express";

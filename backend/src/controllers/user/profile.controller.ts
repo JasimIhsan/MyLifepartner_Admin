@@ -24,7 +24,10 @@ export const getQuestions = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const getSections = asyncHandler(async (req: Request, res: Response) => {
-   const data = await profileService.getSections();
+   const { isPrimary } = req.query;
+   const isPrimaryBool = isPrimary === "true" ? true : isPrimary === "false" ? false : undefined;
+   const data = await profileService.getSections(isPrimaryBool);
+   console.log("👉 data: ", data);
    res.status(200).json(new ApiResponse(200, data, "Sections fetched successfully"));
 });
 

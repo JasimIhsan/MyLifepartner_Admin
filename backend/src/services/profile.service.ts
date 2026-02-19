@@ -19,8 +19,8 @@ export class ProfileService {
       return sections;
    }
 
-   async getSections() {
-      return await this.profileRepository.getSections();
+   async getSections(isPrimary?: boolean) {
+      return await this.profileRepository.getSections(isPrimary);
    }
 
    async getQuestionsBySectionOrder(sectionOrder: number, userId: number) {
@@ -45,20 +45,20 @@ export class ProfileService {
    }
 
    async completeProfile(userId: number) {
-      // 1. Check if all required questions are answered
-      const requiredCount = await this.profileRepository.getRequiredQuestionsCount();
-      const answeredCount = await this.profileRepository.getUserAnsweredCount(userId);
+      // 1. Check if all required PRIMARY questions are answered
+      const requiredCount = await this.profileRepository.getRequiredPrimaryQuestionsCount();
+      const answeredCount = await this.profileRepository.getUserPrimaryAnsweredCount(userId);
 
       if (answeredCount < requiredCount) {
-         throw new ApiError(400, "Please answer all mandatory questions before completing the profile.");
+         throw new ApiError(400, "Please answer all mandatory primary questions before completing the profile.");
       }
 
-      // 2. Mark profile as completed
+      // 2. Mark profile as completed (User is done with mandatory part)
       await this.profileRepository.setProfileCompleted(userId);
 
       return {
          isProfileCompleted: true,
-         nextAction: "NAVIGATE_HOME",
+         nextAction: "logout", // Frontend should handle logout
       };
    }
 }

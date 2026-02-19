@@ -13,7 +13,13 @@ export class ProfileRepository {
       });
    }
 
-   async getSections() {
+   async getSections(isPrimary?: boolean) {
+      if (isPrimary !== undefined) {
+         return prisma.profileSection.findMany({
+            where: { isPrimary },
+            orderBy: { orderNo: "asc" },
+         });
+      }
       return prisma.profileSection.findMany({
          orderBy: { orderNo: "asc" },
       });
@@ -77,33 +83,28 @@ export class ProfileRepository {
       });
    }
 
-   async getTotalQuestionsCount() {
-      // Count all active required questions
-      return prisma.profileQuestion.count({
-         where: {
-            isActive: true,
-            isRequired: true, // Only optional questions don't block completion?
-            // Wait, usually completion means all required are done.
-         },
-      });
-   }
-
-   async getRequiredQuestionsCount() {
+   async getRequiredPrimaryQuestionsCount() {
       return prisma.profileQuestion.count({
          where: {
             isActive: true,
             isRequired: true,
+            section: {
+               isPrimary: true,
+            },
          },
       });
    }
 
-   async getUserAnsweredCount(userId: number) {
+   async getUserPrimaryAnsweredCount(userId: number) {
       return prisma.userAnswer.count({
          where: {
             userId,
             question: {
                isRequired: true,
                isActive: true,
+               section: {
+                  isPrimary: true,
+               },
             },
          },
       });

@@ -1,8 +1,14 @@
-version: "3.8"
-
 services:
    backend:
-      build: .
+      build:
+         context: .
+         target: builder
+      container_name: backend
+      restart: always
+      volumes:
+         - .:/app
+         - /app/node_modules
+      command: npm run dev
       ports:
          - "3000:3000"
       environment:
