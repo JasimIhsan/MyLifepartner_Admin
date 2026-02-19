@@ -6,6 +6,9 @@ import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/widgets/question_widget.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
+import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
+import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuestionaireScreen extends StatefulWidget {
@@ -171,82 +174,37 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
       return;
     }
 
-    showModalBottomSheet(
+    CustomBottomSheet.show(
       context: context,
-      isDismissible: false,
-      enableDrag: false,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, color: AppColors.primary, size: 64),
-            const SizedBox(height: 16),
-            const Text(
-              "Profile Completed",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Thank you for completing the verification.",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () async {
-                  try {
-                    // Call API to mark profile as completed in backend
-                    await _repository.completeProfile();
+      type: BottomSheetType.success,
+      title: "Profile Completed",
+      message: "Thank you for completing the verification.",
+      primaryButtonText: "Continue to Login",
+      isDismissible: true,
+      onPrimaryPressed: () async {
+        try {
+          // Call API to mark profile as completed in backend
+          await _repository.completeProfile();
 
-                    // // Clear session and navigate to Login
-                    // final prefs = await SharedPreferences.getInstance();
-                    // await prefs.clear();
+          // // Clear session and navigate to Login
+          // final prefs = await SharedPreferences.getInstance();
+          // await prefs.clear();
 
-                    if (!mounted) return;
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                      (route) => false,
-                    );
-                  } catch (e) {
-                    String message = e.toString().replaceAll('Exception: ', '');
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(message)));
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                child: const Text(
-                  "Continue to Login",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          if (!mounted) return;
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+            (route) => false,
+          );
+        } catch (e) {
+          String message = e.toString().replaceAll('Exception: ', '');
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(message)));
+          }
+        }
+      },
     );
   }
 
@@ -397,12 +355,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.primaryLight,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: AppColors.primaryLight,
-        elevation: 0,
-        toolbarHeight: 100,
-        // Only show back button if we are NOT at the start of the section
+      appBar: CustomAppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
@@ -411,7 +364,10 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
             }
           },
         ),
-        title: Column(
+        backgroundColor: AppColors.primaryLight,
+        elevation: 0,
+        toolbarHeight: 100,
+        titleWidget: Column(
           children: [
             // Section name stepper
             if (_primarySections.isNotEmpty)
@@ -507,15 +463,6 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (_totalSections > 0)
-                      Text(
-                        'Section $_currentSectionOrder of $_totalSections',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                     Text(
                       'Question ${_currentIndex + 1} of ${_questions.length}',
                       style: const TextStyle(
@@ -600,46 +547,19 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: SizedBox(
+                    child: CustomButton(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isSaving || !isValid
-                            ? null
-                            : () {
-                                // Hide keyboard
-                                FocusScope.of(context).unfocus();
-                                _onNext();
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          disabledBackgroundColor: AppColors.primary.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                isLastQuestion
-                                    ? "Complete Profile"
-                                    : "Continue",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
+                      onPressed: _isSaving || !isValid
+                          ? null
+                          : () {
+                              // Hide keyboard
+                              FocusScope.of(context).unfocus();
+                              _onNext();
+                            },
+                      isLoading: _isSaving,
+                      text: isLastQuestion ? "Complete Profile" : "Continue",
+                      backgroundColor: AppColors.primary,
                     ),
                   ),
                 ],

@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../shared/widgets/custom_app_bar.dart';
+import '../../shared/widgets/custom_bottom_bar.dart';
+import '../../shared/widgets/custom_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -60,13 +65,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   PreferredSizeWidget _buildMobileAppBar() {
-    return AppBar(
-      title: Text(
-        'My Life Partner',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-      ),
-      backgroundColor: AppColors.background,
-      elevation: 0,
+    return CustomAppBar(
+      title: 'My Life Partner',
+      showLeading: false,
       actions: [
         IconButton(
           icon: const Icon(
@@ -90,17 +91,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   PreferredSizeWidget _buildWebAppBar() {
-    return AppBar(
-      title: Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          'My Life Partner',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 24),
-        ),
-      ),
+    return CustomAppBar(
+      title: 'My Life Partner',
+      showLeading: false,
       toolbarHeight: 80,
-      backgroundColor: AppColors.background,
       elevation: 0.5,
+      titleStyle: GoogleFonts.poppins(
+        fontWeight: FontWeight.bold,
+        fontSize: 24,
+      ),
       actions: [
         IconButton(
           icon: const Icon(
@@ -116,6 +115,9 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(width: 40),
       ],
+      leading: const Padding(
+        padding: EdgeInsets.only(left: 20),
+      ), // Hack to add padding if needed or just use title padding in CustomAppBar if supported
     );
   }
 
@@ -161,18 +163,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
+    return CustomBottomBar(
+      selectedIndex: _selectedIndex,
       onTap: (index) {
         setState(() {
           _selectedIndex = index;
         });
       },
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.unselectedIcon,
-      selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-      unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
         BottomNavigationBarItem(
@@ -264,23 +261,28 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.surface,
-                      foregroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "Upgrade Now",
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                    ),
+                  CustomButton(
+                    onPressed: () {
+                      CustomBottomSheet.show(
+                        context: context,
+                        type: BottomSheetType.confirmation,
+                        title: "Upgrade Now",
+                        message: "Thank you for doing this",
+                        primaryButtonText: "Continue",
+                        onPrimaryPressed: () {
+                          Navigator.pop(context);
+                        },
+                      );
+                    },
+                    text: "Upgrade Now",
+                    type: CustomButtonType.secondary,
+                    backgroundColor: AppColors.surface,
+                    textColor: AppColors.primary,
+                    width: null, // Let it size itself or provide width
+                    height: 48,
+                    borderRadius: 12,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
                 ],
               ),
@@ -304,12 +306,14 @@ class _HomePageState extends State<HomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Recommended Matches",
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+            Flexible(
+              child: Text(
+                "Recommended Matches",
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
             TextButton(
@@ -443,20 +447,15 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: CustomButton(
                       onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primaryLight,
-                        foregroundColor: AppColors.primary,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Text(
-                        "View Profile",
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
+                      text: "View Profile",
+                      type: CustomButtonType.secondary,
+                      // backgroundColor: AppColors.primaryLight, // CustomButton defaults to primaryLight for secondary
+                      height: 48,
+                      borderRadius: 12,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],

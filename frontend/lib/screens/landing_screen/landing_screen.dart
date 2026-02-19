@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/app_colors.dart';
+import '../../shared/widgets/custom_button.dart';
 import '../login_screen/login_screen.dart';
 
 class LandingPage extends StatelessWidget {
@@ -125,29 +126,14 @@ class LandingPage extends StatelessWidget {
           const SizedBox(height: 48),
           SizedBox(
             width: isWeb ? 300 : double.infinity,
-            height: 56,
-            child: ElevatedButton(
+            child: CustomButton(
               onPressed: () {
                 Navigator.push(
                   ctx,
                   MaterialPageRoute(builder: (context) => const LoginPage()),
                 );
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 2,
-              ),
-              child: Text(
-                "Get Started",
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.onPrimary,
-                ),
-              ),
+              text: "Get Started",
             ),
           ),
         ],

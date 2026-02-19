@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 
 class OtpMethodSelector {
   static void show(
@@ -44,44 +45,33 @@ class OtpMethodSelector {
     BuildContext context,
     Function(String) onMethodSelected,
   ) {
-    showModalBottomSheet(
+    CustomBottomSheet.showContent(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.55,
-        minChildSize: 0.4,
-        maxChildSize: 0.7,
-        builder: (context, scrollController) => Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              const SizedBox(height: 12),
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: _OtpMethodSelectionContent(
-                  onMethodSelected: (method) {
-                    Navigator.pop(context);
-                    onMethodSelected(method);
-                  },
-                ),
-              ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 24),
+            _OtpMethodSelectionContent(
+              onMethodSelected: (method) {
+                Navigator.pop(context);
+                onMethodSelected(method);
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -106,6 +96,7 @@ class _OtpMethodSelectionContentState
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           "Verify Your Number",
@@ -130,7 +121,7 @@ class _OtpMethodSelectionContentState
           label: "WhatsApp",
           isWhatsApp: true,
         ),
-        const Spacer(),
+        const SizedBox(height: 32),
         SizedBox(
           width: double.infinity,
           height: 56,

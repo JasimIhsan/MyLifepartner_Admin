@@ -7,6 +7,7 @@ import 'package:phone_form_field/phone_form_field.dart';
 
 import '../../core/app_colors.dart';
 import '../../shared/widgets/auth_layout.dart';
+import '../../shared/widgets/custom_button.dart';
 import '../otp_screen/otp_screen.dart';
 import 'widgets/otp_method_selector.dart';
 
@@ -189,8 +190,7 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
+            child: CustomButton(
               onPressed: _isLoading
                   ? null
                   : () {
@@ -202,26 +202,10 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       }
                     },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFA67C68),
-                disabledBackgroundColor: const Color(
-                  0xFFA67C68,
-                ).withValues(alpha: 0.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(
-                      "Continue",
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+              isLoading: _isLoading,
+              text: "Continue",
+              backgroundColor: const Color(0xFFA67C68),
+              borderRadius: 12,
             ),
           ),
 
