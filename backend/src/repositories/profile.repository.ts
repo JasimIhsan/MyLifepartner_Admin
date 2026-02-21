@@ -109,4 +109,60 @@ export class ProfileRepository {
          },
       });
    }
+
+   async getUserImages(userId: number) {
+      return prisma.userImage.findMany({
+         where: { userId },
+         orderBy: { createdAt: "asc" },
+      });
+   }
+
+   async getUserImagesCount(userId: number) {
+      return prisma.userImage.count({
+         where: { userId },
+      });
+   }
+
+   async getUserImageById(id: number) {
+      return prisma.userImage.findUnique({
+         where: { id },
+      });
+   }
+
+   async saveUserImage(userId: number, imageUrl: string, isPrimary: boolean = false) {
+      return prisma.userImage.create({
+         data: {
+            userId,
+            imageUrl,
+            isPrimary,
+         },
+      });
+   }
+
+   async deleteUserImage(id: number) {
+      return prisma.userImage.delete({
+         where: { id },
+      });
+   }
+
+   async unsetPrimaryImages(userId: number) {
+      return prisma.userImage.updateMany({
+         where: { userId, isPrimary: true },
+         data: { isPrimary: false },
+      });
+   }
+
+   async setImageAsPrimary(id: number) {
+      return prisma.userImage.update({
+         where: { id },
+         data: { isPrimary: true },
+      });
+   }
+
+   async completeImageUpload(userId: number) {
+      return prisma.user.update({
+         where: { id: userId },
+         data: { hasCompletedImageUpload: true },
+      });
+   }
 }

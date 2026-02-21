@@ -61,4 +61,62 @@ export class ProfileService {
          nextAction: "logout", // Frontend should handle logout
       };
    }
+
+   async getUserImages(userId: number) {
+      return await this.profileRepository.getUserImages(userId);
+   }
+
+   async uploadUserImage(userId: number, imageUrl: string) {
+      const currentCount = await this.profileRepository.getUserImagesCount(userId);
+      if (currentCount >= 4) {
+         throw new ApiError(400, "Maximum of 4 images allowed");
+      }
+
+      // If it's the first image, make it primary automatically
+      const isPrimary = currentCount === 0;
+
+      return await this.profileRepository.saveUserImage(userId, imageUrl, isPrimary);
+   }
+
+   async deleteUserImage(userId: number, imageId: number) {
+      const image = await this.profileRepository.getUserImageById(imageId);
+      if (!image) {
+         throw new ApiError(404, "Image not found");
+      }
+      if (image.userId !== userId) {
+         throw new ApiError(403, "Forbidden to delete this image");
+      }
+
+      await this.profileRepository.deleteUserImage(imageId);
+      return { success: true };
+   }
+
+   async setPrimaryImage(userId: number, imageId: number) {
+      const image = await this.profileRepository.getUserImageById(imageId);
+      if (!image) {
+         throw new ApiError(404, "Image not found");
+      }
+      if (image.userId !== userId) {
+         throw new ApiError(403, "Forbidden to modify this image");
+      }
+
+      await this.profileRepository.unsetPrimaryImages(userId);
+      const updatedImage = await this.profileRepository.setImageAsPrimary(imageId);
+
+      return updatedImage;
+   }
+
+   async completeImageUpload(userId: number) {
+      const images = await this.profileRepository.getUserImages(userId);
+      if (images.length !== 4) {
+         throw new ApiError(400, "Exactly 4 images are required to proceed");
+      }
+      const hasPrimary = images.some((img) => img.isPrimary);
+      if (!hasPrimary) {
+         throw new ApiError(400, "One image must be selected as primary");
+      }
+
+      await this.profileRepository.completeImageUpload(userId);
+      return { success: true, hasCompletedImageUpload: true };
+   }
 }

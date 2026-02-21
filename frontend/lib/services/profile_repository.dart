@@ -120,4 +120,116 @@ class ProfileRepository {
       throw Exception('Error completing profile: $e');
     }
   }
+
+  Future<List<dynamic>> getUserImages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      final response = await ApiService.client.get(
+        '/user/profile/images/$userId',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      return response.data['data'] ?? [];
+    } on DioException catch (e) {
+      throw Exception(getDioErrorMessage(e, fallback: 'Error fetching images'));
+    } catch (e) {
+      throw Exception('Error fetching images: $e');
+    }
+  }
+
+  Future<dynamic> uploadImage(String filePath) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      FormData formData = FormData.fromMap({
+        "image": await MultipartFile.fromFile(filePath),
+      });
+
+      final response = await ApiService.client.post(
+        '/user/profile/upload-image/$userId',
+        data: formData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      return response.data['data'];
+    } on DioException catch (e) {
+      throw Exception(getDioErrorMessage(e, fallback: 'Error uploading image'));
+    } catch (e) {
+      throw Exception('Error uploading image: $e');
+    }
+  }
+
+  Future<void> removeImage(int imageId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      final response = await ApiService.client.delete(
+        '/user/profile/remove-image/$userId/$imageId',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to remove image');
+      }
+    } on DioException catch (e) {
+      throw Exception(getDioErrorMessage(e, fallback: 'Error removing image'));
+    } catch (e) {
+      throw Exception('Error removing image: $e');
+    }
+  }
+
+  Future<void> setPrimaryImage(int imageId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      final response = await ApiService.client.patch(
+        '/user/profile/set-primary/$userId/$imageId',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to set primary image');
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error setting primary image'),
+      );
+    } catch (e) {
+      throw Exception('Error setting primary image: $e');
+    }
+  }
+
+  Future<void> completeImageUpload() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      final response = await ApiService.client.post(
+        '/user/profile/complete-image-upload/$userId',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to complete image upload');
+      }
+
+      await prefs.setBool('hasCompletedImageUpload', true);
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error completing image upload'),
+      );
+    } catch (e) {
+      throw Exception('Error completing image upload: $e');
+    }
+  }
 }

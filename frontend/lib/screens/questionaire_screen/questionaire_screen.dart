@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/profile_question.dart';
 import 'package:mylifepartner/models/profile_section.dart';
-import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/widgets/question_widget.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -163,48 +162,21 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
     if (!mounted) return;
 
-    if (silent) {
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-        (route) => false,
-      );
-      return;
+    if (!silent) {
+      try {
+        // Call API to mark profile as completed in backend
+        await _repository.completeProfile();
+      } catch (e) {
+        debugPrint("Error completing profile: $e");
+        // We continue anyway so user can upload images
+      }
     }
 
-    CustomBottomSheet.show(
-      context: context,
-      type: BottomSheetType.success,
-      title: "Profile Completed",
-      message: "Thank you for completing the verification.",
-      primaryButtonText: "Continue to Login",
-      isDismissible: true,
-      onPrimaryPressed: () async {
-        try {
-          // Call API to mark profile as completed in backend
-          await _repository.completeProfile();
-
-          // // Clear session and navigate to Login
-          // final prefs = await SharedPreferences.getInstance();
-          // await prefs.clear();
-
-          if (!mounted) return;
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-            (route) => false,
-          );
-        } catch (e) {
-          String message = e.toString().replaceAll('Exception: ', '');
-          if (context.mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(message)));
-          }
-        }
-      },
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const ProfileImageUploadScreen()),
+      (route) => false,
     );
   }
 
@@ -558,7 +530,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                               _onNext();
                             },
                       isLoading: _isSaving,
-                      text: isLastQuestion ? "Complete Profile" : "Continue",
+                      text: isLastQuestion
+                          ? "Upload Profile Pictures"
+                          : "Continue",
                       backgroundColor: AppColors.primary,
                     ),
                   ),
