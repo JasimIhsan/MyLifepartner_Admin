@@ -27,6 +27,10 @@ export class ProfileImageController {
       // 2. Save to DB
       try {
          const newImage = await this.profileService.uploadUserImage(Number(userId), s3Url);
+
+         // Generate presigned URL for immediate response
+         newImage.imageUrl = await s3Service.getPresignedUrl(newImage.imageUrl);
+
          res.status(201).json(new ApiResponse(201, newImage, "Image uploaded successfully"));
       } catch (error) {
          // Rollback S3 upload if DB fails
@@ -76,8 +80,19 @@ export class ProfileImageController {
       if (!userId) throw new ApiError(401, "Unauthorized");
 
       const images = await this.profileService.getUserImages(Number(userId));
-      console.log("👉 images: ", images);
-      res.status(200).json(new ApiResponse(200, images, "User images fetched successfully"));
+
+      // Generate presigned URLs for each image
+      const imagesWithPresignedUrls = await Promise.all(
+         images.map(async (img) => {
+            if (img.imageUrl) {
+               img.imageUrl = await s3Service.getPresignedUrl(img.imageUrl);
+            }
+            return img;
+         })
+      );
+
+      console.log("👉 images with presigned urls: ", imagesWithPresignedUrls);
+      res.status(200).json(new ApiResponse(200, imagesWithPresignedUrls, "User images fetched successfully"));
    });
 
    public completeImageUpload = asyncHandler(async (req: Request, res: Response) => {

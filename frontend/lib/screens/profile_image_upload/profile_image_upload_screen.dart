@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/core/app_colors.dart';
@@ -35,10 +36,8 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-
     try {
       final images = await _repository.getUserImages();
-      print("👉 images: $images");
       setState(() {
         _images = images;
         _isLoading = false;
@@ -280,18 +279,39 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                                           borderRadius: BorderRadius.circular(
                                             16,
                                           ),
-                                          image: DecorationImage(
-                                            image: NetworkImage(
-                                              img['imageUrl'],
-                                            ),
-                                            fit: BoxFit.cover,
-                                          ),
                                           border: isPrimary
                                               ? Border.all(
                                                   color: AppColors.primary,
                                                   width: 3,
                                                 )
                                               : null,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            isPrimary ? 13 : 16,
+                                          ),
+                                          child: CachedNetworkImage(
+                                            imageUrl: img['imageUrl'],
+                                            fit: BoxFit.cover,
+                                            height: double.infinity,
+                                            width: double.infinity,
+                                            placeholder: (context, url) =>
+                                                const Center(
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color:
+                                                            AppColors.primary,
+                                                      ),
+                                                ),
+                                            errorWidget:
+                                                (context, url, error) =>
+                                                    const Center(
+                                                      child: Icon(
+                                                        Icons.error,
+                                                        color: Colors.red,
+                                                      ),
+                                                    ),
+                                          ),
                                         ),
                                       ),
                                       if (isPrimary)
