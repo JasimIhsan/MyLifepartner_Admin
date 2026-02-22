@@ -9,8 +9,10 @@ import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/services/user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../shared/widgets/custom_bottom_sheet.dart';
 import '../../shared/widgets/custom_button.dart';
 import '../login_screen/login_screen.dart';
+import 'manage_profile_pictures_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -41,8 +43,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final user = await _userRepository.getUser();
       final images = await _profileRepository.getUserImages();
 
-      print("👉 user : $user");
-
       UserImage? primaryImg;
       try {
         primaryImg = images.firstWhere((img) => img.isPrimary);
@@ -72,8 +72,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_isLoading || _user == null) {
       return const Center(child: CircularProgressIndicator());
     }
-
-    print("👉 _user : ${_user?.email}");
 
     return SingleChildScrollView(
       child: Padding(
@@ -118,22 +116,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             color: Colors.grey,
                           ),
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.edit,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -173,6 +155,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
               },
             ),
             _buildActionItem(
+              icon: Icons.photo_library_outlined,
+              title: "Manage Profile Pictures",
+              onTap: () async {
+                // Import manage_profile_pictures_screen.dart at the top of file
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ManageProfilePicturesScreen(),
+                  ),
+                );
+                if (result == true) {
+                  _fetchProfileData(); // Refresh data after update
+                }
+              },
+            ),
+            _buildActionItem(
               icon: Icons.settings_outlined,
               title: "Settings",
               onTap: () {},
@@ -191,18 +189,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(
               width: double.infinity,
               child: CustomButton(
-                onPressed: () async {
-                  final sharedPrefs = await SharedPreferences.getInstance();
-                  await sharedPrefs.clear();
-                  if (mounted) {
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginPage(),
-                      ),
-                      (route) => false,
-                    );
-                  }
+                onPressed: () {
+                  CustomBottomSheet.show(
+                    context: context,
+                    type: BottomSheetType.confirmation,
+                    title: "Logout",
+                    message: "Are you sure you want to logout?",
+                    primaryButtonText: "Logout",
+                    onPrimaryPressed: () async {
+                      final sharedPrefs = await SharedPreferences.getInstance();
+                      await sharedPrefs.clear();
+                      if (context.mounted) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LoginPage(),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    },
+                  );
                 },
                 text: "Logout",
                 type: CustomButtonType.secondary,
