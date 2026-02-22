@@ -2,10 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/models/user_image.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
+import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileImageUploadScreen extends StatefulWidget {
   const ProfileImageUploadScreen({super.key});
@@ -16,14 +19,15 @@ class ProfileImageUploadScreen extends StatefulWidget {
 }
 
 class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
-  final ProfileRepository _repository = ProfileRepository();
+  final ProfileRepository _profileRepository = ProfileRepository();
   final ImagePicker _picker = ImagePicker();
 
-  bool _isLoading = true;
+  bool _isLoading = false;
   bool _isSaving = false;
   String? _errorMessage;
 
-  List<dynamic> _images = [];
+  List<UserImage> _images = [];
+  final int _maxImages = 4;
 
   @override
   void initState() {
@@ -37,23 +41,34 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       _errorMessage = null;
     });
     try {
-      final images = await _repository.getUserImages();
-      setState(() {
-        _images = images;
-        _isLoading = false;
-      });
+      final images = await _profileRepository.getUserImages();
+      if (mounted) {
+        setState(() {
+          _images = images;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _errorMessage = e.toString();
-        _isLoading = false;
-      });
+      debugPrint('Error fetching images: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _pickAndUploadImage() async {
-    if (_images.length >= 4) {
+    if (_images.length >= _maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Maximum 4 images allowed.')),
+        SnackBar(content: Text('Maximum $_maxImages images allowed.')),
       );
       return;
     }
@@ -70,7 +85,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         });
 
         // Upload
-        await _repository.uploadImage(image.path);
+        await _profileRepository.uploadImage(image.path);
 
         // Refresh
         await _fetchImages();
@@ -93,7 +108,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       _isLoading = true;
     });
     try {
-      await _repository.setPrimaryImage(imageId);
+      await _profileRepository.setPrimaryImage(imageId);
       await _fetchImages();
     } catch (e) {
       setState(() {
@@ -112,7 +127,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       _isLoading = true;
     });
     try {
-      await _repository.removeImage(imageId);
+      await _profileRepository.removeImage(imageId);
       await _fetchImages();
     } catch (e) {
       setState(() {
@@ -127,14 +142,14 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
   }
 
   Future<void> _completeUpload() async {
-    if (_images.length != 4) {
+    if (_images.length != _maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload exactly 4 images.')),
+        SnackBar(content: Text('Please upload exactly $_maxImages images.')),
       );
       return;
     }
 
-    final hasPrimary = _images.any((img) => img['isPrimary'] == true);
+    final hasPrimary = _images.any((img) => img.isPrimary == true);
     if (!hasPrimary) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select one primary image.')),
@@ -147,7 +162,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     });
 
     try {
-      await _repository.completeImageUpload();
+      await _profileRepository.completeImageUpload();
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -167,7 +182,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     }
   }
 
-  void _showImageOptions(dynamic image) {
+  void _showImageOptions(UserImage image) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -178,13 +193,13 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (image['isPrimary'] != true)
+              if (image.isPrimary != true)
                 ListTile(
                   leading: const Icon(Icons.star, color: AppColors.primary),
                   title: const Text('Set as Primary'),
                   onTap: () {
                     Navigator.pop(context);
-                    _setPrimaryImage(image['id']);
+                    _setPrimaryImage(image.id);
                   },
                 ),
               ListTile(
@@ -195,7 +210,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  _removeImage(image['id']);
+                  _removeImage(image.id);
                 },
               ),
             ],
@@ -208,13 +223,30 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
   @override
   Widget build(BuildContext context) {
     bool isValid =
-        _images.length == 4 && _images.any((img) => img['isPrimary'] == true);
+        _images.length == _maxImages &&
+        _images.any((img) => img.isPrimary == true);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: CustomAppBar(
         title: "Profile Photos",
         leading: const SizedBox.shrink(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final nav = Navigator.of(context);
+              final sharedPrefs = await SharedPreferences.getInstance();
+              await sharedPrefs.clear();
+              if (mounted) {
+                nav.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -265,14 +297,19 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                                   mainAxisSpacing: 16,
                                   childAspectRatio: 0.8,
                                 ),
-                            itemCount: 4,
+                            itemCount: _maxImages,
                             itemBuilder: (context, index) {
                               if (index < _images.length) {
-                                final img = _images[index];
-                                final isPrimary = img['isPrimary'] == true;
+                                final image = _images[index];
+                                final imageUrl = image.imageUrl;
+                                final isPrimary = image.isPrimary;
+                                // final isPending =
+                                //     image.verificationStatus == 'Pending';
+
                                 return GestureDetector(
-                                  onTap: () => _showImageOptions(img),
+                                  onTap: () => _showImageOptions(image),
                                   child: Stack(
+                                    clipBehavior: Clip.none,
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
@@ -291,7 +328,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                                             isPrimary ? 13 : 16,
                                           ),
                                           child: CachedNetworkImage(
-                                            imageUrl: img['imageUrl'],
+                                            imageUrl: imageUrl,
                                             fit: BoxFit.cover,
                                             height: double.infinity,
                                             width: double.infinity,
@@ -314,6 +351,31 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                                           ),
                                         ),
                                       ),
+                                      // if (isPending)
+                                      //   Positioned(
+                                      //     top: 8,
+                                      //     right: 8,
+                                      //     child: Container(
+                                      //       padding: const EdgeInsets.symmetric(
+                                      //         horizontal: 8,
+                                      //         vertical: 4,
+                                      //       ),
+                                      //       decoration: BoxDecoration(
+                                      //         color: Colors.black.withValues(
+                                      //           alpha: 0.6,
+                                      //         ),
+                                      //         borderRadius:
+                                      //             BorderRadius.circular(8),
+                                      //       ),
+                                      //       child: const Text(
+                                      //         "Pending",
+                                      //         style: TextStyle(
+                                      //           color: Colors.white,
+                                      //           fontSize: 10,
+                                      //         ),
+                                      //       ),
+                                      //     ),
+                                      //   ),
                                       if (isPrimary)
                                         Positioned(
                                           bottom: 8,

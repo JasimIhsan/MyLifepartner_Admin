@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mylifepartner/models/profile_question.dart';
 import 'package:mylifepartner/models/profile_section.dart';
+import 'package:mylifepartner/models/user_image.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -121,7 +122,7 @@ class ProfileRepository {
     }
   }
 
-  Future<List<dynamic>> getUserImages() async {
+  Future<List<UserImage>> getUserImages() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -132,7 +133,7 @@ class ProfileRepository {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      return response.data['data'] ?? [];
+      return UserImageResponse.fromJson(response.data).data;
     } on DioException catch (e) {
       throw Exception(getDioErrorMessage(e, fallback: 'Error fetching images'));
     } catch (e) {
@@ -140,7 +141,7 @@ class ProfileRepository {
     }
   }
 
-  Future<dynamic> uploadImage(String filePath) async {
+  Future<UserImage> uploadImage(String filePath) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -156,7 +157,7 @@ class ProfileRepository {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      return response.data['data'];
+      return UserImage.fromJson(response.data['data']);
     } on DioException catch (e) {
       throw Exception(getDioErrorMessage(e, fallback: 'Error uploading image'));
     } catch (e) {

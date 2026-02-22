@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:dio/dio.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/screens/login_screen/widgets/otp_method_selector.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
+import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/widgets/auth_layout.dart';
@@ -71,34 +71,35 @@ class _OtpPageState extends State<OtpPage> {
         otp: pin,
       );
 
-      debugPrint("Login Response: $response");
+      debugPrint("Login Response: ${response.message}");
 
-      if (response["success"] == true) {
+      if (response.success == true) {
         final sharedPrefs = await SharedPreferences.getInstance();
         sharedPrefs.setBool("isLoggedIn", true);
 
-        final user = response["data"]["user"];
-        // final token = response["token"];
-        sharedPrefs.setInt("userId", user["id"]);
-        if (user["isProfileCompleted"] == false) {
-          sharedPrefs.setBool("isProfileCompleted", false);
-          if (mounted) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const QuestionaireScreen(),
-              ),
-              ModalRoute.withName('/'),
-            );
-          }
-        } else {
-          sharedPrefs.setBool("isProfileCompleted", true);
-          if (mounted) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-              ModalRoute.withName('/'),
-            );
+        final user = response.user;
+        if (user != null) {
+          sharedPrefs.setInt("userId", user.id);
+          if (user.isProfileCompleted == false) {
+            sharedPrefs.setBool("isProfileCompleted", false);
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const QuestionaireScreen(),
+                ),
+                ModalRoute.withName('/'),
+              );
+            }
+          } else {
+            sharedPrefs.setBool("isProfileCompleted", true);
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const HomePage()),
+                ModalRoute.withName('/'),
+              );
+            }
           }
         }
       }
