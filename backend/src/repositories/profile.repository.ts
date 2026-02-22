@@ -165,4 +165,19 @@ export class ProfileRepository {
          data: { hasCompletedImageUpload: true },
       });
    }
+
+   async saveSelfie(userId: number, selfieUrl: string) {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      const oldSelfieUrl = user?.selfieUrl;
+
+      const updatedUser = await prisma.user.update({
+         where: { id: userId },
+         data: {
+            selfieUrl,
+            selfieStatus: "PENDING",
+         },
+      });
+
+      return { user: updatedUser, oldSelfieUrl };
+   }
 }

@@ -6,6 +6,7 @@ import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
+import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -26,6 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
           sharedPrefs.getBool("isProfileCompleted") ?? false;
       final hasCompletedImageUpload =
           sharedPrefs.getBool("hasCompletedImageUpload") ?? false;
+      final selfieStatus = sharedPrefs.getString("selfieStatus");
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -35,7 +37,11 @@ class _SplashScreenState extends State<SplashScreen> {
               if (isLoggedIn) {
                 if (isProfileCompleted) {
                   if (hasCompletedImageUpload) {
-                    return const HomePage();
+                    if (selfieStatus != null && selfieStatus != "NONE") {
+                      return const HomePage();
+                    } else {
+                      return const SelfieVerificationScreen();
+                    }
                   } else {
                     return const ProfileImageUploadScreen();
                   }

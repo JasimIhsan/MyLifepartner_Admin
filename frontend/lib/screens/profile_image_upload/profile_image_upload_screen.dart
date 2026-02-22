@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/user_image.dart';
-import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
@@ -85,7 +85,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         });
 
         // Upload
-        await _profileRepository.uploadImage(image.path);
+        await _profileRepository.uploadImage(image);
 
         // Refresh
         await _fetchImages();
@@ -166,7 +166,9 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       if (mounted) {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(
+            builder: (context) => const SelfieVerificationScreen(),
+          ),
           (route) => false,
         );
       }

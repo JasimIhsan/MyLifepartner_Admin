@@ -124,4 +124,8 @@ export class ProfileService {
       await this.profileRepository.completeImageUpload(userId);
       return toImageUploadStatusDto(true, true);
    }
+
+   async uploadSelfie(userId: number, imageUrl: string) {
+      return await this.profileRepository.saveSelfie(userId, imageUrl);
+   }
 }

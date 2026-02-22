@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/models/profile_question.dart';
 import 'package:mylifepartner/models/profile_section.dart';
 import 'package:mylifepartner/models/user_image.dart';
@@ -141,14 +142,16 @@ class ProfileRepository {
     }
   }
 
-  Future<UserImage> uploadImage(String filePath) async {
+  Future<UserImage> uploadImage(XFile imageFile) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
+      final bytes = await imageFile.readAsBytes();
+
       FormData formData = FormData.fromMap({
-        "image": await MultipartFile.fromFile(filePath),
+        "image": MultipartFile.fromBytes(bytes, filename: imageFile.name),
       });
 
       final response = await ApiService.client.post(
@@ -162,6 +165,36 @@ class ProfileRepository {
       throw Exception(getDioErrorMessage(e, fallback: 'Error uploading image'));
     } catch (e) {
       throw Exception('Error uploading image: $e');
+    }
+  }
+
+  Future<void> uploadSelfie(XFile imageFile) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      final bytes = await imageFile.readAsBytes();
+
+      FormData formData = FormData.fromMap({
+        "image": MultipartFile.fromBytes(bytes, filename: imageFile.name),
+      });
+
+      final response = await ApiService.client.post(
+        '/user/profile/upload-selfie/$userId',
+        data: formData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode != 201) {
+        throw Exception('Failed to upload selfie');
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error uploading selfie'),
+      );
+    } catch (e) {
+      throw Exception('Error uploading selfie: $e');
     }
   }
 

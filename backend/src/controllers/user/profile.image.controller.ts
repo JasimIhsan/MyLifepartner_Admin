@@ -104,6 +104,35 @@ export class ProfileImageController {
 
       res.status(200).json(new ApiResponse(200, result, "Image upload phase completed successfully"));
    });
+
+   public uploadSelfie = asyncHandler(async (req: Request, res: Response) => {
+      // @ts-ignore
+      const userId = req.params.userId || req.user?.id;
+      if (!userId) throw new ApiError(401, "Unauthorized");
+
+      if (!req.file) {
+         throw new ApiError(400, "No selfie image file provided");
+      }
+
+      // 1. Upload to S3
+      const s3Url = await s3Service.uploadToS3(req.file, "selfies");
+
+      // 2. Save to DB
+      try {
+         const { user, oldSelfieUrl } = await this.profileService.uploadSelfie(Number(userId), s3Url);
+
+         // Delete old selfie from S3 if it exists
+         if (oldSelfieUrl) {
+            await s3Service.deleteFromS3(oldSelfieUrl);
+         }
+
+         res.status(201).json(new ApiResponse(201, { selfieStatus: user.selfieStatus }, "Selfie uploaded successfully. Awaiting review."));
+      } catch (error) {
+         // Rollback S3 upload if DB fails
+         await s3Service.deleteFromS3(s3Url);
+         throw error;
+      }
+   });
 }
 
 export const profileImageController = new ProfileImageController();

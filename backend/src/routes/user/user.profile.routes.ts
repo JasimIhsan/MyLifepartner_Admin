@@ -20,5 +20,6 @@ router.delete("/remove-image/:userId/:imageId", profileImageController.removeIma
 router.patch("/set-primary/:userId/:imageId", profileImageController.setPrimaryImage);
 router.get("/images/:userId", profileImageController.getImages);
 router.post("/complete-image-upload/:userId", profileImageController.completeImageUpload);
+router.post("/upload-selfie/:userId", multerConfig.single("image"), profileImageController.uploadSelfie);
 
 export default router;

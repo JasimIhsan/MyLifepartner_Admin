@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/widgets/auth_layout.dart';
 import '../home_screen/home_screen.dart';
+import '../profile_image_upload/profile_image_upload_screen.dart';
+import '../selfie_verification/selfie_verification_screen.dart';
 import 'widgets/otp_form.dart';
 
 class OtpPage extends StatefulWidget {
@@ -93,12 +95,37 @@ class _OtpPageState extends State<OtpPage> {
             }
           } else {
             sharedPrefs.setBool("isProfileCompleted", true);
+            sharedPrefs.setBool(
+              "hasCompletedImageUpload",
+              user.hasCompletedImageUpload,
+            );
+            sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
+
             if (mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
-                ModalRoute.withName('/'),
-              );
+              if (user.hasCompletedImageUpload == false) {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileImageUploadScreen(),
+                  ),
+                  ModalRoute.withName('/'),
+                );
+              } else if (user.selfieStatus == null ||
+                  user.selfieStatus == "NONE") {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SelfieVerificationScreen(),
+                  ),
+                  ModalRoute.withName('/'),
+                );
+              } else {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HomePage()),
+                  ModalRoute.withName('/'),
+                );
+              }
             }
           }
         }
