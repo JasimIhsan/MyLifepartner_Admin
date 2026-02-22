@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/profile_question.dart';
 import 'package:mylifepartner/models/profile_section.dart';
+import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/widgets/question_widget.dart';
@@ -11,7 +12,14 @@ import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuestionaireScreen extends StatefulWidget {
-  const QuestionaireScreen({super.key});
+  final bool isPrimaryFlow;
+  final int? initialSectionOrder;
+
+  const QuestionaireScreen({
+    super.key,
+    this.isPrimaryFlow = true,
+    this.initialSectionOrder,
+  });
 
   @override
   State<QuestionaireScreen> createState() => _QuestionaireScreenState();
@@ -35,8 +43,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
   final Map<int, dynamic> _answers = {};
 
   List<ProfileSection> _allSections = [];
-  List<ProfileSection> _primarySections = [];
-  int get _totalSections => _primarySections.length;
+  List<ProfileSection> _activeSections = [];
 
   @override
   void initState() {
@@ -49,16 +56,28 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
     // Fetch total sections first (or in parallel)
     try {
-      _allSections = await _repository.getSections();
-      _primarySections = _allSections.where((s) => s.isPrimary).toList();
-      _primarySections.sort((a, b) => a.orderNo.compareTo(b.orderNo));
+      _allSections = await _repository.getSections(); // Fetch all, then filter
+      if (widget.isPrimaryFlow) {
+        _activeSections = _allSections.where((s) => s.isPrimary).toList();
+      } else {
+        _activeSections = _allSections.where((s) => !s.isPrimary).toList();
+      }
+      _activeSections.sort((a, b) => a.orderNo.compareTo(b.orderNo));
     } catch (e) {
       debugPrint("Failed to fetch sections: $e");
     }
 
-    int? savedSection = prefs.getInt('currentSectionOrder');
-    if (savedSection != null) {
-      _currentSectionOrder = savedSection;
+    if (widget.initialSectionOrder != null) {
+      _currentSectionOrder = widget.initialSectionOrder!;
+    } else {
+      int? savedSection = prefs.getInt(
+        widget.isPrimaryFlow ? 'currentSectionOrder' : 'nonPrimarySectionOrder',
+      );
+      if (savedSection != null) {
+        _currentSectionOrder = savedSection;
+      } else if (_activeSections.isNotEmpty) {
+        _currentSectionOrder = _activeSections.first.orderNo;
+      }
     }
     _fetchQuestions();
   }
@@ -105,13 +124,25 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
           _answers[q.id] = q.savedAnswer;
         }
 
-        _currentSectionOrder++;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('currentSectionOrder', _currentSectionOrder);
+        final currentIndex = _activeSections.indexWhere(
+          (s) => s.orderNo == _currentSectionOrder,
+        );
+        if (currentIndex != -1 && currentIndex < _activeSections.length - 1) {
+          _currentSectionOrder = _activeSections[currentIndex + 1].orderNo;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt(
+            widget.isPrimaryFlow
+                ? 'currentSectionOrder'
+                : 'nonPrimarySectionOrder',
+            _currentSectionOrder,
+          );
 
-        // Recursive call to get next section
-        if (mounted) {
-          await _fetchQuestions();
+          // Recursive call to get next section
+          if (mounted) {
+            await _fetchQuestions();
+          }
+        } else {
+          _handleCompletion(silent: _isFirstLoad);
         }
         return;
       }
@@ -158,11 +189,15 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
   Future<void> _handleCompletion({bool silent = false}) async {
     // Save completion state
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isProfileCompleted', true);
+    if (widget.isPrimaryFlow) {
+      await prefs.setBool('isProfileCompleted', true);
+    } else {
+      await prefs.setBool('isNonPrimaryCompleted', true);
+    }
 
     if (!mounted) return;
 
-    if (!silent) {
+    if (!silent && widget.isPrimaryFlow) {
       try {
         // Call API to mark profile as completed in backend
         await _repository.completeProfile();
@@ -173,11 +208,21 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
     }
 
     if (!mounted) return;
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const ProfileImageUploadScreen()),
-      (route) => false,
-    );
+    if (widget.isPrimaryFlow) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ProfileImageUploadScreen(),
+        ),
+        (route) => false,
+      );
+    } else {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+        (route) => false,
+      );
+    }
   }
 
   Future<void> _onNext() async {
@@ -221,7 +266,10 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
       // Check if this is the absolute last question of the last section
       bool isLastQuestionOfSection = _currentIndex == _questions.length - 1;
-      bool isLastSection = _currentSectionOrder == _totalSections;
+      final currentSectionIndex = _activeSections.indexWhere(
+        (s) => s.orderNo == _currentSectionOrder,
+      );
+      bool isLastSection = currentSectionIndex == _activeSections.length - 1;
 
       if (isLastQuestionOfSection) {
         if (isLastSection) {
@@ -232,9 +280,15 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
           _handleCompletion(silent: false);
         } else {
           // Move to next section
-          _currentSectionOrder++;
+          _currentSectionOrder =
+              _activeSections[currentSectionIndex + 1].orderNo;
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('currentSectionOrder', _currentSectionOrder);
+          await prefs.setInt(
+            widget.isPrimaryFlow
+                ? 'currentSectionOrder'
+                : 'nonPrimarySectionOrder',
+            _currentSectionOrder,
+          );
 
           await _fetchQuestions();
           setState(() {
@@ -320,7 +374,10 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
     // Determine if it's the last question of the last section
     bool isLastQuestion = false;
     if (_questions.isNotEmpty && _currentIndex == _questions.length - 1) {
-      if (_currentSectionOrder == _totalSections) {
+      final currentSectionIndex = _activeSections.indexWhere(
+        (s) => s.orderNo == _currentSectionOrder,
+      );
+      if (currentSectionIndex == _activeSections.length - 1) {
         isLastQuestion = true;
       }
     }
@@ -342,12 +399,12 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
         titleWidget: Column(
           children: [
             // Section name stepper
-            if (_primarySections.isNotEmpty)
+            if (_activeSections.isNotEmpty)
               SizedBox(
                 height: 28,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _primarySections.length,
+                  itemCount: _activeSections.length,
                   separatorBuilder: (_, __) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 2.0),
                     child: Icon(
@@ -357,9 +414,13 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                     ),
                   ),
                   itemBuilder: (context, index) {
-                    final sectionNum = index + 1;
-                    final isCompleted = sectionNum < _currentSectionOrder;
-                    final isCurrent = sectionNum == _currentSectionOrder;
+                    final section = _activeSections[index];
+                    final isCompleted =
+                        _activeSections.indexWhere(
+                          (s) => s.orderNo == _currentSectionOrder,
+                        ) >
+                        index;
+                    final isCurrent = section.orderNo == _currentSectionOrder;
                     return Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -397,7 +458,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                                 ),
                               ),
                             Text(
-                              _primarySections[index].title,
+                              _activeSections[index].title,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: isCurrent || isCompleted
@@ -531,7 +592,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                             },
                       isLoading: _isSaving,
                       text: isLastQuestion
-                          ? "Upload Profile Pictures"
+                          ? (widget.isPrimaryFlow
+                                ? "Upload Profile Pictures"
+                                : "Done")
                           : "Continue",
                       backgroundColor: AppColors.primary,
                     ),

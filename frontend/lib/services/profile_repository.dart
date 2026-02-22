@@ -10,14 +10,19 @@ import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileRepository {
-  Future<List<ProfileSection>> getSections() async {
+  Future<List<ProfileSection>> getSections({bool? isPrimary}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
 
+      final queryParams = <String, dynamic>{};
+      if (isPrimary != null) {
+        queryParams['isPrimary'] = isPrimary;
+      }
+
       final response = await ApiService.client.get(
         '/user/profile/sections',
-        queryParameters: {'isPrimary': true},
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -121,6 +126,35 @@ class ProfileRepository {
       );
     } catch (e) {
       throw Exception('Error completing profile: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getCompletionStatus() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
+
+      final response = await ApiService.client.get(
+        '/user/profile/completion-status/$userId',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        return response.data['data'];
+      } else {
+        throw Exception('Failed to get completion status');
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error fetching completion status'),
+      );
+    } catch (e) {
+      throw Exception('Error fetching completion status: $e');
     }
   }
 

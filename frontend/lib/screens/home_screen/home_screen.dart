@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
+import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
+import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,6 +22,51 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final ProfileRepository _profileRepository = ProfileRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkProfileCompletion();
+    });
+  }
+
+  Future<void> _checkProfileCompletion() async {
+    try {
+      final status = await _profileRepository.getCompletionStatus();
+      if (status['isCompleted'] == false) {
+        if (mounted) {
+          CustomBottomSheet.show(
+            context: context,
+            type: BottomSheetType.info,
+            title: "Complete Your Profile",
+            message:
+                "You have pending profile questions. Complete them to find better matches.",
+            primaryButtonText: "Continue",
+            onPrimaryPressed: () {
+              Navigator.pop(context); // Close bottom sheet
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuestionaireScreen(
+                    isPrimaryFlow: false,
+                    initialSectionOrder: status['nextPendingSectionOrder'],
+                  ),
+                ),
+              );
+            },
+            secondaryButtonText: "Later",
+            onSecondaryPressed: () {
+              Navigator.pop(context);
+            },
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking profile completion: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,26 +82,30 @@ class _HomePageState extends State<HomePage> {
               if (isWeb) _buildNavigationRail(),
               Expanded(
                 child: SafeArea(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.all(isWeb ? 40.0 : 20.0),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1200),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildHeader(isWeb),
-                              const SizedBox(height: 32),
-                              _buildPremiumCard(isWeb),
-                              const SizedBox(height: 48),
-                              _buildMatchesSection(isWeb),
-                            ],
+                  child: _selectedIndex == 3
+                      ? const ProfileScreen()
+                      : SingleChildScrollView(
+                          child: Padding(
+                            padding: EdgeInsets.all(isWeb ? 40.0 : 20.0),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 1200,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildHeader(isWeb),
+                                    const SizedBox(height: 32),
+                                    _buildPremiumCard(isWeb),
+                                    const SizedBox(height: 48),
+                                    _buildMatchesSection(isWeb),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ],

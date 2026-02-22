@@ -13,6 +13,7 @@ router.get("/questions/:userId", profileController.getQuestions);
 router.get("/answers/:userId", profileController.getAnswers);
 router.post("/questions/save-answer/:userId/:questionId", profileController.saveAnswer);
 router.patch("/complete/:userId", profileController.completeProfile);
+router.get("/completion-status/:userId", profileController.getCompletionStatus);
 
 // Image Profile Routes
 router.post("/upload-image/:userId", multerConfig.single("image"), profileImageController.uploadImage);

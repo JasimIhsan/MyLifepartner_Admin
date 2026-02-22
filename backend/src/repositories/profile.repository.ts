@@ -83,28 +83,32 @@ export class ProfileRepository {
       });
    }
 
-   async getRequiredPrimaryQuestionsCount() {
+   async getRequiredQuestionsCount(isPrimary?: boolean) {
       return prisma.profileQuestion.count({
          where: {
             isActive: true,
             isRequired: true,
-            section: {
-               isPrimary: true,
-            },
+            ...(isPrimary !== undefined && {
+               section: {
+                  isPrimary,
+               },
+            }),
          },
       });
    }
 
-   async getUserPrimaryAnsweredCount(userId: number) {
+   async getUserAnsweredCount(userId: number, isPrimary?: boolean) {
       return prisma.userAnswer.count({
          where: {
             userId,
             question: {
                isRequired: true,
                isActive: true,
-               section: {
-                  isPrimary: true,
-               },
+               ...(isPrimary !== undefined && {
+                  section: {
+                     isPrimary,
+                  },
+               }),
             },
          },
       });

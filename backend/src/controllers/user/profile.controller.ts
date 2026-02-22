@@ -70,6 +70,15 @@ export class ProfileController {
       const result = await this.profileService.completeProfile(Number(userId));
       res.status(200).json(new ApiResponse(200, result, "Profile completed successfully"));
    });
+
+   public getCompletionStatus = asyncHandler(async (req: Request, res: Response) => {
+      // @ts-ignore
+      const userId = req.params.userId;
+      if (!userId) throw new ApiError(401, "Unauthorized");
+
+      const result = await this.profileService.getProfileCompletionStatus(Number(userId));
+      res.status(200).json(new ApiResponse(200, result, "Profile completion status fetched successfully"));
+   });
 }
 
 export const profileController = new ProfileController();

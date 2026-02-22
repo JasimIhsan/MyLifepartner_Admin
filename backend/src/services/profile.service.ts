@@ -52,8 +52,8 @@ export class ProfileService {
 
    async completeProfile(userId: number): Promise<ProfileStatusDto> {
       // 1. Check if all required PRIMARY questions are answered
-      const requiredCount = await this.profileRepository.getRequiredPrimaryQuestionsCount();
-      const answeredCount = await this.profileRepository.getUserPrimaryAnsweredCount(userId);
+      const requiredCount = await this.profileRepository.getRequiredQuestionsCount(true);
+      const answeredCount = await this.profileRepository.getUserAnsweredCount(userId, true);
 
       if (answeredCount < requiredCount) {
          throw new ApiError(400, "Please answer all mandatory primary questions before completing the profile.");
@@ -63,6 +63,31 @@ export class ProfileService {
       await this.profileRepository.setProfileCompleted(userId);
 
       return toProfileStatusDto(true, "logout");
+   }
+
+   async getProfileCompletionStatus(userId: number) {
+      const totalRequiredCount = await this.profileRepository.getRequiredQuestionsCount();
+      const totalAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId);
+
+      const isCompleted = totalAnsweredCount >= totalRequiredCount;
+      let nextPendingSectionOrder = 1;
+
+      if (!isCompleted) {
+         const sections = await this.profileRepository.getSections();
+         for (const section of sections) {
+            const sectionQuestions = await this.profileRepository.getQuestionsBySectionByOrder(section.orderNo, userId);
+            const pendingQuestion = sectionQuestions.find((q) => q.isRequired && q.answers.length === 0);
+            if (pendingQuestion) {
+               nextPendingSectionOrder = section.orderNo;
+               break;
+            }
+         }
+      }
+
+      return {
+         isCompleted,
+         nextPendingSectionOrder,
+      };
    }
 
    async getUserImages(userId: number): Promise<UserImageDto[]> {
