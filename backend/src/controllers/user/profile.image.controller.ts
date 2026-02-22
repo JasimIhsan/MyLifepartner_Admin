@@ -22,7 +22,7 @@ export class ProfileImageController {
       }
 
       // 1. Upload to S3
-      const s3Url = await s3Service.uploadToS3(req.file, "profile_images");
+      const s3Url = await s3Service.uploadToS3(req.file, `${userId}/profile`);
 
       // 2. Save to DB
       try {
@@ -115,7 +115,7 @@ export class ProfileImageController {
       }
 
       // 1. Upload to S3
-      const s3Url = await s3Service.uploadToS3(req.file, "selfies");
+      const s3Url = await s3Service.uploadToS3(req.file, `${userId}/selfie`);
 
       // 2. Save to DB
       try {

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/models/profile_question.dart';
 import 'package:mylifepartner/models/profile_section.dart';
@@ -150,8 +151,15 @@ class ProfileRepository {
 
       final bytes = await imageFile.readAsBytes();
 
+      final mimeType = imageFile.mimeType ?? 'image/jpeg';
+      final mediaType = MediaType.parse(mimeType);
+
       FormData formData = FormData.fromMap({
-        "image": MultipartFile.fromBytes(bytes, filename: imageFile.name),
+        "image": MultipartFile.fromBytes(
+          bytes,
+          filename: imageFile.name.isEmpty ? 'image.jpg' : imageFile.name,
+          contentType: mediaType,
+        ),
       });
 
       final response = await ApiService.client.post(
@@ -176,8 +184,15 @@ class ProfileRepository {
 
       final bytes = await imageFile.readAsBytes();
 
+      final mimeType = imageFile.mimeType ?? 'image/jpeg';
+      final mediaType = MediaType.parse(mimeType);
+
       FormData formData = FormData.fromMap({
-        "image": MultipartFile.fromBytes(bytes, filename: imageFile.name),
+        "image": MultipartFile.fromBytes(
+          bytes,
+          filename: imageFile.name.isEmpty ? 'selfie.jpg' : imageFile.name,
+          contentType: mediaType,
+        ),
       });
 
       final response = await ApiService.client.post(
