@@ -31,6 +31,16 @@ class UserService {
       }
       return toUserDto(user);
    }
+
+   async updateUser(userId: number, updateData: Prisma.UserUpdateInput): Promise<UserDto> {
+      console.log(`👉 updateData : `, updateData);
+      const user = await userRepository.findById(userId);
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+      const updatedUser = await userRepository.update(userId, updateData);
+      return toUserDto(updatedUser);
+   }
 }
 
 export default new UserService();

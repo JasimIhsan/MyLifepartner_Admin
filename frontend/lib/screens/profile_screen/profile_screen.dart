@@ -1,10 +1,16 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/models/auth_response.dart';
+import 'package:mylifepartner/models/user_image.dart';
+import 'package:mylifepartner/screens/profile_screen/edit_profile_screen.dart';
+import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/services/user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../login_screen/login_screen.dart';
 import '../../shared/widgets/custom_button.dart';
+import '../login_screen/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,8 +20,61 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final UserRepository _userRepository = UserRepository();
+  final ProfileRepository _profileRepository = ProfileRepository();
+
+  User? _user;
+  UserImage? _primaryImage;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfileData();
+  }
+
+  Future<void> _fetchProfileData() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final user = await _userRepository.getUser();
+      final images = await _profileRepository.getUserImages();
+
+      print("👉 user : $user");
+
+      UserImage? primaryImg;
+      try {
+        primaryImg = images.firstWhere((img) => img.isPrimary);
+      } catch (_) {
+        if (images.isNotEmpty) {
+          primaryImg = images.first;
+        }
+      }
+
+      setState(() {
+        _user = user;
+        _primaryImage = primaryImg;
+      });
+    } catch (e) {
+      debugPrint("Error fetching profile: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading || _user == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    print("👉 _user : ${_user?.email}");
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -31,10 +90,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.primary, width: 4),
-                      image: const DecorationImage(
-                        image: NetworkImage('https://i.pravatar.cc/300?u=me'),
-                        fit: BoxFit.cover,
-                      ),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.primary.withValues(alpha: 0.3),
@@ -43,6 +98,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ],
                     ),
+                    child: _primaryImage != null
+                        ? ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: _primaryImage!.imageUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) =>
+                                  const CircularProgressIndicator(),
+                              errorWidget: (context, url, error) => const Icon(
+                                Icons.person,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.person,
+                            size: 80,
+                            color: Colors.grey,
+                          ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -65,7 +139,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              "Your Name",
+              _user!.name ?? "Your Name",
               style: GoogleFonts.poppins(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -74,7 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              "your.email@example.com",
+              _user!.email ?? "your.email@example.com",
               style: GoogleFonts.poppins(
                 fontSize: 16,
                 color: AppColors.textSecondary,
@@ -84,7 +158,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildActionItem(
               icon: Icons.person_outline,
               title: "Edit Profile Info",
-              onTap: () {},
+              onTap: () async {
+                if (_user != null) {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EditProfileScreen(user: _user!),
+                    ),
+                  );
+                  if (result == true) {
+                    _fetchProfileData(); // Refresh data after update
+                  }
+                }
+              },
             ),
             _buildActionItem(
               icon: Icons.settings_outlined,

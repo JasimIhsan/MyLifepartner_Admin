@@ -21,6 +21,13 @@ class UserController {
       const createUserData = await userService.createUser(userData);
       res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, createUserData, "created"));
    });
+
+   public updateUser = asyncHandler(async (req: Request, res: Response) => {
+      const userId = Number(req.params.id);
+      const userData = req.body;
+      const updatedUserData = await userService.updateUser(userId, userData);
+      res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedUserData, "updated"));
+   });
 }
 
 export default new UserController();

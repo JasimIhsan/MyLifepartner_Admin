@@ -45,6 +45,8 @@ class User {
   final bool isProfileCompleted;
   final bool hasCompletedImageUpload;
   final String? selfieStatus;
+  final String? name;
+  final String? email;
 
   User({
     required this.id,
@@ -52,6 +54,8 @@ class User {
     required this.isProfileCompleted,
     required this.hasCompletedImageUpload,
     this.selfieStatus,
+    this.name,
+    this.email,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -61,6 +65,8 @@ class User {
       isProfileCompleted: json['isProfileCompleted'] ?? false,
       hasCompletedImageUpload: json['hasCompletedImageUpload'] ?? false,
       selfieStatus: json['selfieStatus'],
+      name: json['name'],
+      email: json['email'],
     );
   }
 }
