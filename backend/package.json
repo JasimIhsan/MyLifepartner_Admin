@@ -21,8 +21,10 @@
       "@types/ioredis": "^4.28.10",
       "@types/jsonwebtoken": "^9.0.10",
       "@types/morgan": "^1.9.10",
+      "@types/multer": "^2.0.0",
       "@types/node": "^25.2.0",
       "@types/pg": "^8.16.0",
+      "@types/uuid": "^10.0.0",
       "eslint": "^9.39.2",
       "nodemon": "^3.1.11",
       "prettier": "^3.8.1",
@@ -33,6 +35,8 @@
       "typescript": "^5.9.3"
    },
    "dependencies": {
+      "@aws-sdk/client-s3": "^3.995.0",
+      "@aws-sdk/s3-request-presigner": "^3.995.0",
       "@prisma/adapter-pg": "^7.3.0",
       "@prisma/client": "^7.3.0",
       "cors": "^2.8.6",
@@ -42,7 +46,9 @@
       "ioredis": "^5.9.2",
       "jsonwebtoken": "^9.0.3",
       "morgan": "^1.10.1",
+      "multer": "^2.0.2",
       "pg": "^8.18.0",
+      "uuid": "^13.0.0",
       "winston": "^3.19.0",
       "zod": "^4.3.6"
    },

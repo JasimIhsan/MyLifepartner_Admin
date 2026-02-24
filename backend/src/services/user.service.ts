@@ -1,33 +1,45 @@
+import { UserDto, toUserDto } from "@/dtos/user.dto";
 import userRepository from "@/repositories/user.repository";
 import { ApiError } from "@/utils/ApiError";
-import { Prisma, User } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 class UserService {
-   async createUser(userData: Prisma.UserCreateInput): Promise<User> {
+   async createUser(userData: Prisma.UserCreateInput): Promise<UserDto> {
       if (await userRepository.findByMobileNumber(userData.mobileNumber)) {
          throw new ApiError(409, `User with mobile number ${userData.mobileNumber} already exists`);
       }
-      return await userRepository.create(userData);
+      return toUserDto(await userRepository.create(userData));
    }
 
-   async findOrCreateUser(mobileNumber: string): Promise<User> {
+   async findOrCreateUser(mobileNumber: string): Promise<UserDto> {
       const user = await userRepository.findByMobileNumber(mobileNumber);
       if (!user) {
-         return await userRepository.create({ mobileNumber });
+         return toUserDto(await userRepository.create({ mobileNumber }));
       }
-      return user;
+      return toUserDto(user);
    }
 
-   async getUsers(): Promise<User[]> {
-      return await userRepository.findAll();
+   async getUsers(): Promise<UserDto[]> {
+      const users = await userRepository.findAll();
+      return users.map((u) => toUserDto(u));
    }
 
-   async getUserById(userId: number): Promise<User> {
+   async getUserById(userId: number): Promise<UserDto> {
       const user = await userRepository.findById(userId);
       if (!user) {
          throw new ApiError(404, "User not found");
       }
-      return user;
+      return toUserDto(user);
+   }
+
+   async updateUser(userId: number, updateData: Prisma.UserUpdateInput): Promise<UserDto> {
+      console.log(`👉 updateData : `, updateData);
+      const user = await userRepository.findById(userId);
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+      const updatedUser = await userRepository.update(userId, updateData);
+      return toUserDto(updatedUser);
    }
 }
 

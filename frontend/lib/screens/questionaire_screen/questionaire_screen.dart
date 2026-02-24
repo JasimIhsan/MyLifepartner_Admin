@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/profile_question.dart';
+import 'package:mylifepartner/models/profile_section.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/widgets/question_widget.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
+import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuestionaireScreen extends StatefulWidget {
-  const QuestionaireScreen({super.key});
+  final bool isPrimaryFlow;
+  final int? initialSectionOrder;
+
+  const QuestionaireScreen({
+    super.key,
+    this.isPrimaryFlow = true,
+    this.initialSectionOrder,
+  });
 
   @override
   State<QuestionaireScreen> createState() => _QuestionaireScreenState();
@@ -31,8 +42,8 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
   // Map<questionId, answer>
   final Map<int, dynamic> _answers = {};
 
-  List<String> _sectionNames = [];
-  int get _totalSections => _sectionNames.length;
+  List<ProfileSection> _allSections = [];
+  List<ProfileSection> _activeSections = [];
 
   @override
   void initState() {
@@ -45,14 +56,28 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
     // Fetch total sections first (or in parallel)
     try {
-      _sectionNames = await _repository.getSectionNames();
+      _allSections = await _repository.getSections(); // Fetch all, then filter
+      if (widget.isPrimaryFlow) {
+        _activeSections = _allSections.where((s) => s.isPrimary).toList();
+      } else {
+        _activeSections = _allSections.where((s) => !s.isPrimary).toList();
+      }
+      _activeSections.sort((a, b) => a.orderNo.compareTo(b.orderNo));
     } catch (e) {
       debugPrint("Failed to fetch sections: $e");
     }
 
-    int? savedSection = prefs.getInt('currentSectionOrder');
-    if (savedSection != null) {
-      _currentSectionOrder = savedSection;
+    if (widget.initialSectionOrder != null) {
+      _currentSectionOrder = widget.initialSectionOrder!;
+    } else {
+      int? savedSection = prefs.getInt(
+        widget.isPrimaryFlow ? 'currentSectionOrder' : 'nonPrimarySectionOrder',
+      );
+      if (savedSection != null) {
+        _currentSectionOrder = savedSection;
+      } else if (_activeSections.isNotEmpty) {
+        _currentSectionOrder = _activeSections.first.orderNo;
+      }
     }
     _fetchQuestions();
   }
@@ -99,13 +124,25 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
           _answers[q.id] = q.savedAnswer;
         }
 
-        _currentSectionOrder++;
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt('currentSectionOrder', _currentSectionOrder);
+        final currentIndex = _activeSections.indexWhere(
+          (s) => s.orderNo == _currentSectionOrder,
+        );
+        if (currentIndex != -1 && currentIndex < _activeSections.length - 1) {
+          _currentSectionOrder = _activeSections[currentIndex + 1].orderNo;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setInt(
+            widget.isPrimaryFlow
+                ? 'currentSectionOrder'
+                : 'nonPrimarySectionOrder',
+            _currentSectionOrder,
+          );
 
-        // Recursive call to get next section
-        if (mounted) {
-          await _fetchQuestions();
+          // Recursive call to get next section
+          if (mounted) {
+            await _fetchQuestions();
+          }
+        } else {
+          _handleCompletion(silent: _isFirstLoad);
         }
         return;
       }
@@ -152,92 +189,40 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
   Future<void> _handleCompletion({bool silent = false}) async {
     // Save completion state
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isProfileCompleted', true);
+    if (widget.isPrimaryFlow) {
+      await prefs.setBool('isProfileCompleted', true);
+    } else {
+      await prefs.setBool('isNonPrimaryCompleted', true);
+    }
 
     if (!mounted) return;
 
-    if (silent) {
+    if (!silent && widget.isPrimaryFlow) {
+      try {
+        // Call API to mark profile as completed in backend
+        await _repository.completeProfile();
+      } catch (e) {
+        debugPrint("Error completing profile: $e");
+        // We continue anyway so user can upload images
+      }
+    }
+
+    if (!mounted) return;
+    if (widget.isPrimaryFlow) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ProfileImageUploadScreen(),
+        ),
+        (route) => false,
+      );
+    } else {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => const HomePage()),
         (route) => false,
       );
-      return;
     }
-
-    showModalBottomSheet(
-      context: context,
-      isDismissible: false,
-      enableDrag: false,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (sheetContext) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, color: AppColors.primary, size: 64),
-            const SizedBox(height: 16),
-            const Text(
-              "Profile Completed",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "Thank you for completing the verification.",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () async {
-                  try {
-                    // Call API to mark profile as completed in backend
-                    await _repository.completeProfile();
-
-                    if (!mounted) return;
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                      (route) => false,
-                    );
-                  } catch (e) {
-                    String message = e.toString().replaceAll('Exception: ', '');
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(message)));
-                    }
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                ),
-                child: const Text(
-                  "Continue to Home",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   Future<void> _onNext() async {
@@ -281,7 +266,10 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
       // Check if this is the absolute last question of the last section
       bool isLastQuestionOfSection = _currentIndex == _questions.length - 1;
-      bool isLastSection = _currentSectionOrder == _totalSections;
+      final currentSectionIndex = _activeSections.indexWhere(
+        (s) => s.orderNo == _currentSectionOrder,
+      );
+      bool isLastSection = currentSectionIndex == _activeSections.length - 1;
 
       if (isLastQuestionOfSection) {
         if (isLastSection) {
@@ -292,9 +280,15 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
           _handleCompletion(silent: false);
         } else {
           // Move to next section
-          _currentSectionOrder++;
+          _currentSectionOrder =
+              _activeSections[currentSectionIndex + 1].orderNo;
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('currentSectionOrder', _currentSectionOrder);
+          await prefs.setInt(
+            widget.isPrimaryFlow
+                ? 'currentSectionOrder'
+                : 'nonPrimarySectionOrder',
+            _currentSectionOrder,
+          );
 
           await _fetchQuestions();
           setState(() {
@@ -380,37 +374,37 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
     // Determine if it's the last question of the last section
     bool isLastQuestion = false;
     if (_questions.isNotEmpty && _currentIndex == _questions.length - 1) {
-      if (_currentSectionOrder == _totalSections) {
+      final currentSectionIndex = _activeSections.indexWhere(
+        (s) => s.orderNo == _currentSectionOrder,
+      );
+      if (currentSectionIndex == _activeSections.length - 1) {
         isLastQuestion = true;
       }
     }
 
     return Scaffold(
       backgroundColor: AppColors.primaryLight,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
+      appBar: CustomAppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          onPressed: () {
+            if (_currentIndex > 0) {
+              _onBack();
+            }
+          },
+        ),
         backgroundColor: AppColors.primaryLight,
         elevation: 0,
         toolbarHeight: 100,
-        // Only show back button if we are NOT at the start of the section
-        leading: (_currentIndex > 0)
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back,
-                  color: AppColors.textPrimary,
-                ),
-                onPressed: _onBack,
-              )
-            : null,
-        title: Column(
+        titleWidget: Column(
           children: [
             // Section name stepper
-            if (_sectionNames.isNotEmpty)
+            if (_activeSections.isNotEmpty)
               SizedBox(
                 height: 28,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _sectionNames.length,
+                  itemCount: _activeSections.length,
                   separatorBuilder: (_, __) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 2.0),
                     child: Icon(
@@ -420,9 +414,13 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                     ),
                   ),
                   itemBuilder: (context, index) {
-                    final sectionNum = index + 1;
-                    final isCompleted = sectionNum < _currentSectionOrder;
-                    final isCurrent = sectionNum == _currentSectionOrder;
+                    final section = _activeSections[index];
+                    final isCompleted =
+                        _activeSections.indexWhere(
+                          (s) => s.orderNo == _currentSectionOrder,
+                        ) >
+                        index;
+                    final isCurrent = section.orderNo == _currentSectionOrder;
                     return Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(
@@ -460,7 +458,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                                 ),
                               ),
                             Text(
-                              _sectionNames[index],
+                              _activeSections[index].title,
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: isCurrent || isCompleted
@@ -498,15 +496,6 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (_totalSections > 0)
-                      Text(
-                        'Section $_currentSectionOrder of $_totalSections',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
                     Text(
                       'Question ${_currentIndex + 1} of ${_questions.length}',
                       style: const TextStyle(
@@ -591,46 +580,23 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: SizedBox(
+                    child: CustomButton(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
-                        onPressed: _isSaving || !isValid
-                            ? null
-                            : () {
-                                // Hide keyboard
-                                FocusScope.of(context).unfocus();
-                                _onNext();
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25),
-                          ),
-                          disabledBackgroundColor: AppColors.primary.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                        child: _isSaving
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : Text(
-                                isLastQuestion
-                                    ? "Complete Profile"
-                                    : "Continue",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
+                      onPressed: _isSaving || !isValid
+                          ? null
+                          : () {
+                              // Hide keyboard
+                              FocusScope.of(context).unfocus();
+                              _onNext();
+                            },
+                      isLoading: _isSaving,
+                      text: isLastQuestion
+                          ? (widget.isPrimaryFlow
+                                ? "Upload Profile Pictures"
+                                : "Done")
+                          : "Continue",
+                      backgroundColor: AppColors.primary,
                     ),
                   ),
                 ],

@@ -1,10 +1,21 @@
 import 'package:dio/dio.dart';
+import 'package:mylifepartner/models/auth_response.dart';
+import 'package:mylifepartner/models/country_detection_response.dart';
 import 'package:mylifepartner/services/api_service.dart';
 
 class AuthRepository {
   final Dio _dio = ApiService.client;
 
-  Future<Map<String, dynamic>> sendOtp({
+  Future<CountryDetectionResponse> detectCountry() async {
+    try {
+      final response = await _dio.get("/user/auth/detect-country");
+      return CountryDetectionResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<SendOtpResponse> sendOtp({
     required String mobileNumber,
     required String sendOption,
   }) async {
@@ -13,13 +24,13 @@ class AuthRepository {
         "/user/auth/send-otp",
         data: {"mobileNumber": mobileNumber, "sendOption": sendOption},
       );
-      return response.data;
+      return SendOtpResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> resendOtp({
+  Future<SendOtpResponse> resendOtp({
     required String mobileNumber,
     required String sendOption,
   }) async {
@@ -28,13 +39,13 @@ class AuthRepository {
         "/user/auth/resend-otp",
         data: {"mobileNumber": mobileNumber, "sendOption": sendOption},
       );
-      return response.data;
+      return SendOtpResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
   }
 
-  Future<Map<String, dynamic>> verifyOtp({
+  Future<VerifyOtpResponse> verifyOtp({
     required String mobileNumber,
     required String otp,
   }) async {
@@ -43,7 +54,7 @@ class AuthRepository {
         "/user/auth/login",
         data: {"mobileNumber": mobileNumber, "otp": otp},
       );
-      return response.data;
+      return VerifyOtpResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
     }

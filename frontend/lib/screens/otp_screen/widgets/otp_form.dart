@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:pinput/pinput.dart';
 
 class OtpForm extends StatelessWidget {
@@ -30,8 +31,6 @@ class OtpForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Colors are now used directly or defined in AppColors/Theme
-
     final defaultPinTheme = PinTheme(
       width: 50,
       height: 50,
@@ -113,7 +112,7 @@ class OtpForm extends StatelessWidget {
                   else
                     TextSpan(
                       text:
-                          "Resent in 00.${timerValue.toString().padLeft(2, '0')}", // Assuming timer < 60s
+                          "Resent in 00.${timerValue.toString().padLeft(2, '0')}",
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -129,7 +128,7 @@ class OtpForm extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 56,
-            child: ElevatedButton(
+            child: CustomButton(
               onPressed: _isVerifyButtonEnabled()
                   ? () {
                       focusNode.unfocus();
@@ -138,33 +137,12 @@ class OtpForm extends StatelessWidget {
                       }
                     }
                   : null,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFA67C68),
-                disabledBackgroundColor: const Color(
-                  0xFFA67C68,
-                ).withValues(alpha: 0.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: isLoading
-                  ? const SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : Text(
-                      "Verify",
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+              isLoading: isLoading,
+              text: "Verify",
+              backgroundColor: const Color(0xFFA67C68),
+              borderRadius: 12,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

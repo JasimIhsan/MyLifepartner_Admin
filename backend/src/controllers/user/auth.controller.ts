@@ -14,8 +14,8 @@ class AuthController {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Mobile number and OTP are required");
       }
 
-      const isValid = await otpService.verifyOtp(mobileNumber, otp);
-      if (!isValid) {
+      const verifyResult = await otpService.verifyOtp(mobileNumber, otp);
+      if (!verifyResult.isValid) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired OTP");
       }
 

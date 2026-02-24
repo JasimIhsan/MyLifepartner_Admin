@@ -1,3 +1,4 @@
+import { OtpResponseDto, VerfiyOtpResponseDto, toOtpResponseDto, toVerfiyOtpResponseDto } from "@/dtos/auth.dto";
 import cacheService from "@/services/cache.service";
 import { CACHE_KEYS, OTP_CONFIG } from "@/utils/constants";
 import logger from "@/utils/logger";
@@ -8,7 +9,7 @@ class OtpService {
       return Math.floor(100000 + Math.random() * 900000).toString();
    };
 
-   sendOtp = async (mobileNumber: string, sendOption: string) => {
+   sendOtp = async (mobileNumber: string, sendOption: string): Promise<OtpResponseDto> => {
       const otp = this.generateOtp();
 
       console.log(`👉 OTP : `, otp);
@@ -19,16 +20,16 @@ class OtpService {
       // TODO: Integrate actual SMS/WhatsApp Gateway
       logger.info(`OTP [${otp}] generated for ${mobileNumber} via ${sendOption}`);
 
-      return otp;
+      return toOtpResponseDto(otp);
    };
 
-   resendOtp = async (mobileNumber: string, sendOption: string) => {
+   resendOtp = async (mobileNumber: string, sendOption: string): Promise<OtpResponseDto> => {
       // For resend, we might want to invalidate the old one or just overwrite it.
       // Overwriting is simpler and handles "resend" effectively.
       return this.sendOtp(mobileNumber, sendOption);
    };
 
-   verifyOtp = async (mobileNumber: string, otp: string): Promise<boolean> => {
+   verifyOtp = async (mobileNumber: string, otp: string): Promise<VerfiyOtpResponseDto> => {
       const storedOtp = await cacheService.getCache(CACHE_KEYS.OTP(mobileNumber));
 
       // Allow default logic for development or exact match
@@ -36,10 +37,10 @@ class OtpService {
 
       if (isValid) {
          await cacheService.deleteCache(CACHE_KEYS.OTP(mobileNumber));
-         return true;
+         return toVerfiyOtpResponseDto(true);
       }
 
-      return false;
+      return toVerfiyOtpResponseDto(false);
    };
 }
 

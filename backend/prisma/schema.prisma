@@ -7,16 +7,26 @@ datasource db {
 }
 
 model User {
-  id                 Int          @id @default(autoincrement())
-  mobileNumber       String       @unique
-  email              String?      @unique
-  name               String?
-  isVerified         Boolean      @default(false)
-  isProfileCompleted Boolean      @default(false)
-  role               Role         @default(USER)
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
-  answers            UserAnswer[]
+  id                      Int           @id @default(autoincrement())
+  mobileNumber            String        @unique
+  email                   String?       @unique
+  name                    String?
+  isVerified              Boolean       @default(false)
+  isProfileCompleted      Boolean       @default(false)
+  hasCompletedImageUpload Boolean       @default(false)
+  selfieUrl               String?
+  selfieStatus            SelfieStatus?
+  role                    Role          @default(USER)
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  answers                 UserAnswer[]
+  images                  UserImage[]
+}
+
+enum SelfieStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model ProfileSection {
@@ -24,6 +34,7 @@ model ProfileSection {
   key       String            @unique // e.g. "emotional_maturity"
   title     String
   orderNo   Int               @default(0)
+  isPrimary Boolean           @default(false)
   questions ProfileQuestion[]
 
   @@map("profile_sections")
@@ -71,4 +82,16 @@ enum AnswerType {
 enum Role {
   USER
   ADMIN
+}
+
+model UserImage {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  imageUrl  String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_images")
 }

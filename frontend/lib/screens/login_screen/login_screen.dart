@@ -1,12 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mylifepartner/services/api_service.dart';
+import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
 import '../../core/app_colors.dart';
 import '../../shared/widgets/auth_layout.dart';
+import '../../shared/widgets/custom_button.dart';
 import '../otp_screen/otp_screen.dart';
 import 'widgets/otp_method_selector.dart';
 
@@ -20,6 +21,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   late final PhoneController _phoneController;
+  final AuthRepository _authRepository = AuthRepository();
   PhoneNumber _phoneNumber = const PhoneNumber(isoCode: IsoCode.US, nsn: "");
   bool _isLoading = false;
 
@@ -38,10 +40,9 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _detectCountry() async {
     try {
-      final response = await ApiService.client.get("/user/auth/detect-country");
-      final data = response.data['data'];
-      if (data != null && data['countryCode'] != null) {
-        final String code = data['countryCode'];
+      final response = await _authRepository.detectCountry();
+      if (response.success && response.countryCode != null) {
+        final String code = response.countryCode!;
         final detectedIsoCode = IsoCode.values.firstWhere(
           (e) => e.name.toUpperCase() == code.toUpperCase(),
           orElse: () => IsoCode.IN,
@@ -64,16 +65,13 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      final response = await ApiService.client.post(
-        "/user/auth/send-otp",
-        data: {
-          "mobileNumber": "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
-          "sendOption": method.toLowerCase(),
-        },
+      final response = await _authRepository.sendOtp(
+        mobileNumber: "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
+        sendOption: method.toLowerCase(),
       );
 
-      debugPrint("OTP Response: ${response.data}");
-      return true;
+      debugPrint("OTP Response: ${response.message}");
+      return response.success;
     } catch (e) {
       debugPrint("Send OTP Error: $e");
       String errorMessage = "Failed to send OTP. Please try again.";
@@ -189,8 +187,7 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
+            child: CustomButton(
               onPressed: _isLoading
                   ? null
                   : () {
@@ -202,26 +199,10 @@ class _LoginPageState extends State<LoginPage> {
                         );
                       }
                     },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFA67C68),
-                disabledBackgroundColor: const Color(
-                  0xFFA67C68,
-                ).withValues(alpha: 0.5),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 0,
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(
-                      "Continue",
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
+              isLoading: _isLoading,
+              text: "Continue",
+              backgroundColor: const Color(0xFFA67C68),
+              borderRadius: 12,
             ),
           ),
 

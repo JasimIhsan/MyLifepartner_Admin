@@ -2,7 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
+import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
+import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../shared/widgets/custom_app_bar.dart';
+import '../../shared/widgets/custom_bottom_bar.dart';
+import '../../shared/widgets/custom_button.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,6 +21,51 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
+  final ProfileRepository _profileRepository = ProfileRepository();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkProfileCompletion();
+    });
+  }
+
+  Future<void> _checkProfileCompletion() async {
+    try {
+      final status = await _profileRepository.getCompletionStatus();
+      if (status['isCompleted'] == false) {
+        if (mounted) {
+          CustomBottomSheet.show(
+            context: context,
+            type: BottomSheetType.info,
+            title: "Complete Your Profile",
+            message:
+                "You have pending profile questions. Complete them to find better matches.",
+            primaryButtonText: "Continue",
+            onPrimaryPressed: () {
+              Navigator.pop(context); // Close bottom sheet
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => QuestionaireScreen(
+                    isPrimaryFlow: false,
+                    initialSectionOrder: status['nextPendingSectionOrder'],
+                  ),
+                ),
+              );
+            },
+            secondaryButtonText: "Later",
+            onSecondaryPressed: () {
+              Navigator.pop(context);
+            },
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Error checking profile completion: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,26 +81,30 @@ class _HomePageState extends State<HomePage> {
               if (isWeb) _buildNavigationRail(),
               Expanded(
                 child: SafeArea(
-                  child: SingleChildScrollView(
-                    child: Padding(
-                      padding: EdgeInsets.all(isWeb ? 40.0 : 20.0),
-                      child: Center(
-                        child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 1200),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildHeader(isWeb),
-                              const SizedBox(height: 32),
-                              _buildPremiumCard(isWeb),
-                              const SizedBox(height: 48),
-                              _buildMatchesSection(isWeb),
-                            ],
+                  child: _selectedIndex == 3
+                      ? const ProfileScreen()
+                      : SingleChildScrollView(
+                          child: Padding(
+                            padding: EdgeInsets.all(isWeb ? 40.0 : 20.0),
+                            child: Center(
+                              child: ConstrainedBox(
+                                constraints: const BoxConstraints(
+                                  maxWidth: 1200,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildHeader(isWeb),
+                                    const SizedBox(height: 32),
+                                    _buildPremiumCard(isWeb),
+                                    const SizedBox(height: 48),
+                                    _buildMatchesSection(isWeb),
+                                  ],
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -59,13 +116,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   PreferredSizeWidget _buildMobileAppBar() {
-    return AppBar(
-      title: Text(
-        'My Life Partner',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-      ),
-      backgroundColor: AppColors.background,
-      elevation: 0,
+    return CustomAppBar(
+      title: 'My Life Partner',
+      showLeading: false,
       actions: [
         IconButton(
           icon: const Icon(
@@ -89,17 +142,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   PreferredSizeWidget _buildWebAppBar() {
-    return AppBar(
-      title: Padding(
-        padding: const EdgeInsets.only(left: 20),
-        child: Text(
-          'My Life Partner',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 24),
-        ),
-      ),
+    return CustomAppBar(
+      title: 'My Life Partner',
+      showLeading: false,
       toolbarHeight: 80,
-      backgroundColor: AppColors.background,
       elevation: 0.5,
+      titleStyle: GoogleFonts.poppins(
+        fontWeight: FontWeight.bold,
+        fontSize: 24,
+      ),
       actions: [
         IconButton(
           icon: const Icon(
@@ -115,6 +166,7 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(width: 40),
       ],
+      leading: const Padding(padding: EdgeInsets.only(left: 20)),
     );
   }
 
@@ -127,7 +179,7 @@ class _HomePageState extends State<HomePage> {
         });
       },
       labelType: NavigationRailLabelType.all,
-      backgroundColor: AppColors.background, // Or surfaceVariant
+      backgroundColor: AppColors.background,
       selectedIconTheme: IconThemeData(color: AppColors.primary),
       unselectedIconTheme: const IconThemeData(color: AppColors.unselectedIcon),
       selectedLabelTextStyle: GoogleFonts.poppins(
@@ -160,18 +212,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _selectedIndex,
+    return CustomBottomBar(
+      selectedIndex: _selectedIndex,
       onTap: (index) {
         setState(() {
           _selectedIndex = index;
         });
       },
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: AppColors.primary,
-      unselectedItemColor: AppColors.unselectedIcon,
-      selectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-      unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
         BottomNavigationBarItem(
@@ -257,23 +304,28 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.surface,
-                    foregroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(
-                    "Upgrade Now",
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                  ),
+                CustomButton(
+                  onPressed: () {
+                    CustomBottomSheet.show(
+                      context: context,
+                      type: BottomSheetType.confirmation,
+                      title: "Upgrade Now",
+                      message: "Thank you for doing this",
+                      primaryButtonText: "Continue",
+                      onPrimaryPressed: () {
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                  text: "Upgrade Now",
+                  type: CustomButtonType.secondary,
+                  backgroundColor: AppColors.surface,
+                  textColor: AppColors.primary,
+                  width: null,
+                  height: 48,
+                  borderRadius: 12,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
                 ),
               ],
             ),
@@ -296,12 +348,14 @@ class _HomePageState extends State<HomePage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              "Recommended Matches",
-              style: GoogleFonts.poppins(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+            Flexible(
+              child: Text(
+                "Recommended Matches",
+                style: GoogleFonts.poppins(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ),
             TextButton(
@@ -430,20 +484,14 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: CustomButton(
                     onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryLight,
-                      foregroundColor: AppColors.primary,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "View Profile",
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    ),
+                    text: "View Profile",
+                    type: CustomButtonType.secondary,
+                    height: 48,
+                    borderRadius: 12,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
