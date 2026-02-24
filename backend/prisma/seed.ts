@@ -40,8 +40,15 @@ async function main() {
             {
                sectionId: section1.id,
                question: "Why are you joining LP at this stage of your life?",
-               answerType: AnswerType.TEXT,
-               minWords: 120,
+               answerType: AnswerType.SINGLE_CHOICE,
+               options: [
+                  "Ready to settle down",
+                  "Looking for a life partner",
+                  "Tired of casual dating",
+                  "Family pressure / Recommendation",
+                  "Recently single and want something serious",
+                  "Want companionship and commitment",
+               ],
                orderNo: 1,
                isRequired: true,
             },
@@ -64,8 +71,15 @@ async function main() {
             {
                sectionId: section1.id,
                question: "If divorced or widowed, how long have you been single?",
-               answerType: AnswerType.TEXT,
-               // usage: Logic in frontend can show/hide this based on previous answer, logic in backend is just storage
+               answerType: AnswerType.SINGLE_CHOICE,
+               options: [
+                  "Less than 6 months",
+                  "6 months – 1 year",
+                  "1 – 2 years",
+                  "2 – 5 years",
+                  "More than 5 years",
+               ],
+               // usage: Logic in frontend can show/hide based on previous answer
                orderNo: 4,
                isRequired: false, // Conditional
             },

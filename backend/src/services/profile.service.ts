@@ -1,4 +1,5 @@
 import { ImageUploadStatusDto, UserImageDto, toImageUploadStatusDto, toUserImageDto } from "@/dtos/image.dto";
+
 import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, UserAnswerDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto } from "@/dtos/profile.dto";
 import { ProfileRepository } from "@/repositories/profile.repository";
 import { ApiError } from "@/utils/ApiError";
@@ -92,7 +93,7 @@ export class ProfileService {
 
    async getUserImages(userId: number): Promise<UserImageDto[]> {
       const images = await this.profileRepository.getUserImages(userId);
-      return images.map((img) => toUserImageDto(img));
+      return images.map((img: any) => toUserImageDto(img));
    }
 
    async uploadUserImage(userId: number, imageUrl: string): Promise<UserImageDto> {
@@ -141,7 +142,7 @@ export class ProfileService {
       if (images.length !== 4) {
          throw new ApiError(400, "Exactly 4 images are required to proceed");
       }
-      const hasPrimary = images.some((img) => img.isPrimary);
+      const hasPrimary = images.some((img: any) => img.isPrimary);
       if (!hasPrimary) {
          throw new ApiError(400, "One image must be selected as primary");
       }

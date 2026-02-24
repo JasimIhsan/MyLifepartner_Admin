@@ -8,5 +8,5 @@ class Env {
       : 'http://localhost:3000/api';
 
   // Environment flags
-  static const bool isProduction = false;
+  static const bool isProduction = true;
 }
