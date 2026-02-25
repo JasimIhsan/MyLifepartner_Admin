@@ -21,9 +21,10 @@ class AuthController {
 
       const user = await userService.findOrCreateUser(mobileNumber);
 
-      const token = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "30d" });
+      const accessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
+      const refreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user, token }, "User login success"));
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user, accessToken, refreshToken }, "User login success"));
    });
 
    sendOtp = asyncHandler(async (req: Request, res: Response) => {
@@ -138,6 +139,27 @@ class AuthController {
                "Detection failed, returning fallback"
             )
          );
+      }
+   });
+
+   refreshToken = asyncHandler(async (req: Request, res: Response) => {
+      const { refreshToken } = req.body;
+
+      if (!refreshToken) {
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Refresh token is required");
+      }
+
+      try {
+         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret") as any;
+
+         const user = await userService.findOrCreateUser(decoded.mobileNumber);
+
+         const newAccessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
+         const newRefreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
+
+         return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { accessToken: newAccessToken, refreshToken: newRefreshToken }, "Token refreshed successfully"));
+      } catch (error) {
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
       }
    });
 }

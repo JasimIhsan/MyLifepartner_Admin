@@ -17,13 +17,15 @@ class SendOtpResponse {
 class VerifyOtpResponse {
   final bool success;
   final String message;
-  final String token;
+  final String accessToken;
+  final String refreshToken;
   final User? user;
 
   VerifyOtpResponse({
     required this.success,
     required this.message,
-    required this.token,
+    required this.accessToken,
+    required this.refreshToken,
     this.user,
   });
 
@@ -31,7 +33,8 @@ class VerifyOtpResponse {
     return VerifyOtpResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      token: json['token'] ?? '',
+      accessToken: json['data']?['accessToken'] ?? '',
+      refreshToken: json['data']?['refreshToken'] ?? '',
       user: json['data'] != null && json['data']['user'] != null
           ? User.fromJson(json['data']['user'])
           : null,

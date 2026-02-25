@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:mylifepartner/models/auth_response.dart';
 import 'package:mylifepartner/models/country_detection_response.dart';
 import 'package:mylifepartner/services/api_service.dart';
+import 'package:mylifepartner/services/token_service.dart';
 
 class AuthRepository {
   final Dio _dio = ApiService.client;
@@ -54,7 +55,14 @@ class AuthRepository {
         "/user/auth/login",
         data: {"mobileNumber": mobileNumber, "otp": otp},
       );
-      return VerifyOtpResponse.fromJson(response.data);
+      final verifyResponse = VerifyOtpResponse.fromJson(response.data);
+      if (verifyResponse.success) {
+        await TokenService.saveTokens(
+          accessToken: verifyResponse.accessToken,
+          refreshToken: verifyResponse.refreshToken,
+        );
+      }
+      return verifyResponse;
     } catch (e) {
       rethrow;
     }

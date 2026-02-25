@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:mylifepartner/config/env.dart';
+import 'package:mylifepartner/services/token_service.dart';
 
 /// Service class for handling API requests using the Dio package.
 /// This class is implemented as a Singleton to ensure only one instance
@@ -42,6 +43,60 @@ class ApiService {
 
     // Add interceptors to the Dio instance.
     // Interceptors act as middleware, allowing us to hook into the request/response cycle.
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final accessToken = await TokenService.getAccessToken();
+          if (accessToken != null) {
+            options.headers['Authorization'] = 'Bearer $accessToken';
+          }
+          return handler.next(options);
+        },
+        onError: (DioException e, handler) async {
+          if (e.response?.statusCode == 401 &&
+              !(e.requestOptions.path.contains('login') ||
+                  e.requestOptions.path.contains('refresh-token'))) {
+            final refreshToken = await TokenService.getRefreshToken();
+            if (refreshToken != null) {
+              try {
+                final refreshDio = Dio(
+                  BaseOptions(baseUrl: dio.options.baseUrl),
+                );
+                final response = await refreshDio.post(
+                  '/user/auth/refresh-token',
+                  data: {'refreshToken': refreshToken},
+                );
+
+                if (response.statusCode == 200 &&
+                    response.data['data'] != null) {
+                  final newAccessToken = response.data['data']['accessToken'];
+                  final newRefreshToken = response.data['data']['refreshToken'];
+
+                  if (newAccessToken != null && newRefreshToken != null) {
+                    await TokenService.saveTokens(
+                      accessToken: newAccessToken,
+                      refreshToken: newRefreshToken,
+                    );
+
+                    // Retry original request
+                    final opts = e.requestOptions;
+                    opts.headers['Authorization'] = 'Bearer $newAccessToken';
+                    final cloneReq = await dio.fetch(opts);
+                    return handler.resolve(cloneReq);
+                  }
+                }
+              } catch (refreshError) {
+                await TokenService.clearTokens();
+              }
+            } else {
+              await TokenService.clearTokens();
+            }
+          }
+          return handler.next(e);
+        },
+      ),
+    );
+
     // Here we add a LogInterceptor to print request/response details to the console for debugging.
     dio.interceptors.add(
       LogInterceptor(
