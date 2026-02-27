@@ -50,6 +50,7 @@ class User {
   final String? selfieStatus;
   final String? name;
   final String? email;
+  final bool? isEmailVerified;
 
   User({
     required this.id,
@@ -59,6 +60,7 @@ class User {
     this.selfieStatus,
     this.name,
     this.email,
+    this.isEmailVerified,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -70,6 +72,7 @@ class User {
       selfieStatus: json['selfieStatus'],
       name: json['name'],
       email: json['email'],
+      isEmailVerified: json['isEmailVerified'],
     );
   }
 }

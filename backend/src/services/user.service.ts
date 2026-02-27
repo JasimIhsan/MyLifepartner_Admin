@@ -38,6 +38,14 @@ class UserService {
       if (!user) {
          throw new ApiError(404, "User not found");
       }
+
+      if (updateData.email) {
+         const existingUser = await userRepository.findByEmail(updateData.email as string);
+         if (existingUser && existingUser.id !== userId) {
+            throw new ApiError(409, "Email is already in use by another account");
+         }
+      }
+
       const updatedUser = await userRepository.update(userId, updateData);
       return toUserDto(updatedUser);
    }

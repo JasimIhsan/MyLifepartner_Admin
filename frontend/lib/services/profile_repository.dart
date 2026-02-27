@@ -315,4 +315,45 @@ class ProfileRepository {
       throw Exception('Error completing image upload: $e');
     }
   }
+
+  Future<void> sendEmailVerificationLink({required String email}) async {
+    try {
+      final response = await ApiService.client.post(
+        "/user/auth/send-magic-link",
+        data: {"email": email},
+      );
+      if (response.statusCode != 200) {
+        throw Exception("Failed to send email verification link");
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(
+          e,
+          fallback: "Failed to send email verification link",
+        ),
+      );
+    } catch (e) {
+      throw Exception("Failed to send email verification link");
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyEmail(String token) async {
+    try {
+      final response = await ApiService.client.post(
+        "/user/auth/verify-email",
+        data: {"token": token},
+      );
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception("Failed to verify email");
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: "Failed to verify email link"),
+      );
+    } catch (e) {
+      throw Exception("Failed to verify email link");
+    }
+  }
 }

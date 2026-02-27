@@ -1,9 +1,10 @@
 import { ProfileService } from "@/services/profile.service";
 import { s3Service } from "@/services/s3.service";
+import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
-import { Request, Response } from "express";
+import { Response } from "express";
 
 export class ProfileImageController {
    private profileService: ProfileService;
@@ -12,9 +13,8 @@ export class ProfileImageController {
       this.profileService = new ProfileService();
    }
 
-   public uploadImage = asyncHandler(async (req: Request, res: Response) => {
-      // @ts-ignore
-      const userId = req.params.userId || req.user?.id;
+   public uploadImage = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId || req.user.id;
       if (!userId) throw new ApiError(401, "Unauthorized");
 
       if (!req.file) {
@@ -39,9 +39,8 @@ export class ProfileImageController {
       }
    });
 
-   public removeImage = asyncHandler(async (req: Request, res: Response) => {
-      // @ts-ignore
-      const userId = req.params.userId || req.user?.id;
+   public removeImage = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId || req.user.id;
       const imageId = req.params.imageId;
       if (!userId) throw new ApiError(401, "Unauthorized");
 
@@ -63,9 +62,8 @@ export class ProfileImageController {
       res.status(200).json(new ApiResponse(200, null, "Image removed successfully"));
    });
 
-   public setPrimaryImage = asyncHandler(async (req: Request, res: Response) => {
-      // @ts-ignore
-      const userId = req.params.userId || req.user?.id;
+   public setPrimaryImage = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId || req.user.id;
       const imageId = req.params.imageId;
       if (!userId) throw new ApiError(401, "Unauthorized");
 
@@ -74,9 +72,8 @@ export class ProfileImageController {
       res.status(200).json(new ApiResponse(200, updatedImage, "Primary image set successfully"));
    });
 
-   public getImages = asyncHandler(async (req: Request, res: Response) => {
-      // @ts-ignore
-      const userId = req.params.userId || req.user?.id;
+   public getImages = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId || req.user.id;
       if (!userId) throw new ApiError(401, "Unauthorized");
 
       const images = await this.profileService.getUserImages(Number(userId));
@@ -95,9 +92,8 @@ export class ProfileImageController {
       res.status(200).json(new ApiResponse(200, imagesWithPresignedUrls, "User images fetched successfully"));
    });
 
-   public completeImageUpload = asyncHandler(async (req: Request, res: Response) => {
-      // @ts-ignore
-      const userId = req.params.userId || req.user?.id;
+   public completeImageUpload = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId || req.user.id;
       if (!userId) throw new ApiError(401, "Unauthorized");
 
       const result = await this.profileService.completeImageUpload(Number(userId));
@@ -105,9 +101,8 @@ export class ProfileImageController {
       res.status(200).json(new ApiResponse(200, result, "Image upload phase completed successfully"));
    });
 
-   public uploadSelfie = asyncHandler(async (req: Request, res: Response) => {
-      // @ts-ignore
-      const userId = req.params.userId || req.user?.id;
+   public uploadSelfie = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId || req.user.id;
       if (!userId) throw new ApiError(401, "Unauthorized");
 
       if (!req.file) {
