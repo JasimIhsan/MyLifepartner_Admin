@@ -1,8 +1,9 @@
-import axiosInstance from "@/api/api.config";
+import { adminLogin } from "@/api/auth.service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { handleApiError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
@@ -22,16 +23,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       setError(null);
 
       try {
-         const response = await axiosInstance.post("/admin/auth/login", {
-            username,
-            password,
-         });
+         const response = await adminLogin(username, password);
          console.log("Login successful:", response.data);
-         // Redirect to dashboard or home on success
          navigate("/");
-      } catch (err: any) {
+      } catch (err) {
          console.error("Login failed:", err);
-         setError(err.response?.data?.message || "Login failed. Please try again.");
+         setError(handleApiError(err, "Login failed. Please try again."));
       } finally {
          setLoading(false);
       }
@@ -49,12 +46,12 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
                   <FieldGroup>
                      <Field>
                         <FieldLabel htmlFor="username">Username</FieldLabel>
-                        <Input id="username" type="text" placeholder="username" value={username} onChange={(e) => setUsername(e.target.value)} required disabled={loading} />
+                        <Input id="username" type="text" onChange={(e) => setUsername(e.target.value)} placeholder="username" required disabled={loading} />
                      </Field>
                      <Field>
                         <FieldLabel htmlFor="password">Password</FieldLabel>
                         <div className="relative">
-                           <Input id="password" className="pr-10" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="password" required disabled={loading} />
+                           <Input id="password" className="pr-10" type={showPassword ? "text" : "password"} onChange={(e) => setPassword(e.target.value)} placeholder="password" required disabled={loading} />
                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer" disabled={loading}>
                               {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                            </button>
