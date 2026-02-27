@@ -1,4 +1,4 @@
-import { ProfileService } from "@/services/profile.service";
+import { ProfileService } from "@/services/user/user.profile.service";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";

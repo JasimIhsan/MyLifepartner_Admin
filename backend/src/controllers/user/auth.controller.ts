@@ -1,4 +1,4 @@
-import authService from "@/services/auth.service";
+import authService from "@/services/user/user.auth.service";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
