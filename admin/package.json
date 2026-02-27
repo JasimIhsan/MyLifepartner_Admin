@@ -15,12 +15,16 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
+    "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.13.1",
+    "recharts": "^2.15.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.2.1"
+    "tailwindcss": "^4.2.1",
+    "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
