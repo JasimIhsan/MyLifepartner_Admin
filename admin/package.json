@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tabler/icons-react": "^3.37.1",
     "@tailwindcss/vite": "^4.2.1",
     "axios": "^1.13.5",
     "class-variance-authority": "^0.7.1",
@@ -24,6 +25,7 @@
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss": "^4.2.1",
+    "use-debounce": "^10.1.0",
     "vaul": "^1.1.2"
   },
   "devDependencies": {

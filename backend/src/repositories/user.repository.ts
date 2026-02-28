@@ -8,8 +8,17 @@ export class UserRepository extends BaseRepository<User> {
       return prisma.user.create({ data });
    }
 
-   async findAll(): Promise<User[]> {
-      return prisma.user.findMany();
+   async findAll(where?: Prisma.UserWhereInput, skip?: number, take?: number): Promise<{ users: User[]; total: number }> {
+      const [users, total] = await prisma.$transaction([
+         prisma.user.findMany({
+            where,
+            orderBy: { createdAt: "desc" },
+            skip,
+            take,
+         }),
+         prisma.user.count({ where }),
+      ]);
+      return { users, total };
    }
 
    async findById(id: number): Promise<User | null> {

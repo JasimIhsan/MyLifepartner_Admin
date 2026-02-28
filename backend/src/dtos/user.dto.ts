@@ -6,6 +6,8 @@ export interface UserDto {
    name: string | null;
    email: string | null;
    isEmailVerified: boolean;
+   isBlocked: boolean;
+   isDeleted: boolean;
    isProfileCompleted: boolean;
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;
@@ -20,6 +22,8 @@ export const toUserDto = (user: User): UserDto => ({
    name: user.name,
    email: user.email,
    isEmailVerified: user.isEmailVerified,
+   isBlocked: user.isBlocked,
+   isDeleted: user.isDeleted,
    isProfileCompleted: user.isProfileCompleted,
    hasCompletedImageUpload: user.hasCompletedImageUpload,
    selfieStatus: user.selfieStatus,

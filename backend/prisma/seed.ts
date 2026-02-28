@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { AnswerType, PrismaClient } from "@prisma/client";
+import { AnswerType, PrismaClient, Role, SelfieStatus } from "@prisma/client";
 import * as dotenv from "dotenv";
 import { Pool } from "pg";
 
@@ -41,14 +41,7 @@ async function main() {
                sectionId: section1.id,
                question: "Why are you joining LP at this stage of your life?",
                answerType: AnswerType.SINGLE_CHOICE,
-               options: [
-                  "Ready to settle down",
-                  "Looking for a life partner",
-                  "Tired of casual dating",
-                  "Family pressure / Recommendation",
-                  "Recently single and want something serious",
-                  "Want companionship and commitment",
-               ],
+               options: ["Ready to settle down", "Looking for a life partner", "Tired of casual dating", "Family pressure / Recommendation", "Recently single and want something serious", "Want companionship and commitment"],
                orderNo: 1,
                isRequired: true,
             },
@@ -72,13 +65,7 @@ async function main() {
                sectionId: section1.id,
                question: "If divorced or widowed, how long have you been single?",
                answerType: AnswerType.SINGLE_CHOICE,
-               options: [
-                  "Less than 6 months",
-                  "6 months – 1 year",
-                  "1 – 2 years",
-                  "2 – 5 years",
-                  "More than 5 years",
-               ],
+               options: ["Less than 6 months", "6 months – 1 year", "1 – 2 years", "2 – 5 years", "More than 5 years"],
                // usage: Logic in frontend can show/hide based on previous answer
                orderNo: 4,
                isRequired: false, // Conditional
@@ -431,6 +418,58 @@ async function main() {
             },
          ],
          skipDuplicates: true,
+      });
+
+      // ============================================================
+      // 9. Seed Users
+      // ============================================================
+      console.log("Seeding users...");
+
+      const adminUser = await prisma.user.upsert({
+         where: { mobileNumber: "0000000000" },
+         update: {},
+         create: {
+            mobileNumber: "0000000000",
+            email: "admin@mylifepartner.com",
+            name: "System Admin",
+            isVerified: true,
+            isEmailVerified: true,
+            isProfileCompleted: true,
+            hasCompletedImageUpload: true,
+            role: Role.ADMIN,
+         },
+      });
+
+      const verifiedUser = await prisma.user.upsert({
+         where: { mobileNumber: "9876543210" },
+         update: {},
+         create: {
+            mobileNumber: "9876543210",
+            email: "john.doe@example.com",
+            name: "John Doe",
+            isVerified: true,
+            isEmailVerified: true,
+            isProfileCompleted: true,
+            hasCompletedImageUpload: true,
+            selfieStatus: SelfieStatus.APPROVED,
+            role: Role.USER,
+         },
+      });
+
+      const unverifiedUser = await prisma.user.upsert({
+         where: { mobileNumber: "5555555555" },
+         update: {},
+         create: {
+            mobileNumber: "5555555555",
+            email: "jane.smith@example.com",
+            name: "Jane Smith",
+            isVerified: false,
+            isEmailVerified: false,
+            isProfileCompleted: false,
+            hasCompletedImageUpload: false,
+            selfieStatus: SelfieStatus.PENDING,
+            role: Role.USER,
+         },
       });
 
       console.log("Seeding finished.");

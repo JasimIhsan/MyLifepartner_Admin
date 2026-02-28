@@ -19,14 +19,23 @@ class UserService {
       return toUserDto(user);
    }
 
-   async getUsers(): Promise<UserDto[]> {
-      const users = await userRepository.findAll();
-      return users.map((u) => toUserDto(u));
+   async getUsers(searchQuery?: string, page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }> {
+      const where: Prisma.UserWhereInput = { isDeleted: false };
+
+      if (searchQuery) {
+         where.OR = [{ name: { contains: searchQuery, mode: "insensitive" } }, { email: { contains: searchQuery, mode: "insensitive" } }, { mobileNumber: { contains: searchQuery, mode: "insensitive" } }];
+      }
+
+      const skip = page && limit ? (page - 1) * limit : undefined;
+      const take = limit ? limit : undefined;
+
+      const { users, total } = await userRepository.findAll(where, skip, take);
+      return { data: users.map((u) => toUserDto(u)), total };
    }
 
    async getUserById(userId: number): Promise<UserDto> {
       const user = await userRepository.findById(userId);
-      if (!user) {
+      if (!user || user.isDeleted) {
          throw new ApiError(404, "User not found");
       }
       return toUserDto(user);
@@ -35,7 +44,7 @@ class UserService {
    async updateUser(userId: number, updateData: Prisma.UserUpdateInput): Promise<UserDto> {
       console.log(`👉 updateData : `, updateData);
       const user = await userRepository.findById(userId);
-      if (!user) {
+      if (!user || user.isDeleted) {
          throw new ApiError(404, "User not found");
       }
 
@@ -48,6 +57,23 @@ class UserService {
 
       const updatedUser = await userRepository.update(userId, updateData);
       return toUserDto(updatedUser);
+   }
+
+   async toggleBlockUser(userId: number): Promise<UserDto> {
+      const user = await userRepository.findById(userId);
+      if (!user || user.isDeleted) {
+         throw new ApiError(404, "User not found");
+      }
+      const updatedUser = await userRepository.update(userId, { isBlocked: !user.isBlocked });
+      return toUserDto(updatedUser);
+   }
+
+   async deleteUser(userId: number): Promise<void> {
+      const user = await userRepository.findById(userId);
+      if (!user || user.isDeleted) {
+         throw new ApiError(404, "User not found");
+      }
+      await userRepository.update(userId, { isDeleted: true });
    }
 }
 

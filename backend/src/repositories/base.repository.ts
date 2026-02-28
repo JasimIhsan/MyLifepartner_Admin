@@ -1,6 +1,6 @@
 export interface IBaseRepository<T> {
    create(data: T): Promise<T>;
-   findAll(): Promise<T[]>;
+   findAll(...args: any[]): Promise<T[] | { users: T[]; total: number }>;
    findById(id: number | string): Promise<T | null>;
    update(id: number | string, data: Partial<T>): Promise<T>;
    delete(id: number | string): Promise<T>;
@@ -11,7 +11,7 @@ export abstract class BaseRepository<T> implements IBaseRepository<T> {
    // With Prisma, generic implementation is complex due to different delegates.
    // We will define the interface for consistency.
    abstract create(data: T): Promise<T>;
-   abstract findAll(): Promise<T[]>;
+   abstract findAll(...args: any[]): Promise<T[] | { users: T[]; total: number }>;
    abstract findById(id: number | string): Promise<T | null>;
    abstract update(id: number | string, data: Partial<T>): Promise<T>;
    abstract delete(id: number | string): Promise<T>;

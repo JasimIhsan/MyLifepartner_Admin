@@ -13,6 +13,8 @@ model User {
   name                    String?
   isVerified              Boolean                  @default(false)
   isEmailVerified         Boolean                  @default(false)
+  isBlocked               Boolean                  @default(false)
+  isDeleted               Boolean                  @default(false)
   isProfileCompleted      Boolean                  @default(false)
   hasCompletedImageUpload Boolean                  @default(false)
   selfieUrl               String?
