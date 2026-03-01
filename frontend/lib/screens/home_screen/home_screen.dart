@@ -22,6 +22,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final ProfileRepository _profileRepository = ProfileRepository();
+  bool _isSheetShowing = false;
 
   @override
   void initState() {
@@ -32,13 +33,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _checkProfileCompletion() async {
+    if (_isSheetShowing) return;
     try {
       final status = await _profileRepository.getCompletionStatus();
       if (status['isCompleted'] == false) {
-        if (mounted) {
-          CustomBottomSheet.show(
+        if (mounted && !_isSheetShowing) {
+          _isSheetShowing = true;
+          await CustomBottomSheet.show(
             context: context,
             type: BottomSheetType.info,
+            isScrollControlled: true, // Show complete sheet
+            isDismissible: false, // Force them to interact
             title: "Complete Your Profile",
             message:
                 "You have pending profile questions. Complete them to find better matches.",
@@ -53,13 +58,16 @@ class _HomePageState extends State<HomePage> {
                     initialSectionOrder: status['nextPendingSectionOrder'],
                   ),
                 ),
-              );
+              ).then((_) {
+                _checkProfileCompletion();
+              });
             },
             secondaryButtonText: "Later",
             onSecondaryPressed: () {
               Navigator.pop(context);
             },
           );
+          _isSheetShowing = false;
         }
       }
     } catch (e) {
@@ -177,6 +185,9 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _selectedIndex = index;
         });
+        if (index == 0) {
+          _checkProfileCompletion();
+        }
       },
       labelType: NavigationRailLabelType.all,
       backgroundColor: AppColors.background,
@@ -218,6 +229,9 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _selectedIndex = index;
         });
+        if (index == 0) {
+          _checkProfileCompletion();
+        }
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),

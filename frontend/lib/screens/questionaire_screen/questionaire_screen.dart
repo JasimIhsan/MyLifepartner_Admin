@@ -190,9 +190,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
     // Save completion state
     final prefs = await SharedPreferences.getInstance();
     if (widget.isPrimaryFlow) {
-      await prefs.setBool('isProfileCompleted', true);
+      await prefs.setString('profileStatus', "ONBOARDING_COMPLETED");
     } else {
-      await prefs.setBool('isNonPrimaryCompleted', true);
+      await prefs.setString('profileStatus', "COMPLETED");
     }
 
     if (!mounted) return;

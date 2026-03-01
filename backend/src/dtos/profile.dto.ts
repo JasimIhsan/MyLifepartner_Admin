@@ -65,11 +65,11 @@ export const toProfileQuestionDto = (question: any): ProfileQuestionDto => ({
 });
 
 export interface ProfileStatusDto {
-   isProfileCompleted: boolean;
+   profileStatus: string;
    nextAction: string;
 }
 
-export const toProfileStatusDto = (isCompleted: boolean, nextAction: string): ProfileStatusDto => ({
-   isProfileCompleted: isCompleted,
+export const toProfileStatusDto = (profileStatus: string, nextAction: string): ProfileStatusDto => ({
+   profileStatus: profileStatus,
    nextAction: nextAction,
 });

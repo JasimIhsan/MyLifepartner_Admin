@@ -22,8 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () async {
       final sharedPrefs = await SharedPreferences.getInstance();
       final isLoggedIn = sharedPrefs.getBool("isLoggedIn") ?? false;
-      final isProfileCompleted =
-          sharedPrefs.getBool("isProfileCompleted") ?? false;
+      final profileStatus =
+          sharedPrefs.getString("profileStatus") ?? "INCOMPLETE";
       final hasCompletedImageUpload =
           sharedPrefs.getBool("hasCompletedImageUpload") ?? false;
       final selfieStatus = sharedPrefs.getString("selfieStatus");
@@ -34,7 +34,8 @@ class _SplashScreenState extends State<SplashScreen> {
           MaterialPageRoute(
             builder: (context) {
               if (isLoggedIn) {
-                if (isProfileCompleted) {
+                if (profileStatus == "COMPLETED" ||
+                    profileStatus == "ONBOARDING_COMPLETED") {
                   if (hasCompletedImageUpload) {
                     if (selfieStatus != null && selfieStatus != "NONE") {
                       return const HomePage();

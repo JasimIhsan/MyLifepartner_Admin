@@ -15,7 +15,7 @@ model User {
   isEmailVerified         Boolean                  @default(false)
   isBlocked               Boolean                  @default(false)
   isDeleted               Boolean                  @default(false)
-  isProfileCompleted      Boolean                  @default(false)
+  profileStatus           ProfileStatus            @default(INCOMPLETE)
   hasCompletedImageUpload Boolean                  @default(false)
   selfieUrl               String?
   selfieStatus            SelfieStatus?
@@ -111,4 +111,10 @@ model UserImage {
   updatedAt DateTime @updatedAt
 
   @@map("user_images")
+}
+
+enum ProfileStatus {
+  INCOMPLETE
+  ONBOARDING_COMPLETED
+  COMPLETED
 }

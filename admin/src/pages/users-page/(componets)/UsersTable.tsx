@@ -151,8 +151,8 @@ export function UsersTable({
                                        <span>Email Verified</span>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                       {user.isProfileCompleted ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <XCircle className="h-3.5 w-3.5" />}
-                                       <span>Profile</span>
+                                       {user.profileStatus === "COMPLETED" ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : user.profileStatus === "ONBOARDING_COMPLETED" ? <CheckCircle2 className="h-3.5 w-3.5 text-yellow-500" /> : <XCircle className="h-3.5 w-3.5" />}
+                                       <span className="capitalize">{user.profileStatus?.replace("_", " ").toLowerCase() || "Incomplete"}</span>
                                     </div>
                                  </div>
                               </TableCell>

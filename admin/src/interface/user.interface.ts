@@ -6,7 +6,7 @@ export interface UserInterface {
    isEmailVerified: boolean;
    isBlocked: boolean;
    isDeleted: boolean;
-   isProfileCompleted: boolean;
+   profileStatus: "INCOMPLETE" | "ONBOARDING_COMPLETED" | "COMPLETED";
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;

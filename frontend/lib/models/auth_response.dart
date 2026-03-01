@@ -45,7 +45,7 @@ class VerifyOtpResponse {
 class User {
   final int id;
   final String mobileNumber;
-  final bool isProfileCompleted;
+  final String profileStatus;
   final bool hasCompletedImageUpload;
   final String? selfieStatus;
   final String? name;
@@ -55,7 +55,7 @@ class User {
   User({
     required this.id,
     required this.mobileNumber,
-    required this.isProfileCompleted,
+    required this.profileStatus,
     required this.hasCompletedImageUpload,
     this.selfieStatus,
     this.name,
@@ -67,7 +67,7 @@ class User {
     return User(
       id: json['id'] ?? 0,
       mobileNumber: json['mobileNumber'] ?? '',
-      isProfileCompleted: json['isProfileCompleted'] ?? false,
+      profileStatus: json['profileStatus'] ?? 'INCOMPLETE',
       hasCompletedImageUpload: json['hasCompletedImageUpload'] ?? false,
       selfieStatus: json['selfieStatus'],
       name: json['name'],

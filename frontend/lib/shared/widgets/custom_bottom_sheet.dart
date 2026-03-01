@@ -16,11 +16,13 @@ class CustomBottomSheet {
     String? secondaryButtonText,
     VoidCallback? onSecondaryPressed,
     bool isDismissible = true,
+    bool isScrollControlled = false,
   }) {
     return showModalBottomSheet(
       context: context,
       isDismissible: isDismissible,
       enableDrag: isDismissible,
+      isScrollControlled: isScrollControlled,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -137,6 +139,31 @@ class CustomBottomSheet {
                     onPressed:
                         onSecondaryPressed ?? () => Navigator.pop(context),
                     text: secondaryButtonText ?? "Cancel",
+                    type: CustomButtonType.outline,
+                    borderRadius: 16,
+                    height: 50,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: CustomButton(
+                    onPressed: onPrimaryPressed,
+                    text: primaryButtonText ?? defaultPrimaryText,
+                    borderRadius: 16,
+                    height: 50,
+                  ),
+                ),
+              ],
+            ),
+          ] else if (type == BottomSheetType.info &&
+              secondaryButtonText != null) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: CustomButton(
+                    onPressed:
+                        onSecondaryPressed ?? () => Navigator.pop(context),
+                    text: secondaryButtonText,
                     type: CustomButtonType.outline,
                     borderRadius: 16,
                     height: 50,

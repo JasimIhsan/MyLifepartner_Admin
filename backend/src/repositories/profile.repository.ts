@@ -1,4 +1,5 @@
 import prisma from "@/config/prisma";
+import { ProfileStatus } from "@prisma/client";
 
 export class ProfileRepository {
    async getProfileStructure() {
@@ -76,10 +77,10 @@ export class ProfileRepository {
       });
    }
 
-   async setProfileCompleted(userId: number) {
+   async updateProfileStatus(userId: number, status: ProfileStatus) {
       return prisma.user.update({
          where: { id: userId },
-         data: { isProfileCompleted: true },
+         data: { profileStatus: status },
       });
    }
 

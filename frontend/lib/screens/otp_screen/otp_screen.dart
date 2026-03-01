@@ -82,8 +82,8 @@ class _OtpPageState extends State<OtpPage> {
         final user = response.user;
         if (user != null) {
           sharedPrefs.setInt("userId", user.id);
-          if (user.isProfileCompleted == false) {
-            sharedPrefs.setBool("isProfileCompleted", false);
+          if (user.profileStatus == "INCOMPLETE") {
+            sharedPrefs.setString("profileStatus", "INCOMPLETE");
             if (mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -94,7 +94,7 @@ class _OtpPageState extends State<OtpPage> {
               );
             }
           } else {
-            sharedPrefs.setBool("isProfileCompleted", true);
+            sharedPrefs.setString("profileStatus", user.profileStatus);
             sharedPrefs.setBool(
               "hasCompletedImageUpload",
               user.hasCompletedImageUpload,

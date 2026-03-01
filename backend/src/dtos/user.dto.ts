@@ -1,4 +1,4 @@
-import { SelfieStatus, User } from "@prisma/client";
+import { ProfileStatus, SelfieStatus, User } from "@prisma/client";
 
 export interface UserDto {
    id: number;
@@ -8,7 +8,7 @@ export interface UserDto {
    isEmailVerified: boolean;
    isBlocked: boolean;
    isDeleted: boolean;
-   isProfileCompleted: boolean;
+   profileStatus: ProfileStatus;
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
@@ -25,7 +25,7 @@ export const toUserDto = (user: User): UserDto => ({
    isEmailVerified: user.isEmailVerified,
    isBlocked: user.isBlocked,
    isDeleted: user.isDeleted,
-   isProfileCompleted: user.isProfileCompleted,
+   profileStatus: user.profileStatus,
    hasCompletedImageUpload: user.hasCompletedImageUpload,
    selfieStatus: user.selfieStatus,
    selfieUrl: user.selfieUrl,

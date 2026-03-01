@@ -3,6 +3,7 @@ import { ImageUploadStatusDto, UserImageDto, toImageUploadStatusDto, toUserImage
 import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, UserAnswerDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto } from "@/dtos/profile.dto";
 import { ProfileRepository } from "@/repositories/profile.repository";
 import { ApiError } from "@/utils/ApiError";
+import { ProfileStatus } from "@prisma/client";
 
 export class ProfileService {
    private profileRepository: ProfileRepository;
@@ -52,18 +53,22 @@ export class ProfileService {
    }
 
    async completeProfile(userId: number): Promise<ProfileStatusDto> {
-      // 1. Check if all required PRIMARY questions are answered
-      const requiredCount = await this.profileRepository.getRequiredQuestionsCount(true);
-      const answeredCount = await this.profileRepository.getUserAnsweredCount(userId, true);
+      const primaryRequiredCount = await this.profileRepository.getRequiredQuestionsCount(true);
+      const primaryAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId, true);
 
-      if (answeredCount < requiredCount) {
+      if (primaryAnsweredCount < primaryRequiredCount) {
          throw new ApiError(400, "Please answer all mandatory primary questions before completing the profile.");
       }
 
-      // 2. Mark profile as completed (User is done with mandatory part)
-      await this.profileRepository.setProfileCompleted(userId);
+      const totalRequiredCount = await this.profileRepository.getRequiredQuestionsCount();
+      const totalAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId);
 
-      return toProfileStatusDto(true, "logout");
+      const isFullyCompleted = totalAnsweredCount >= totalRequiredCount;
+      const newStatus = isFullyCompleted ? ProfileStatus.COMPLETED : ProfileStatus.ONBOARDING_COMPLETED;
+
+      await this.profileRepository.updateProfileStatus(userId, newStatus);
+
+      return toProfileStatusDto(newStatus, "logout");
    }
 
    async getProfileCompletionStatus(userId: number) {
