@@ -5,8 +5,10 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { handleApiError } from "@/lib/error-handler";
 import { cn } from "@/lib/utils";
+import { setAuthenticated } from "@/store/authSlice";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
@@ -16,6 +18,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
    const [username, setUsername] = useState("");
    const [password, setPassword] = useState("");
    const navigate = useNavigate();
+   const dispatch = useDispatch();
 
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -25,6 +28,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
       try {
          const response = await adminLogin(username, password);
          console.log("Login successful:", response.data);
+         dispatch(setAuthenticated(true)); // Update Redux state
          navigate("/");
       } catch (err) {
          console.error("Login failed:", err);

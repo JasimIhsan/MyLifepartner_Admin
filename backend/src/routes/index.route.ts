@@ -1,3 +1,4 @@
+import { authenticateAdmin } from "@/middlewares/admin.auth.middleware";
 import adminAuthRoute from "@/routes/admin/admin.auth.route";
 import userAuthRoute from "@/routes/user/user.auth.route";
 import profileRoute from "@/routes/user/user.profile.routes";
@@ -13,7 +14,7 @@ router.use("/user/auth", userAuthRoute);
 router.use("/user/profile", profileRoute);
 
 router.use("/admin/auth", adminAuthRoute);
-router.use("/admin/users", adminUsersRoute);
-router.use("/admin/questionnaire", adminQuestionnaireRoute);
+router.use("/admin/users", authenticateAdmin, adminUsersRoute);
+router.use("/admin/questionnaire", authenticateAdmin, adminQuestionnaireRoute);
 
 export default router;

@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { AnswerType, PrismaClient, Role, SelfieStatus } from "@prisma/client";
+import bcrypt from "bcrypt";
 import * as dotenv from "dotenv";
 import { Pool } from "pg";
 
@@ -424,6 +425,18 @@ async function main() {
       // 9. Seed Users
       // ============================================================
       console.log("Seeding users...");
+
+      // Seed Admin
+      const adminPasswordHash = await bcrypt.hash("asdfasdf", 10);
+      const mainAdmin = await prisma.admin.upsert({
+         where: { username: "admin" },
+         update: {},
+         create: {
+            username: "admin",
+            password: adminPasswordHash,
+            role: Role.ADMIN,
+         },
+      });
 
       const adminUser = await prisma.user.upsert({
          where: { mobileNumber: "0000000000" },

@@ -1,23 +1,53 @@
-import { Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import axiosInstance from "./api/api.config";
 import { AdminLayout } from "./components/layout/admin-layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import DashboardPage from "./pages/dashboard-page/DashboardPage";
 import LoginPage from "./pages/login-page/LoginPage";
 import NotFoundPage from "./pages/not-found-page/NotFoundPage";
+import ProfileVerificationPage from "./pages/profile-verification-page/ProfileVerificationPage";
 import QuestionnairePage from "./pages/questionnaire-page/QuestionnairePage";
 import UsersPage from "./pages/users-page/UsersPage";
-import ProfileVerificationPage from "./pages/profile-verification-page/ProfileVerificationPage";
+import { setAuthenticated, setLoading } from "./store/authSlice";
 
 function App() {
+   const dispatch = useDispatch();
+   const location = useLocation();
+   const navigate = useNavigate();
+
+   useEffect(() => {
+      const verifySession = async () => {
+         try {
+            await axiosInstance.get("/admin/users", { params: { pageSize: 1 } });
+            dispatch(setAuthenticated(true));
+
+            if (location.pathname === "/login") {
+               navigate("/", { replace: true });
+            }
+         } catch (error) {
+            dispatch(setAuthenticated(false));
+         } finally {
+            dispatch(setLoading(false));
+         }
+      };
+
+      verifySession();
+   }, [dispatch, location.pathname, navigate]);
+
    return (
       <>
          <Routes>
             <Route path="/login" element={<LoginPage />} />
-            <Route element={<AdminLayout />}>
-               <Route path="/" element={<DashboardPage />} />
-               <Route path="/users" element={<UsersPage />} />
-               <Route path="/questionnaire" element={<QuestionnairePage />} />
-               <Route path="/profile-verification" element={<ProfileVerificationPage />} />
-               <Route path="*" element={<NotFoundPage />} />
+            <Route element={<ProtectedRoute />}>
+               <Route element={<AdminLayout />}>
+                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/users" element={<UsersPage />} />
+                  <Route path="/questionnaire" element={<QuestionnairePage />} />
+                  <Route path="/profile-verification" element={<ProfileVerificationPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+               </Route>
             </Route>
          </Routes>
       </>
