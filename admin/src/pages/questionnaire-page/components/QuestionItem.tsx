@@ -1,4 +1,5 @@
 import { type ProfileQuestion, deleteQuestion, toggleQuestionActive } from "@/api/questionnaire.service";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { Button } from "@/components/ui/button";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -15,6 +16,8 @@ interface Props {
 export default function QuestionItem({ question, reloadSections }: Props) {
    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
    const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+   const [isDeleting, setIsDeleting] = useState(false);
 
    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: question.id });
 
@@ -24,19 +27,25 @@ export default function QuestionItem({ question, reloadSections }: Props) {
       opacity: isDragging ? 0.5 : 1,
    };
 
-   const handleDelete = async () => {
-      if (confirm("Are you sure you want to delete this question?")) {
-         try {
-            const res = await deleteQuestion(question.id);
-            if (res.success) {
-               toast.success("Question deleted");
-               reloadSections();
-            } else {
-               toast.error(res.message);
-            }
-         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to delete question");
+   const handleDeleteClick = () => {
+      setIsDeleteModalOpen(true);
+   };
+
+   const handleDeleteConfirm = async () => {
+      setIsDeleting(true);
+      try {
+         const res = await deleteQuestion(question.id);
+         if (res.success) {
+            toast.success("Question deleted");
+            reloadSections();
+         } else {
+            toast.error(res.message);
          }
+      } catch (error: any) {
+         toast.error(error.response?.data?.message || "Failed to delete question");
+      } finally {
+         setIsDeleting(false);
+         setIsDeleteModalOpen(false);
       }
    };
 
@@ -88,12 +97,14 @@ export default function QuestionItem({ question, reloadSections }: Props) {
             <Button variant="ghost" size="icon" onClick={() => setIsEditModalOpen(true)} className="h-8 w-8 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-full">
                <Edit className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={handleDelete} className="h-8 w-8 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-full">
+            <Button variant="ghost" size="icon" onClick={handleDeleteClick} className="h-8 w-8 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-full">
                <Trash2 className="h-4 w-4" />
             </Button>
          </div>
 
          <AddEditQuestionModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSuccess={reloadSections} sectionId={question.sectionId} questionToEdit={question} />
+
+         <ConfirmationModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleDeleteConfirm} title="Delete Question" description="Are you sure you want to delete this question? This action cannot be undone." confirmText="Delete" variant="destructive" isLoading={isDeleting} />
       </div>
    );
 }

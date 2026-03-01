@@ -1,4 +1,5 @@
 import { type ProfileSection, deleteSection } from "@/api/questionnaire.service";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { Button } from "@/components/ui/button";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -16,6 +17,8 @@ interface Props {
 export default function SectionItem({ section, reloadSections }: Props) {
    const [isExpanded, setIsExpanded] = useState(false);
    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+   const [isDeleting, setIsDeleting] = useState(false);
 
    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: section.id });
 
@@ -25,19 +28,25 @@ export default function SectionItem({ section, reloadSections }: Props) {
       opacity: isDragging ? 0.5 : 1,
    };
 
-   const handleDelete = async () => {
-      if (confirm("Are you sure you want to delete this section? All questions must be deleted first.")) {
-         try {
-            const res = await deleteSection(section.id);
-            if (res.success) {
-               toast.success("Section deleted");
-               reloadSections();
-            } else {
-               toast.error(res.message);
-            }
-         } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to delete section");
+   const handleDeleteClick = () => {
+      setIsDeleteModalOpen(true);
+   };
+
+   const handleDeleteConfirm = async () => {
+      setIsDeleting(true);
+      try {
+         const res = await deleteSection(section.id);
+         if (res.success) {
+            toast.success("Section deleted");
+            reloadSections();
+         } else {
+            toast.error(res.message);
          }
+      } catch (error: any) {
+         toast.error(error.response?.data?.message || "Failed to delete section");
+      } finally {
+         setIsDeleting(false);
+         setIsDeleteModalOpen(false);
       }
    };
 
@@ -61,7 +70,7 @@ export default function SectionItem({ section, reloadSections }: Props) {
                <Button variant="ghost" size="icon" onClick={() => setIsEditModalOpen(true)} className="h-8 w-8 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-full">
                   <Edit className="h-4 w-4" />
                </Button>
-               <Button variant="ghost" size="icon" onClick={handleDelete} className="h-8 w-8 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-full">
+               <Button variant="ghost" size="icon" onClick={handleDeleteClick} className="h-8 w-8 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50 rounded-full">
                   <Trash2 className="h-4 w-4" />
                </Button>
                <div className="w-px h-5 bg-border mx-1.5" />
@@ -80,6 +89,8 @@ export default function SectionItem({ section, reloadSections }: Props) {
          </div>
 
          <AddEditSectionModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSuccess={reloadSections} sectionToEdit={section} />
+
+         <ConfirmationModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleDeleteConfirm} title="Delete Section" description="Are you sure you want to delete this section? All questions must be deleted first." confirmText="Delete" variant="destructive" isLoading={isDeleting} />
       </div>
    );
 }

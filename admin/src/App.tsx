@@ -3,7 +3,7 @@ import { useDispatch } from "react-redux";
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "./api/api.config";
 import { AdminLayout } from "./components/layout/admin-layout";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import DashboardPage from "./pages/dashboard-page/DashboardPage";
 import LoginPage from "./pages/login-page/LoginPage";
 import NotFoundPage from "./pages/not-found-page/NotFoundPage";

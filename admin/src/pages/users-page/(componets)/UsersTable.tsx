@@ -1,5 +1,6 @@
 "use client";
 
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -42,6 +43,11 @@ export function UsersTable({
    const [data, setData] = React.useState<UserInterface[]>(initialData);
    const [selectedIds, setSelectedIds] = React.useState<Set<number>>(new Set());
 
+   // Modal state
+   const [actionModalOpen, setActionModalOpen] = React.useState(false);
+   const [actionType, setActionType] = React.useState<"delete" | "block" | "unblock" | null>(null);
+   const [selectedUser, setSelectedUser] = React.useState<UserInterface | null>(null);
+
    React.useEffect(() => {
       setData(initialData);
    }, [initialData]);
@@ -72,6 +78,23 @@ export function UsersTable({
          month: "short",
          day: "numeric",
       });
+   };
+
+   const handleActionClick = (user: UserInterface, type: "delete" | "block" | "unblock") => {
+      setSelectedUser(user);
+      setActionType(type);
+      setActionModalOpen(true);
+   };
+
+   const handleConfirmAction = () => {
+      if (!selectedUser) return;
+
+      if (actionType === "delete" && onDelete) {
+         onDelete(selectedUser.id);
+      } else if ((actionType === "block" || actionType === "unblock") && onToggleBlock) {
+         onToggleBlock(selectedUser.id, selectedUser.isBlocked);
+      }
+      setActionModalOpen(false);
    };
 
    return (
@@ -168,9 +191,9 @@ export function UsersTable({
                                     <DropdownMenuContent align="end" className="w-40">
                                        <DropdownMenuItem>View Details</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => onEdit?.(user)}>Edit User</DropdownMenuItem>
-                                       <DropdownMenuItem onClick={() => onToggleBlock?.(user.id, user.isBlocked)}>{user.isBlocked ? "Unblock User" : "Block User"}</DropdownMenuItem>
+                                       <DropdownMenuItem onClick={() => handleActionClick(user, user.isBlocked ? "unblock" : "block")}>{user.isBlocked ? "Unblock User" : "Block User"}</DropdownMenuItem>
                                        <DropdownMenuSeparator />
-                                       <DropdownMenuItem className="text-destructive" onClick={() => onDelete?.(user.id)}>
+                                       <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>
                                           Delete User
                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
@@ -240,6 +263,22 @@ export function UsersTable({
                </div>
             </div>
          </div>
+
+         <ConfirmationModal
+            isOpen={actionModalOpen}
+            onClose={() => setActionModalOpen(false)}
+            onConfirm={handleConfirmAction}
+            title={actionType === "delete" ? "Delete User" : actionType === "block" ? "Block User" : "Unblock User"}
+            description={
+               actionType === "delete"
+                  ? `Are you sure you want to delete ${selectedUser?.name || "this user"}? This action cannot be undone and will permanently remove all their data.`
+                  : actionType === "block"
+                    ? `Are you sure you want to block ${selectedUser?.name || "this user"}? They will no longer be able to log in or access the application.`
+                    : `Are you sure you want to unblock ${selectedUser?.name || "this user"}? They will regain access to the application.`
+            }
+            confirmText={actionType === "delete" ? "Delete" : actionType === "block" ? "Block User" : "Unblock User"}
+            variant={actionType === "delete" ? "destructive" : actionType === "block" ? "destructive" : "default"}
+         />
       </div>
    );
 }

@@ -1,11 +1,13 @@
 "use client";
 
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserInterface } from "@/interface/user.interface";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search } from "lucide-react";
+import * as React from "react";
 
 export function VerificationTable({
    data = [],
@@ -34,12 +36,28 @@ export function VerificationTable({
 }) {
    const pageCount = Math.ceil(totalCount / pageSize);
 
+   // Modal state
+   const [isApproveModalOpen, setIsApproveModalOpen] = React.useState(false);
+   const [selectedUser, setSelectedUser] = React.useState<UserInterface | null>(null);
+
    const formatDate = (date: string | Date) => {
       return new Date(date).toLocaleDateString("en-US", {
          year: "numeric",
          month: "short",
          day: "numeric",
       });
+   };
+
+   const handleApproveClick = (user: UserInterface) => {
+      setSelectedUser(user);
+      setIsApproveModalOpen(true);
+   };
+
+   const handleApproveConfirm = () => {
+      if (selectedUser && onApprove) {
+         onApprove(selectedUser.id);
+      }
+      setIsApproveModalOpen(false);
    };
 
    return (
@@ -101,7 +119,7 @@ export function VerificationTable({
                                     <Button variant="outline" size="sm" onClick={() => onViewSelfie?.(user)}>
                                        View Selfie
                                     </Button>
-                                    <Button variant="default" size="sm" onClick={() => onApprove?.(user.id)}>
+                                    <Button variant="default" size="sm" onClick={() => handleApproveClick(user)}>
                                        Approve
                                     </Button>
                                  </div>
@@ -161,6 +179,16 @@ export function VerificationTable({
                </div>
             </div>
          </div>
+
+         <ConfirmationModal
+            isOpen={isApproveModalOpen}
+            onClose={() => setIsApproveModalOpen(false)}
+            onConfirm={handleApproveConfirm}
+            title="Approve Profile Photo"
+            description={`Are you sure you want to approve the profile photo for ${selectedUser?.name || "this user"}? This will mark their profile photo as verified.`}
+            confirmText="Approve"
+            variant="default"
+         />
       </div>
    );
 }
