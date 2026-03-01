@@ -19,8 +19,12 @@ class UserService {
       return toUserDto(user);
    }
 
-   async getUsers(searchQuery?: string, page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }> {
+   async getUsers(searchQuery?: string, page?: number, limit?: number, selfieStatus?: string): Promise<{ data: UserDto[]; total: number }> {
       const where: Prisma.UserWhereInput = { isDeleted: false };
+
+      if (selfieStatus) {
+         where.selfieStatus = selfieStatus as any;
+      }
 
       if (searchQuery) {
          where.OR = [{ name: { contains: searchQuery, mode: "insensitive" } }, { email: { contains: searchQuery, mode: "insensitive" } }, { mobileNumber: { contains: searchQuery, mode: "insensitive" } }];
@@ -29,7 +33,7 @@ class UserService {
       const skip = page && limit ? (page - 1) * limit : undefined;
       const take = limit ? limit : undefined;
 
-      const { users, total } = await userRepository.findAll(where, skip, take);
+      const { users, total } = await userRepository.findAll(where, skip, take, { images: true });
       return { data: users.map((u) => toUserDto(u)), total };
    }
 

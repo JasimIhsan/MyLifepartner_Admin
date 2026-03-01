@@ -1,6 +1,6 @@
 "use client";
 
-import { Command, LayoutDashboard, LifeBuoy, ListChecks, Map, Send, UsersIcon } from "lucide-react";
+import { Command, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
 import * as React from "react";
 
 import { NavProjects } from "@/components/sidebar/nav-projects";
@@ -125,14 +125,14 @@ const data = {
          icon: UsersIcon,
       },
       {
-         name: "Travel",
-         url: "#",
-         icon: Map,
-      },
-      {
          name: "Questionnaire",
          url: "/questionnaire",
          icon: ListChecks,
+      },
+      {
+         name: "Profile Verification",
+         url: "/profile-verification",
+         icon: UserCheck2Icon,
       },
    ],
 };

@@ -12,6 +12,7 @@ export interface UserDto {
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
+   primaryImageUrl?: string | null;
    createdAt: Date;
    updatedAt: Date;
 }
@@ -28,6 +29,7 @@ export const toUserDto = (user: User): UserDto => ({
    hasCompletedImageUpload: user.hasCompletedImageUpload,
    selfieStatus: user.selfieStatus,
    selfieUrl: user.selfieUrl,
+   primaryImageUrl: (user as any).images?.find((img: any) => img.isPrimary)?.imageUrl || null,
    createdAt: user.createdAt,
    updatedAt: user.updatedAt,
 });

@@ -8,10 +8,11 @@ export class UserRepository extends BaseRepository<User> {
       return prisma.user.create({ data });
    }
 
-   async findAll(where?: Prisma.UserWhereInput, skip?: number, take?: number): Promise<{ users: User[]; total: number }> {
+   async findAll(where?: Prisma.UserWhereInput, skip?: number, take?: number, include?: Prisma.UserInclude): Promise<{ users: User[]; total: number }> {
       const [users, total] = await prisma.$transaction([
          prisma.user.findMany({
             where,
+            include,
             orderBy: { createdAt: "desc" },
             skip,
             take,

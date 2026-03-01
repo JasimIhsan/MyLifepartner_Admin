@@ -10,6 +10,7 @@ export interface UserInterface {
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
+   primaryImageUrl?: string | null;
    createdAt: Date;
    updatedAt: Date;
 }
