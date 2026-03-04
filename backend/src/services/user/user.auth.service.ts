@@ -20,8 +20,8 @@ class AuthService {
 
       const user = await userService.findOrCreateUser(mobileNumber);
 
-      const accessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
-      const refreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
+      const accessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
+      const refreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
 
       return { user, accessToken, refreshToken };
    }
@@ -108,8 +108,11 @@ class AuthService {
       }
 
       try {
-         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret") as any;
+         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret") as import("@/types/express").UserJwtPayload;
 
+         if (!decoded.mobileNumber) {
+            throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid token payload: Missing mobile number");
+         }
          const user = await userService.findOrCreateUser(decoded.mobileNumber);
 
          const newAccessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
@@ -136,7 +139,7 @@ class AuthService {
       }
 
       if (user.email !== email) {
-         await userService.updateUser(userId, { email, isEmailVerified: false } as any);
+         await userService.updateUser(userId, { email, isEmailVerified: false } as import("@prisma/client").Prisma.UserUpdateInput);
       } else if (user.isEmailVerified) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is already verified");
       }

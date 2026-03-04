@@ -77,7 +77,7 @@ class AdminQuestionnaireService {
       data: {
          question: string;
          answerType: AnswerType;
-         options?: any;
+         options?: Prisma.InputJsonValue;
          minWords?: number;
          weight?: number;
          isRequired?: boolean;
@@ -104,7 +104,7 @@ class AdminQuestionnaireService {
       data: {
          question?: string;
          answerType?: AnswerType;
-         options?: any;
+         options?: Prisma.InputJsonValue;
          minWords?: number;
          weight?: number;
          isRequired?: boolean;

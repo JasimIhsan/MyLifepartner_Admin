@@ -17,10 +17,10 @@ class AdminUsersController {
 
    createUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const { name, ...restData } = req.body;
-      const createPayload: any = { ...restData };
+      const createPayload: import("@prisma/client").Prisma.UserCreateInput = { ...restData };
       if (name !== undefined) {
          createPayload.profile = {
-            create: { name },
+            create: { name } as import("@prisma/client").Prisma.ProfileCreateWithoutUserInput,
          };
       }
       const result = await userService.createUser(createPayload);
@@ -30,10 +30,10 @@ class AdminUsersController {
    updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
       const { name, ...restData } = req.body;
-      const updatePayload: any = { ...restData };
+      const updatePayload: import("@prisma/client").Prisma.UserUpdateInput = { ...restData };
       if (name !== undefined) {
          updatePayload.profile = {
-            update: { name },
+            update: { name } as import("@prisma/client").Prisma.ProfileUpdateWithoutUserInput,
          };
       }
       const result = await userService.updateUser(userId, updatePayload);

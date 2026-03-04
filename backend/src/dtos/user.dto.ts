@@ -5,6 +5,7 @@ export interface UserDto {
    mobileNumber: string;
    name: string | null;
    email: string | null;
+   role: string;
    isEmailVerified: boolean;
    isBlocked: boolean;
    isDeleted: boolean;
@@ -35,11 +36,12 @@ export interface UserDto {
    updatedAt: Date;
 }
 
-export const toUserDto = (user: User & { profile?: Profile | null }): UserDto => ({
+export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPrimary: boolean; imageUrl: string }[] }) | null }): UserDto => ({
    id: user.id,
    mobileNumber: user.mobileNumber,
    name: user.profile?.name || null,
    email: user.email,
+   role: user.role,
    isEmailVerified: user.isEmailVerified,
    isBlocked: user.isBlocked,
    isDeleted: user.isDeleted,
@@ -47,7 +49,7 @@ export const toUserDto = (user: User & { profile?: Profile | null }): UserDto =>
    hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
    selfieStatus: user.profile?.selfieStatus || null,
    selfieUrl: user.profile?.selfieUrl || null,
-   primaryImageUrl: (user.profile as any)?.images?.find((img: any) => img.isPrimary)?.imageUrl || null,
+   primaryImageUrl: user.profile?.images?.find((img) => img.isPrimary)?.imageUrl || null,
 
    gender: user.profile?.gender || null,
    dateOfBirth: user.profile?.dateOfBirth || null,

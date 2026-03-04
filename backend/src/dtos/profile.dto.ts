@@ -1,4 +1,4 @@
-import { ProfileSection, UserAnswer } from "@prisma/client";
+import { Prisma, ProfileQuestion, ProfileSection, UserAnswer } from "@prisma/client";
 
 export interface ProfileSectionDto {
    id: number;
@@ -20,7 +20,7 @@ export interface UserAnswerDto {
    id: number;
    profileId: number;
    questionId: number;
-   answer: any;
+   answer: Prisma.JsonValue;
    score: number | null;
    createdAt: Date;
 }
@@ -49,7 +49,7 @@ export interface ProfileQuestionDto {
    answers?: UserAnswerDto[];
 }
 
-export const toProfileQuestionDto = (question: any): ProfileQuestionDto => ({
+export const toProfileQuestionDto = (question: ProfileQuestion & { section?: { title: string }; answers?: UserAnswer[] }): ProfileQuestionDto => ({
    id: question.id,
    sectionId: question.sectionId,
    question: question.question,

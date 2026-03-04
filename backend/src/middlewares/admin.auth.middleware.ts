@@ -1,3 +1,4 @@
+import { UserJwtPayload } from "@/types/express";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { HTTP_STATUS } from "@/utils/constants";
 import { NextFunction, Request, Response } from "express";
@@ -11,13 +12,13 @@ export const authenticateAdmin = (req: Request, res: Response, next: NextFunctio
    }
 
    try {
-      const decoded: any = jwt.verify(token, process.env.JWT_SECRET || "default_secret");
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret") as UserJwtPayload;
 
-      if (decoded.role !== "ADMIN") {
+      if (decoded.role !== "ADMIN" && decoded.role !== "SUPER_ADMIN") {
          return res.status(HTTP_STATUS.FORBIDDEN).json(new ApiResponse(HTTP_STATUS.FORBIDDEN, null, "Access denied. Admins only."));
       }
 
-      (req as any).user = decoded;
+      req.user = decoded;
       next();
    } catch (error) {
       return res.status(HTTP_STATUS.UNAUTHORIZED).json(new ApiResponse(HTTP_STATUS.UNAUTHORIZED, null, "Invalid or expired token"));

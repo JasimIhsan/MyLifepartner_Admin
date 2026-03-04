@@ -1,5 +1,6 @@
 import axiosInstance from "@/api/api.config";
 import type { UserInterface } from "@/interface/user.interface";
+import type { AxiosError } from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -118,9 +119,10 @@ const UsersPage = () => {
          }
          setIsModalOpen(false);
          fetchUsers();
-      } catch (error: any) {
+      } catch (error) {
          console.error("Error saving user:", error);
-         toast.error(error.response?.data?.message || "Failed to save user");
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "Failed to save user");
       }
    };
 

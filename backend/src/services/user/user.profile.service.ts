@@ -38,14 +38,17 @@ export class ProfileService {
       return answers.map((a) => toUserAnswerDto(a));
    }
 
-   async saveAnswer(userId: number, questionId: number, answer: any): Promise<UserAnswerDto> {
+   async saveAnswer(userId: number, questionId: number, answer: import("@prisma/client").Prisma.InputJsonValue): Promise<UserAnswerDto> {
       // Validate question exists and answer format if needed
       // For now, straight to DB
 
       // Logic for scoring can be added here
       let score = 0;
-      if (answer.value && typeof answer.value === "number") {
-         score = answer.value; // Simple pass-through for rating
+      if (answer && typeof answer === "object" && !Array.isArray(answer) && "value" in answer) {
+         const answerObj = answer as { value?: unknown };
+         if (typeof answerObj.value === "number") {
+            score = answerObj.value; // Simple pass-through for rating
+         }
       }
 
       const savedAnswer = await this.profileRepository.saveAnswer(userId, questionId, answer, score);
@@ -98,7 +101,7 @@ export class ProfileService {
 
    async getUserImages(userId: number): Promise<UserImageDto[]> {
       const images = await this.profileRepository.getUserImages(userId);
-      return images.map((img: any) => toUserImageDto(img));
+      return images.map((img) => toUserImageDto(img));
    }
 
    async uploadUserImage(userId: number, imageUrl: string): Promise<UserImageDto> {
@@ -147,7 +150,7 @@ export class ProfileService {
       if (images.length !== 4) {
          throw new ApiError(400, "Exactly 4 images are required to proceed");
       }
-      const hasPrimary = images.some((img: any) => img.isPrimary);
+      const hasPrimary = images.some((img) => img.isPrimary);
       if (!hasPrimary) {
          throw new ApiError(400, "One image must be selected as primary");
       }

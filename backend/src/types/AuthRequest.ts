@@ -1,10 +1,8 @@
 import { Request } from "express";
+import { UserJwtPayload } from "./express";
 
 export interface AuthRequest extends Request {
-   user: {
-      id: number;
-      mobileNumber: string;
-      email?: string;
-      [key: string]: any;
+   user: UserJwtPayload & {
+      role: string; // Ensure role is not optional for AuthRequest
    };
 }

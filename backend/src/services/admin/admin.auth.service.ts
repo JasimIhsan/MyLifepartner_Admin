@@ -48,7 +48,7 @@ class AdminAuthService {
       }
 
       try {
-         const decoded: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret");
+         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret") as import("@/types/express").UserJwtPayload;
 
          const admin = await prisma.admin.findUnique({
             where: { id: decoded.id },

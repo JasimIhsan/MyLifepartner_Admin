@@ -41,10 +41,6 @@ export class ProfileRepository {
                where: {
                   profile: { userId: userId },
                },
-               select: {
-                  answer: true,
-                  score: true,
-               },
             },
          },
       });
@@ -56,7 +52,7 @@ export class ProfileRepository {
       });
    }
 
-   async saveAnswer(userId: number, questionId: number, answer: any, score?: number) {
+   async saveAnswer(userId: number, questionId: number, answer: import("@prisma/client").Prisma.InputJsonValue, score?: number) {
       let profile = await prisma.profile.findUnique({ where: { userId } });
       if (!profile) profile = await prisma.profile.create({ data: { userId } });
 

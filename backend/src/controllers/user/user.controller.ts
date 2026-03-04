@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from "@/utils/constants";
+import { Prisma } from "@prisma/client";
 import { Request, Response } from "express";
 import userService from "../../services/user.service";
 import { ApiResponse } from "../../utils/ApiResponse";
@@ -26,7 +27,7 @@ class UserController {
       const userId = Number(req.params.id);
       const { name, ...restData } = req.body;
 
-      const updatePayload: any = { ...restData };
+      const updatePayload: Prisma.UserUpdateInput = { ...restData };
       if (name !== undefined) {
          updatePayload.profile = {
             update: { name },

@@ -16,7 +16,7 @@ class AdminAuthController {
       res.cookie("accessToken", result.accessToken, {
          httpOnly: true,
          secure: isProduction,
-         sameSite: isProduction ? "none" : ("lax" as any),
+         sameSite: isProduction ? "none" : "lax",
          maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
@@ -24,7 +24,7 @@ class AdminAuthController {
       res.cookie("refreshToken", result.refreshToken, {
          httpOnly: true,
          secure: isProduction,
-         sameSite: isProduction ? "none" : ("lax" as any),
+         sameSite: isProduction ? "none" : "lax",
          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
@@ -45,14 +45,14 @@ class AdminAuthController {
       res.cookie("accessToken", accessToken, {
          httpOnly: true,
          secure: isProduction,
-         sameSite: isProduction ? "none" : ("lax" as any),
+         sameSite: isProduction ? "none" : "lax",
          maxAge: 15 * 60 * 1000, // 15 minutes
       });
 
       res.cookie("refreshToken", refreshToken, {
          httpOnly: true,
          secure: isProduction,
-         sameSite: isProduction ? "none" : ("lax" as any),
+         sameSite: isProduction ? "none" : "lax",
          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
@@ -60,7 +60,7 @@ class AdminAuthController {
    });
 
    logout = asyncHandler(async (req: Request, res: Response) => {
-      const user = (req as any).user;
+      const user = req.user;
 
       if (user && user.id) {
          await adminAuthService.logout(user.id);
@@ -71,16 +71,27 @@ class AdminAuthController {
       res.clearCookie("accessToken", {
          httpOnly: true,
          secure: isProduction,
-         sameSite: isProduction ? "none" : ("lax" as any),
+         sameSite: isProduction ? "none" : "lax",
       });
 
       res.clearCookie("refreshToken", {
          httpOnly: true,
          secure: isProduction,
-         sameSite: isProduction ? "none" : ("lax" as any),
+         sameSite: isProduction ? "none" : "lax",
       });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Admin logged out successfully"));
+   });
+
+   getMe = asyncHandler(async (req: Request, res: Response) => {
+      const user = req.user;
+      console.log(`👉 user : `, user);
+
+      if (!user) {
+         return res.status(HTTP_STATUS.UNAUTHORIZED).json(new ApiResponse(HTTP_STATUS.UNAUTHORIZED, null, "Unauthorized"));
+      }
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user }, "User fetched successfully"));
    });
 }
 

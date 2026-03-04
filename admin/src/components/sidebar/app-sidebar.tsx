@@ -1,12 +1,12 @@
 "use client";
 
-import { Command, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
-import * as React from "react";
-
-import { NavProjects } from "@/components/sidebar/nav-projects";
 import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { RootState } from "@/store";
+import { Command, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
+import * as React from "react";
+import { useSelector } from "react-redux";
 
 const data = {
    // navMain: [
@@ -98,6 +98,12 @@ const data = {
    // ],
    navSecondary: [
       {
+         title: "Admins",
+         url: "/admins",
+         icon: Command,
+         roles: ["SUPER_ADMIN"],
+      },
+      {
          title: "Support",
          url: "#",
          icon: LifeBuoy,
@@ -114,6 +120,7 @@ const data = {
          url: "/",
          icon: LayoutDashboard,
       },
+
       {
          name: "Users",
          url: "/users",
@@ -133,6 +140,10 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+   const user = useSelector((state: RootState) => state.auth.user);
+
+   const visibleNavSecondary = data.navSecondary.filter((item) => !item.roles || item.roles.includes(user?.role as string));
+
    return (
       <Sidebar variant="inset" {...props}>
          <SidebarHeader>
@@ -155,7 +166,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
          <SidebarContent>
             {/* <NavMain items={data.navMain} /> */}
             <NavProjects projects={data.projects} />
-            <NavSecondary items={data.navSecondary} className="mt-auto" />
+            <NavSecondary items={visibleNavSecondary} className="mt-auto" />
          </SidebarContent>
          <SidebarFooter>
             <NavUser />

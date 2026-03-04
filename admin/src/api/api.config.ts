@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance } from "axios";
+import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
 
 const server_url = import.meta.env.VITE_SERVER_URL as string;
 const baseURL = `${server_url}/api`;
@@ -25,10 +25,15 @@ const axiosInstance: AxiosInstance = axios.create({
 });
 
 // ===== TOKEN REFRESH LOGIC =====
-let isRefreshing = false;
-let failedQueue: any[] = []; // Queue for pending requests
+interface FailedRequest {
+   resolve: (value?: unknown) => void;
+   reject: (reason?: unknown) => void;
+}
 
-const processQueue = (error: any) => {
+let isRefreshing = false;
+let failedQueue: FailedRequest[] = []; // Queue for pending requests
+
+const processQueue = (error: unknown) => {
    failedQueue.forEach((prom) => {
       if (error) {
          prom.reject(error);
@@ -42,7 +47,7 @@ const processQueue = (error: any) => {
 axiosInstance.interceptors.response.use(
    (response) => response,
    async (error) => {
-      const originalRequest: any = error.config;
+      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
       // Handle 401 Unauthorized
       if (error.response?.status === 401 && !originalRequest._retry) {

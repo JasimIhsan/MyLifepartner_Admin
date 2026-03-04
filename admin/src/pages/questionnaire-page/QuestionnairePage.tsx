@@ -1,5 +1,6 @@
 import { getSections, type ProfileSection } from "@/api/questionnaire.service";
 import { Button } from "@/components/ui/button";
+import type { AxiosError } from "axios";
 import { Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -20,8 +21,9 @@ export default function QuestionnairePage() {
          } else {
             toast.error(res.message || "Failed to load sections");
          }
-      } catch (error: any) {
-         toast.error(error.response?.data?.message || "Error loading sections");
+      } catch (error) {
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "Error loading sections");
       } finally {
          setLoading(false);
       }

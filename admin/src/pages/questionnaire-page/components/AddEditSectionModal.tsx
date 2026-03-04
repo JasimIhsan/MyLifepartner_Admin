@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import type { AxiosError } from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -62,8 +63,9 @@ export default function AddEditSectionModal({ isOpen, onClose, onSuccess, sectio
                toast.error(res.message);
             }
          }
-      } catch (error: any) {
-         toast.error(error?.response?.data?.message || "An error occurred");
+      } catch (error) {
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "An error occurred");
       } finally {
          setLoading(false);
       }

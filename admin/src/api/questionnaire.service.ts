@@ -14,7 +14,7 @@ export interface ProfileQuestion {
    sectionId: number;
    question: string;
    answerType: "TEXT" | "SINGLE_CHOICE" | "MULTI_CHOICE" | "RATING" | "BOOLEAN";
-   options: any;
+   options: Record<string, string> | null;
    minWords?: number;
    weight: number;
    isRequired: boolean;

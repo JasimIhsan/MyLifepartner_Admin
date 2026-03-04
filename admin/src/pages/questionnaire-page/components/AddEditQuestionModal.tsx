@@ -4,6 +4,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import type { AxiosError } from "axios";
 import { Plus, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -126,8 +127,9 @@ export default function AddEditQuestionModal({ isOpen, onClose, onSuccess, secti
                toast.error(res.message);
             }
          }
-      } catch (error: any) {
-         toast.error(error?.response?.data?.message || "An error occurred");
+      } catch (error) {
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "An error occurred");
       } finally {
          setLoading(false);
       }
@@ -152,7 +154,7 @@ export default function AddEditQuestionModal({ isOpen, onClose, onSuccess, secti
                         <select
                            className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                            value={answerType}
-                           onChange={(e) => setAnswerType(e.target.value as any)}
+                           onChange={(e) => setAnswerType(e.target.value as ProfileQuestion["answerType"])}
                         >
                            <option value="TEXT">Short/Long Text</option>
                            <option value="SINGLE_CHOICE">Single Choice</option>

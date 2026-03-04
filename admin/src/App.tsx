@@ -4,13 +4,14 @@ import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "./api/api.config";
 import { AdminLayout } from "./components/layout/admin-layout";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import AdminsPage from "./pages/admins-page/AdminsPage";
 import DashboardPage from "./pages/dashboard-page/DashboardPage";
 import LoginPage from "./pages/login-page/LoginPage";
 import NotFoundPage from "./pages/not-found-page/NotFoundPage";
 import ProfileVerificationPage from "./pages/profile-verification-page/ProfileVerificationPage";
 import QuestionnairePage from "./pages/questionnaire-page/QuestionnairePage";
 import UsersPage from "./pages/users-page/UsersPage";
-import { setAuthenticated, setLoading } from "./store/authSlice";
+import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 
 function App() {
    const dispatch = useDispatch();
@@ -20,7 +21,8 @@ function App() {
    useEffect(() => {
       const verifySession = async () => {
          try {
-            await axiosInstance.get("/admin/users", { params: { pageSize: 1 } });
+            const response = await axiosInstance.get("/admin/auth/me");
+            dispatch(setUser(response.data.data.user));
             dispatch(setAuthenticated(true));
 
             if (location.pathname === "/login") {
@@ -43,6 +45,7 @@ function App() {
             <Route element={<ProtectedRoute />}>
                <Route element={<AdminLayout />}>
                   <Route path="/" element={<DashboardPage />} />
+                  <Route path="/admins" element={<AdminsPage />} />
                   <Route path="/users" element={<UsersPage />} />
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />

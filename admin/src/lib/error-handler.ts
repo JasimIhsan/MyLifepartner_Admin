@@ -7,7 +7,7 @@ interface ApiErrorResponse {
    statusCode: number;
    message: string;
    success: boolean;
-   errors?: any[];
+   errors?: unknown[];
    stack?: string;
 }
 
@@ -33,7 +33,7 @@ export const handleApiError = (error: unknown, defaultMessage = "Something went 
       if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
          const firstError = data.errors[0];
          if (typeof firstError === "string") return firstError;
-         if (firstError?.message) return firstError.message;
+         if (typeof firstError === "object" && firstError !== null && "message" in firstError) return String(firstError.message);
          return JSON.stringify(firstError);
       }
 

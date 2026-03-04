@@ -4,6 +4,7 @@ import userAuthRoute from "@/routes/user/user.auth.route";
 import profileRoute from "@/routes/user/user.profile.routes";
 import userRoute from "@/routes/user/user.route";
 import { Router } from "express";
+import adminManagementRoute from "./admin/admin.management.route";
 import adminQuestionnaireRoute from "./admin/admin.questionnaire.route";
 import adminUsersRoute from "./admin/admin.users.route";
 
@@ -16,5 +17,6 @@ router.use("/user/profile", profileRoute);
 router.use("/admin/auth", adminAuthRoute);
 router.use("/admin/users", authenticateAdmin, adminUsersRoute);
 router.use("/admin/questionnaire", authenticateAdmin, adminQuestionnaireRoute);
+router.use("/admin/managers", adminManagementRoute); // verifyJWT & isSuperAdmin are inside the route
 
 export default router;

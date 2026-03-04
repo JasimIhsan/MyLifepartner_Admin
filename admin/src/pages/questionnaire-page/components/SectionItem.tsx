@@ -3,6 +3,7 @@ import { ConfirmationModal } from "@/components/confirmation-modal";
 import { Button } from "@/components/ui/button";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import type { AxiosError } from "axios";
 import { ChevronDown, Edit, GripVertical, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -42,8 +43,9 @@ export default function SectionItem({ section, reloadSections }: Props) {
          } else {
             toast.error(res.message);
          }
-      } catch (error: any) {
-         toast.error(error.response?.data?.message || "Failed to delete section");
+      } catch (error) {
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "Failed to delete section");
       } finally {
          setIsDeleting(false);
          setIsDeleteModalOpen(false);
