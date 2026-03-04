@@ -16,13 +16,27 @@ class AdminUsersController {
    });
 
    createUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const result = await userService.createUser(req.body);
+      const { name, ...restData } = req.body;
+      const createPayload: any = { ...restData };
+      if (name !== undefined) {
+         createPayload.profile = {
+            create: { name },
+         };
+      }
+      const result = await userService.createUser(createPayload);
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, result, "User created successfully"));
    });
 
    updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
-      const result = await userService.updateUser(userId, req.body);
+      const { name, ...restData } = req.body;
+      const updatePayload: any = { ...restData };
+      if (name !== undefined) {
+         updatePayload.profile = {
+            update: { name },
+         };
+      }
+      const result = await userService.updateUser(userId, updatePayload);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User updated successfully"));
    });
 
@@ -55,7 +69,7 @@ class AdminUsersController {
       const { SelfieStatus } = await import("@prisma/client");
       const result = await userService.updateUser(userId, {
          isVerified: true,
-         selfieStatus: SelfieStatus.APPROVED,
+         profile: { update: { selfieStatus: SelfieStatus.APPROVED } },
       });
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User profile verified successfully"));
    });

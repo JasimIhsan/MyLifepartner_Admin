@@ -11,6 +11,24 @@ export interface UserInterface {
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
    primaryImageUrl?: string | null;
+
+   // Profile demographics
+   gender?: string | null;
+   dateOfBirth?: Date | null;
+   maritalStatus?: string | null;
+   heightCm?: number | null;
+   religion?: string | null;
+   caste?: string | null;
+   motherTongue?: string | null;
+   city?: string | null;
+   state?: string | null;
+   country?: string | null;
+   highestEducation?: string | null;
+   occupation?: string | null;
+   annualIncome?: number | null;
+   bio?: string | null;
+   profileCompletion?: number | null;
+
    createdAt: Date;
    updatedAt: Date;
 }

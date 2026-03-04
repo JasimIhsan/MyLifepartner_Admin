@@ -119,7 +119,7 @@ export class ProfileService {
       if (!image) {
          throw new ApiError(404, "Image not found");
       }
-      if (image.userId !== userId) {
+      if (image.profile?.userId !== userId) {
          throw new ApiError(403, "Forbidden to delete this image");
       }
 
@@ -132,7 +132,7 @@ export class ProfileService {
       if (!image) {
          throw new ApiError(404, "Image not found");
       }
-      if (image.userId !== userId) {
+      if (image.profile?.userId !== userId) {
          throw new ApiError(403, "Forbidden to modify this image");
       }
 

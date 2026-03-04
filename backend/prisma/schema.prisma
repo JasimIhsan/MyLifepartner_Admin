@@ -7,24 +7,70 @@ datasource db {
 }
 
 model User {
-  id                      Int                      @id @default(autoincrement())
-  mobileNumber            String                   @unique
-  email                   String?                  @unique
-  name                    String?
-  isVerified              Boolean                  @default(false)
-  isEmailVerified         Boolean                  @default(false)
-  isBlocked               Boolean                  @default(false)
-  isDeleted               Boolean                  @default(false)
-  profileStatus           ProfileStatus            @default(INCOMPLETE)
-  hasCompletedImageUpload Boolean                  @default(false)
+  id              Int      @id @default(autoincrement())
+  mobileNumber    String   @unique
+  email           String?  @unique
+  isVerified      Boolean  @default(false)
+  isEmailVerified Boolean  @default(false)
+  isBlocked       Boolean  @default(false)
+  isDeleted       Boolean  @default(false)
+  role            Role     @default(USER)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  profile                 Profile?
+  emailVerificationTokens EmailVerificationToken[]
+}
+
+model Profile {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+
+  name          String?
+  gender        Gender?
+  dateOfBirth   DateTime?
+  maritalStatus MaritalStatus?
+  heightCm      Int?
+
+  religion     String?
+  caste        String?
+  motherTongue String?
+
+  city    String?
+  state   String?
+  country String?
+
+  highestEducation String?
+  occupation       String?
+  annualIncome     Int?
+  bio              String?
+
+  profileCompletion Int           @default(10)
+  profileStatus     ProfileStatus @default(INCOMPLETE)
+
+  hasCompletedImageUpload Boolean       @default(false)
   selfieUrl               String?
   selfieStatus            SelfieStatus?
-  role                    Role                     @default(USER)
-  createdAt               DateTime                 @default(now())
-  updatedAt               DateTime                 @updatedAt
-  answers                 UserAnswer[]
-  images                  UserImage[]
-  emailVerificationTokens EmailVerificationToken[]
+
+  images  UserImage[]
+  answers UserAnswer[]
+
+  @@map("profiles")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  AWATING_DIVORCE
+  DIVORCED
+  WIDOWED
+  ANNULLED
 }
 
 model EmailVerificationToken {
@@ -76,15 +122,15 @@ model ProfileQuestion {
 
 model UserAnswer {
   id         Int             @id @default(autoincrement())
-  userId     Int
-  user       User            @relation(fields: [userId], references: [id])
+  profileId  Int
+  profile    Profile         @relation(fields: [profileId], references: [id])
   questionId Int
   question   ProfileQuestion @relation(fields: [questionId], references: [id])
   answer     Json // JSONB for the answer content
   score      Int?
   createdAt  DateTime        @default(now())
 
-  @@unique([userId, questionId]) // One answer per question per user
+  @@unique([profileId, questionId]) // One answer per question per user
   @@map("user_answers")
 }
 
@@ -113,8 +159,8 @@ model Admin {
 
 model UserImage {
   id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
   imageUrl  String
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())

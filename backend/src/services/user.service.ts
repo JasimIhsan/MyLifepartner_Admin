@@ -23,18 +23,18 @@ class UserService {
       const where: Prisma.UserWhereInput = { isDeleted: false };
 
       if (selfieStatus) {
-         where.selfieStatus = selfieStatus as any;
+         where.profile = { selfieStatus: selfieStatus as any };
       }
 
       if (searchQuery) {
-         where.OR = [{ name: { contains: searchQuery, mode: "insensitive" } }, { email: { contains: searchQuery, mode: "insensitive" } }, { mobileNumber: { contains: searchQuery, mode: "insensitive" } }];
+         where.OR = [{ profile: { name: { contains: searchQuery, mode: "insensitive" } } }, { email: { contains: searchQuery, mode: "insensitive" } }, { mobileNumber: { contains: searchQuery, mode: "insensitive" } }];
       }
 
       const skip = page && limit ? (page - 1) * limit : undefined;
       const take = limit ? limit : undefined;
 
-      const { users, total } = await userRepository.findAll(where, skip, take, { images: true });
-      return { data: users.map((u) => toUserDto(u)), total };
+      const { users, total } = await userRepository.findAll(where, skip, take, { profile: { include: { images: true } } });
+      return { data: users.map((u) => toUserDto(u as any)), total };
    }
 
    async getUserById(userId: number): Promise<UserDto> {

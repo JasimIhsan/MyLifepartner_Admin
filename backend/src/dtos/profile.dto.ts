@@ -18,7 +18,7 @@ export const toProfileSectionDto = (section: ProfileSection): ProfileSectionDto 
 
 export interface UserAnswerDto {
    id: number;
-   userId: number;
+   profileId: number;
    questionId: number;
    answer: any;
    score: number | null;
@@ -27,7 +27,7 @@ export interface UserAnswerDto {
 
 export const toUserAnswerDto = (answer: UserAnswer): UserAnswerDto => ({
    id: answer.id,
-   userId: answer.userId,
+   profileId: answer.profileId,
    questionId: answer.questionId,
    answer: answer.answer,
    score: answer.score,

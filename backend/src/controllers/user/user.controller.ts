@@ -24,8 +24,16 @@ class UserController {
 
    public updateUser = asyncHandler(async (req: Request, res: Response) => {
       const userId = Number(req.params.id);
-      const userData = req.body;
-      const updatedUserData = await userService.updateUser(userId, userData);
+      const { name, ...restData } = req.body;
+
+      const updatePayload: any = { ...restData };
+      if (name !== undefined) {
+         updatePayload.profile = {
+            update: { name },
+         };
+      }
+
+      const updatedUserData = await userService.updateUser(userId, updatePayload);
       res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedUserData, "updated"));
    });
 }

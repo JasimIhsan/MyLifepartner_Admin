@@ -52,6 +52,23 @@ class User {
   final String? email;
   final bool? isEmailVerified;
 
+  // Profile demographics
+  final String? gender;
+  final DateTime? dateOfBirth;
+  final String? maritalStatus;
+  final int? heightCm;
+  final String? religion;
+  final String? caste;
+  final String? motherTongue;
+  final String? city;
+  final String? state;
+  final String? country;
+  final String? highestEducation;
+  final String? occupation;
+  final int? annualIncome;
+  final String? bio;
+  final int? profileCompletion;
+
   User({
     required this.id,
     required this.mobileNumber,
@@ -61,6 +78,21 @@ class User {
     this.name,
     this.email,
     this.isEmailVerified,
+    this.gender,
+    this.dateOfBirth,
+    this.maritalStatus,
+    this.heightCm,
+    this.religion,
+    this.caste,
+    this.motherTongue,
+    this.city,
+    this.state,
+    this.country,
+    this.highestEducation,
+    this.occupation,
+    this.annualIncome,
+    this.bio,
+    this.profileCompletion,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -73,6 +105,23 @@ class User {
       name: json['name'],
       email: json['email'],
       isEmailVerified: json['isEmailVerified'],
+      gender: json['gender'],
+      dateOfBirth: json['dateOfBirth'] != null
+          ? DateTime.parse(json['dateOfBirth'])
+          : null,
+      maritalStatus: json['maritalStatus'],
+      heightCm: json['heightCm'],
+      religion: json['religion'],
+      caste: json['caste'],
+      motherTongue: json['motherTongue'],
+      city: json['city'],
+      state: json['state'],
+      country: json['country'],
+      highestEducation: json['highestEducation'],
+      occupation: json['occupation'],
+      annualIncome: json['annualIncome'],
+      bio: json['bio'],
+      profileCompletion: json['profileCompletion'],
     );
   }
 }
