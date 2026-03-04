@@ -1,5 +1,5 @@
+import { adminAuthController } from "@/composer/composer";
 import { Router } from "express";
-import adminAuthController from "../../controllers/admin/admin.auth.controller";
 import { verifyJWT } from "../../middlewares/auth.middleware";
 
 const adminAuthRoute = Router();

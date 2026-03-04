@@ -1,0 +1,21 @@
+import { Prisma, Profile, ProfileQuestion, ProfileSection, ProfileStatus, UserAnswer, UserImage } from "@prisma/client";
+
+export interface IProfileRepository {
+   getProfileStructure(): Promise<(ProfileSection & { questions: ProfileQuestion[] })[]>;
+   getSections(isPrimary?: boolean): Promise<ProfileSection[]>;
+   getQuestionsBySectionByOrder(sectionOrder: number, userId: number): Promise<(ProfileQuestion & { section: ProfileSection; answers: UserAnswer[] })[]>;
+   getUserAnswers(userId: number): Promise<UserAnswer[]>;
+   saveAnswer(userId: number, questionId: number, answer: Prisma.InputJsonValue, score?: number): Promise<UserAnswer>;
+   updateProfileStatus(userId: number, status: ProfileStatus): Promise<Profile>;
+   getRequiredQuestionsCount(isPrimary?: boolean): Promise<number>;
+   getUserAnsweredCount(userId: number, isPrimary?: boolean): Promise<number>;
+   getUserImages(userId: number): Promise<UserImage[]>;
+   getUserImagesCount(userId: number): Promise<number>;
+   getUserImageById(id: number): Promise<(UserImage & { profile: Profile }) | null>;
+   saveUserImage(userId: number, imageUrl: string, isPrimary?: boolean): Promise<UserImage>;
+   deleteUserImage(id: number): Promise<UserImage>;
+   unsetPrimaryImages(userId: number): Promise<Prisma.BatchPayload>;
+   setImageAsPrimary(id: number): Promise<UserImage>;
+   completeImageUpload(userId: number): Promise<Profile>;
+   saveSelfie(userId: number, selfieUrl: string): Promise<{ user: Profile; oldSelfieUrl: string | null }>;
+}

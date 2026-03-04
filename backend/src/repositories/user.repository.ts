@@ -1,9 +1,8 @@
-import { Prisma, User } from "@prisma/client";
-import { BaseRepository } from "./base.repository";
-
 import prisma from "@/config/prisma";
+import { Prisma, User } from "@prisma/client";
+import { IUserRepository } from "../interfaces/repositories/user.repository.interface";
 
-export class UserRepository extends BaseRepository<User> {
+export class UserRepository implements IUserRepository {
    async create(data: Prisma.UserCreateInput): Promise<User> {
       return prisma.user.create({ data });
    }
@@ -42,5 +41,3 @@ export class UserRepository extends BaseRepository<User> {
       return prisma.user.delete({ where: { id } });
    }
 }
-
-export default new UserRepository();

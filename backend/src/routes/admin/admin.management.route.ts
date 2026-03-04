@@ -1,5 +1,5 @@
+import { adminManagementController } from "@/composer/composer";
 import { Router } from "express";
-import adminManagementController from "../../controllers/admin/admin.management.controller";
 import { verifyJWT } from "../../middlewares/auth.middleware";
 import { isSuperAdmin } from "../../middlewares/superAdmin.middleware";
 

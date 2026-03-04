@@ -1,14 +1,16 @@
 import { AdminLoginDto } from "@/dtos/admin.auth.dto";
-import adminAuthService from "@/services/admin/admin.auth.service";
+import { IAdminAuthService } from "@/interfaces/services/admin.auth.service.interface";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
 import { ApiResponse } from "../../utils/ApiResponse";
 import { asyncHandler } from "../../utils/asyncHandler";
 
-class AdminAuthController {
+export class AdminAuthController {
+   constructor(private adminAuthService: IAdminAuthService) {}
+
    login = asyncHandler(async (req: Request, res: Response) => {
       const { username, password }: AdminLoginDto = req.body;
-      const result = await adminAuthService.login(username, password);
+      const result = await this.adminAuthService.login(username, password);
 
       const isProduction = process.env.NODE_ENV === "production";
 
@@ -38,7 +40,7 @@ class AdminAuthController {
          return res.status(HTTP_STATUS.UNAUTHORIZED).json(new ApiResponse(HTTP_STATUS.UNAUTHORIZED, null, "Refresh token is required"));
       }
 
-      const { accessToken, refreshToken } = await adminAuthService.refreshTokens(incomingRefreshToken);
+      const { accessToken, refreshToken } = await this.adminAuthService.refreshTokens(incomingRefreshToken);
 
       const isProduction = process.env.NODE_ENV === "production";
 
@@ -63,7 +65,7 @@ class AdminAuthController {
       const user = req.user;
 
       if (user && user.id) {
-         await adminAuthService.logout(user.id);
+         await this.adminAuthService.logout(user.id);
       }
 
       const isProduction = process.env.NODE_ENV === "production";
@@ -94,5 +96,3 @@ class AdminAuthController {
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user }, "User fetched successfully"));
    });
 }
-
-export default new AdminAuthController();

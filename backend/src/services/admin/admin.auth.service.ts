@@ -1,18 +1,19 @@
-import prisma from "@/config/prisma";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { IAdminRepository } from "../../interfaces/repositories/admin.repository.interface";
+import { IAdminAuthService } from "../../interfaces/services/admin.auth.service.interface";
 
-class AdminAuthService {
+export class AdminAuthService implements IAdminAuthService {
+   constructor(private adminRepository: IAdminRepository) {}
+
    async login(username: string, password: string) {
       if (!username || !password) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Username and password are required");
       }
 
-      const admin = await prisma.admin.findUnique({
-         where: { username },
-      });
+      const admin = await this.adminRepository.findByUsername(username);
 
       if (!admin) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid username or password");
@@ -50,9 +51,7 @@ class AdminAuthService {
       try {
          const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret") as import("@/types/express").UserJwtPayload;
 
-         const admin = await prisma.admin.findUnique({
-            where: { id: decoded.id },
-         });
+         const admin = await this.adminRepository.findById(decoded.id);
 
          if (!admin) {
             throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid admin");
@@ -74,5 +73,3 @@ class AdminAuthService {
       return true;
    }
 }
-
-export default new AdminAuthService();

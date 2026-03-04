@@ -1,4 +1,4 @@
-import { ProfileService } from "@/services/user/user.profile.service";
+import { IProfileService } from "@/interfaces/services/user.profile.service.interface";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
@@ -6,11 +6,7 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { Request, Response } from "express";
 
 export class ProfileController {
-   private profileService: ProfileService;
-
-   constructor() {
-      this.profileService = new ProfileService();
-   }
+   constructor(private profileService: IProfileService) {}
 
    public getQuestions = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = req.params.userId;
@@ -76,5 +72,3 @@ export class ProfileController {
       res.status(200).json(new ApiResponse(200, result, "Profile completion status fetched successfully"));
    });
 }
-
-export const profileController = new ProfileController();

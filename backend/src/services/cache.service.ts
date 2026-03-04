@@ -1,6 +1,7 @@
 import redis from "@/config/redis";
+import { ICacheService } from "../interfaces/services/cache.service.interface";
 
-class CacheService {
+export class CacheService implements ICacheService {
    setCache = async (key: string, value: string, ttl: number = 60 * 60 * 24) => {
       await redis.set(key, value, "EX", ttl);
    };
@@ -12,6 +13,11 @@ class CacheService {
    deleteCache = async (key: string) => {
       await redis.del(key);
    };
-}
 
-export default new CacheService();
+   deleteCachePattern = async (pattern: string) => {
+      const keys = await redis.keys(pattern);
+      if (keys.length > 0) {
+         await redis.del(...keys);
+      }
+   };
+}

@@ -1,24 +1,31 @@
 import prisma from "@/config/prisma";
-import emailService from "@/services/email.service";
-import otpService from "@/services/otp.service";
-import userService from "@/services/user.service";
+import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
+import { EmailService } from "@/services/email.service";
+import { OtpService } from "@/services/otp.service";
+import { UserService } from "@/services/user.service";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 
-class AuthService {
+export class AuthService implements IUserAuthService {
+   constructor(
+      private userService: UserService,
+      private otpService: OtpService,
+      private emailService: EmailService
+   ) {}
+
    async login(mobileNumber: string, otp: string) {
       if (!mobileNumber || !otp) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Mobile number and OTP are required");
       }
 
-      const verifyResult = await otpService.verifyOtp(mobileNumber, otp);
+      const verifyResult = await this.otpService.verifyOtp(mobileNumber, otp);
       if (!verifyResult.isValid) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired OTP");
       }
 
-      const user = await userService.findOrCreateUser(mobileNumber);
+      const user = await this.userService.findOrCreateUser(mobileNumber);
 
       const accessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
       const refreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
@@ -34,7 +41,7 @@ class AuthService {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Send option is required");
       }
 
-      const otp = await otpService.sendOtp(mobileNumber, sendOption);
+      const otp = await this.otpService.sendOtp(mobileNumber, sendOption);
       return { otp };
    }
 
@@ -46,7 +53,7 @@ class AuthService {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Send option is required");
       }
 
-      const otp = await otpService.resendOtp(mobileNumber, sendOption);
+      const otp = await this.otpService.resendOtp(mobileNumber, sendOption);
       return { otp };
    }
 
@@ -113,7 +120,7 @@ class AuthService {
          if (!decoded.mobileNumber) {
             throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid token payload: Missing mobile number");
          }
-         const user = await userService.findOrCreateUser(decoded.mobileNumber);
+         const user = await this.userService.findOrCreateUser(decoded.mobileNumber);
 
          const newAccessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
          const newRefreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
@@ -133,13 +140,13 @@ class AuthService {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
       }
 
-      const user = await userService.getUserById(userId);
+      const user = await this.userService.getUserById(userId);
       if (!user) {
          throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
       }
 
       if (user.email !== email) {
-         await userService.updateUser(userId, { email, isEmailVerified: false } as import("@prisma/client").Prisma.UserUpdateInput);
+         await this.userService.updateUser(userId, { email, isEmailVerified: false } as import("@prisma/client").Prisma.UserUpdateInput);
       } else if (user.isEmailVerified) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is already verified");
       }
@@ -166,7 +173,7 @@ class AuthService {
       const baseUrl = "http://192.168.1.27:3000";
       const verificationUrl = `${baseUrl}/api/user/auth/verify-email?token=${token}`;
 
-      await emailService.sendVerificationEmail(email, verificationUrl);
+      await this.emailService.sendVerificationEmail(email, verificationUrl);
    }
 
    async verifyEmail(token: string | undefined | null | any) {
@@ -217,5 +224,3 @@ class AuthService {
       return { verified: true, message: "Email Verified Successfully!" };
    }
 }
-
-export default new AuthService();

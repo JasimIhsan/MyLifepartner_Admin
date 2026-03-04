@@ -1,12 +1,8 @@
+import { profileController, profileImageController } from "@/composer/composer";
 import { multerConfig } from "@/config/multer.config";
-import { profileController } from "@/controllers/user/profile.controller";
-import { profileImageController } from "@/controllers/user/profile.image.controller";
-// import { verifyJWT } from "@/middlewares/auth.middleware"; // Assuming this exists
 import { Router } from "express";
 
 const router = Router();
-
-// router.use(verifyJWT); // Apply auth middleware to all routes
 
 router.get("/sections", profileController.getSections);
 router.get("/questions/:userId", profileController.getQuestions);

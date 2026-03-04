@@ -1,14 +1,16 @@
-import authService from "@/services/user/user.auth.service";
+import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
 
-class AuthController {
+export class AuthController {
+   constructor(private authService: IUserAuthService) {}
+
    login = asyncHandler(async (req: Request, res: Response) => {
       const { mobileNumber, otp } = req.body;
-      const result = await authService.login(mobileNumber, otp);
+      const result = await this.authService.login(mobileNumber, otp);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User login success"));
    });
 
@@ -16,14 +18,14 @@ class AuthController {
       const { mobileNumber, sendOption } = req.body;
       console.log(`👉 Mobile Number : `, mobileNumber);
       console.log(`👉 Send Option : `, sendOption);
-      const result = await authService.sendOtp(mobileNumber, sendOption);
+      const result = await this.authService.sendOtp(mobileNumber, sendOption);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Otp sent successfully"));
    });
 
    resendOtp = asyncHandler(async (req: Request, res: Response) => {
       const { mobileNumber, sendOption } = req.body;
       console.log(`👉 Resending OTP to : ${mobileNumber} via ${sendOption}`);
-      const result = await authService.resendOtp(mobileNumber, sendOption);
+      const result = await this.authService.resendOtp(mobileNumber, sendOption);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Otp resent successfully"));
    });
 
@@ -31,7 +33,7 @@ class AuthController {
       const countryCodeHeader = (req.headers["cf-ipcountry"] || req.headers["x-vercel-ip-country"]) as string;
       const ip = req.ip;
 
-      const result = await authService.detectCountryAsync(ip, countryCodeHeader);
+      const result = await this.authService.detectCountryAsync(ip, countryCodeHeader);
 
       return res.status(HTTP_STATUS.OK).json(
          new ApiResponse(
@@ -48,7 +50,7 @@ class AuthController {
 
    refreshToken = asyncHandler(async (req: Request, res: Response) => {
       const { refreshToken } = req.body;
-      const result = await authService.refreshToken(refreshToken);
+      const result = await this.authService.refreshToken(refreshToken);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Token refreshed successfully"));
    });
 
@@ -58,7 +60,7 @@ class AuthController {
       const userId = req.user?.id;
       console.log("userId: ", userId);
 
-      await authService.sendMagicLink(userId, email);
+      await this.authService.sendMagicLink(userId, email);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Verification link sent to your email"));
    });
@@ -70,8 +72,6 @@ class AuthController {
       }
 
       const appSchemeUrl = `mylifepartner://verify-email?token=${token}`;
-
-      // Intent scheme for Android
       const androidIntentUrl = `intent://verify-email?token=${token}#Intent;scheme=mylifepartner;package=com.ciltriq.mylifepartner;end;`;
 
       const html = `
@@ -81,10 +81,7 @@ class AuthController {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Verify Email - MyLifePartner</title>
-          
-          <!-- iOS Smart App Banners (Requires Apple Developer Team ID setup usually, but good practice) -->
           <meta name="apple-itunes-app" content="app-id=YOUR_APP_ID, app-argument=${appSchemeUrl}">
-
           <style>
               body {
                   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -106,15 +103,8 @@ class AuthController {
                   max-width: 400px;
                   width: 100%;
               }
-              h2 {
-                  margin-top: 0;
-                  color: #B88973;
-              }
-              p {
-                  color: #757575;
-                  line-height: 1.6;
-                  margin-bottom: 25px;
-              }
+              h2 { margin-top: 0; color: #B88973; }
+              p { color: #757575; line-height: 1.6; margin-bottom: 25px; }
               .btn {
                   display: inline-block;
                   background-color: #B88973;
@@ -127,9 +117,7 @@ class AuthController {
                   transition: background-color 0.3s;
                   margin: 5px;
               }
-              .btn:hover {
-                  background-color: #a07764;
-              }
+              .btn:hover { background-color: #a07764; }
               .loader {
                   border: 4px solid #f3f3f3;
                   border-top: 4px solid #B88973;
@@ -148,25 +136,16 @@ class AuthController {
               window.onload = function() {
                   const isAndroid = /android/i.test(navigator.userAgent);
                   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                  
                   const appSchemeUrl = "${appSchemeUrl}";
                   const androidIntentUrl = "${androidIntentUrl}";
-                  
-                  // Attempt to open the app automatically
                   if (isAndroid) {
                       window.location.href = androidIntentUrl;
                   } else {
                       window.location.href = appSchemeUrl;
-                      
-                      // iOS specific iframe hack attempt
                       if (isIOS) {
-                          setTimeout(function() {
-                              window.location.replace(appSchemeUrl);
-                          }, 500);
+                          setTimeout(function() { window.location.replace(appSchemeUrl); }, 500);
                       }
                   }
-
-                  // Fallback: If the user is still here after 3 seconds, show the button
                   setTimeout(() => {
                       document.getElementById('loader').style.display = 'none';
                       document.getElementById('fallback').style.display = 'block';
@@ -179,7 +158,6 @@ class AuthController {
               <div id="loader" class="loader"></div>
               <h2>Verifying your email...</h2>
               <p>You are being redirected to the MyLifePartner app.</p>
-              
               <div id="fallback" style="display: none;">
                   <p>If you are not redirected automatically, please click a button below to open the app manually:</p>
                   <a href="${androidIntentUrl}" class="btn" id="android-btn" style="display:none;">Open App (Android)</a>
@@ -202,9 +180,7 @@ class AuthController {
 
    verifyEmail = asyncHandler(async (req: Request, res: Response) => {
       const token = req.body.token || req.query.token;
-      const result = await authService.verifyEmail(token);
+      const result = await this.authService.verifyEmail(token);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, result.message));
    });
 }
-
-export default new AuthController();

@@ -1,50 +1,40 @@
-import prisma from "@/config/prisma";
 import { ApiError } from "@/utils/ApiError";
 import { AnswerType, Prisma } from "@prisma/client";
+import { IQuestionnaireRepository } from "../../interfaces/repositories/questionnaire.repository.interface";
+import { IAdminQuestionnaireService } from "../../interfaces/services/admin.questionnaire.service.interface";
 
-class AdminQuestionnaireService {
+export class AdminQuestionnaireService implements IAdminQuestionnaireService {
+   constructor(private questionnaireRepository: IQuestionnaireRepository) {}
+
    // ==========================================
    // Sections
    // ==========================================
 
    async createSection(data: { key: string; title: string; orderNo?: number; isPrimary?: boolean }) {
-      const existing = await prisma.profileSection.findUnique({ where: { key: data.key } });
+      const existing = await this.questionnaireRepository.getSectionByKey(data.key);
       if (existing) {
          throw new ApiError(409, `Section with key '${data.key}' already exists`);
       }
-      return await prisma.profileSection.create({ data });
+      return await this.questionnaireRepository.createSection(data);
    }
 
    async getSections() {
-      return await prisma.profileSection.findMany({
-         orderBy: { orderNo: "asc" },
-         include: {
-            questions: {
-               orderBy: { orderNo: "asc" },
-            },
-         },
-      });
+      return await this.questionnaireRepository.getSectionsWithQuestions();
    }
 
    async updateSection(id: number, data: { key?: string; title?: string; isPrimary?: boolean }) {
       if (data.key) {
-         const existing = await prisma.profileSection.findUnique({ where: { key: data.key } });
+         const existing = await this.questionnaireRepository.getSectionByKey(data.key);
          if (existing && existing.id !== id) {
             throw new ApiError(409, `Section with key '${data.key}' already exists`);
          }
       }
-      return await prisma.profileSection.update({
-         where: { id },
-         data,
-      });
+      return await this.questionnaireRepository.updateSection(id, data);
    }
 
    async deleteSection(id: number) {
       // Check if there are questions attached
-      const section = await prisma.profileSection.findUnique({
-         where: { id },
-         include: { _count: { select: { questions: true } } },
-      });
+      const section = await this.questionnaireRepository.getSectionById(id);
 
       if (!section) {
          throw new ApiError(404, "Section not found");
@@ -54,18 +44,11 @@ class AdminQuestionnaireService {
          throw new ApiError(400, "Cannot delete section because it contains questions. Delete them first.");
       }
 
-      return await prisma.profileSection.delete({ where: { id } });
+      return await this.questionnaireRepository.deleteSection(id);
    }
 
    async reorderSections(orderedIds: number[]) {
-      // orderedIds is an array of section ids [3, 1, 2] meant to be in order 0, 1, 2
-      const queries = orderedIds.map((id, index) =>
-         prisma.profileSection.update({
-            where: { id },
-            data: { orderNo: index },
-         })
-      );
-      return await prisma.$transaction(queries);
+      return await this.questionnaireRepository.reorderSections(orderedIds);
    }
 
    // ==========================================
@@ -85,17 +68,15 @@ class AdminQuestionnaireService {
          isActive?: boolean;
       }
    ) {
-      const section = await prisma.profileSection.findUnique({ where: { id: sectionId } });
+      const section = await this.questionnaireRepository.getSectionById(sectionId);
       if (!section) {
          throw new ApiError(404, "Section not found");
       }
 
-      return await prisma.profileQuestion.create({
-         data: {
-            ...data,
-            sectionId,
-            options: data.options ?? Prisma.JsonNull,
-         },
+      return await this.questionnaireRepository.createQuestion({
+         ...data,
+         sectionId,
+         options: data.options ?? Prisma.JsonNull,
       });
    }
 
@@ -110,60 +91,41 @@ class AdminQuestionnaireService {
          isRequired?: boolean;
       }
    ) {
-      const question = await prisma.profileQuestion.findUnique({ where: { id } });
+      const question = await this.questionnaireRepository.getQuestionById(id);
       if (!question) {
          throw new ApiError(404, "Question not found");
       }
 
-      return await prisma.profileQuestion.update({
-         where: { id },
-         data: {
-            ...data,
-            options: data.options !== undefined ? data.options : undefined,
-         },
+      return await this.questionnaireRepository.updateQuestion(id, {
+         ...data,
+         options: data.options !== undefined ? data.options : undefined,
       });
    }
 
    async toggleQuestionActive(id: number) {
-      const question = await prisma.profileQuestion.findUnique({ where: { id } });
+      const question = await this.questionnaireRepository.getQuestionById(id);
       if (!question) {
          throw new ApiError(404, "Question not found");
       }
 
-      return await prisma.profileQuestion.update({
-         where: { id },
-         data: { isActive: !question.isActive },
-      });
+      return await this.questionnaireRepository.updateQuestion(id, { isActive: !question.isActive });
    }
 
    async deleteQuestion(id: number) {
-      const question = await prisma.profileQuestion.findUnique({
-         where: { id },
-         include: { _count: { select: { answers: true } } },
-      });
+      const question = await this.questionnaireRepository.getQuestionByIdWithAnswersCount(id);
 
       if (!question) {
          throw new ApiError(404, "Question not found");
       }
 
-      // Instead of deleting if it has answers we could prevent it, or we allow it but cascade is needed.
-      // Assuming Prisma schema doesn't have cascade on UserAnswer, we throw error if answers exist.
       if (question._count.answers > 0) {
          throw new ApiError(400, "Cannot delete question because it has associated user answers. Consider hiding it instead.");
       }
 
-      return await prisma.profileQuestion.delete({ where: { id } });
+      return await this.questionnaireRepository.deleteQuestion(id);
    }
 
    async reorderQuestions(sectionId: number, orderedIds: number[]) {
-      const queries = orderedIds.map((id, index) =>
-         prisma.profileQuestion.update({
-            where: { id, sectionId },
-            data: { orderNo: index },
-         })
-      );
-      return await prisma.$transaction(queries);
+      return await this.questionnaireRepository.reorderQuestions(sectionId, orderedIds);
    }
 }
-
-export default new AdminQuestionnaireService();

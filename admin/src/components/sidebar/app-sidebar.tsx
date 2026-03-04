@@ -3,10 +3,11 @@
 import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
-import { RootState } from "@/store";
+import type { RootState } from "@/store";
 import { Command, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
+import { NavProjects } from "./nav-projects";
 
 const data = {
    // navMain: [

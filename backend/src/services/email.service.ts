@@ -1,7 +1,8 @@
 import nodemailer from "nodemailer";
 import env from "../config/env";
+import { IEmailService } from "../interfaces/services/email.service.interface";
 
-class EmailService {
+export class EmailService implements IEmailService {
    private transporter: nodemailer.Transporter;
 
    constructor() {
@@ -123,5 +124,3 @@ class EmailService {
       `;
    }
 }
-
-export default new EmailService();

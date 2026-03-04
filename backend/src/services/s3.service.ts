@@ -3,8 +3,9 @@ import { s3Client } from "@/config/s3.config";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
+import { IS3Service } from "../interfaces/services/s3.service.interface";
 
-class S3Service {
+export class S3Service implements IS3Service {
    /**
     * Uploads a file to AWS S3.
     * @param file The file object from Multer
@@ -102,5 +103,3 @@ class S3Service {
       }
    }
 }
-
-export const s3Service = new S3Service();

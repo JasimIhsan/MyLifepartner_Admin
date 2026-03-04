@@ -1,16 +1,13 @@
 import { ImageUploadStatusDto, UserImageDto, toImageUploadStatusDto, toUserImageDto } from "@/dtos/image.dto";
 
 import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, UserAnswerDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto } from "@/dtos/profile.dto";
-import { ProfileRepository } from "@/repositories/profile.repository";
+import { IProfileRepository } from "@/interfaces/repositories/profile.repository.interface";
+import { IProfileService } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { ProfileStatus } from "@prisma/client";
 
-export class ProfileService {
-   private profileRepository: ProfileRepository;
-
-   constructor() {
-      this.profileRepository = new ProfileRepository();
-   }
+export class ProfileService implements IProfileService {
+   constructor(private profileRepository: IProfileRepository) {}
 
    async getProfileStructure(userId: number): Promise<ProfileSectionDto[]> {
       const sections = await this.profileRepository.getProfileStructure();

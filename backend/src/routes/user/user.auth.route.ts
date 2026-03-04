@@ -1,4 +1,4 @@
-import authController from "@/controllers/user/auth.controller";
+import { authController } from "@/composer/composer";
 import { verifyJWT } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 

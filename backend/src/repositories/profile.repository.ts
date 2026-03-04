@@ -1,7 +1,8 @@
 import prisma from "@/config/prisma";
 import { ProfileStatus } from "@prisma/client";
+import { IProfileRepository } from "../interfaces/repositories/profile.repository.interface";
 
-export class ProfileRepository {
+export class ProfileRepository implements IProfileRepository {
    async getProfileStructure() {
       return prisma.profileSection.findMany({
          include: {

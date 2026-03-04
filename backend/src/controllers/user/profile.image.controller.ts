@@ -1,4 +1,4 @@
-import { s3Service } from "@/services/s3.service";
+import { S3Service } from "@/services/s3.service";
 import { ProfileService } from "@/services/user/user.profile.service";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
@@ -7,11 +7,10 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { Response } from "express";
 
 export class ProfileImageController {
-   private profileService: ProfileService;
-
-   constructor() {
-      this.profileService = new ProfileService();
-   }
+   constructor(
+      private profileService: ProfileService,
+      private s3Service: S3Service
+   ) {}
 
    public uploadImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = req.params.userId || req.user.id;
@@ -22,19 +21,19 @@ export class ProfileImageController {
       }
 
       // 1. Upload to S3
-      const s3Url = await s3Service.uploadToS3(req.file, `${userId}/profile`);
+      const s3Url = await this.s3Service.uploadToS3(req.file, `${userId}/profile`);
 
       // 2. Save to DB
       try {
          const newImage = await this.profileService.uploadUserImage(Number(userId), s3Url);
 
          // Generate presigned URL for immediate response
-         newImage.imageUrl = await s3Service.getPresignedUrl(newImage.imageUrl);
+         newImage.imageUrl = await this.s3Service.getPresignedUrl(newImage.imageUrl);
 
          res.status(201).json(new ApiResponse(201, newImage, "Image uploaded successfully"));
       } catch (error) {
          // Rollback S3 upload if DB fails
-         await s3Service.deleteFromS3(s3Url);
+         await this.s3Service.deleteFromS3(s3Url);
          throw error;
       }
    });
@@ -53,7 +52,7 @@ export class ProfileImageController {
 
       // Delete from S3
       if (imageToDelete.imageUrl) {
-         await s3Service.deleteFromS3(imageToDelete.imageUrl);
+         await this.s3Service.deleteFromS3(imageToDelete.imageUrl);
       }
 
       // Delete from DB
@@ -82,7 +81,7 @@ export class ProfileImageController {
       const imagesWithPresignedUrls = await Promise.all(
          images.map(async (img) => {
             if (img.imageUrl) {
-               img.imageUrl = await s3Service.getPresignedUrl(img.imageUrl);
+               img.imageUrl = await this.s3Service.getPresignedUrl(img.imageUrl);
             }
             return img;
          })
@@ -110,7 +109,7 @@ export class ProfileImageController {
       }
 
       // 1. Upload to S3
-      const s3Url = await s3Service.uploadToS3(req.file, `${userId}/selfie`);
+      const s3Url = await this.s3Service.uploadToS3(req.file, `${userId}/selfie`);
 
       // 2. Save to DB
       try {
@@ -118,16 +117,14 @@ export class ProfileImageController {
 
          // Delete old selfie from S3 if it exists
          if (oldSelfieUrl) {
-            await s3Service.deleteFromS3(oldSelfieUrl);
+            await this.s3Service.deleteFromS3(oldSelfieUrl);
          }
 
          res.status(201).json(new ApiResponse(201, { selfieStatus: user.selfieStatus }, "Selfie uploaded successfully. Awaiting review."));
       } catch (error) {
          // Rollback S3 upload if DB fails
-         await s3Service.deleteFromS3(s3Url);
+         await this.s3Service.deleteFromS3(s3Url);
          throw error;
       }
    });
 }
-
-export const profileImageController = new ProfileImageController();

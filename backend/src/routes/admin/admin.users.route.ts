@@ -1,4 +1,4 @@
-import adminUsersController from "@/controllers/admin/admin.users.controller";
+import { adminUsersController } from "@/composer/composer";
 import { Router } from "express";
 
 const adminUsersRoute = Router();
