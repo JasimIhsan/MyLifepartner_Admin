@@ -29,11 +29,13 @@ export const questionnaireRepository = new QuestionnaireRepository();
 // ─── 2. Infrastructure / Utility Services ────────────────────────────────────
 import { CacheService } from "@/services/cache.service";
 import { EmailService } from "@/services/email.service";
+import { JwtService } from "@/services/jwt.service";
 import { OtpService } from "@/services/otp.service";
 import { S3Service } from "@/services/s3.service";
 
 export const cacheService = new CacheService();
 export const emailService = new EmailService();
+export const jwtService = new JwtService();
 export const otpService = new OtpService(cacheService);
 export const s3Service = new S3Service();
 
@@ -46,13 +48,13 @@ import { AuthService } from "@/services/user/user.auth.service";
 import { ProfileService } from "@/services/user/user.profile.service";
 
 // Admin services
-export const adminAuthService = new AdminAuthService(adminRepository);
+export const adminAuthService = new AdminAuthService(adminRepository, jwtService);
 export const adminManagementService = new AdminManagementService(adminRepository);
 export const adminQuestionnaireService = new AdminQuestionnaireService(questionnaireRepository);
 
 // User services
 export const userService = new UserService(userRepository);
-export const authService = new AuthService(userService, otpService, emailService);
+export const authService = new AuthService(userService, otpService, emailService, jwtService);
 export const profileService = new ProfileService(profileRepository);
 
 // ─── 4. Controllers ───────────────────────────────────────────────────────────

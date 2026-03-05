@@ -6,13 +6,15 @@ import { UserService } from "@/services/user.service";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
 import crypto from "crypto";
-import jwt from "jsonwebtoken";
+
+import { IJwtService } from "@/interfaces/services/jwt.service.interface";
 
 export class AuthService implements IUserAuthService {
    constructor(
       private userService: UserService,
       private otpService: OtpService,
-      private emailService: EmailService
+      private emailService: EmailService,
+      private jwtService: IJwtService
    ) {}
 
    async login(mobileNumber: string, otp: string) {
@@ -27,8 +29,8 @@ export class AuthService implements IUserAuthService {
 
       const user = await this.userService.findOrCreateUser(mobileNumber);
 
-      const accessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
-      const refreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
+      const accessToken = this.jwtService.signAccess({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, "1d");
+      const refreshToken = this.jwtService.signRefresh({ id: user.id, mobileNumber: user.mobileNumber, role: user.role }, "30d");
 
       return { user, accessToken, refreshToken };
    }
@@ -115,15 +117,15 @@ export class AuthService implements IUserAuthService {
       }
 
       try {
-         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret") as import("@/types/express").UserJwtPayload;
+         const decoded = this.jwtService.verifyRefresh(refreshToken);
 
          if (!decoded.mobileNumber) {
             throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid token payload: Missing mobile number");
          }
          const user = await this.userService.findOrCreateUser(decoded.mobileNumber);
 
-         const newAccessToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "1d" });
-         const newRefreshToken = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "30d" });
+         const newAccessToken = this.jwtService.signAccess({ id: user.id, mobileNumber: user.mobileNumber }, "1d");
+         const newRefreshToken = this.jwtService.signRefresh({ id: user.id, mobileNumber: user.mobileNumber }, "30d");
 
          return { accessToken: newAccessToken, refreshToken: newRefreshToken };
       } catch (error) {

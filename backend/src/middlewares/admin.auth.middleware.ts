@@ -1,8 +1,7 @@
-import { UserJwtPayload } from "@/types/express";
+import { jwtService } from "@/composer/composer";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { HTTP_STATUS } from "@/utils/constants";
 import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
 
 export const authenticateAdmin = (req: Request, res: Response, next: NextFunction) => {
    const token = req.cookies?.accessToken || req.headers.authorization?.split(" ")[1];
@@ -12,7 +11,7 @@ export const authenticateAdmin = (req: Request, res: Response, next: NextFunctio
    }
 
    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret") as UserJwtPayload;
+      const decoded = jwtService.verifyAccess(token);
 
       if (decoded.role !== "ADMIN" && decoded.role !== "SUPER_ADMIN") {
          return res.status(HTTP_STATUS.FORBIDDEN).json(new ApiResponse(HTTP_STATUS.FORBIDDEN, null, "Access denied. Admins only."));

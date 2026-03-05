@@ -1,12 +1,16 @@
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { IAdminRepository } from "../../interfaces/repositories/admin.repository.interface";
 import { IAdminAuthService } from "../../interfaces/services/admin.auth.service.interface";
 
+import { IJwtService } from "../../interfaces/services/jwt.service.interface";
+
 export class AdminAuthService implements IAdminAuthService {
-   constructor(private adminRepository: IAdminRepository) {}
+   constructor(
+      private adminRepository: IAdminRepository,
+      private jwtService: IJwtService
+   ) {}
 
    async login(username: string, password: string) {
       if (!username || !password) {
@@ -24,16 +28,14 @@ export class AdminAuthService implements IAdminAuthService {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid username or password");
       }
 
-      const accessToken = jwt.sign(
+      const accessToken = this.jwtService.signAccess(
          { id: admin.id, username: admin.username, role: admin.role },
-         process.env.JWT_SECRET || "default_secret",
-         { expiresIn: "15m" } // short-lived
+         "15m" // short-lived
       );
 
-      const refreshToken = jwt.sign(
+      const refreshToken = this.jwtService.signRefresh(
          { id: admin.id, username: admin.username },
-         process.env.JWT_REFRESH_SECRET || "default_refresh_secret",
-         { expiresIn: "7d" } // long-lived
+         "7d" // long-lived
       );
 
       return {
@@ -49,7 +51,7 @@ export class AdminAuthService implements IAdminAuthService {
       }
 
       try {
-         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "default_refresh_secret") as import("@/types/express").UserJwtPayload;
+         const decoded = this.jwtService.verifyRefresh(refreshToken);
 
          const admin = await this.adminRepository.findById(decoded.id);
 
@@ -57,9 +59,9 @@ export class AdminAuthService implements IAdminAuthService {
             throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid admin");
          }
 
-         const accessToken = jwt.sign({ id: admin.id, username: admin.username, role: admin.role }, process.env.JWT_SECRET || "default_secret", { expiresIn: "15m" });
+         const accessToken = this.jwtService.signAccess({ id: admin.id, username: admin.username, role: admin.role }, "15m");
 
-         const newRefreshToken = jwt.sign({ id: admin.id, username: admin.username }, process.env.JWT_REFRESH_SECRET || "default_refresh_secret", { expiresIn: "7d" });
+         const newRefreshToken = this.jwtService.signRefresh({ id: admin.id, username: admin.username }, "7d");
 
          return { accessToken, refreshToken: newRefreshToken };
       } catch (error) {
