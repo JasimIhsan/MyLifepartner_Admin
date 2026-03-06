@@ -11,11 +11,8 @@ services:
       command: npm run dev
       ports:
          - "3000:3000"
-      environment:
-         - NODE_ENV=development
-         - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/mylifepartner?schema=public
-         - REDIS_URL=redis://redis:6379
-         - JWT_SECRET=supersecret # Replace with a real secret in production
+      env_file:
+         - .env
       depends_on:
          - postgres
          - redis

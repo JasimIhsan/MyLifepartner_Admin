@@ -86,7 +86,6 @@ const UsersPage = () => {
    };
 
    const handleDeleteUser = async (id: number) => {
-      if (!confirm("Are you sure you want to delete this user?")) return;
       try {
          await axiosInstance.delete(`/admin/users/${id}`);
          toast.success("User deleted successfully");
