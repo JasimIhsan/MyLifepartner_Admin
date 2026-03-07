@@ -1,4 +1,4 @@
-import { ProfileSection, UserAnswer } from "@prisma/client";
+import { Prisma, ProfileQuestion, ProfileSection, UserAnswer } from "@prisma/client";
 
 export interface ProfileSectionDto {
    id: number;
@@ -18,16 +18,16 @@ export const toProfileSectionDto = (section: ProfileSection): ProfileSectionDto 
 
 export interface UserAnswerDto {
    id: number;
-   userId: number;
+   profileId: number;
    questionId: number;
-   answer: any;
+   answer: Prisma.JsonValue;
    score: number | null;
    createdAt: Date;
 }
 
 export const toUserAnswerDto = (answer: UserAnswer): UserAnswerDto => ({
    id: answer.id,
-   userId: answer.userId,
+   profileId: answer.profileId,
    questionId: answer.questionId,
    answer: answer.answer,
    score: answer.score,
@@ -49,7 +49,7 @@ export interface ProfileQuestionDto {
    answers?: UserAnswerDto[];
 }
 
-export const toProfileQuestionDto = (question: any): ProfileQuestionDto => ({
+export const toProfileQuestionDto = (question: ProfileQuestion & { section?: { title: string }; answers?: UserAnswer[] }): ProfileQuestionDto => ({
    id: question.id,
    sectionId: question.sectionId,
    question: question.question,
@@ -65,11 +65,11 @@ export const toProfileQuestionDto = (question: any): ProfileQuestionDto => ({
 });
 
 export interface ProfileStatusDto {
-   isProfileCompleted: boolean;
+   profileStatus: string;
    nextAction: string;
 }
 
-export const toProfileStatusDto = (isCompleted: boolean, nextAction: string): ProfileStatusDto => ({
-   isProfileCompleted: isCompleted,
+export const toProfileStatusDto = (profileStatus: string, nextAction: string): ProfileStatusDto => ({
+   profileStatus: profileStatus,
    nextAction: nextAction,
 });

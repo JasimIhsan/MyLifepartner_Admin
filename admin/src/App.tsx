@@ -1,20 +1,58 @@
-import { useState } from "react";
-import "./App.css";
-import axiosInstance from "./api/config/api.config";
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import axiosInstance from "./api/api.config";
+import { AdminLayout } from "./components/layout/admin-layout";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
+import AdminsPage from "./pages/admins-page/AdminsPage";
+import DashboardPage from "./pages/dashboard-page/DashboardPage";
+import LoginPage from "./pages/login-page/LoginPage";
+import NotFoundPage from "./pages/not-found-page/NotFoundPage";
+import ProfileVerificationPage from "./pages/profile-verification-page/ProfileVerificationPage";
+import QuestionnairePage from "./pages/questionnaire-page/QuestionnairePage";
+import UsersPage from "./pages/users-page/UsersPage";
+import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 
 function App() {
-   const [data, setData] = useState("");
+   const dispatch = useDispatch();
+   const location = useLocation();
+   const navigate = useNavigate();
 
-   const handleApiTest = async () => {
-      const response = await axiosInstance.get("/health");
-      setData(response.data.message);
-   };
+   useEffect(() => {
+      const verifySession = async () => {
+         try {
+            const response = await axiosInstance.get("/admin/auth/me");
+            dispatch(setUser(response.data.data.user));
+            dispatch(setAuthenticated(true));
+
+            if (location.pathname === "/login") {
+               navigate("/", { replace: true });
+            }
+         } catch (error) {
+            dispatch(setAuthenticated(false));
+         } finally {
+            dispatch(setLoading(false));
+         }
+      };
+
+      verifySession();
+   }, [dispatch, location.pathname, navigate]);
 
    return (
       <>
-         <h1>Admin Panel</h1>
-         {data && <p>{data} ✅✅✅</p>}
-         <button onClick={handleApiTest}>Api Test</button>
+         <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route element={<ProtectedRoute />}>
+               <Route element={<AdminLayout />}>
+                  <Route path="/" element={<DashboardPage />} />
+                  <Route path="/admins" element={<AdminsPage />} />
+                  <Route path="/users" element={<UsersPage />} />
+                  <Route path="/questionnaire" element={<QuestionnairePage />} />
+                  <Route path="/profile-verification" element={<ProfileVerificationPage />} />
+                  <Route path="*" element={<NotFoundPage />} />
+               </Route>
+            </Route>
+         </Routes>
       </>
    );
 }

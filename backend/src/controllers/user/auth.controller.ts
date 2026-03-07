@@ -1,145 +1,186 @@
-import otpService from "@/services/otp.service";
-import userService from "@/services/user.service";
-import { ApiError } from "@/utils/ApiError";
+import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
+import { AuthRequest } from "@/types/AuthRequest";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
-import jwt from "jsonwebtoken";
 
-class AuthController {
+export class AuthController {
+   constructor(private authService: IUserAuthService) {}
+
    login = asyncHandler(async (req: Request, res: Response) => {
       const { mobileNumber, otp } = req.body;
-      if (!mobileNumber || !otp) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Mobile number and OTP are required");
-      }
-
-      const verifyResult = await otpService.verifyOtp(mobileNumber, otp);
-      if (!verifyResult.isValid) {
-         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired OTP");
-      }
-
-      const user = await userService.findOrCreateUser(mobileNumber);
-
-      const token = jwt.sign({ id: user.id, mobileNumber: user.mobileNumber }, process.env.JWT_SECRET || "default_secret", { expiresIn: "30d" });
-
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user, token }, "User login success"));
+      const result = await this.authService.login(mobileNumber, otp);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User login success"));
    });
 
    sendOtp = asyncHandler(async (req: Request, res: Response) => {
       const { mobileNumber, sendOption } = req.body;
       console.log(`👉 Mobile Number : `, mobileNumber);
       console.log(`👉 Send Option : `, sendOption);
-      if (!mobileNumber) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Mobile number is required");
-      }
-      if (!sendOption) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Send option is required");
-      }
-
-      const otp = await otpService.sendOtp(mobileNumber, sendOption);
-
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { otp }, "Otp sent successfully"));
+      const result = await this.authService.sendOtp(mobileNumber, sendOption);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Otp sent successfully"));
    });
 
    resendOtp = asyncHandler(async (req: Request, res: Response) => {
       const { mobileNumber, sendOption } = req.body;
       console.log(`👉 Resending OTP to : ${mobileNumber} via ${sendOption}`);
-
-      if (!mobileNumber) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Mobile number is required");
-      }
-      if (!sendOption) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Send option is required");
-      }
-
-      const otp = await otpService.resendOtp(mobileNumber, sendOption);
-
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { otp }, "Otp resent successfully"));
+      const result = await this.authService.resendOtp(mobileNumber, sendOption);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Otp resent successfully"));
    });
 
    detectCountry = asyncHandler(async (req: Request, res: Response) => {
-      // 1. Try platform headers first (Cloudflare / Vercel)
       const countryCodeHeader = (req.headers["cf-ipcountry"] || req.headers["x-vercel-ip-country"]) as string;
-
-      // 2. Localhost / Internal IP detection
       const ip = req.ip;
-      const isLocal = !ip || ip === "::1" || ip === "127.0.0.1" || ip.startsWith("192.168.") || ip.startsWith("10.");
 
-      // If we have a platform header, we can use it to avoid an external API call
-      // We'll need a basic mapping for calling codes if we go this route
-      if (countryCodeHeader && !isLocal) {
-         // Basic mapping for common countries (can be expanded)
-         const countryNames: Record<string, string> = { IN: "India", US: "United States", GB: "United Kingdom", AE: "United Arab Emirates" };
-         const callingCodes: Record<string, string> = { IN: "+91", US: "+1", GB: "+44", AE: "+971" };
+      const result = await this.authService.detectCountryAsync(ip, countryCodeHeader);
 
-         if (callingCodes[countryCodeHeader.toUpperCase()]) {
-            return res.status(HTTP_STATUS.OK).json(
-               new ApiResponse(
-                  HTTP_STATUS.OK,
-                  {
-                     country: countryNames[countryCodeHeader.toUpperCase()] || countryCodeHeader,
-                     countryCode: countryCodeHeader.toUpperCase(),
-                     callingCode: callingCodes[countryCodeHeader.toUpperCase()],
-                  },
-                  "Country detected from platform headers"
-               )
-            );
-         }
+      return res.status(HTTP_STATUS.OK).json(
+         new ApiResponse(
+            HTTP_STATUS.OK,
+            {
+               country: result.country,
+               countryCode: result.countryCode,
+               callingCode: result.callingCode,
+            },
+            result.message
+         )
+      );
+   });
+
+   refreshToken = asyncHandler(async (req: Request, res: Response) => {
+      const { refreshToken } = req.body;
+      const result = await this.authService.refreshToken(refreshToken);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Token refreshed successfully"));
+   });
+
+   sendMagicLink = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const { email } = req.body;
+      console.log("email: ", email);
+      const userId = req.user?.id;
+      console.log("userId: ", userId);
+
+      await this.authService.sendMagicLink(userId, email);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Verification link sent to your email"));
+   });
+
+   verifyEmailPage = asyncHandler(async (req: Request, res: Response) => {
+      const token = req.query.token as string;
+      if (!token) {
+         return res.status(HTTP_STATUS.BAD_REQUEST).send("Invalid token.");
       }
 
-      // 3. Fallback to IP-based geo service
-      if (isLocal) {
-         return res.status(HTTP_STATUS.OK).json(
-            new ApiResponse(
-               HTTP_STATUS.OK,
-               {
-                  country: "India",
-                  countryCode: "IN",
-                  callingCode: "+91",
-               },
-               "Localhost detected, returning default country"
-            )
-         );
-      }
+      const appSchemeUrl = `mylifepartner://verify-email?token=${token}`;
+      const androidIntentUrl = `intent://verify-email?token=${token}#Intent;scheme=mylifepartner;package=com.ciltriq.mylifepartner;end;`;
 
-      try {
-         // We use ipapi.co as it provides calling codes and doesn't require an API key for low volume
-         const response = await fetch(`https://ipapi.co/${ip}/json/`);
-         const data = await response.json();
+      const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Verify Email - MyLifePartner</title>
+          <meta name="apple-itunes-app" content="app-id=YOUR_APP_ID, app-argument=${appSchemeUrl}">
+          <style>
+              body {
+                  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+                  background-color: #FDF5F2;
+                  margin: 0;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height: 100vh;
+                  color: #4E342E;
+                  text-align: center;
+                  padding: 20px;
+              }
+              .container {
+                  background-color: #ffffff;
+                  padding: 40px;
+                  border-radius: 12px;
+                  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                  max-width: 400px;
+                  width: 100%;
+              }
+              h2 { margin-top: 0; color: #B88973; }
+              p { color: #757575; line-height: 1.6; margin-bottom: 25px; }
+              .btn {
+                  display: inline-block;
+                  background-color: #B88973;
+                  color: #ffffff !important;
+                  text-decoration: none;
+                  padding: 14px 30px;
+                  border-radius: 8px;
+                  font-size: 16px;
+                  font-weight: bold;
+                  transition: background-color 0.3s;
+                  margin: 5px;
+              }
+              .btn:hover { background-color: #a07764; }
+              .loader {
+                  border: 4px solid #f3f3f3;
+                  border-top: 4px solid #B88973;
+                  border-radius: 50%;
+                  width: 30px;
+                  height: 30px;
+                  animation: spin 1s linear infinite;
+                  margin: 0 auto 20px auto;
+              }
+              @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+              }
+          </style>
+          <script>
+              window.onload = function() {
+                  const isAndroid = /android/i.test(navigator.userAgent);
+                  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                  const appSchemeUrl = "${appSchemeUrl}";
+                  const androidIntentUrl = "${androidIntentUrl}";
+                  if (isAndroid) {
+                      window.location.href = androidIntentUrl;
+                  } else {
+                      window.location.href = appSchemeUrl;
+                      if (isIOS) {
+                          setTimeout(function() { window.location.replace(appSchemeUrl); }, 500);
+                      }
+                  }
+                  setTimeout(() => {
+                      document.getElementById('loader').style.display = 'none';
+                      document.getElementById('fallback').style.display = 'block';
+                  }, 3000);
+              };
+          </script>
+      </head>
+      <body>
+          <div class="container">
+              <div id="loader" class="loader"></div>
+              <h2>Verifying your email...</h2>
+              <p>You are being redirected to the MyLifePartner app.</p>
+              <div id="fallback" style="display: none;">
+                  <p>If you are not redirected automatically, please click a button below to open the app manually:</p>
+                  <a href="${androidIntentUrl}" class="btn" id="android-btn" style="display:none;">Open App (Android)</a>
+                  <a href="${appSchemeUrl}" class="btn" id="ios-btn" style="display:none;">Open App (iOS/Web)</a>
+                  <script>
+                      if (/android/i.test(navigator.userAgent)) {
+                          document.getElementById('android-btn').style.display = 'inline-block';
+                      } else {
+                          document.getElementById('ios-btn').style.display = 'inline-block';
+                      }
+                  </script>
+              </div>
+          </div>
+      </body>
+      </html>
+      `;
 
-         console.log(`👉 ip response : `, data);
+      return res.status(HTTP_STATUS.OK).send(html);
+   });
 
-         if (data.error) {
-            throw new Error(data.reason);
-         }
-
-         return res.status(HTTP_STATUS.OK).json(
-            new ApiResponse(
-               HTTP_STATUS.OK,
-               {
-                  country: data.country_name || "India",
-                  countryCode: data.country_code || "IN",
-                  callingCode: data.country_calling_code || "+91",
-               },
-               "Country detected successfully"
-            )
-         );
-      } catch (error) {
-         // Final fallback in case of service failure
-         return res.status(HTTP_STATUS.OK).json(
-            new ApiResponse(
-               HTTP_STATUS.OK,
-               {
-                  country: "India",
-                  countryCode: "IN",
-                  callingCode: "+91",
-               },
-               "Detection failed, returning fallback"
-            )
-         );
-      }
+   verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+      const token = req.body.token || req.query.token;
+      const result = await this.authService.verifyEmail(token);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, result.message));
    });
 }
-
-export default new AuthController();

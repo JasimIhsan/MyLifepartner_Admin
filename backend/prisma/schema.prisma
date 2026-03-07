@@ -7,20 +7,106 @@ datasource db {
 }
 
 model User {
-  id                      Int           @id @default(autoincrement())
-  mobileNumber            String        @unique
-  email                   String?       @unique
-  name                    String?
-  isVerified              Boolean       @default(false)
-  isProfileCompleted      Boolean       @default(false)
-  hasCompletedImageUpload Boolean       @default(false)
-  selfieUrl               String?
-  selfieStatus            SelfieStatus?
-  role                    Role          @default(USER)
-  createdAt               DateTime      @default(now())
-  updatedAt               DateTime      @updatedAt
-  answers                 UserAnswer[]
-  images                  UserImage[]
+  id              Int      @id @default(autoincrement())
+  mobileNumber    String   @unique
+  email           String?  @unique
+  isVerified      Boolean  @default(false)
+  isEmailVerified Boolean  @default(false)
+  isBlocked       Boolean  @default(false)
+  isDeleted       Boolean  @default(false)
+  role            Role     @default(USER)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  profile                 Profile?
+  emailVerificationTokens EmailVerificationToken[]
+  partnerPreference       PartnerPreference?
+  profileSwipes           ProfileSwipe[]           @relation("UserSwipes")
+}
+
+model Profile {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id])
+
+  name          String?
+  gender        Gender?
+  dateOfBirth   DateTime?
+  maritalStatus MaritalStatus?
+  heightCm      Int?
+
+  religion     String?
+  motherTongue String?
+
+  city    String?
+  state   String?
+  country String?
+
+  highestEducation String?
+  occupation       String?
+  annualIncome     Int?
+  bio              String?
+
+  profileCompletion Int           @default(10)
+  profileStatus     ProfileStatus @default(INCOMPLETE)
+
+  hasCompletedBasicDetails      Boolean       @default(false)
+  hasCompletedPartnerPreference Boolean       @default(false)
+  hasCompletedImageUpload       Boolean       @default(false)
+  selfieUrl                     String?
+  selfieStatus                  SelfieStatus?
+
+  images     UserImage[]
+  answers    UserAnswer[]
+  swipesOnMe ProfileSwipe[] @relation("ProfileMatches")
+
+  @@map("profiles")
+}
+
+model PartnerPreference {
+  id               Int             @id @default(autoincrement())
+  userId           Int             @unique
+  user             User            @relation(fields: [userId], references: [id])
+  ageFrom          Int?
+  ageTo            Int?
+  heightFrom       Int?
+  heightTo         Int?
+  maritalStatus    MaritalStatus[]
+  religion         String[]
+  motherTongue     String[]
+  highestEducation String[]
+  occupation       String[]
+  annualIncomeFrom Int?
+  annualIncomeTo   Int?
+
+  @@map("partner_preferences")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  AWATING_DIVORCE
+  DIVORCED
+  WIDOWED
+  ANNULLED
+}
+
+model EmailVerificationToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@map("email_verification_tokens")
 }
 
 enum SelfieStatus {
@@ -59,15 +145,15 @@ model ProfileQuestion {
 
 model UserAnswer {
   id         Int             @id @default(autoincrement())
-  userId     Int
-  user       User            @relation(fields: [userId], references: [id])
+  profileId  Int
+  profile    Profile         @relation(fields: [profileId], references: [id])
   questionId Int
   question   ProfileQuestion @relation(fields: [questionId], references: [id])
   answer     Json // JSONB for the answer content
   score      Int?
   createdAt  DateTime        @default(now())
 
-  @@unique([userId, questionId]) // One answer per question per user
+  @@unique([profileId, questionId]) // One answer per question per user
   @@map("user_answers")
 }
 
@@ -82,16 +168,50 @@ enum AnswerType {
 enum Role {
   USER
   ADMIN
+  SUPER_ADMIN
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model UserImage {
   id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
   imageUrl  String
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("user_images")
+}
+
+enum ProfileStatus {
+  INCOMPLETE
+  ONBOARDING_COMPLETED
+  COMPLETED
+}
+
+enum SwipeAction {
+  LEFT
+  RIGHT
+  UP
+}
+
+model ProfileSwipe {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  user            User        @relation("UserSwipes", fields: [userId], references: [id])
+  targetProfileId Int
+  targetProfile   Profile     @relation("ProfileMatches", fields: [targetProfileId], references: [id])
+  action          SwipeAction
+  createdAt       DateTime    @default(now())
+
+  @@map("profile_swipes")
 }

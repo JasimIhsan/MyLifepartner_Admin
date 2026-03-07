@@ -158,6 +158,58 @@ class ProfileRepository {
     }
   }
 
+  Future<void> updateBasicProfile(Map<String, dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      if (userId == null) throw Exception('User not logged in');
+
+      final response = await ApiService.client.patch(
+        '/user/profile/basic-profile/$userId',
+        data: data,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update basic profile');
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error updating basic profile'),
+      );
+    } catch (e) {
+      throw Exception('Error updating basic profile: $e');
+    }
+  }
+
+  Future<void> updatePartnerPreference(Map<String, dynamic> data) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+      final userId = prefs.getInt('userId');
+
+      if (userId == null) throw Exception('User not logged in');
+
+      final response = await ApiService.client.patch(
+        '/user/profile/partner-preference/$userId',
+        data: data,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update partner preferences');
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error updating partner preferences'),
+      );
+    } catch (e) {
+      throw Exception('Error updating partner preferences: $e');
+    }
+  }
+
   Future<List<UserImage>> getUserImages() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -313,6 +365,47 @@ class ProfileRepository {
       );
     } catch (e) {
       throw Exception('Error completing image upload: $e');
+    }
+  }
+
+  Future<void> sendEmailVerificationLink({required String email}) async {
+    try {
+      final response = await ApiService.client.post(
+        "/user/auth/send-magic-link",
+        data: {"email": email},
+      );
+      if (response.statusCode != 200) {
+        throw Exception("Failed to send email verification link");
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(
+          e,
+          fallback: "Failed to send email verification link",
+        ),
+      );
+    } catch (e) {
+      throw Exception("Failed to send email verification link");
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyEmail(String token) async {
+    try {
+      final response = await ApiService.client.post(
+        "/user/auth/verify-email",
+        data: {"token": token},
+      );
+      if (response.statusCode == 200) {
+        return response.data;
+      } else {
+        throw Exception("Failed to verify email");
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: "Failed to verify email link"),
+      );
+    } catch (e) {
+      throw Exception("Failed to verify email link");
     }
   }
 }

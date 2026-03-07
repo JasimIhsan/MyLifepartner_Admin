@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
+import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
@@ -144,9 +145,25 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: const CustomAppBar(
+      appBar: CustomAppBar(
         title: "Selfie Verification",
         leading: SizedBox.shrink(),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () async {
+              final nav = Navigator.of(context);
+              final sharedPrefs = await SharedPreferences.getInstance();
+              await sharedPrefs.clear();
+              if (mounted) {
+                nav.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(

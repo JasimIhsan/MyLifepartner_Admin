@@ -6,11 +6,15 @@ import logger from "../utils/logger";
 const errorMiddleware = (err: Error & { statusCode?: number; errors?: unknown[] }, req: Request, res: Response, next: NextFunction) => {
    let error: ApiError;
 
+   // Capture original error message for server logging
+   const originalMessage = err.message || "Unknown error";
+
    if (err instanceof ApiError) {
       error = err;
    } else {
       const statusCode = err.statusCode || 500;
-      const message = err.message || "Something went wrong";
+      // Obfuscate the message sent to the client
+      const message = "Something went wrong. Please try again later.";
       error = new ApiError(statusCode, message, err.errors || [], err.stack);
    }
 
@@ -21,7 +25,12 @@ const errorMiddleware = (err: Error & { statusCode?: number; errors?: unknown[] 
       ...(env.NODE_ENV === "development" ? { stack: error.stack } : {}),
    };
 
-   logger.error(`[${req.method}] ${req.path} >> StatusCode:: ${error.statusCode}, Message:: ${error.message}`);
+   // Log the actual unhandled error message for debugging purposes
+   logger.error(`[${req.method}] ${req.path} >> StatusCode:: ${error.statusCode}, Message:: ${originalMessage}`);
+
+   if (!(err instanceof ApiError) && err.stack) {
+      logger.error(`Unhandled Error Stack: ${err.stack}`);
+   }
 
    return res.status(error.statusCode).json(response);
 };

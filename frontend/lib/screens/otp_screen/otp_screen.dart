@@ -4,14 +4,16 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/screens/login_screen/widgets/otp_method_selector.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
-import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
+import 'package:mylifepartner/screens/profile_completion/profile_completion_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/widgets/auth_layout.dart';
 import '../home_screen/home_screen.dart';
+import '../partner_preference/partner_preference_screen.dart';
 import '../profile_image_upload/profile_image_upload_screen.dart';
+import '../questionaire_screen/questionaire_screen.dart';
 import '../selfie_verification/selfie_verification_screen.dart';
 import 'widgets/otp_form.dart';
 
@@ -82,8 +84,47 @@ class _OtpPageState extends State<OtpPage> {
         final user = response.user;
         if (user != null) {
           sharedPrefs.setInt("userId", user.id);
-          if (user.isProfileCompleted == false) {
-            sharedPrefs.setBool("isProfileCompleted", false);
+          sharedPrefs.setString("profileStatus", user.profileStatus);
+          sharedPrefs.setBool(
+            "hasCompletedBasicDetails",
+            user.hasCompletedBasicDetails,
+          );
+          sharedPrefs.setBool(
+            "hasCompletedImageUpload",
+            user.hasCompletedImageUpload,
+          );
+          sharedPrefs.setBool(
+            "hasCompletedPartnerPreference",
+            user.hasCompletedPartnerPreference,
+          );
+          if (user.name != null) {
+            sharedPrefs.setString("name", user.name!);
+          } else {
+            sharedPrefs.remove("name");
+          }
+          sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
+
+          if (!user.hasCompletedBasicDetails) {
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileCompletionScreen(),
+                ),
+                ModalRoute.withName('/'),
+              );
+            }
+          } else if (!user.hasCompletedPartnerPreference) {
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PartnerPreferenceScreen(),
+                ),
+                ModalRoute.withName('/'),
+              );
+            }
+          } else if (user.profileStatus == "INCOMPLETE") {
             if (mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -94,13 +135,6 @@ class _OtpPageState extends State<OtpPage> {
               );
             }
           } else {
-            sharedPrefs.setBool("isProfileCompleted", true);
-            sharedPrefs.setBool(
-              "hasCompletedImageUpload",
-              user.hasCompletedImageUpload,
-            );
-            sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
-
             if (mounted) {
               if (user.hasCompletedImageUpload == false) {
                 Navigator.pushAndRemoveUntil(

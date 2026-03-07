@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
+import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
+import 'package:mylifepartner/screens/profile_completion/profile_completion_screen.dart';
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
@@ -22,10 +24,14 @@ class _SplashScreenState extends State<SplashScreen> {
     Future.delayed(const Duration(seconds: 3), () async {
       final sharedPrefs = await SharedPreferences.getInstance();
       final isLoggedIn = sharedPrefs.getBool("isLoggedIn") ?? false;
-      final isProfileCompleted =
-          sharedPrefs.getBool("isProfileCompleted") ?? false;
+      final profileStatus =
+          sharedPrefs.getString("profileStatus") ?? "INCOMPLETE";
       final hasCompletedImageUpload =
           sharedPrefs.getBool("hasCompletedImageUpload") ?? false;
+      final hasCompletedPartnerPreference =
+          sharedPrefs.getBool("hasCompletedPartnerPreference") ?? false;
+      final hasCompletedBasicDetails =
+          sharedPrefs.getBool("hasCompletedBasicDetails") ?? false;
       final selfieStatus = sharedPrefs.getString("selfieStatus");
 
       if (mounted) {
@@ -34,7 +40,13 @@ class _SplashScreenState extends State<SplashScreen> {
           MaterialPageRoute(
             builder: (context) {
               if (isLoggedIn) {
-                if (isProfileCompleted) {
+                if (!hasCompletedBasicDetails) {
+                  return const ProfileCompletionScreen();
+                } else if (!hasCompletedPartnerPreference) {
+                  return const PartnerPreferenceScreen();
+                } else if (profileStatus == "INCOMPLETE") {
+                  return const QuestionaireScreen();
+                } else {
                   if (hasCompletedImageUpload) {
                     if (selfieStatus != null && selfieStatus != "NONE") {
                       return const HomePage();
@@ -44,8 +56,6 @@ class _SplashScreenState extends State<SplashScreen> {
                   } else {
                     return const ProfileImageUploadScreen();
                   }
-                } else {
-                  return const QuestionaireScreen();
                 }
               }
               return const LoginPage();

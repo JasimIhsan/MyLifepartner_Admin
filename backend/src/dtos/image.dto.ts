@@ -2,7 +2,7 @@ import { UserImage } from "@prisma/client";
 
 export interface UserImageDto {
    id: number;
-   userId: number;
+   profileId: number;
    imageUrl: string;
    isPrimary: boolean;
    createdAt: Date;
@@ -10,7 +10,7 @@ export interface UserImageDto {
 
 export const toUserImageDto = (image: UserImage): UserImageDto => ({
    id: image.id,
-   userId: image.userId,
+   profileId: image.profileId,
    imageUrl: image.imageUrl,
    isPrimary: image.isPrimary,
    createdAt: image.createdAt,

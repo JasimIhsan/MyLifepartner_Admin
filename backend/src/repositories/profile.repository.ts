@@ -1,6 +1,8 @@
 import prisma from "@/config/prisma";
+import { ProfileStatus } from "@prisma/client";
+import { IProfileRepository } from "../interfaces/repositories/profile.repository.interface";
 
-export class ProfileRepository {
+export class ProfileRepository implements IProfileRepository {
    async getProfileStructure() {
       return prisma.profileSection.findMany({
          include: {
@@ -38,11 +40,7 @@ export class ProfileRepository {
             section: true,
             answers: {
                where: {
-                  userId: userId,
-               },
-               select: {
-                  answer: true,
-                  score: true,
+                  profile: { userId: userId },
                },
             },
          },
@@ -51,15 +49,18 @@ export class ProfileRepository {
 
    async getUserAnswers(userId: number) {
       return prisma.userAnswer.findMany({
-         where: { userId },
+         where: { profile: { userId } },
       });
    }
 
-   async saveAnswer(userId: number, questionId: number, answer: any, score?: number) {
+   async saveAnswer(userId: number, questionId: number, answer: import("@prisma/client").Prisma.InputJsonValue, score?: number) {
+      let profile = await prisma.profile.findUnique({ where: { userId } });
+      if (!profile) profile = await prisma.profile.create({ data: { userId } });
+
       return prisma.userAnswer.upsert({
          where: {
-            userId_questionId: {
-               userId,
+            profileId_questionId: {
+               profileId: profile.id,
                questionId,
             },
          },
@@ -68,7 +69,7 @@ export class ProfileRepository {
             score,
          },
          create: {
-            userId,
+            profileId: profile.id,
             questionId,
             answer,
             score,
@@ -76,10 +77,10 @@ export class ProfileRepository {
       });
    }
 
-   async setProfileCompleted(userId: number) {
-      return prisma.user.update({
-         where: { id: userId },
-         data: { isProfileCompleted: true },
+   async updateProfileStatus(userId: number, status: ProfileStatus) {
+      return prisma.profile.update({
+         where: { userId },
+         data: { profileStatus: status },
       });
    }
 
@@ -100,7 +101,6 @@ export class ProfileRepository {
    async getUserAnsweredCount(userId: number, isPrimary?: boolean) {
       return prisma.userAnswer.count({
          where: {
-            userId,
             question: {
                isRequired: true,
                isActive: true,
@@ -110,33 +110,69 @@ export class ProfileRepository {
                   },
                }),
             },
+            profile: { userId },
          },
       });
    }
 
+   async updateBasicProfile(userId: number, data: import("@prisma/client").Prisma.ProfileUpdateInput) {
+      let profile = await prisma.profile.findUnique({ where: { userId } });
+      if (!profile) profile = await prisma.profile.create({ data: { userId } });
+
+      return prisma.profile.update({
+         where: { userId },
+         data: {
+            ...data,
+            hasCompletedBasicDetails: true,
+         },
+      });
+   }
+
+   async updatePartnerPreference(userId: number, data: Omit<import("@prisma/client").Prisma.PartnerPreferenceCreateInput, "user">) {
+      const partnerPref = await prisma.partnerPreference.upsert({
+         where: { userId },
+         update: data as any,
+         create: {
+            ...data,
+            user: { connect: { id: userId } },
+         } as any,
+      });
+
+      await prisma.profile.update({
+         where: { userId },
+         data: { hasCompletedPartnerPreference: true },
+      });
+
+      return partnerPref;
+   }
+
    async getUserImages(userId: number) {
       return prisma.userImage.findMany({
-         where: { userId },
+         where: { profile: { userId } },
          orderBy: { createdAt: "asc" },
       });
    }
 
    async getUserImagesCount(userId: number) {
       return prisma.userImage.count({
-         where: { userId },
+         where: { profile: { userId } },
       });
    }
 
    async getUserImageById(id: number) {
       return prisma.userImage.findUnique({
          where: { id },
+         include: { profile: true },
       });
    }
 
    async saveUserImage(userId: number, imageUrl: string, isPrimary: boolean = false) {
+      let profile = await prisma.profile.findUnique({ where: { userId } });
+      if (!profile) profile = await prisma.profile.create({ data: { userId } });
+
       return prisma.userImage.create({
          data: {
-            userId,
+            profileId: profile.id,
             imageUrl,
             isPrimary,
          },
@@ -151,7 +187,7 @@ export class ProfileRepository {
 
    async unsetPrimaryImages(userId: number) {
       return prisma.userImage.updateMany({
-         where: { userId, isPrimary: true },
+         where: { profile: { userId }, isPrimary: true },
          data: { isPrimary: false },
       });
    }
@@ -164,24 +200,29 @@ export class ProfileRepository {
    }
 
    async completeImageUpload(userId: number) {
-      return prisma.user.update({
-         where: { id: userId },
+      let profile = await prisma.profile.findUnique({ where: { userId } });
+      if (!profile) profile = await prisma.profile.create({ data: { userId } });
+
+      return prisma.profile.update({
+         where: { userId },
          data: { hasCompletedImageUpload: true },
       });
    }
 
    async saveSelfie(userId: number, selfieUrl: string) {
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-      const oldSelfieUrl = user?.selfieUrl;
+      let profile = await prisma.profile.findUnique({ where: { userId } });
+      if (!profile) profile = await prisma.profile.create({ data: { userId } });
 
-      const updatedUser = await prisma.user.update({
-         where: { id: userId },
+      const oldSelfieUrl = profile.selfieUrl;
+
+      const updatedProfile = await prisma.profile.update({
+         where: { userId },
          data: {
             selfieUrl,
             selfieStatus: "PENDING",
          },
       });
 
-      return { user: updatedUser, oldSelfieUrl };
+      return { user: updatedProfile, oldSelfieUrl };
    }
 }

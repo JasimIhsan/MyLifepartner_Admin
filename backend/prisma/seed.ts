@@ -1,5 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { AnswerType, PrismaClient } from "@prisma/client";
+import { AnswerType, Gender, MaritalStatus, PrismaClient, ProfileStatus, Role, SelfieStatus } from "@prisma/client";
+import bcrypt from "bcrypt";
 import * as dotenv from "dotenv";
 import { Pool } from "pg";
 
@@ -41,14 +42,7 @@ async function main() {
                sectionId: section1.id,
                question: "Why are you joining LP at this stage of your life?",
                answerType: AnswerType.SINGLE_CHOICE,
-               options: [
-                  "Ready to settle down",
-                  "Looking for a life partner",
-                  "Tired of casual dating",
-                  "Family pressure / Recommendation",
-                  "Recently single and want something serious",
-                  "Want companionship and commitment",
-               ],
+               options: ["Ready to settle down", "Looking for a life partner", "Tired of casual dating", "Family pressure / Recommendation", "Recently single and want something serious", "Want companionship and commitment"],
                orderNo: 1,
                isRequired: true,
             },
@@ -72,13 +66,7 @@ async function main() {
                sectionId: section1.id,
                question: "If divorced or widowed, how long have you been single?",
                answerType: AnswerType.SINGLE_CHOICE,
-               options: [
-                  "Less than 6 months",
-                  "6 months – 1 year",
-                  "1 – 2 years",
-                  "2 – 5 years",
-                  "More than 5 years",
-               ],
+               options: ["Less than 6 months", "6 months – 1 year", "1 – 2 years", "2 – 5 years", "More than 5 years"],
                // usage: Logic in frontend can show/hide based on previous answer
                orderNo: 4,
                isRequired: false, // Conditional
@@ -432,6 +420,170 @@ async function main() {
          ],
          skipDuplicates: true,
       });
+
+      // ============================================================
+      // 9. Seed Users
+      // ============================================================
+      console.log("Seeding users...");
+
+      // Seed Admin
+      const adminPasswordHash = await bcrypt.hash("asdfasdf", 10);
+      const mainAdmin = await prisma.admin.upsert({
+         where: { username: "admin" },
+         update: {},
+         create: {
+            username: "admin",
+            password: adminPasswordHash,
+            role: Role.SUPER_ADMIN,
+         },
+      });
+
+      const adminUser = await prisma.user.upsert({
+         where: { mobileNumber: "0000000000" },
+         update: {},
+         create: {
+            mobileNumber: "0000000000",
+            email: "admin@mylifepartner.com",
+            isVerified: true,
+            isEmailVerified: true,
+            role: Role.ADMIN,
+            profile: {
+               create: {
+                  name: "System Admin",
+                  profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedBasicDetails: true,
+                  hasCompletedPartnerPreference: true,
+                  hasCompletedImageUpload: true,
+               },
+            },
+         },
+      });
+
+      const verifiedUser = await prisma.user.upsert({
+         where: { mobileNumber: "9876543210" },
+         update: {},
+         create: {
+            mobileNumber: "9876543210",
+            email: "john.doe@example.com",
+            isVerified: true,
+            isEmailVerified: true,
+            role: Role.USER,
+            profile: {
+               create: {
+                  name: "John Doe",
+                  profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedBasicDetails: true,
+                  hasCompletedPartnerPreference: true,
+                  hasCompletedImageUpload: true,
+                  selfieStatus: SelfieStatus.APPROVED,
+                  selfieUrl: "20/selfie/1d291090-387b-4953-b537-7cedbeec2943.jpg",
+                  images: {
+                     create: [
+                        { imageUrl: "20/profile/1fc49bd1-270e-4eca-a58c-13347dcbfac5.jpg", isPrimary: true },
+                        { imageUrl: "20/profile/80fca093-3acb-4228-bca9-828f8f5f7b69.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/caf0deb8-a240-4570-bf47-4ccf8cf5d3fd.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/b63d4dfa-fca2-4273-ba98-d147cf467e1e.jpg", isPrimary: false },
+                     ],
+                  },
+               },
+            },
+         },
+      });
+
+      const unverifiedUser = await prisma.user.upsert({
+         where: { mobileNumber: "5555555555" },
+         update: {},
+         create: {
+            mobileNumber: "5555555555",
+            email: "jane.smith@example.com",
+            isVerified: false,
+            isEmailVerified: false,
+            role: Role.USER,
+            profile: {
+               create: {
+                  name: "Jane Smith",
+                  profileStatus: ProfileStatus.INCOMPLETE,
+                  hasCompletedBasicDetails: false,
+                  hasCompletedPartnerPreference: false,
+                  hasCompletedImageUpload: false,
+                  selfieStatus: SelfieStatus.PENDING,
+               },
+            },
+         },
+      });
+
+      const religionOptions = ["Christianity (Catholic)", "Christianity (Protestant)", "Christianity (Orthodox)", "Islam (Sunni)", "Islam (Shia)", "Hinduism", "Buddhism", "Judaism", "Sikhism", "Jainism", "Shinto", "Baha'i", "Spiritual", "Atheist / Agnostic", "No Religion", "Other"];
+      const motherTongueOptions = ["English", "Spanish", "Mandarin Chinese", "Arabic", "Hindi", "Bengali", "Portuguese", "Russian", "Japanese", "French", "German", "Italian", "Korean", "Vietnamese", "Other"];
+      const educationOptions = ["High School / Secondary", "Vocational / Diploma", "Bachelor's Degree", "Master's Degree", "Doctorate / PhD", "Medical Degree", "Law Degree", "Other"];
+      const occupationOptions = ["Technology / IT", "Healthcare / Medical", "Education / Academia", "Finance / Business", "Law / Legal", "Arts / Entertainment", "Engineering / Science", "Sales / Marketing", "Government / Public Service", "Manual Labor / Trades", "Self-Employed / Entrepreneur", "Student", "Homemaker", "Not Employed", "Other"];
+
+      // Generate 50 additional seed users
+      const usersData = Array.from({ length: 50 }).map((_, i) => {
+         const index = i + 1;
+         const isMale = index % 2 === 0;
+         return {
+            mobileNumber: `98765432${index.toString().padStart(2, "0")}`,
+            email: `user${index}@example.com`,
+            isVerified: true,
+            isEmailVerified: true,
+            role: Role.USER,
+            profile: {
+               create: {
+                  name: isMale ? `John Doe ${index}` : `Jane Doe ${index}`,
+                  gender: isMale ? Gender.MALE : Gender.FEMALE,
+                  dateOfBirth: new Date(1990 + (index % 10), index % 12, (index % 28) + 1),
+                  maritalStatus: MaritalStatus.NEVER_MARRIED,
+                  heightCm: 160 + (index % 20),
+                  religion: religionOptions[index % religionOptions.length],
+                  motherTongue: motherTongueOptions[index % motherTongueOptions.length],
+                  city: ["Delhi", "Mumbai", "Bangalore", "Chennai"][index % 4],
+                  state: ["Delhi", "Maharashtra", "Karnataka", "Tamil Nadu"][index % 4],
+                  country: "India",
+                  highestEducation: educationOptions[index % educationOptions.length],
+                  occupation: occupationOptions[index % occupationOptions.length],
+                  annualIncome: 500000 + index * 100000,
+                  bio: `Hello! I am user ${index}. Looking for a compatible partner.`,
+                  profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedBasicDetails: true,
+                  hasCompletedPartnerPreference: true,
+                  hasCompletedImageUpload: true,
+                  selfieStatus: SelfieStatus.APPROVED,
+                  selfieUrl: "20/selfie/1d291090-387b-4953-b537-7cedbeec2943.jpg",
+                  images: {
+                     create: [
+                        { imageUrl: "20/profile/1fc49bd1-270e-4eca-a58c-13347dcbfac5.jpg", isPrimary: true },
+                        { imageUrl: "20/profile/80fca093-3acb-4228-bca9-828f8f5f7b69.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/caf0deb8-a240-4570-bf47-4ccf8cf5d3fd.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/b63d4dfa-fca2-4273-ba98-d147cf467e1e.jpg", isPrimary: false },
+                     ],
+                  },
+               },
+            },
+            partnerPreference: {
+               create: {
+                  ageFrom: 20,
+                  ageTo: 40,
+                  heightFrom: 150,
+                  heightTo: 190,
+                  maritalStatus: [MaritalStatus.NEVER_MARRIED],
+                  religion: [religionOptions[(index + 1) % religionOptions.length]],
+                  motherTongue: [motherTongueOptions[(index + 1) % motherTongueOptions.length]],
+                  highestEducation: [educationOptions[(index + 1) % educationOptions.length], educationOptions[(index + 2) % educationOptions.length]],
+                  occupation: [occupationOptions[(index + 1) % occupationOptions.length], occupationOptions[(index + 2) % occupationOptions.length]],
+                  annualIncomeFrom: 300000,
+                  annualIncomeTo: 3000000,
+               },
+            },
+         };
+      });
+
+      for (const data of usersData) {
+         await prisma.user.upsert({
+            where: { mobileNumber: data.mobileNumber },
+            update: {},
+            create: data,
+         });
+      }
 
       console.log("Seeding finished.");
    } catch (error) {
