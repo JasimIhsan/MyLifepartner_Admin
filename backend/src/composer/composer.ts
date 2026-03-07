@@ -60,7 +60,7 @@ export const authService = new AuthService(userService, otpService, emailService
 export const profileService = new ProfileService(profileRepository);
 
 import { MatchService } from "@/services/match.service";
-export const matchService = new MatchService(matchRepository);
+export const matchService = new MatchService(matchRepository, s3Service);
 
 // ─── 4. Controllers ───────────────────────────────────────────────────────────
 import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";

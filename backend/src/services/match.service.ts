@@ -1,6 +1,7 @@
 import { SwipeAction } from "@prisma/client";
 import { CandidateProfile, IMatchRepository, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
 import { IMatchService, MatchRecommendationItem, SwipeInput } from "../interfaces/services/match.service.interface";
+import { IS3Service } from "../interfaces/services/s3.service.interface";
 
 type CompatibilityScore = {
    totalScore: number;
@@ -8,7 +9,10 @@ type CompatibilityScore = {
 };
 
 export class MatchService implements IMatchService {
-   constructor(private readonly matchRepository: IMatchRepository) {}
+   constructor(
+      private readonly matchRepository: IMatchRepository,
+      private readonly s3Service: IS3Service
+   ) {}
 
    async getRecommendations(userId: number): Promise<MatchRecommendationItem[]> {
       // 1. Fetch preferences & answers of current user
@@ -29,6 +33,13 @@ export class MatchService implements IMatchService {
          if (totalScore >= 70) {
             const age = candidate.dateOfBirth ? this.calculateAge(candidate.dateOfBirth) : 0;
 
+            const presignedImages = await Promise.all(
+               candidate.images.map(async (img) => ({
+                  ...img,
+                  imageUrl: await this.s3Service.getPresignedUrl(img.imageUrl),
+               }))
+            );
+
             scored.push({
                id: candidate.id,
                name: candidate.name ?? "Unknown",
@@ -39,7 +50,7 @@ export class MatchService implements IMatchService {
                occupation: candidate.occupation,
                matchPercentage: Math.round(totalScore),
                compatibilityHighlights: highlights,
-               images: candidate.images,
+               images: presignedImages,
             });
          }
       }
@@ -61,14 +72,14 @@ export class MatchService implements IMatchService {
 
       if (!pref) {
          // No preferences set – return a moderate base score
-         return { totalScore: 0, highlights: [] };
+         return { totalScore: 70, highlights: [] };
       }
 
-      // Age (15 pts)
+      // Age (10 pts)
       const age = candidate.dateOfBirth ? this.calculateAge(candidate.dateOfBirth) : null;
       if (age !== null && pref.ageFrom !== null && pref.ageTo !== null) {
          if (age >= pref.ageFrom && age <= pref.ageTo) {
-            totalScore += 15;
+            totalScore += 10;
          }
       }
 
@@ -77,10 +88,10 @@ export class MatchService implements IMatchService {
          totalScore += 10;
       }
 
-      // Religion (15 pts)
+      // Religion (10 pts)
       if (candidate.religion && pref.religion.length > 0) {
          if (pref.religion.includes(candidate.religion)) {
-            totalScore += 15;
+            totalScore += 10;
             highlights.push("✔ Same Religion");
          }
       }
@@ -113,17 +124,19 @@ export class MatchService implements IMatchService {
          totalScore += 10;
       }
 
-      // Location (10 pts): 10 same city, 5 same state (not stacking)
-      // We need current user's city/state – skipped here as it's not in scope of the query.
-      // This is resolved partially by matching against pref (if city pref is set via free-text match in future)
-      // For now we give partial points based on presence of city data
+      // Location (10 pts)
+      // We give 10 points based on presence of city data for now
       if (candidate.city) {
-         totalScore += 5;
+         totalScore += 10;
       }
 
+      // Max score without personality based on the 8 criteria above is 80 (8 * 10)
+      // We normalize it to 100 for the percentage
+      totalScore = Math.round((totalScore / 80) * 100);
+
       // Personality / Answer compatibility (10 pts)
-      const personalityScore = this.calculatePersonalityScore(candidate.answers, userAnswers);
-      totalScore += personalityScore;
+      // const personalityScore = this.calculatePersonalityScore(candidate.answers, userAnswers);
+      // totalScore += personalityScore;
 
       return { totalScore: Math.min(totalScore, 100), highlights: highlights.slice(0, 3) };
    }
