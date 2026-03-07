@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/screens/login_screen/widgets/otp_method_selector.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
-import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
+import 'package:mylifepartner/screens/profile_completion/profile_completion_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -88,7 +88,7 @@ class _OtpPageState extends State<OtpPage> {
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const QuestionaireScreen(),
+                  builder: (context) => const ProfileCompletionScreen(),
                 ),
                 ModalRoute.withName('/'),
               );

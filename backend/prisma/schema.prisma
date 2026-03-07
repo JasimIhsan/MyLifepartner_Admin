@@ -20,6 +20,7 @@ model User {
 
   profile                 Profile?
   emailVerificationTokens EmailVerificationToken[]
+  partnerPreference       PartnerPreference?
 }
 
 model Profile {
@@ -34,7 +35,6 @@ model Profile {
   heightCm      Int?
 
   religion     String?
-  caste        String?
   motherTongue String?
 
   city    String?
@@ -57,6 +57,25 @@ model Profile {
   answers UserAnswer[]
 
   @@map("profiles")
+}
+
+model PartnerPreference {
+  id               Int             @id @default(autoincrement())
+  userId           Int             @unique
+  user             User            @relation(fields: [userId], references: [id])
+  ageFrom          Int?
+  ageTo            Int?
+  heightFrom       Int?
+  heightTo         Int?
+  maritalStatus    MaritalStatus[]
+  religion         String[]
+  motherTongue     String[]
+  highestEducation String[]
+  occupation       String[]
+  annualIncomeFrom Int?
+  annualIncomeTo   Int?
+
+  @@map("partner_preferences")
 }
 
 enum Gender {

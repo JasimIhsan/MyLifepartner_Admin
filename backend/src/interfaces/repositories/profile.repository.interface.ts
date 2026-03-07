@@ -1,4 +1,4 @@
-import { Prisma, Profile, ProfileQuestion, ProfileSection, ProfileStatus, UserAnswer, UserImage } from "@prisma/client";
+import { PartnerPreference, Prisma, Profile, ProfileQuestion, ProfileSection, ProfileStatus, UserAnswer, UserImage } from "@prisma/client";
 
 export interface IProfileRepository {
    getProfileStructure(): Promise<(ProfileSection & { questions: ProfileQuestion[] })[]>;
@@ -9,6 +9,8 @@ export interface IProfileRepository {
    updateProfileStatus(userId: number, status: ProfileStatus): Promise<Profile>;
    getRequiredQuestionsCount(isPrimary?: boolean): Promise<number>;
    getUserAnsweredCount(userId: number, isPrimary?: boolean): Promise<number>;
+   updateBasicProfile(userId: number, data: Prisma.ProfileUpdateInput): Promise<Profile>;
+   updatePartnerPreference(userId: number, data: Omit<Prisma.PartnerPreferenceCreateInput, "user">): Promise<PartnerPreference>;
    getUserImages(userId: number): Promise<UserImage[]>;
    getUserImagesCount(userId: number): Promise<number>;
    getUserImageById(id: number): Promise<(UserImage & { profile: Profile }) | null>;

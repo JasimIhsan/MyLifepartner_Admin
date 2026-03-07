@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { AnswerType, PrismaClient, Role, SelfieStatus } from "@prisma/client";
+import { AnswerType, Gender, MaritalStatus, PrismaClient, ProfileStatus, Role, SelfieStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
 import * as dotenv from "dotenv";
 import { Pool } from "pg";
@@ -444,12 +444,16 @@ async function main() {
          create: {
             mobileNumber: "0000000000",
             email: "admin@mylifepartner.com",
-            name: "System Admin",
             isVerified: true,
             isEmailVerified: true,
-            profileStatus: "COMPLETED",
-            hasCompletedImageUpload: true,
             role: Role.ADMIN,
+            profile: {
+               create: {
+                  name: "System Admin",
+                  profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedImageUpload: true,
+               },
+            },
          },
       });
 
@@ -459,13 +463,17 @@ async function main() {
          create: {
             mobileNumber: "9876543210",
             email: "john.doe@example.com",
-            name: "John Doe",
             isVerified: true,
             isEmailVerified: true,
-            profileStatus: "COMPLETED",
-            hasCompletedImageUpload: true,
-            selfieStatus: SelfieStatus.APPROVED,
             role: Role.USER,
+            profile: {
+               create: {
+                  name: "John Doe",
+                  profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedImageUpload: true,
+                  selfieStatus: SelfieStatus.APPROVED,
+               },
+            },
          },
       });
 
@@ -475,15 +483,62 @@ async function main() {
          create: {
             mobileNumber: "5555555555",
             email: "jane.smith@example.com",
-            name: "Jane Smith",
             isVerified: false,
             isEmailVerified: false,
-            profileStatus: "INCOMPLETE",
-            hasCompletedImageUpload: false,
-            selfieStatus: SelfieStatus.PENDING,
             role: Role.USER,
+            profile: {
+               create: {
+                  name: "Jane Smith",
+                  profileStatus: ProfileStatus.INCOMPLETE,
+                  hasCompletedImageUpload: false,
+                  selfieStatus: SelfieStatus.PENDING,
+               },
+            },
          },
       });
+
+      // Generate 15 additional seed users
+      const usersData = Array.from({ length: 15 }).map((_, i) => {
+         const index = i + 1;
+         const isMale = index % 2 === 0;
+         return {
+            mobileNumber: `98765432${index.toString().padStart(2, "0")}`,
+            email: `user${index}@example.com`,
+            isVerified: index % 3 !== 0,
+            isEmailVerified: index % 3 !== 0,
+            role: Role.USER,
+            profile: {
+               create: {
+                  name: isMale ? `John Doe ${index}` : `Jane Doe ${index}`,
+                  gender: isMale ? Gender.MALE : Gender.FEMALE,
+                  dateOfBirth: new Date(1990 + (index % 10), index % 12, (index % 28) + 1),
+                  maritalStatus: MaritalStatus.NEVER_MARRIED,
+                  heightCm: 160 + (index % 20),
+                  religion: ["Hindu", "Muslim", "Christian", "Sikh"][index % 4],
+                  caste: "General",
+                  motherTongue: ["Hindi", "English", "Tamil", "Telugu"][index % 4],
+                  city: ["Delhi", "Mumbai", "Bangalore", "Chennai"][index % 4],
+                  state: ["Delhi", "Maharashtra", "Karnataka", "Tamil Nadu"][index % 4],
+                  country: "India",
+                  highestEducation: ["B.Tech", "MBA", "MBBS", "B.Sc"][index % 4],
+                  occupation: ["Engineer", "Doctor", "Teacher", "Business Analyst"][index % 4],
+                  annualIncome: 500000 + index * 100000,
+                  bio: `Hello! I am user ${index}. Looking for a compatible partner.`,
+                  profileStatus: index % 3 !== 0 ? ProfileStatus.COMPLETED : ProfileStatus.ONBOARDING_COMPLETED,
+                  hasCompletedImageUpload: index % 3 !== 0,
+                  selfieStatus: index % 3 !== 0 ? SelfieStatus.APPROVED : SelfieStatus.PENDING,
+               },
+            },
+         };
+      });
+
+      for (const data of usersData) {
+         await prisma.user.upsert({
+            where: { mobileNumber: data.mobileNumber },
+            update: {},
+            create: data,
+         });
+      }
 
       console.log("Seeding finished.");
    } catch (error) {

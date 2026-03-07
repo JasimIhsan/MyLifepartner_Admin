@@ -71,4 +71,20 @@ export class ProfileController {
       const result = await this.profileService.getProfileCompletionStatus(Number(userId));
       res.status(200).json(new ApiResponse(200, result, "Profile completion status fetched successfully"));
    });
+
+   public updateBasicProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId;
+      if (!userId) throw new ApiError(401, "Unauthorized");
+
+      const result = await this.profileService.updateBasicProfile(Number(userId), req.body);
+      res.status(200).json(new ApiResponse(200, result, "Basic profile updated successfully"));
+   });
+
+   public updatePartnerPreference = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.params.userId;
+      if (!userId) throw new ApiError(401, "Unauthorized");
+
+      const result = await this.profileService.updatePartnerPreference(Number(userId), req.body);
+      res.status(200).json(new ApiResponse(200, result, "Partner preference updated successfully"));
+   });
 }

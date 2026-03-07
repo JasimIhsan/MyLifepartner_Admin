@@ -115,6 +115,27 @@ export class ProfileRepository implements IProfileRepository {
       });
    }
 
+   async updateBasicProfile(userId: number, data: import("@prisma/client").Prisma.ProfileUpdateInput) {
+      let profile = await prisma.profile.findUnique({ where: { userId } });
+      if (!profile) profile = await prisma.profile.create({ data: { userId } });
+
+      return prisma.profile.update({
+         where: { userId },
+         data,
+      });
+   }
+
+   async updatePartnerPreference(userId: number, data: Omit<import("@prisma/client").Prisma.PartnerPreferenceCreateInput, "user">) {
+      return prisma.partnerPreference.upsert({
+         where: { userId },
+         update: data as any,
+         create: {
+            ...data,
+            user: { connect: { id: userId } },
+         } as any,
+      });
+   }
+
    async getUserImages(userId: number) {
       return prisma.userImage.findMany({
          where: { profile: { userId } },

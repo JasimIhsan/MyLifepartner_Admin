@@ -21,7 +21,6 @@ export interface UserDto {
    maritalStatus?: string | null;
    heightCm?: number | null;
    religion?: string | null;
-   caste?: string | null;
    motherTongue?: string | null;
    city?: string | null;
    state?: string | null;
@@ -56,7 +55,6 @@ export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPri
    maritalStatus: user.profile?.maritalStatus || null,
    heightCm: user.profile?.heightCm || null,
    religion: user.profile?.religion || null,
-   caste: user.profile?.caste || null,
    motherTongue: user.profile?.motherTongue || null,
    city: user.profile?.city || null,
    state: user.profile?.state || null,

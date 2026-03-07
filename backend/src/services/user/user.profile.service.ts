@@ -4,7 +4,7 @@ import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, UserAnswerDto,
 import { IProfileRepository } from "@/interfaces/repositories/profile.repository.interface";
 import { IProfileService } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { ProfileStatus } from "@prisma/client";
+import { PartnerPreference, Prisma, Profile, ProfileStatus } from "@prisma/client";
 
 export class ProfileService implements IProfileService {
    constructor(private profileRepository: IProfileRepository) {}
@@ -94,6 +94,14 @@ export class ProfileService implements IProfileService {
          isCompleted,
          nextPendingSectionOrder,
       };
+   }
+
+   async updateBasicProfile(userId: number, data: Prisma.ProfileUpdateInput): Promise<Profile> {
+      return this.profileRepository.updateBasicProfile(userId, data);
+   }
+
+   async updatePartnerPreference(userId: number, data: Omit<Prisma.PartnerPreferenceCreateInput, "user">): Promise<PartnerPreference> {
+      return this.profileRepository.updatePartnerPreference(userId, data);
    }
 
    async getUserImages(userId: number): Promise<UserImageDto[]> {
