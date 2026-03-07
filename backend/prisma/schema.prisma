@@ -21,6 +21,7 @@ model User {
   profile                 Profile?
   emailVerificationTokens EmailVerificationToken[]
   partnerPreference       PartnerPreference?
+  profileSwipes           ProfileSwipe[]           @relation("UserSwipes")
 }
 
 model Profile {
@@ -55,8 +56,9 @@ model Profile {
   selfieUrl                     String?
   selfieStatus                  SelfieStatus?
 
-  images  UserImage[]
-  answers UserAnswer[]
+  images     UserImage[]
+  answers    UserAnswer[]
+  swipesOnMe ProfileSwipe[] @relation("ProfileMatches")
 
   @@map("profiles")
 }
@@ -194,4 +196,22 @@ enum ProfileStatus {
   INCOMPLETE
   ONBOARDING_COMPLETED
   COMPLETED
+}
+
+enum SwipeAction {
+  LEFT
+  RIGHT
+  UP
+}
+
+model ProfileSwipe {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  user            User        @relation("UserSwipes", fields: [userId], references: [id])
+  targetProfileId Int
+  targetProfile   Profile     @relation("ProfileMatches", fields: [targetProfileId], references: [id])
+  action          SwipeAction
+  createdAt       DateTime    @default(now())
+
+  @@map("profile_swipes")
 }

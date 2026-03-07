@@ -4,7 +4,9 @@ import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:provider/provider.dart';
 
 import 'screens/splash_screen/splash_screen.dart';
 
@@ -88,25 +90,28 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'My Life Partner Again',
-      debugShowCheckedModeBanner: false,
-      scaffoldMessengerKey: scaffoldMessengerKey,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primary,
-          surface: AppColors.background,
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => MatchProvider())],
+      child: MaterialApp(
+        title: 'My Life Partner Again',
+        debugShowCheckedModeBanner: false,
+        scaffoldMessengerKey: scaffoldMessengerKey,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primary,
+            surface: AppColors.background,
+          ),
+          useMaterial3: true,
+          textTheme: GoogleFonts.poppinsTextTheme(),
+          scaffoldBackgroundColor: AppColors.background,
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            backgroundColor: AppColors.background,
+            centerTitle: true,
+          ),
         ),
-        useMaterial3: true,
-        textTheme: GoogleFonts.poppinsTextTheme(),
-        scaffoldBackgroundColor: AppColors.background,
-        appBarTheme: const AppBarTheme(
-          elevation: 0,
-          backgroundColor: AppColors.background,
-          centerTitle: true,
-        ),
+        home: const SplashScreen(),
       ),
-      home: const SplashScreen(),
     );
   }
 }

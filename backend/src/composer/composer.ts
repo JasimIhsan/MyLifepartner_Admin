@@ -17,6 +17,7 @@
 
 // ─── 1. Repositories ────────────────────────────────────────────────────────
 import { AdminRepository } from "@/repositories/admin.repository";
+import { MatchRepository } from "@/repositories/match.repository";
 import { ProfileRepository } from "@/repositories/profile.repository";
 import { QuestionnaireRepository } from "@/repositories/questionnaire.repository";
 import { UserRepository } from "@/repositories/user.repository";
@@ -25,6 +26,7 @@ export const adminRepository = new AdminRepository();
 export const userRepository = new UserRepository();
 export const profileRepository = new ProfileRepository();
 export const questionnaireRepository = new QuestionnaireRepository();
+export const matchRepository = new MatchRepository();
 
 // ─── 2. Infrastructure / Utility Services ────────────────────────────────────
 import { CacheService } from "@/services/cache.service";
@@ -57,6 +59,9 @@ export const userService = new UserService(userRepository);
 export const authService = new AuthService(userService, otpService, emailService, jwtService);
 export const profileService = new ProfileService(profileRepository);
 
+import { MatchService } from "@/services/match.service";
+export const matchService = new MatchService(matchRepository);
+
 // ─── 4. Controllers ───────────────────────────────────────────────────────────
 import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";
 import { AdminManagementController } from "@/controllers/admin/admin.management.controller";
@@ -78,3 +83,6 @@ export const authController = new AuthController(authService);
 export const profileController = new ProfileController(profileService);
 export const profileImageController = new ProfileImageController(profileService, s3Service);
 export const userController = new UserController(userService);
+
+import { MatchController } from "@/controllers/user/match.controller";
+export const matchController = new MatchController(matchService);
