@@ -1,4 +1,4 @@
-import { Profile, ProfileStatus, SelfieStatus, User } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User } from "@prisma/client";
 
 export interface UserDto {
    id: number;
@@ -10,7 +10,9 @@ export interface UserDto {
    isBlocked: boolean;
    isDeleted: boolean;
    profileStatus: ProfileStatus;
+   hasCompletedBasicDetails: boolean;
    hasCompletedImageUpload: boolean;
+   hasCompletedPartnerPreference: boolean;
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
    primaryImageUrl?: string | null;
@@ -35,7 +37,7 @@ export interface UserDto {
    updatedAt: Date;
 }
 
-export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPrimary: boolean; imageUrl: string }[] }) | null }): UserDto => ({
+export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPrimary: boolean; imageUrl: string }[] }) | null; partnerPreference?: PartnerPreference | null }): UserDto => ({
    id: user.id,
    mobileNumber: user.mobileNumber,
    name: user.profile?.name || null,
@@ -45,7 +47,9 @@ export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPri
    isBlocked: user.isBlocked,
    isDeleted: user.isDeleted,
    profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,
+   hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails || false,
    hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
+   hasCompletedPartnerPreference: user.profile?.hasCompletedPartnerPreference || false,
    selfieStatus: user.profile?.selfieStatus || null,
    selfieUrl: user.profile?.selfieUrl || null,
    primaryImageUrl: user.profile?.images?.find((img) => img.isPrimary)?.imageUrl || null,

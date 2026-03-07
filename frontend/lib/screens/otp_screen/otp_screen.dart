@@ -11,7 +11,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../shared/widgets/auth_layout.dart';
 import '../home_screen/home_screen.dart';
+import '../partner_preference/partner_preference_screen.dart';
 import '../profile_image_upload/profile_image_upload_screen.dart';
+import '../questionaire_screen/questionaire_screen.dart';
 import '../selfie_verification/selfie_verification_screen.dart';
 import 'widgets/otp_form.dart';
 
@@ -82,8 +84,27 @@ class _OtpPageState extends State<OtpPage> {
         final user = response.user;
         if (user != null) {
           sharedPrefs.setInt("userId", user.id);
-          if (user.profileStatus == "INCOMPLETE") {
-            sharedPrefs.setString("profileStatus", "INCOMPLETE");
+          sharedPrefs.setString("profileStatus", user.profileStatus);
+          sharedPrefs.setBool(
+            "hasCompletedBasicDetails",
+            user.hasCompletedBasicDetails,
+          );
+          sharedPrefs.setBool(
+            "hasCompletedImageUpload",
+            user.hasCompletedImageUpload,
+          );
+          sharedPrefs.setBool(
+            "hasCompletedPartnerPreference",
+            user.hasCompletedPartnerPreference,
+          );
+          if (user.name != null) {
+            sharedPrefs.setString("name", user.name!);
+          } else {
+            sharedPrefs.remove("name");
+          }
+          sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
+
+          if (!user.hasCompletedBasicDetails) {
             if (mounted) {
               Navigator.pushAndRemoveUntil(
                 context,
@@ -93,14 +114,27 @@ class _OtpPageState extends State<OtpPage> {
                 ModalRoute.withName('/'),
               );
             }
+          } else if (!user.hasCompletedPartnerPreference) {
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PartnerPreferenceScreen(),
+                ),
+                ModalRoute.withName('/'),
+              );
+            }
+          } else if (user.profileStatus == "INCOMPLETE") {
+            if (mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const QuestionaireScreen(),
+                ),
+                ModalRoute.withName('/'),
+              );
+            }
           } else {
-            sharedPrefs.setString("profileStatus", user.profileStatus);
-            sharedPrefs.setBool(
-              "hasCompletedImageUpload",
-              user.hasCompletedImageUpload,
-            );
-            sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
-
             if (mounted) {
               if (user.hasCompletedImageUpload == false) {
                 Navigator.pushAndRemoveUntil(

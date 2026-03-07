@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/multi_select_dialog.dart';
 
@@ -144,6 +147,9 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         'annualIncomeTo': _annualIncomeTo,
       });
 
+      final sharedPrefs = await SharedPreferences.getInstance();
+      await sharedPrefs.setBool("hasCompletedPartnerPreference", true);
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -166,7 +172,26 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Partner Preferences')),
+      appBar: CustomAppBar(
+        leading: null,
+        title: 'Partner Preferences',
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final nav = Navigator.of(context);
+              final sharedPrefs = await SharedPreferences.getInstance();
+              await sharedPrefs.clear();
+              if (mounted) {
+                nav.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Icon(Icons.logout, color: AppColors.textPrimary),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

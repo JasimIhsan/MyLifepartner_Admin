@@ -46,7 +46,9 @@ class User {
   final int id;
   final String mobileNumber;
   final String profileStatus;
+  final bool hasCompletedBasicDetails;
   final bool hasCompletedImageUpload;
+  final bool hasCompletedPartnerPreference;
   final String? selfieStatus;
   final String? name;
   final String? email;
@@ -73,7 +75,9 @@ class User {
     required this.id,
     required this.mobileNumber,
     required this.profileStatus,
+    required this.hasCompletedBasicDetails,
     required this.hasCompletedImageUpload,
+    required this.hasCompletedPartnerPreference,
     this.selfieStatus,
     this.name,
     this.email,
@@ -100,7 +104,10 @@ class User {
       id: json['id'] ?? 0,
       mobileNumber: json['mobileNumber'] ?? '',
       profileStatus: json['profileStatus'] ?? 'INCOMPLETE',
+      hasCompletedBasicDetails: json['hasCompletedBasicDetails'] ?? false,
       hasCompletedImageUpload: json['hasCompletedImageUpload'] ?? false,
+      hasCompletedPartnerPreference:
+          json['hasCompletedPartnerPreference'] ?? false,
       selfieStatus: json['selfieStatus'],
       name: json['name'],
       email: json['email'],

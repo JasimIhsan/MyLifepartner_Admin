@@ -11,7 +11,7 @@ export class UserRepository implements IUserRepository {
       const [users, total] = await prisma.$transaction([
          prisma.user.findMany({
             where,
-            include,
+            include: { ...include, partnerPreference: true },
             orderBy: { createdAt: "desc" },
             skip,
             take,
@@ -22,19 +22,19 @@ export class UserRepository implements IUserRepository {
    }
 
    async findById(id: number): Promise<User | null> {
-      return prisma.user.findUnique({ where: { id } });
+      return prisma.user.findUnique({ where: { id }, include: { profile: { include: { images: true } }, partnerPreference: true } });
    }
 
    async findByEmail(email: string): Promise<User | null> {
-      return prisma.user.findUnique({ where: { email } });
+      return prisma.user.findUnique({ where: { email }, include: { profile: { include: { images: true } }, partnerPreference: true } });
    }
 
    async findByMobileNumber(mobileNumber: string): Promise<User | null> {
-      return prisma.user.findUnique({ where: { mobileNumber } });
+      return prisma.user.findUnique({ where: { mobileNumber }, include: { profile: { include: { images: true } }, partnerPreference: true } });
    }
 
    async update(id: number, data: Prisma.UserUpdateInput): Promise<User> {
-      return prisma.user.update({ where: { id }, data });
+      return prisma.user.update({ where: { id }, data, include: { profile: { include: { images: true } }, partnerPreference: true } });
    }
 
    async delete(id: number): Promise<User> {

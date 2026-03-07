@@ -434,7 +434,7 @@ async function main() {
          create: {
             username: "admin",
             password: adminPasswordHash,
-            role: Role.ADMIN,
+            role: Role.SUPER_ADMIN,
          },
       });
 
@@ -451,6 +451,8 @@ async function main() {
                create: {
                   name: "System Admin",
                   profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedBasicDetails: true,
+                  hasCompletedPartnerPreference: true,
                   hasCompletedImageUpload: true,
                },
             },
@@ -470,8 +472,19 @@ async function main() {
                create: {
                   name: "John Doe",
                   profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedBasicDetails: true,
+                  hasCompletedPartnerPreference: true,
                   hasCompletedImageUpload: true,
                   selfieStatus: SelfieStatus.APPROVED,
+                  selfieUrl: "20/selfie/1d291090-387b-4953-b537-7cedbeec2943.jpg",
+                  images: {
+                     create: [
+                        { imageUrl: "20/profile/1fc49bd1-270e-4eca-a58c-13347dcbfac5.jpg", isPrimary: true },
+                        { imageUrl: "20/profile/80fca093-3acb-4228-bca9-828f8f5f7b69.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/caf0deb8-a240-4570-bf47-4ccf8cf5d3fd.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/b63d4dfa-fca2-4273-ba98-d147cf467e1e.jpg", isPrimary: false },
+                     ],
+                  },
                },
             },
          },
@@ -490,6 +503,8 @@ async function main() {
                create: {
                   name: "Jane Smith",
                   profileStatus: ProfileStatus.INCOMPLETE,
+                  hasCompletedBasicDetails: false,
+                  hasCompletedPartnerPreference: false,
                   hasCompletedImageUpload: false,
                   selfieStatus: SelfieStatus.PENDING,
                },
@@ -497,15 +512,20 @@ async function main() {
          },
       });
 
-      // Generate 15 additional seed users
-      const usersData = Array.from({ length: 15 }).map((_, i) => {
+      const religionOptions = ["Christianity (Catholic)", "Christianity (Protestant)", "Christianity (Orthodox)", "Islam (Sunni)", "Islam (Shia)", "Hinduism", "Buddhism", "Judaism", "Sikhism", "Jainism", "Shinto", "Baha'i", "Spiritual", "Atheist / Agnostic", "No Religion", "Other"];
+      const motherTongueOptions = ["English", "Spanish", "Mandarin Chinese", "Arabic", "Hindi", "Bengali", "Portuguese", "Russian", "Japanese", "French", "German", "Italian", "Korean", "Vietnamese", "Other"];
+      const educationOptions = ["High School / Secondary", "Vocational / Diploma", "Bachelor's Degree", "Master's Degree", "Doctorate / PhD", "Medical Degree", "Law Degree", "Other"];
+      const occupationOptions = ["Technology / IT", "Healthcare / Medical", "Education / Academia", "Finance / Business", "Law / Legal", "Arts / Entertainment", "Engineering / Science", "Sales / Marketing", "Government / Public Service", "Manual Labor / Trades", "Self-Employed / Entrepreneur", "Student", "Homemaker", "Not Employed", "Other"];
+
+      // Generate 50 additional seed users
+      const usersData = Array.from({ length: 50 }).map((_, i) => {
          const index = i + 1;
          const isMale = index % 2 === 0;
          return {
             mobileNumber: `98765432${index.toString().padStart(2, "0")}`,
             email: `user${index}@example.com`,
-            isVerified: index % 3 !== 0,
-            isEmailVerified: index % 3 !== 0,
+            isVerified: true,
+            isEmailVerified: true,
             role: Role.USER,
             profile: {
                create: {
@@ -514,19 +534,44 @@ async function main() {
                   dateOfBirth: new Date(1990 + (index % 10), index % 12, (index % 28) + 1),
                   maritalStatus: MaritalStatus.NEVER_MARRIED,
                   heightCm: 160 + (index % 20),
-                  religion: ["Hindu", "Muslim", "Christian", "Sikh"][index % 4],
-                  caste: "General",
-                  motherTongue: ["Hindi", "English", "Tamil", "Telugu"][index % 4],
+                  religion: religionOptions[index % religionOptions.length],
+                  motherTongue: motherTongueOptions[index % motherTongueOptions.length],
                   city: ["Delhi", "Mumbai", "Bangalore", "Chennai"][index % 4],
                   state: ["Delhi", "Maharashtra", "Karnataka", "Tamil Nadu"][index % 4],
                   country: "India",
-                  highestEducation: ["B.Tech", "MBA", "MBBS", "B.Sc"][index % 4],
-                  occupation: ["Engineer", "Doctor", "Teacher", "Business Analyst"][index % 4],
+                  highestEducation: educationOptions[index % educationOptions.length],
+                  occupation: occupationOptions[index % occupationOptions.length],
                   annualIncome: 500000 + index * 100000,
                   bio: `Hello! I am user ${index}. Looking for a compatible partner.`,
-                  profileStatus: index % 3 !== 0 ? ProfileStatus.COMPLETED : ProfileStatus.ONBOARDING_COMPLETED,
-                  hasCompletedImageUpload: index % 3 !== 0,
-                  selfieStatus: index % 3 !== 0 ? SelfieStatus.APPROVED : SelfieStatus.PENDING,
+                  profileStatus: ProfileStatus.COMPLETED,
+                  hasCompletedBasicDetails: true,
+                  hasCompletedPartnerPreference: true,
+                  hasCompletedImageUpload: true,
+                  selfieStatus: SelfieStatus.APPROVED,
+                  selfieUrl: "20/selfie/1d291090-387b-4953-b537-7cedbeec2943.jpg",
+                  images: {
+                     create: [
+                        { imageUrl: "20/profile/1fc49bd1-270e-4eca-a58c-13347dcbfac5.jpg", isPrimary: true },
+                        { imageUrl: "20/profile/80fca093-3acb-4228-bca9-828f8f5f7b69.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/caf0deb8-a240-4570-bf47-4ccf8cf5d3fd.jpg", isPrimary: false },
+                        { imageUrl: "20/profile/b63d4dfa-fca2-4273-ba98-d147cf467e1e.jpg", isPrimary: false },
+                     ],
+                  },
+               },
+            },
+            partnerPreference: {
+               create: {
+                  ageFrom: 20,
+                  ageTo: 40,
+                  heightFrom: 150,
+                  heightTo: 190,
+                  maritalStatus: [MaritalStatus.NEVER_MARRIED],
+                  religion: [religionOptions[(index + 1) % religionOptions.length]],
+                  motherTongue: [motherTongueOptions[(index + 1) % motherTongueOptions.length]],
+                  highestEducation: [educationOptions[(index + 1) % educationOptions.length], educationOptions[(index + 2) % educationOptions.length]],
+                  occupation: [occupationOptions[(index + 1) % occupationOptions.length], occupationOptions[(index + 2) % occupationOptions.length]],
+                  annualIncomeFrom: 300000,
+                  annualIncomeTo: 3000000,
                },
             },
          };

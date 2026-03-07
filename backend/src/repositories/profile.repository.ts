@@ -121,12 +121,15 @@ export class ProfileRepository implements IProfileRepository {
 
       return prisma.profile.update({
          where: { userId },
-         data,
+         data: {
+            ...data,
+            hasCompletedBasicDetails: true,
+         },
       });
    }
 
    async updatePartnerPreference(userId: number, data: Omit<import("@prisma/client").Prisma.PartnerPreferenceCreateInput, "user">) {
-      return prisma.partnerPreference.upsert({
+      const partnerPref = await prisma.partnerPreference.upsert({
          where: { userId },
          update: data as any,
          create: {
@@ -134,6 +137,13 @@ export class ProfileRepository implements IProfileRepository {
             user: { connect: { id: userId } },
          } as any,
       });
+
+      await prisma.profile.update({
+         where: { userId },
+         data: { hasCompletedPartnerPreference: true },
+      });
+
+      return partnerPref;
    }
 
    async getUserImages(userId: number) {

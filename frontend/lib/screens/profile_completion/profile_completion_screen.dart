@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/multi_select_dialog.dart';
 
@@ -131,6 +134,11 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
         'bio': _bio,
       });
 
+      final sharedPrefs = await SharedPreferences.getInstance();
+      if (_name != null) {
+        await sharedPrefs.setString('name', _name!);
+      }
+
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -169,7 +177,26 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Basic Details')),
+      appBar: CustomAppBar(
+        leading: null,
+        title: 'Basic Details',
+        actions: [
+          TextButton(
+            onPressed: () async {
+              final nav = Navigator.of(context);
+              final sharedPrefs = await SharedPreferences.getInstance();
+              await sharedPrefs.clear();
+              if (mounted) {
+                nav.pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Icon(Icons.logout, color: AppColors.textPrimary),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),

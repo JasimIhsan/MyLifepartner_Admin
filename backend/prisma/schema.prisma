@@ -49,9 +49,11 @@ model Profile {
   profileCompletion Int           @default(10)
   profileStatus     ProfileStatus @default(INCOMPLETE)
 
-  hasCompletedImageUpload Boolean       @default(false)
-  selfieUrl               String?
-  selfieStatus            SelfieStatus?
+  hasCompletedBasicDetails      Boolean       @default(false)
+  hasCompletedPartnerPreference Boolean       @default(false)
+  hasCompletedImageUpload       Boolean       @default(false)
+  selfieUrl                     String?
+  selfieStatus                  SelfieStatus?
 
   images  UserImage[]
   answers UserAnswer[]
