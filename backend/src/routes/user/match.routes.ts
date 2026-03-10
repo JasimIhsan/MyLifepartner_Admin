@@ -8,6 +8,7 @@ const router = Router();
 router.use(verifyJWT);
 
 router.get("/recommendations", matchController.getRecommendations);
+router.get("/profile/:profileId", matchController.getProfileDetail);
 router.post("/swipe", matchController.swipeProfile);
 
 export default router;

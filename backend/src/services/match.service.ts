@@ -1,6 +1,6 @@
 import { SwipeAction } from "@prisma/client";
 import { CandidateProfile, IMatchRepository, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
-import { IMatchService, MatchRecommendationItem, SwipeInput } from "../interfaces/services/match.service.interface";
+import { IMatchService, MatchRecommendationItem, ProfileDetail, SwipeInput } from "../interfaces/services/match.service.interface";
 import { IS3Service } from "../interfaces/services/s3.service.interface";
 
 type CompatibilityScore = {
@@ -62,6 +62,44 @@ export class MatchService implements IMatchService {
 
    async swipeProfile(input: SwipeInput): Promise<void> {
       await this.matchRepository.recordSwipe(input.userId, input.targetProfileId, input.action);
+   }
+
+   async getProfileDetail(userId: number, profileId: number): Promise<ProfileDetail | null> {
+      const candidate = await this.matchRepository.getProfileById(profileId);
+      if (!candidate) return null;
+
+      const [userPref, userAnswers] = await Promise.all([this.matchRepository.getUserPreference(userId), this.matchRepository.getUserAnswers(userId)]);
+
+      const { totalScore, highlights } = this.calculateCompatibility(candidate, userPref, userAnswers);
+      const age = candidate.dateOfBirth ? this.calculateAge(candidate.dateOfBirth) : 0;
+
+      const presignedImages = await Promise.all(
+         candidate.images.map(async (img) => ({
+            ...img,
+            imageUrl: await this.s3Service.getPresignedUrl(img.imageUrl),
+         }))
+      );
+
+      return {
+         id: candidate.id,
+         name: candidate.name ?? "Unknown",
+         age,
+         gender: candidate.gender,
+         heightCm: candidate.heightCm,
+         maritalStatus: candidate.maritalStatus,
+         city: candidate.city,
+         state: candidate.state,
+         country: candidate.country,
+         religion: candidate.religion,
+         motherTongue: candidate.motherTongue,
+         highestEducation: candidate.highestEducation,
+         occupation: candidate.occupation,
+         annualIncome: candidate.annualIncome,
+         bio: candidate.bio,
+         matchPercentage: Math.round(totalScore),
+         compatibilityHighlights: highlights,
+         images: presignedImages,
+      };
    }
 
    // ─── Private scoring helpers ──────────────────────────────────────────────

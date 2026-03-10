@@ -25,4 +25,13 @@ class MatchService {
       data: {'targetProfileId': targetProfileId, 'action': action},
     );
   }
+
+  static Future<Map<String, dynamic>?> getProfileDetail(int profileId) async {
+    final response = await _client.get('/matches/profile/$profileId');
+    final data = response.data;
+    if (data['success'] == true) {
+      return data['data'] as Map<String, dynamic>;
+    }
+    return null;
+  }
 }

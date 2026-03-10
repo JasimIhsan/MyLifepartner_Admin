@@ -61,4 +61,30 @@ export class MatchController {
          next(err);
       }
    };
+
+   getProfileDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+         const userId = req.user?.id;
+         if (!userId) {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+            return;
+         }
+
+         const profileId = Number(req.params.profileId);
+         if (isNaN(profileId)) {
+            res.status(400).json({ success: false, message: "Invalid profileId" });
+            return;
+         }
+
+         const detail = await this.matchService.getProfileDetail(userId, profileId);
+         if (!detail) {
+            res.status(404).json({ success: false, message: "Profile not found" });
+            return;
+         }
+
+         res.status(200).json({ success: true, data: detail });
+      } catch (err) {
+         next(err);
+      }
+   };
 }

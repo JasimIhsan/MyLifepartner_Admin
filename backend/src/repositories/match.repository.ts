@@ -66,13 +66,16 @@ export class MatchRepository implements IMatchRepository {
          name: p.name,
          dateOfBirth: p.dateOfBirth,
          heightCm: p.heightCm,
+         maritalStatus: p.maritalStatus,
          city: p.city,
          state: p.state,
+         country: p.country,
          religion: p.religion,
          motherTongue: p.motherTongue,
          highestEducation: p.highestEducation,
          occupation: p.occupation,
          annualIncome: p.annualIncome,
+         bio: p.bio,
          gender: p.gender,
          images: p.images.map((img) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
          answers: p.answers,
@@ -86,5 +89,35 @@ export class MatchRepository implements IMatchRepository {
       } else {
          await prisma.profileSwipe.create({ data: { userId, targetProfileId, action } });
       }
+   }
+   async getProfileById(profileId: number): Promise<CandidateProfile | null> {
+      const p = await prisma.profile.findUnique({
+         where: { id: profileId },
+         include: {
+            images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
+            answers: { select: { questionId: true, answer: true, score: true } },
+         },
+      });
+      if (!p) return null;
+      return {
+         id: p.id,
+         userId: p.userId,
+         name: p.name,
+         dateOfBirth: p.dateOfBirth,
+         heightCm: p.heightCm,
+         maritalStatus: p.maritalStatus,
+         city: p.city,
+         state: p.state,
+         country: p.country,
+         religion: p.religion,
+         motherTongue: p.motherTongue,
+         highestEducation: p.highestEducation,
+         occupation: p.occupation,
+         annualIncome: p.annualIncome,
+         bio: p.bio,
+         gender: p.gender,
+         images: p.images.map((img) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
+         answers: p.answers,
+      };
    }
 }
