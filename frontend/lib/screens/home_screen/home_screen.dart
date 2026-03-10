@@ -144,7 +144,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
-      title: 'My Life Partner',
+      title: 'Life Partner Again',
       showLeading: false,
       actions: [
         IconButton(

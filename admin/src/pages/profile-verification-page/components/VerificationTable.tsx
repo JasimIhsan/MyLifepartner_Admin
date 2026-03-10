@@ -19,7 +19,7 @@ export function VerificationTable({
    onPageChange,
    onPageSizeChange,
    isFetching = false,
-   onViewSelfie,
+   onViewImages,
    onApprove,
 }: {
    data?: UserInterface[];
@@ -31,7 +31,7 @@ export function VerificationTable({
    onPageChange?: (pageIndex: number) => void;
    onPageSizeChange?: (pageSize: number) => void;
    isFetching?: boolean;
-   onViewSelfie?: (user: UserInterface) => void;
+   onViewImages?: (user: UserInterface) => void;
    onApprove?: (id: number) => void;
 }) {
    const pageCount = Math.ceil(totalCount / pageSize);
@@ -86,7 +86,7 @@ export function VerificationTable({
                         <TableHead className="w-62.5">User</TableHead>
                         <TableHead className="w-50">Contact</TableHead>
                         <TableHead className="w-37.5">Joined</TableHead>
-                        <TableHead className="w-40 text-center">Actions</TableHead>
+                        <TableHead className="w-50 text-center">Actions</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody className={isFetching ? "opacity-50 pointer-events-none" : ""}>
@@ -116,8 +116,8 @@ export function VerificationTable({
                               <TableCell className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</TableCell>
                               <TableCell>
                                  <div className="flex items-center justify-center gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => onViewSelfie?.(user)}>
-                                       View Selfie
+                                    <Button variant="outline" size="sm" onClick={() => onViewImages?.(user)}>
+                                       View Pictures
                                     </Button>
                                     <Button variant="default" size="sm" onClick={() => handleApproveClick(user)}>
                                        Approve

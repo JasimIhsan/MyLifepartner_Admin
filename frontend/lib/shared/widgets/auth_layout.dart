@@ -82,7 +82,7 @@ class AuthLayout extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          "Life Partner Again",
+                          "lifepartneragain",
                           style: GoogleFonts.poppins(
                             color: Colors.white,
                             fontWeight: FontWeight.w600,
@@ -185,7 +185,7 @@ class AuthLayout extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        "Life Partner Again",
+                        "lifepartneragain",
                         style: GoogleFonts.poppins(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -247,7 +247,7 @@ class AuthLayout extends StatelessWidget {
     return Column(
       children: [
         Text(
-          "Life Partner Again",
+          "lifepartneragain",
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.bold,

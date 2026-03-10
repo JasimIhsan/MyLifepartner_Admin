@@ -93,7 +93,7 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => MatchProvider())],
       child: MaterialApp(
-        title: 'My Life Partner Again',
+        title: 'Life Partner Again',
         debugShowCheckedModeBanner: false,
         scaffoldMessengerKey: scaffoldMessengerKey,
         theme: ThemeData(

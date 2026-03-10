@@ -100,7 +100,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Column(
                     children: [
                       Text(
-                        'My Life Partner Again',
+                        'Life Partner Again',
                         style: GoogleFonts.poppins(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,

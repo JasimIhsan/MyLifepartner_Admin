@@ -6,7 +6,7 @@ import { HTTP_STATUS } from "@/utils/constants";
 import { Response } from "express";
 
 export class AdminUsersController {
-   constructor(private userService: IUserService) {}
+   constructor(private userService: IUserService) { }
 
    getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
       const { search, page, limit, selfieStatus } = req.query;
@@ -64,6 +64,32 @@ export class AdminUsersController {
       const { S3Service } = await import("@/services/s3.service");
       const signedUrl = await new S3Service().getPresignedUrl(user.selfieUrl, 3600);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { url: signedUrl }, "Signed URL generated successfully"));
+   });
+
+   getUserImages = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = parseInt(req.params.id as string);
+      const { prisma } = await import("@/config/prisma");
+
+      const profile = await prisma.profile.findUnique({
+         where: { userId },
+         include: { images: true }
+      });
+
+      if (!profile || !profile.images || profile.images.length === 0) {
+         return res.status(HTTP_STATUS.NOT_FOUND).json(new ApiResponse(HTTP_STATUS.NOT_FOUND, [], "User has no uploaded images"));
+      }
+
+      const { S3Service } = await import("@/services/s3.service");
+      const s3Service = new S3Service();
+
+      const imagesWithUrls = await Promise.all(
+         profile.images.map(async (img) => ({
+            ...img,
+            url: await s3Service.getPresignedUrl(img.imageUrl, 3600)
+         }))
+      );
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, imagesWithUrls, "Images fetched successfully"));
    });
 
    verifyProfile = asyncHandler(async (req: AuthRequest, res: Response) => {

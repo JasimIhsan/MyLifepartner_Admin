@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
-import { SelfieModal } from "./components/SelfieModal";
+import { ImagesModal } from "./components/ImagesModal";
 import { VerificationTable } from "./components/VerificationTable";
 
 const ProfileVerificationPage = () => {
@@ -16,7 +16,7 @@ const ProfileVerificationPage = () => {
    const [users, setUsers] = useState<UserInterface[]>([]);
    const [totalCount, setTotalCount] = useState(0);
    const [isFetching, setIsFetching] = useState(true);
-   const [isModalOpen, setIsModalOpen] = useState(false);
+   const [isImagesModalOpen, setIsImagesModalOpen] = useState(false);
    const [selectedUser, setSelectedUser] = useState<UserInterface | null>(null);
    const [searchQuery, setSearchQuery] = useState(initialSearch);
    const [pageIndex, setPageIndex] = useState(initialPage - 1);
@@ -75,9 +75,9 @@ const ProfileVerificationPage = () => {
       setPageIndex(0);
    };
 
-   const handleViewSelfie = (user: UserInterface) => {
+   const handleViewImages = (user: UserInterface) => {
       setSelectedUser(user);
-      setIsModalOpen(true);
+      setIsImagesModalOpen(true);
    };
 
    const handleApprove = async (id: number) => {
@@ -99,8 +99,8 @@ const ProfileVerificationPage = () => {
             <p className="text-muted-foreground">Review and approve user selfies.</p>
          </div>
          <>
-            <VerificationTable data={users} searchQuery={searchQuery} onSearchChange={handleSearchChange} pageIndex={pageIndex} pageSize={pageSize} totalCount={totalCount} onPageChange={handlePageChange} onPageSizeChange={handlePageSizeChange} isFetching={isFetching} onViewSelfie={handleViewSelfie} onApprove={handleApprove} />
-            <SelfieModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} user={selectedUser} />
+            <VerificationTable data={users} searchQuery={searchQuery} onSearchChange={handleSearchChange} pageIndex={pageIndex} pageSize={pageSize} totalCount={totalCount} onPageChange={handlePageChange} onPageSizeChange={handlePageSizeChange} isFetching={isFetching} onViewImages={handleViewImages} onApprove={handleApprove} />
+            <ImagesModal isOpen={isImagesModalOpen} onClose={() => setIsImagesModalOpen(false)} user={selectedUser} />
          </>
       </div>
    );

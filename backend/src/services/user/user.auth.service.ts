@@ -15,7 +15,7 @@ export class AuthService implements IUserAuthService {
       private otpService: OtpService,
       private emailService: EmailService,
       private jwtService: IJwtService
-   ) {}
+   ) { }
 
    async login(mobileNumber: string, otp: string) {
       if (!mobileNumber || !otp) {
@@ -172,7 +172,7 @@ export class AuthService implements IUserAuthService {
 
       // Point to our HTTPS route instead of direct deep link
       // Use env or request host, but falling back to default localhost or production domain
-      const baseUrl = "http://192.168.1.27:3000";
+      const baseUrl = "https://mudfish-welcomed-guinea.ngrok-free.app";
       const verificationUrl = `${baseUrl}/api/user/auth/verify-email?token=${token}`;
 
       await this.emailService.sendVerificationEmail(email, verificationUrl);
