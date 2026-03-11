@@ -129,4 +129,18 @@ class AuthRepository {
       rethrow;
     }
   }
+
+  Future<SimpleMessageResponse> sendPasswordResetLink({
+    required String email,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/user/auth/forgot-password/send-link",
+        data: {"email": email},
+      );
+      return SimpleMessageResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

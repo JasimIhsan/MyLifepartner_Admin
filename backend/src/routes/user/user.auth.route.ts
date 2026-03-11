@@ -8,7 +8,12 @@ router.post("/initiate", authController.initiateAuth);
 router.post("/verify-otp", authController.verifyOtp);
 router.post("/login", authController.login);
 router.post("/register", authController.register);
-router.post("/forgot-password", authController.forgotPassword);
+router.post("/forgot-password", authController.forgotPassword); // Legacy OTP reset
+
+// Magic Link Password Reset
+router.post("/forgot-password/send-link", authController.sendPasswordResetLink);
+router.get("/forgot-password/reset", authController.renderPasswordResetPage);
+router.post("/forgot-password/reset", authController.resetPasswordWithLink);
 
 router.post("/send-otp", authController.sendOtp);
 router.post("/resend-otp", authController.resendOtp);

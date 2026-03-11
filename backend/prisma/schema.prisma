@@ -21,6 +21,7 @@ model User {
 
   profile                 Profile?
   emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
   partnerPreference       PartnerPreference?
   profileSwipes           ProfileSwipe[]           @relation("UserSwipes")
 }
@@ -108,6 +109,19 @@ model EmailVerificationToken {
 
   @@index([token])
   @@map("email_verification_tokens")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@map("password_reset_tokens")
 }
 
 enum SelfieStatus {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
+
 import '../../core/app_colors.dart';
 import '../../shared/widgets/auth_layout.dart';
 import '../../shared/widgets/custom_button.dart';
@@ -29,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _initiateAuth() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -42,10 +43,8 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OtpPage(
-              email: email,
-              isExistingUser: response.exists,
-            ),
+            builder: (context) =>
+                OtpPage(email: email, isExistingUser: response.exists),
           ),
         );
       }
@@ -141,7 +140,9 @@ class _LoginPageState extends State<LoginPage> {
               if (value == null || value.isEmpty) {
                 return 'Please enter your email';
               }
-              final emailRegex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+              final emailRegex = RegExp(
+                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+              );
               if (!emailRegex.hasMatch(value)) {
                 return 'Please enter a valid email address';
               }
@@ -158,23 +159,6 @@ class _LoginPageState extends State<LoginPage> {
               text: "Continue",
               backgroundColor: const Color(0xFFA67C68),
               borderRadius: 12,
-            ),
-          ),
-
-          const SizedBox(height: 16),
-          // Forgot Password link for users who already have an account
-          Center(
-            child: TextButton(
-              onPressed: () {
-                // We don't know the email yet, so just send them to enter their email first
-              },
-              child: Text(
-                "Forgot password?",
-                style: GoogleFonts.poppins(
-                  color: const Color(0xFFA67C68),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
             ),
           ),
 
@@ -212,5 +196,4 @@ class _LoginPageState extends State<LoginPage> {
       textAlign: TextAlign.center,
     );
   }
-
 }

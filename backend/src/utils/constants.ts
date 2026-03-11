@@ -7,6 +7,7 @@ export const CACHE_KEYS = {
    OTP_RESEND_LOCK: (email: string) => `otp_resend_lock:${email}`,
    OTP_VERIFIED: (email: string) => `otp_verified:${email}`,
    ACCOUNT_LOCK: (email: string) => `account_lock:${email}`,
+   PASSWORD_RESET_TOKEN: (token: string) => `password_reset:${token}`,
 };
 
 export const TOKEN_EXPIRY = {

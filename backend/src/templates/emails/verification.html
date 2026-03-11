@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #FDF5F2; /* App background */
+            margin: 0;
+            padding: 0;
+            color: #4E342E; /* Text primary */
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        .header {
+            background-color: #B88973; /* Primary */
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .content p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #757575; /* Text secondary */
+            margin-bottom: 25px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #B88973; /* Primary */
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        .footer {
+            background-color: #FBEFEA; /* Primary light */
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #8D6E63; /* Primary dark */
+        }
+        .sub-text {
+            font-size: 13px;
+            color: #a0a0a0;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Verify Your Email</h1>
+        </div>
+        <div class="content">
+            <p>Welcome to <strong>MyLifePartner</strong>!</p>
+            <p>Please verify your email address to ensure the security of your account and complete your profile setup.</p>
+            <a href="{{VERIFICATION_URL}}" class="btn">Verify Email</a>
+            <p class="sub-text">This link will expire in 15 minutes.</p>
+            <p class="sub-text">If you did not request this email, you can safely ignore it.</p>
+        </div>
+        <div class="footer">
+            &copy; {{YEAR}} MyLifePartner. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

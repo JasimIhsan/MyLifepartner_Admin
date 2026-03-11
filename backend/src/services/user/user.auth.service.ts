@@ -5,6 +5,8 @@ import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS, HTTP_STATUS, RATE_LIMIT_CONFIG } from "@/utils/constants";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
@@ -320,5 +322,91 @@ export class AuthService implements IUserAuthService {
       ]);
 
       return { verified: true, message: "Email Verified Successfully!" };
+   }
+
+   async sendPasswordResetLink(email: string) {
+      if (!email) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
+      }
+
+      const user = await this.userService.findUserByEmail(email);
+      if (!user) {
+         // Return silently to prevent email enumeration
+         return;
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAtSeconds = 15 * 60; // 15 minutes
+
+      await this.cacheService.setCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token), user.id.toString(), expiresAtSeconds);
+
+      // const baseUrl = "https://mudfish-welcomed-guinea.ngrok-free.app";
+      const baseUrl = "http://localhost:3000";
+      const resetUrl = `${baseUrl}/api/user/auth/forgot-password/reset?token=${token}`;
+
+      await this.emailService.sendPasswordResetEmail(email, resetUrl);
+   }
+
+   async renderPasswordResetPage(token: string | undefined | null | any) {
+      if (!token || typeof token !== "string") {
+         return this.getErrorHtml("Invalid Link", "The reset link is missing or invalid.");
+      }
+
+      const userIdStr = await this.cacheService.getCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token));
+
+      if (!userIdStr) {
+         return this.getErrorHtml("Invalid or Expired Link", "This reset link is invalid or has expired. Please request a new one.");
+      }
+
+      const templatePath = path.join(__dirname, "../../../src/templates/pages/reset-password-form.html");
+      let html = fs.readFileSync(templatePath, "utf-8");
+
+      html = html.replace(/{{TOKEN}}/g, token);
+
+      return html;
+   }
+
+   async resetPasswordWithLink(token: string | undefined | null | any, passwordPlain: string) {
+      if (!token || typeof token !== "string") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "The reset link is missing or invalid.");
+      }
+
+      if (!passwordPlain || passwordPlain.length < 8) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Password must be at least 8 characters.");
+      }
+
+      const userIdStr = await this.cacheService.getCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token));
+
+      if (!userIdStr) {
+         throw new ApiError(HTTP_STATUS.NOT_FOUND, "This reset link is invalid or has expired. Please request a new one.");
+      }
+
+      const userId = parseInt(userIdStr, 10);
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+
+      if (!user) {
+         throw new ApiError(HTTP_STATUS.NOT_FOUND, "We couldn't find the account associated with this link.");
+      }
+
+      const hashedPassword = await bcrypt.hash(passwordPlain, 10);
+
+      await prisma.user.update({
+         where: { id: userId },
+         data: { password: hashedPassword },
+      });
+
+      await this.cacheService.deleteCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token));
+
+      return { success: true, message: "Password reset successfully" };
+   }
+
+   private getErrorHtml(title: string, message: string) {
+      const templatePath = path.join(__dirname, "../../../src/templates/pages/error.html");
+      let html = fs.readFileSync(templatePath, "utf-8");
+
+      html = html.replace(/{{TITLE}}/g, title);
+      html = html.replace(/{{MESSAGE}}/g, message);
+
+      return html;
    }
 }

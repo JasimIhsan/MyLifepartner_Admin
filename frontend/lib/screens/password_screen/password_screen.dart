@@ -32,13 +32,17 @@ class PasswordScreen extends StatefulWidget {
 class _PasswordScreenState extends State<PasswordScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
   final AuthRepository _authRepository = AuthRepository();
   bool _isLoading = false;
   bool _obscureText = true;
+  bool _obscureConfirmText = true;
 
   @override
   void dispose() {
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -50,9 +54,15 @@ class _PasswordScreenState extends State<PasswordScreen> {
     });
 
     try {
-      final response = widget.isExistingUser 
-          ? await _authRepository.login(email: widget.email, password: _passwordController.text)
-          : await _authRepository.register(email: widget.email, password: _passwordController.text);
+      final response = widget.isExistingUser
+          ? await _authRepository.login(
+              email: widget.email,
+              password: _passwordController.text,
+            )
+          : await _authRepository.register(
+              email: widget.email,
+              password: _passwordController.text,
+            );
 
       if (response.success && response.user != null) {
         final sharedPrefs = await SharedPreferences.getInstance();
@@ -61,9 +71,18 @@ class _PasswordScreenState extends State<PasswordScreen> {
         final user = response.user!;
         sharedPrefs.setInt("userId", user.id);
         sharedPrefs.setString("profileStatus", user.profileStatus);
-        sharedPrefs.setBool("hasCompletedBasicDetails", user.hasCompletedBasicDetails);
-        sharedPrefs.setBool("hasCompletedImageUpload", user.hasCompletedImageUpload);
-        sharedPrefs.setBool("hasCompletedPartnerPreference", user.hasCompletedPartnerPreference);
+        sharedPrefs.setBool(
+          "hasCompletedBasicDetails",
+          user.hasCompletedBasicDetails,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedImageUpload",
+          user.hasCompletedImageUpload,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedPartnerPreference",
+          user.hasCompletedPartnerPreference,
+        );
         if (user.name != null) {
           sharedPrefs.setString("name", user.name!);
         } else {
@@ -76,13 +95,17 @@ class _PasswordScreenState extends State<PasswordScreen> {
         if (!user.hasCompletedBasicDetails) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const ProfileCompletionScreen()),
+            MaterialPageRoute(
+              builder: (context) => const ProfileCompletionScreen(),
+            ),
             ModalRoute.withName('/'),
           );
         } else if (!user.hasCompletedPartnerPreference) {
           Navigator.pushAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (context) => const PartnerPreferenceScreen()),
+            MaterialPageRoute(
+              builder: (context) => const PartnerPreferenceScreen(),
+            ),
             ModalRoute.withName('/'),
           );
         } else if (user.profileStatus == "INCOMPLETE") {
@@ -95,13 +118,17 @@ class _PasswordScreenState extends State<PasswordScreen> {
           if (user.hasCompletedImageUpload == false) {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const ProfileImageUploadScreen()),
+              MaterialPageRoute(
+                builder: (context) => const ProfileImageUploadScreen(),
+              ),
               ModalRoute.withName('/'),
             );
           } else if (user.selfieStatus == null || user.selfieStatus == "NONE") {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const SelfieVerificationScreen()),
+              MaterialPageRoute(
+                builder: (context) => const SelfieVerificationScreen(),
+              ),
               ModalRoute.withName('/'),
             );
           } else {
@@ -121,7 +148,87 @@ class _PasswordScreenState extends State<PasswordScreen> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _handleForgotPassword() async {
+    final bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Reset Password"),
+          content: Text(
+            "Are you sure you want to reset the password for ${widget.email}? We will send a magic link to your email address.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text(
+                "Send Link",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      await _authRepository.sendPasswordResetLink(email: widget.email);
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Magic Link Sent"),
+              content: Text(
+                "A password reset link has been sent to ${widget.email}. Please check your email to reset your password.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text("OK"),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    } catch (e) {
+      debugPrint("Send magic link error: $e");
+      String errorMessage = "Failed to send reset link. Please try again.";
+      if (e is DioException) {
+        errorMessage = getDioErrorMessage(e);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -216,7 +323,77 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     return null;
                   },
                 ),
+                if (widget.isExistingUser) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: _isLoading ? null : _handleForgotPassword,
+                      child: const Text("Forgot Password?"),
+                    ),
+                  ),
+                ],
+                if (!widget.isExistingUser) ...[
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    controller: _confirmPasswordController,
+                    obscureText: _obscureConfirmText,
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: isWeb ? 16 : 14,
+                        horizontal: isWeb ? 16 : 10,
+                      ),
+                      hintText: "Confirm Password",
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscureConfirmText
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmText = !_obscureConfirmText;
+                          });
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: Color(0xFFA67C68)),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.error),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.error),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please confirm your password';
+                      }
+                      if (value != _passwordController.text) {
+                        return 'Passwords do not match';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+
                 const SizedBox(height: 24),
+
                 SizedBox(
                   width: double.infinity,
                   child: CustomButton(

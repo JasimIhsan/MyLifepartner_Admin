@@ -19,4 +19,7 @@ export interface IUserAuthService {
    refreshToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }>;
    sendMagicLink(userId: number | undefined, email: string): Promise<void>;
    verifyEmailLink(token: string | undefined | null): Promise<{ verified: boolean; message: string }>;
+   sendPasswordResetLink(email: string): Promise<void>;
+   renderPasswordResetPage(token: string | undefined | null | any): Promise<string>;
+   resetPasswordWithLink(token: string | undefined | null | any, passwordPlain: string): Promise<{ success: boolean; message: string }>;
 }
