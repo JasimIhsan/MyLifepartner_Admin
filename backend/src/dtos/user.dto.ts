@@ -2,7 +2,7 @@ import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User } from "@
 
 export interface UserDto {
    id: number;
-   mobileNumber: string;
+   mobileNumber?: string | null;
    name: string | null;
    email: string | null;
    role: string;

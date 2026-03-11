@@ -16,14 +16,99 @@ class AuthRepository {
     }
   }
 
+  Future<InitiateAuthResponse> initiateAuth({required String email}) async {
+    try {
+      final response = await _dio.post(
+        "/user/auth/initiate",
+        data: {"email": email},
+      );
+      return InitiateAuthResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<SimpleMessageResponse> verifyOtp({
+    required String email,
+    required String otp,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/user/auth/verify-otp",
+        data: {"email": email, "otp": otp},
+      );
+      return SimpleMessageResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<AuthResultResponse> login({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/user/auth/login",
+        data: {"email": email, "password": password},
+      );
+      final verifyResponse = AuthResultResponse.fromJson(response.data);
+      if (verifyResponse.success) {
+        await TokenService.saveTokens(
+          accessToken: verifyResponse.accessToken,
+          refreshToken: verifyResponse.refreshToken,
+        );
+      }
+      return verifyResponse;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<AuthResultResponse> register({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/user/auth/register",
+        data: {"email": email, "password": password},
+      );
+      final verifyResponse = AuthResultResponse.fromJson(response.data);
+      if (verifyResponse.success) {
+        await TokenService.saveTokens(
+          accessToken: verifyResponse.accessToken,
+          refreshToken: verifyResponse.refreshToken,
+        );
+      }
+      return verifyResponse;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<SimpleMessageResponse> forgotPassword({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/user/auth/forgot-password",
+        data: {"email": email, "password": password},
+      );
+      return SimpleMessageResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<SendOtpResponse> sendOtp({
-    required String mobileNumber,
-    required String sendOption,
+    required String email,
   }) async {
     try {
       final response = await _dio.post(
         "/user/auth/send-otp",
-        data: {"mobileNumber": mobileNumber, "sendOption": sendOption},
+        data: {"email": email},
       );
       return SendOtpResponse.fromJson(response.data);
     } catch (e) {
@@ -32,37 +117,14 @@ class AuthRepository {
   }
 
   Future<SendOtpResponse> resendOtp({
-    required String mobileNumber,
-    required String sendOption,
+    required String email,
   }) async {
     try {
       final response = await _dio.post(
         "/user/auth/resend-otp",
-        data: {"mobileNumber": mobileNumber, "sendOption": sendOption},
+        data: {"email": email},
       );
       return SendOtpResponse.fromJson(response.data);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<VerifyOtpResponse> verifyOtp({
-    required String mobileNumber,
-    required String otp,
-  }) async {
-    try {
-      final response = await _dio.post(
-        "/user/auth/login",
-        data: {"mobileNumber": mobileNumber, "otp": otp},
-      );
-      final verifyResponse = VerifyOtpResponse.fromJson(response.data);
-      if (verifyResponse.success) {
-        await TokenService.saveTokens(
-          accessToken: verifyResponse.accessToken,
-          refreshToken: verifyResponse.refreshToken,
-        );
-      }
-      return verifyResponse;
     } catch (e) {
       rethrow;
     }

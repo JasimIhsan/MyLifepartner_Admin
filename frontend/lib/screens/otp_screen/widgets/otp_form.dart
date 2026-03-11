@@ -9,7 +9,7 @@ class OtpForm extends StatelessWidget {
   final FocusNode focusNode;
   final bool isWeb;
   final bool isLoading;
-  final String phoneNumber;
+  final String email;
   final VoidCallback onResend;
   final Function(String) onVerify;
   final int timerValue;
@@ -22,7 +22,7 @@ class OtpForm extends StatelessWidget {
     required this.focusNode,
     required this.isWeb,
     required this.isLoading,
-    required this.phoneNumber,
+    required this.email,
     required this.onResend,
     required this.onVerify,
     required this.timerValue,

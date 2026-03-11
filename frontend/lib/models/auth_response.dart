@@ -14,14 +14,44 @@ class SendOtpResponse {
   }
 }
 
-class VerifyOtpResponse {
+class InitiateAuthResponse {
+  final bool success;
+  final String message;
+  final bool exists;
+
+  InitiateAuthResponse({required this.success, required this.message, required this.exists});
+
+  factory InitiateAuthResponse.fromJson(Map<String, dynamic> json) {
+    return InitiateAuthResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+      exists: json['data']?['exists'] ?? false,
+    );
+  }
+}
+
+class SimpleMessageResponse {
+  final bool success;
+  final String message;
+
+  SimpleMessageResponse({required this.success, required this.message});
+
+  factory SimpleMessageResponse.fromJson(Map<String, dynamic> json) {
+    return SimpleMessageResponse(
+      success: json['success'] ?? false,
+      message: json['message'] ?? '',
+    );
+  }
+}
+
+class AuthResultResponse {
   final bool success;
   final String message;
   final String accessToken;
   final String refreshToken;
   final User? user;
 
-  VerifyOtpResponse({
+  AuthResultResponse({
     required this.success,
     required this.message,
     required this.accessToken,
@@ -29,8 +59,8 @@ class VerifyOtpResponse {
     this.user,
   });
 
-  factory VerifyOtpResponse.fromJson(Map<String, dynamic> json) {
-    return VerifyOtpResponse(
+  factory AuthResultResponse.fromJson(Map<String, dynamic> json) {
+    return AuthResultResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
       accessToken: json['data']?['accessToken'] ?? '',
@@ -44,7 +74,7 @@ class VerifyOtpResponse {
 
 class User {
   final int id;
-  final String mobileNumber;
+  final String? mobileNumber;
   final String profileStatus;
   final bool hasCompletedBasicDetails;
   final bool hasCompletedImageUpload;
@@ -102,7 +132,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['id'] ?? 0,
-      mobileNumber: json['mobileNumber'] ?? '',
+      mobileNumber: json['mobileNumber'],
       profileStatus: json['profileStatus'] ?? 'INCOMPLETE',
       hasCompletedBasicDetails: json['hasCompletedBasicDetails'] ?? false,
       hasCompletedImageUpload: json['hasCompletedImageUpload'] ?? false,

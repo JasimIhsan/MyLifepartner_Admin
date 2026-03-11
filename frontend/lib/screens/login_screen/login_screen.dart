@@ -3,13 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
-import 'package:phone_form_field/phone_form_field.dart';
-
 import '../../core/app_colors.dart';
 import '../../shared/widgets/auth_layout.dart';
 import '../../shared/widgets/custom_button.dart';
 import '../otp_screen/otp_screen.dart';
-import 'widgets/otp_method_selector.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -20,61 +17,41 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late final PhoneController _phoneController;
+  final TextEditingController _emailController = TextEditingController();
   final AuthRepository _authRepository = AuthRepository();
-  PhoneNumber _phoneNumber = const PhoneNumber(isoCode: IsoCode.US, nsn: "");
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _phoneController = PhoneController(initialValue: _phoneNumber);
-    _detectCountry();
-  }
-
-  @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
-  Future<void> _detectCountry() async {
-    try {
-      final response = await _authRepository.detectCountry();
-      if (response.success && response.countryCode != null) {
-        final String code = response.countryCode!;
-        final detectedIsoCode = IsoCode.values.firstWhere(
-          (e) => e.name.toUpperCase() == code.toUpperCase(),
-          orElse: () => IsoCode.IN,
-        );
-
-        if (mounted) {
-          setState(() {
-            _phoneNumber = PhoneNumber(isoCode: detectedIsoCode, nsn: "");
-            _phoneController.value = _phoneNumber;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Country detection failed: $e");
-    }
-  }
-
-  Future<bool> _sendOtp(String method) async {
+  Future<void> _initiateAuth() async {
+    if (!_formKey.currentState!.validate()) return;
+    
     setState(() {
       _isLoading = true;
     });
     try {
-      final response = await _authRepository.sendOtp(
-        mobileNumber: "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
-        sendOption: method.toLowerCase(),
-      );
+      final email = _emailController.text.trim();
+      final response = await _authRepository.initiateAuth(email: email);
 
-      debugPrint("OTP Response: ${response.message}");
-      return response.success;
+      debugPrint("Initiate Auth Response: ${response.message}");
+      if (response.success && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpPage(
+              email: email,
+              isExistingUser: response.exists,
+            ),
+          ),
+        );
+      }
     } catch (e) {
-      debugPrint("Send OTP Error: $e");
-      String errorMessage = "Failed to send OTP. Please try again.";
+      debugPrint("Auth Error: $e");
+      String errorMessage = "Failed to start authentication. Please try again.";
       if (e is DioException) {
         errorMessage = getDioErrorMessage(e);
       }
@@ -86,7 +63,6 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
       }
-      return false;
     } finally {
       if (mounted) {
         setState(() {
@@ -118,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Continue with Phone",
+            "Continue with Email",
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -126,8 +102,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
           const SizedBox(height: 12),
-          PhoneFormField(
-            controller: _phoneController,
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               filled: true,
               fillColor: Colors.white,
@@ -135,9 +112,8 @@ class _LoginPageState extends State<LoginPage> {
                 vertical: isWeb ? 16 : 14,
                 horizontal: isWeb ? 16 : 10,
               ),
-              hintText: "000 000 0000",
+              hintText: "Enter your email address",
               hintStyle: const TextStyle(color: Colors.grey),
-              counterText: "",
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: Colors.grey.shade300),
@@ -161,48 +137,44 @@ class _LoginPageState extends State<LoginPage> {
                 borderSide: const BorderSide(color: AppColors.error),
               ),
             ),
-            validator: PhoneValidator.compose([
-              PhoneValidator.required(
-                context,
-                errorText: "Please enter your mobile number",
-              ),
-              PhoneValidator.validMobile(
-                context,
-                errorText: "Please enter a valid mobile number",
-              ),
-            ]),
-            countrySelectorNavigator: isWeb
-                ? const CountrySelectorNavigator.dialog()
-                : const CountrySelectorNavigator.draggableBottomSheet(),
-            onChanged: (value) => _phoneNumber = value,
-            isCountrySelectionEnabled: true,
-            isCountryButtonPersistent: true,
-            countryButtonStyle: const CountryButtonStyle(
-              showIsoCode: false,
-              showFlag: true,
-              flagSize: 20,
-            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              final emailRegex = RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+");
+              if (!emailRegex.hasMatch(value)) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
           ),
 
           const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: CustomButton(
-              onPressed: _isLoading
-                  ? null
-                  : () {
-                      if (_formKey.currentState!.validate()) {
-                        OtpMethodSelector.show(
-                          context,
-                          isWeb: isWeb,
-                          onMethodSelected: _navigateToOtp,
-                        );
-                      }
-                    },
+              onPressed: _isLoading ? null : _initiateAuth,
               isLoading: _isLoading,
               text: "Continue",
               backgroundColor: const Color(0xFFA67C68),
               borderRadius: 12,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+          // Forgot Password link for users who already have an account
+          Center(
+            child: TextButton(
+              onPressed: () {
+                // We don't know the email yet, so just send them to enter their email first
+              },
+              child: Text(
+                "Forgot password?",
+                style: GoogleFonts.poppins(
+                  color: const Color(0xFFA67C68),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ),
 
@@ -241,20 +213,4 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _navigateToOtp(String method) async {
-    final bool success = await _sendOtp(method);
-
-    if (success && mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OtpPage(
-            code: "+${_phoneNumber.countryCode}",
-            phoneNumber: "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
-            verificationMethod: method,
-          ),
-        ),
-      );
-    }
-  }
 }

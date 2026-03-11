@@ -8,18 +8,27 @@ export class UserService implements IUserService {
    constructor(private userRepository: IUserRepository) {}
 
    async createUser(userData: Prisma.UserCreateInput): Promise<UserDto> {
-      if (await this.userRepository.findByMobileNumber(userData.mobileNumber)) {
+      if (userData.email && (await this.userRepository.findByEmail(userData.email))) {
+         throw new ApiError(409, `User with email ${userData.email} already exists`);
+      }
+      if (userData.mobileNumber && (await this.userRepository.findByMobileNumber(userData.mobileNumber))) {
          throw new ApiError(409, `User with mobile number ${userData.mobileNumber} already exists`);
       }
       return toUserDto(await this.userRepository.create(userData));
    }
 
-   async findOrCreateUser(mobileNumber: string): Promise<UserDto> {
-      const user = await this.userRepository.findByMobileNumber(mobileNumber);
-      if (!user) {
-         return toUserDto(await this.userRepository.create({ mobileNumber }));
+   async findOrCreateUser(email: string): Promise<UserDto> {
+      const existingUser = await this.userRepository.findByEmail(email);
+      if (existingUser) {
+         return toUserDto(existingUser);
       }
-      return toUserDto(user);
+      const newUser = await this.userRepository.create({ email });
+      return toUserDto(newUser);
+   }
+
+   async findUserByEmail(email: string): Promise<UserDto | null> {
+      const user = await this.userRepository.findByEmail(email);
+      return user ? toUserDto(user) : null;
    }
 
    async getUsers(searchQuery?: string, page?: number, limit?: number, selfieStatus?: string): Promise<{ data: UserDto[]; total: number }> {

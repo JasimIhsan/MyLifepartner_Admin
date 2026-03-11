@@ -8,8 +8,9 @@ datasource db {
 
 model User {
   id              Int      @id @default(autoincrement())
-  mobileNumber    String   @unique
-  email           String?  @unique
+  mobileNumber    String?  @unique
+  email           String   @unique
+  password        String?
   isVerified      Boolean  @default(false)
   isEmailVerified Boolean  @default(false)
   isBlocked       Boolean  @default(false)

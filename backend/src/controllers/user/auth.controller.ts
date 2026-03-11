@@ -8,24 +8,46 @@ import { Request, Response } from "express";
 export class AuthController {
    constructor(private authService: IUserAuthService) {}
 
+   initiateAuth = asyncHandler(async (req: Request, res: Response) => {
+      const { email } = req.body;
+      const ip = req.ip || "";
+      const result = await this.authService.initiateAuth(email, ip);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Auth initiated"));
+   });
+
+   verifyOtp = asyncHandler(async (req: Request, res: Response) => {
+      const { email, otp } = req.body;
+      const result = await this.authService.verifyOtp(email, otp);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "OTP verified"));
+   });
+
    login = asyncHandler(async (req: Request, res: Response) => {
-      const { mobileNumber, otp } = req.body;
-      const result = await this.authService.login(mobileNumber, otp);
+      const { email, password } = req.body;
+      const result = await this.authService.login(email, password);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User login success"));
    });
 
+   register = asyncHandler(async (req: Request, res: Response) => {
+      const { email, password } = req.body;
+      const result = await this.authService.register(email, password);
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, result, "User registered successfully"));
+   });
+
+   forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+      const { email, password } = req.body;
+      const result = await this.authService.forgotPassword(email, password);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, result.message));
+   });
+
    sendOtp = asyncHandler(async (req: Request, res: Response) => {
-      const { mobileNumber, sendOption } = req.body;
-      console.log(`👉 Mobile Number : `, mobileNumber);
-      console.log(`👉 Send Option : `, sendOption);
-      const result = await this.authService.sendOtp(mobileNumber, sendOption);
+      const { email } = req.body;
+      const result = await this.authService.sendOtp(email, req.ip || "");
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Otp sent successfully"));
    });
 
    resendOtp = asyncHandler(async (req: Request, res: Response) => {
-      const { mobileNumber, sendOption } = req.body;
-      console.log(`👉 Resending OTP to : ${mobileNumber} via ${sendOption}`);
-      const result = await this.authService.resendOtp(mobileNumber, sendOption);
+      const { email } = req.body;
+      const result = await this.authService.resendOtp(email, req.ip || "");
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Otp resent successfully"));
    });
 
@@ -178,9 +200,9 @@ export class AuthController {
       return res.status(HTTP_STATUS.OK).send(html);
    });
 
-   verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+   verifyEmailLink = asyncHandler(async (req: Request, res: Response) => {
       const token = req.body.token || req.query.token;
-      const result = await this.authService.verifyEmail(token);
+      const result = await this.authService.verifyEmailLink(token);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, result.message));
    });
 }
