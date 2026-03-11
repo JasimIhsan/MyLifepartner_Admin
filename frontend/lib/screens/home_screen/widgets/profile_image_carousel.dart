@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 
 class ProfileImageCarousel extends StatefulWidget {
@@ -45,9 +46,10 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
     if (images.isEmpty) {
       return Container(
         height: widget.height,
-        color: const Color(0xFF2D2D3A),
-        child: const Center(
-          child: Icon(Icons.person, size: 80, color: Colors.white24),
+        color: AppColors.carouselBackground,
+        child: Center(
+          child: Icon(Icons.person,
+              size: 80, color: AppColors.textWhite.withValues(alpha: 0.24)),
         ),
       );
     }
@@ -68,17 +70,19 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
               height: widget.height,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
-                color: const Color(0xFF2D2D3A),
+                color: AppColors.carouselBackground,
                 child: const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
+                  child: CircularProgressIndicator(color: AppColors.surface),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
-                color: const Color(0xFF2D2D3A),
-                child: const Icon(
-                  Icons.person,
-                  size: 80,
-                  color: Colors.white24,
+                color: AppColors.carouselBackground,
+                child: Center(
+                  child: Icon(
+                    Icons.person,
+                    size: 80,
+                    color: AppColors.textWhite.withValues(alpha: 0.24),
+                  ),
                 ),
               ),
             ),
@@ -99,8 +103,8 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(2),
                       color: i <= _currentIndex
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.35),
+                          ? AppColors.surface
+                          : AppColors.surface.withValues(alpha: 0.35),
                     ),
                   ).animate().fadeIn(duration: 200.ms),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/screens/home_screen/widgets/match_percentage_badge.dart';
 import 'package:mylifepartner/screens/home_screen/widgets/profile_image_carousel.dart';
@@ -32,10 +33,10 @@ class ProfileSwipeCard extends StatelessWidget {
               height: cardHeight,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                color: Colors.white,
+                color: AppColors.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
+                    color: AppColors.shadowColor,
                     blurRadius: 24,
                     spreadRadius: 2,
                     offset: const Offset(0, 8),
@@ -85,7 +86,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    Color(0xDD000000),
+                                    AppColors.transparentOverlay,
                                   ],
                                 ),
                               ),
@@ -96,7 +97,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                   Text(
                                     '${profile.name}, ${profile.age}',
                                     style: const TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.textWhite,
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.3,
@@ -105,16 +106,16 @@ class ProfileSwipeCard extends StatelessWidget {
                                   const SizedBox(height: 3),
                                   Text(
                                     _buildSubtitle(),
-                                    style: const TextStyle(
-                                      color: Colors.white70,
+                                    style: TextStyle(
+                                      color: AppColors.textWhite.withValues(alpha: 0.7),
                                       fontSize: 13,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     _buildReligionOccupation(),
-                                    style: const TextStyle(
-                                      color: Colors.white60,
+                                    style: TextStyle(
+                                      color: AppColors.textWhite.withValues(alpha: 0.6),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -132,7 +133,7 @@ class ProfileSwipeCard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ColoredBox(
-                        color: const Color(0xFFF8F9FA),
+                        color: AppColors.highlightBackground,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -146,7 +147,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                 'Why you match',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF9E9E9E),
+                                  color: AppColors.textSecondary,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,
                                 ),
@@ -164,7 +165,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                           vertical: 3,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE8F5E9),
+                                          color: AppColors.highlightTagBackground,
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -172,7 +173,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                         child: Text(
                                           h,
                                           style: const TextStyle(
-                                            color: Color(0xFF2E7D32),
+                                            color: AppColors.highlightTagText,
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                           ),

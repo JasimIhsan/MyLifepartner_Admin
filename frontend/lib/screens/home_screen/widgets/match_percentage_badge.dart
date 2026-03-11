@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 
 class MatchPercentageBadge extends StatelessWidget {
   final int percentage;
@@ -7,9 +8,9 @@ class MatchPercentageBadge extends StatelessWidget {
   const MatchPercentageBadge({super.key, required this.percentage});
 
   Color _badgeColor() {
-    if (percentage >= 90) return const Color(0xFF1A6B3A); // dark green
-    if (percentage >= 80) return const Color(0xFF2E8B57); // green
-    return const Color(0xFF5CB85C); // light green
+    if (percentage >= 90) return AppColors.matchHigh;
+    if (percentage >= 80) return AppColors.matchMedium;
+    return AppColors.matchLow;
   }
 
   @override
@@ -21,7 +22,7 @@ class MatchPercentageBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: _badgeColor().withOpacity(0.4),
+            color: _badgeColor().withValues(alpha: 0.4),
             blurRadius: 10,
             spreadRadius: 1,
           ),
@@ -30,12 +31,12 @@ class MatchPercentageBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.favorite, color: Colors.white, size: 13),
+          const Icon(Icons.favorite, color: AppColors.textWhite, size: 13),
           const SizedBox(width: 4),
           Text(
             '$percentage% Match',
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.textWhite,
               fontWeight: FontWeight.bold,
               fontSize: 13,
               letterSpacing: 0.3,

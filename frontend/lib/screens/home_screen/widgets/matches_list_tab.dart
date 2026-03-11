@@ -50,7 +50,7 @@ class MatchesListTab extends StatelessWidget {
           SizedBox(height: 16),
           Text(
             'Finding your matches…',
-            style: TextStyle(color: Color(0xFF9E9E9E)),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -62,7 +62,7 @@ class MatchesListTab extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.wifi_off_rounded, size: 64, color: Color(0xFF9E9E9E)),
+          const Icon(Icons.wifi_off_rounded, size: 64, color: AppColors.textSecondary),
           const SizedBox(height: 16),
           Text(
             'Could not load matches',
@@ -96,7 +96,7 @@ class MatchesListTab extends StatelessWidget {
           const Icon(
             Icons.people_outline_rounded,
             size: 64,
-            color: Color(0xFF9E9E9E),
+            color: AppColors.textSecondary,
           ),
           const SizedBox(height: 16),
           Text(
@@ -412,10 +412,10 @@ class _MatchListCard extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFF2E8B57).withValues(alpha: 0.10),
+            color: AppColors.matchMedium.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: const Color(0xFF2E8B57).withValues(alpha: 0.20),
+              color: AppColors.matchMedium.withValues(alpha: 0.20),
               width: 0.8,
             ),
           ),
@@ -423,7 +423,7 @@ class _MatchListCard extends StatelessWidget {
             h,
             style: GoogleFonts.poppins(
               fontSize: 11,
-              color: const Color(0xFF1A6B3A),
+              color: AppColors.matchHigh,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -459,11 +459,11 @@ class _MatchListCard extends StatelessWidget {
 
     return Row(
       children: [
-        btn(Icons.close_rounded, 'Pass', const Color(0xFFFF5252), const Color(0xFFFF5252).withValues(alpha: 0.08), onNotInterested),
+        btn(Icons.close_rounded, 'Pass', AppColors.actionReject, AppColors.actionReject.withValues(alpha: 0.08), onNotInterested),
         const SizedBox(width: 8),
-        btn(Icons.fast_forward_rounded, 'Skip', AppColors.textSecondary, const Color(0xFF9E9E9E).withValues(alpha: 0.08), onSkip),
+        btn(Icons.fast_forward_rounded, 'Skip', AppColors.textSecondary, AppColors.actionSkip.withValues(alpha: 0.08), onSkip),
         const SizedBox(width: 8),
-        btn(Icons.favorite_rounded, 'Interested', const Color(0xFF4CAF50), const Color(0xFF4CAF50).withValues(alpha: 0.08), onInterested),
+        btn(Icons.favorite_rounded, 'Interested', AppColors.actionAccept, AppColors.actionAccept.withValues(alpha: 0.08), onInterested),
       ],
     );
   }
