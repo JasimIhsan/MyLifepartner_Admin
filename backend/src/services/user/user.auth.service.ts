@@ -8,6 +8,7 @@ import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
+import env from "@/config/env";
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
@@ -115,7 +116,6 @@ export class AuthService implements IUserAuthService {
          data: {
             email,
             password: hashedPassword,
-            isEmailVerified: true,
          },
          include: { profile: true },
       });
@@ -223,50 +223,58 @@ export class AuthService implements IUserAuthService {
       }
    }
 
-   async sendMagicLink(userId: number | undefined, email: string) {
-      if (!userId) {
-         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not authenticated");
-      }
-
-      if (!email) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
-      }
-
-      const user = await this.userService.getUserById(userId);
-      if (!user) {
-         throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-      }
-
-      if (user.email !== email) {
-         await this.userService.updateUser(userId, { email, isEmailVerified: false } as import("@prisma/client").Prisma.UserUpdateInput);
-      } else if (user.isEmailVerified) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is already verified");
-      }
-
-      // Expire any existing unused tokens for this user first
-      await prisma.emailVerificationToken.updateMany({
-         where: { userId, isUsed: false },
-         data: { isUsed: true },
-      });
-
-      const token = crypto.randomBytes(32).toString("hex");
-      const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-      await prisma.emailVerificationToken.create({
-         data: {
-            userId,
-            token,
-            expiresAt,
-         },
-      });
-
-      // Point to our HTTPS route instead of direct deep link
-      // Use env or request host, but falling back to default localhost or production domain
-      const baseUrl = "https://mudfish-welcomed-guinea.ngrok-free.app";
-      const verificationUrl = `${baseUrl}/api/user/auth/verify-email?token=${token}`;
-
-      await this.emailService.sendVerificationEmail(email, verificationUrl);
+   sendMagicLink(userId: number | undefined, email: string): Promise<void> {
+      throw new Error("Method not implemented.");
    }
+
+   verifyEmailLink(token: string | undefined | null): Promise<{ verified: boolean; message: string }> {
+      throw new Error("Method not implemented.");
+   }
+
+   // async sendMagicLink(userId: number | undefined, email: string) {
+   //    if (!userId) {
+   //       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not authenticated");
+   //    }
+
+   //    if (!email) {
+   //       throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
+   //    }
+
+   //    const user = await this.userService.getUserById(userId);
+   //    if (!user) {
+   //       throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
+   //    }
+
+   //    if (user.email !== email) {
+   //       await this.userService.updateUser(userId, { email, isEmailVerified: false } as import("@prisma/client").Prisma.UserUpdateInput);
+   //    } else if (user.isEmailVerified) {
+   //       throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is already verified");
+   //    }
+
+   //    // Expire any existing unused tokens for this user first
+   //    await prisma.emailVerificationToken.updateMany({
+   //       where: { userId, isUsed: false },
+   //       data: { isUsed: true },
+   //    });
+
+   //    const token = crypto.randomBytes(32).toString("hex");
+   //    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+   //    await prisma.emailVerificationToken.create({
+   //       data: {
+   //          userId,
+   //          token,
+   //          expiresAt,
+   //       },
+   //    });
+
+   //    // Point to our HTTPS route instead of direct deep link
+   //    // Use env or request host, but falling back to default localhost or production domain
+   //    const baseUrl = "https://mudfish-welcomed-guinea.ngrok-free.app";
+   //    const verificationUrl = `${baseUrl}/api/user/auth/verify-email?token=${token}`;
+
+   //    await this.emailService.sendVerificationEmail(email, verificationUrl);
+   // }
 
    async sendOtp(email: string, ip: string) {
       const otp = await this.otpService.sendOtp(email, ip);
@@ -276,52 +284,6 @@ export class AuthService implements IUserAuthService {
    async resendOtp(email: string, ip: string) {
       const otp = await this.otpService.resendOtp(email, ip);
       return { otp };
-   }
-
-   async verifyEmailLink(token: string | undefined | null | any) {
-      if (!token || typeof token !== "string") {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "The verification link is missing or invalid.");
-      }
-
-      const verificationRecord = await prisma.emailVerificationToken.findUnique({
-         where: { token },
-         include: { user: true },
-      });
-
-      if (!verificationRecord) {
-         throw new ApiError(HTTP_STATUS.NOT_FOUND, "This verification link is invalid. Please request a new one.");
-      }
-
-      if (verificationRecord.isUsed) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "This verification link has already been used. Please request a new one.");
-      }
-
-      if (new Date() > verificationRecord.expiresAt) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "This verification link has expired. Please request a new one.");
-      }
-
-      const user = verificationRecord.user;
-
-      if (!user) {
-         throw new ApiError(HTTP_STATUS.NOT_FOUND, "We couldn't find the account associated with this link.");
-      }
-
-      if (user.isEmailVerified) {
-         return { verified: true, message: "Your email is already verified." };
-      }
-
-      await prisma.$transaction([
-         prisma.emailVerificationToken.update({
-            where: { id: verificationRecord.id },
-            data: { isUsed: true },
-         }),
-         prisma.user.update({
-            where: { id: user.id },
-            data: { isEmailVerified: true },
-         }),
-      ]);
-
-      return { verified: true, message: "Email Verified Successfully!" };
    }
 
    async sendPasswordResetLink(email: string) {
@@ -341,7 +303,7 @@ export class AuthService implements IUserAuthService {
       await this.cacheService.setCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token), user.id.toString(), expiresAtSeconds);
 
       // const baseUrl = "https://mudfish-welcomed-guinea.ngrok-free.app";
-      const baseUrl = "http://localhost:3000";
+      const baseUrl = env.BASE_URL;
       const resetUrl = `${baseUrl}/api/user/auth/forgot-password/reset?token=${token}`;
 
       await this.emailService.sendPasswordResetEmail(email, resetUrl);
@@ -390,10 +352,7 @@ export class AuthService implements IUserAuthService {
 
       const hashedPassword = await bcrypt.hash(passwordPlain, 10);
 
-      await prisma.user.update({
-         where: { id: userId },
-         data: { password: hashedPassword },
-      });
+      await this.userService.updateUser(userId, { password: hashedPassword });
 
       await this.cacheService.deleteCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token));
 

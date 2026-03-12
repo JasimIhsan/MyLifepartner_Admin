@@ -7,21 +7,19 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  mobileNumber    String?  @unique
-  email           String   @unique
-  password        String?
-  isVerified      Boolean  @default(false)
-  isEmailVerified Boolean  @default(false)
-  isBlocked       Boolean  @default(false)
-  isDeleted       Boolean  @default(false)
-  role            Role     @default(USER)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  mobileNumber String?  @unique
+  email        String   @unique
+  password     String?
+  isVerified   Boolean  @default(false)
+  isBlocked    Boolean  @default(false)
+  isDeleted    Boolean  @default(false)
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   profile                 Profile?
   emailVerificationTokens EmailVerificationToken[]
-  passwordResetTokens     PasswordResetToken[]
   partnerPreference       PartnerPreference?
   profileSwipes           ProfileSwipe[]           @relation("UserSwipes")
 }
@@ -109,19 +107,6 @@ model EmailVerificationToken {
 
   @@index([token])
   @@map("email_verification_tokens")
-}
-
-model PasswordResetToken {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  token     String   @unique
-  expiresAt DateTime
-  isUsed    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([token])
-  @@map("password_reset_tokens")
 }
 
 enum SelfieStatus {

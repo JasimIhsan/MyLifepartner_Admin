@@ -1,8 +1,8 @@
 import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { AuthRequest } from "@/types/AuthRequest";
-import { ApiResponse } from "@/utils/ApiResponse";
 import { ApiError } from "@/utils/ApiError";
+import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
@@ -115,7 +115,7 @@ export class AuthController {
 
       const templatePath = path.join(__dirname, "../../../src/templates/pages/verify-email.html");
       let html = fs.readFileSync(templatePath, "utf-8");
-      
+
       html = html.replace(/{{APP_SCHEME_URL}}/g, appSchemeUrl);
       html = html.replace(/{{ANDROID_INTENT_URL}}/g, androidIntentUrl);
 

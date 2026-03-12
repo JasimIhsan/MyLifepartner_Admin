@@ -19,7 +19,11 @@ class InitiateAuthResponse {
   final String message;
   final bool exists;
 
-  InitiateAuthResponse({required this.success, required this.message, required this.exists});
+  InitiateAuthResponse({
+    required this.success,
+    required this.message,
+    required this.exists,
+  });
 
   factory InitiateAuthResponse.fromJson(Map<String, dynamic> json) {
     return InitiateAuthResponse(
@@ -82,7 +86,6 @@ class User {
   final String? selfieStatus;
   final String? name;
   final String? email;
-  final bool? isEmailVerified;
 
   // Profile demographics
   final String? gender;
@@ -111,7 +114,6 @@ class User {
     this.selfieStatus,
     this.name,
     this.email,
-    this.isEmailVerified,
     this.gender,
     this.dateOfBirth,
     this.maritalStatus,
@@ -141,7 +143,6 @@ class User {
       selfieStatus: json['selfieStatus'],
       name: json['name'],
       email: json['email'],
-      isEmailVerified: json['isEmailVerified'],
       gender: json['gender'],
       dateOfBirth: json['dateOfBirth'] != null
           ? DateTime.parse(json['dateOfBirth'])
