@@ -1,8 +1,9 @@
 import { UserDto, toUserDto } from "@/dtos/user.dto";
+import { UserOnboardingStatusDto } from "@/dtos/auth.me.dto";
 import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { Prisma, User } from "@prisma/client";
+import { Prisma, ProfileStatus, User } from "@prisma/client";
 
 export class UserService implements IUserService {
    constructor(private userRepository: IUserRepository) {}
@@ -55,6 +56,22 @@ export class UserService implements IUserService {
          throw new ApiError(404, "User not found");
       }
       return toUserDto(user);
+   }
+
+   async getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto> {
+      const user = await this.userRepository.findOnboardingStatusById(userId);
+      if (!user || user.isDeleted) {
+         throw new ApiError(404, "User not found");
+      }
+
+      return {
+         id: user.id,
+         hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails || false,
+         hasCompletedPartnerPreference: user.profile?.hasCompletedPartnerPreference || false,
+         profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,
+         hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
+         selfieStatus: user.profile?.selfieStatus || null,
+      };
    }
 
    async updateUser(userId: number, updateData: Prisma.UserUpdateInput): Promise<UserDto> {

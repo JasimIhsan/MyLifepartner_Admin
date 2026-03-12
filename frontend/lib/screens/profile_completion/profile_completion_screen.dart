@@ -178,7 +178,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        leading: null,
+        showLeading: false,
         title: 'Basic Details',
         actions: [
           TextButton(

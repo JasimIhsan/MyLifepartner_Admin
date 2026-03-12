@@ -25,6 +25,25 @@ export class UserRepository implements IUserRepository {
       return prisma.user.findUnique({ where: { id }, include: { profile: { include: { images: true } }, partnerPreference: true } });
    }
 
+   async findOnboardingStatusById(id: number) {
+      return prisma.user.findUnique({
+         where: { id },
+         select: {
+            id: true,
+            isDeleted: true,
+            profile: {
+               select: {
+                  profileStatus: true,
+                  hasCompletedBasicDetails: true,
+                  hasCompletedPartnerPreference: true,
+                  hasCompletedImageUpload: true,
+                  selfieStatus: true,
+               },
+            },
+         },
+      });
+   }
+
    async findByEmail(email: string): Promise<User | null> {
       return prisma.user.findUnique({ where: { email }, include: { profile: { include: { images: true } }, partnerPreference: true } });
    }

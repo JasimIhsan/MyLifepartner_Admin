@@ -79,7 +79,7 @@ export const adminQuestionnaireController = new AdminQuestionnaireController(adm
 export const adminUsersController = new AdminUsersController(userService);
 
 // User controllers
-export const authController = new AuthController(authService);
+export const authController = new AuthController(authService, userService);
 export const profileController = new ProfileController(profileService);
 export const profileImageController = new ProfileImageController(profileService, s3Service);
 export const userController = new UserController(userService);

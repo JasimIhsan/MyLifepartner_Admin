@@ -1,6 +1,8 @@
 import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
+import { IUserService } from "@/interfaces/services/user.service.interface";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiResponse } from "@/utils/ApiResponse";
+import { ApiError } from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
@@ -8,7 +10,10 @@ import fs from "fs";
 import path from "path";
 
 export class AuthController {
-   constructor(private authService: IUserAuthService) {}
+   constructor(
+      private authService: IUserAuthService,
+      private userService: IUserService
+   ) {}
 
    initiateAuth = asyncHandler(async (req: Request, res: Response) => {
       const { email } = req.body;
@@ -76,6 +81,16 @@ export class AuthController {
       const { refreshToken } = req.body;
       const result = await this.authService.refreshToken(refreshToken);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Token refreshed successfully"));
+   });
+
+   me = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = req.user?.id;
+      if (!userId) {
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+      }
+
+      const status = await this.userService.getOnboardingStatus(userId);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, status, "User status fetched successfully"));
    });
 
    sendMagicLink = asyncHandler(async (req: AuthRequest, res: Response) => {

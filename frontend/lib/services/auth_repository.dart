@@ -1,11 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:mylifepartner/models/auth_response.dart';
 import 'package:mylifepartner/models/country_detection_response.dart';
+import 'package:mylifepartner/models/onboarding_status.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:mylifepartner/services/token_service.dart';
 
 class AuthRepository {
   final Dio _dio = ApiService.client;
+
+  Future<OnboardingStatusResponse> getMe() async {
+    try {
+      final response = await _dio.get("/user/auth/me");
+      return OnboardingStatusResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
 
   Future<CountryDetectionResponse> detectCountry() async {
     try {
@@ -102,9 +112,7 @@ class AuthRepository {
     }
   }
 
-  Future<SendOtpResponse> sendOtp({
-    required String email,
-  }) async {
+  Future<SendOtpResponse> sendOtp({required String email}) async {
     try {
       final response = await _dio.post(
         "/user/auth/send-otp",
@@ -116,9 +124,7 @@ class AuthRepository {
     }
   }
 
-  Future<SendOtpResponse> resendOtp({
-    required String email,
-  }) async {
+  Future<SendOtpResponse> resendOtp({required String email}) async {
     try {
       final response = await _dio.post(
         "/user/auth/resend-otp",

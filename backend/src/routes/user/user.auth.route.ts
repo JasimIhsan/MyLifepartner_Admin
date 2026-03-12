@@ -19,6 +19,7 @@ router.post("/send-otp", authController.sendOtp);
 router.post("/resend-otp", authController.resendOtp);
 
 router.post("/refresh-token", authController.refreshToken);
+router.get("/me", verifyJWT, authController.me);
 router.get("/detect-country", authController.detectCountry);
 
 // Magic Link Email Verification

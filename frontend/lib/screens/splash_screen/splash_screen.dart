@@ -8,7 +8,8 @@ import 'package:mylifepartner/screens/profile_completion/profile_completion_scre
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mylifepartner/services/auth_service.dart';
+import 'package:mylifepartner/services/token_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,52 +19,56 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final AuthService _authService = AuthService();
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 3), () async {
-      final sharedPrefs = await SharedPreferences.getInstance();
-      final isLoggedIn = sharedPrefs.getBool("isLoggedIn") ?? false;
-      final profileStatus =
-          sharedPrefs.getString("profileStatus") ?? "INCOMPLETE";
-      final hasCompletedImageUpload =
-          sharedPrefs.getBool("hasCompletedImageUpload") ?? false;
-      final hasCompletedPartnerPreference =
-          sharedPrefs.getBool("hasCompletedPartnerPreference") ?? false;
-      final hasCompletedBasicDetails =
-          sharedPrefs.getBool("hasCompletedBasicDetails") ?? false;
-      final selfieStatus = sharedPrefs.getString("selfieStatus");
+    _bootstrap();
+  }
 
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) {
-              if (isLoggedIn) {
-                if (!hasCompletedBasicDetails) {
-                  return const ProfileCompletionScreen();
-                } else if (!hasCompletedPartnerPreference) {
-                  return const PartnerPreferenceScreen();
-                } else if (profileStatus == "INCOMPLETE") {
-                  return const QuestionaireScreen();
-                } else {
-                  if (hasCompletedImageUpload) {
-                    if (selfieStatus != null && selfieStatus != "NONE") {
-                      return const HomePage();
-                    } else {
-                      return const SelfieVerificationScreen();
-                    }
-                  } else {
-                    return const ProfileImageUploadScreen();
-                  }
-                }
-              }
-              return const LoginPage();
-            },
-          ),
-        );
+  Future<void> _bootstrap() async {
+    await Future.delayed(const Duration(seconds: 1));
+
+    final accessToken = await TokenService.getAccessToken();
+    if (!mounted) return;
+
+    if (accessToken == null || accessToken.isEmpty) {
+      _goTo(const LoginPage());
+      return;
+    }
+
+    try {
+      final me = await _authService.fetchMeOrThrow();
+      if (!mounted) return;
+
+      if (!me.hasCompletedBasicDetails) {
+        _goTo(const ProfileCompletionScreen());
+      } else if (!me.hasCompletedPartnerPreference) {
+        _goTo(const PartnerPreferenceScreen());
+      } else if (me.profileStatus == "INCOMPLETE") {
+        _goTo(const QuestionaireScreen());
+      } else if (!me.hasCompletedImageUpload) {
+        _goTo(const ProfileImageUploadScreen());
+      } else if (me.selfieStatus == null || me.selfieStatus == "NONE") {
+        _goTo(const SelfieVerificationScreen());
+      } else {
+        _goTo(const HomePage());
       }
-    });
+    } catch (_) {
+      // If access token is expired, ApiService interceptor will try refresh-token + retry.
+      // If refresh fails, tokens are cleared; we fall back to login.
+      await TokenService.clearTokens();
+      if (!mounted) return;
+      _goTo(const LoginPage());
+    }
+  }
+
+  void _goTo(Widget screen) {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => screen),
+    );
   }
 
   @override
