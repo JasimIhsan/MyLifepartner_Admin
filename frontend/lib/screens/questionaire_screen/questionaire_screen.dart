@@ -322,19 +322,6 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
         _currentIndex--;
         _currentAnswer = _answers[_questions[_currentIndex].id];
       });
-    } else {
-      // User is at the first question of the current section.
-      // Requirements: "user only can goback to the current section... he can't go back to 2nd or 1st section"
-      // So if _currentIndex == 0, we do nothing or pop if it's the very first section?
-      // Actually usually Back on first screen pops the screen.
-      // But if it's Section 3, Q1 -> Back logic says "cannot go back".
-      // AppBar leading is hidden in that case anyway.
-      // But if hardware back button is pressed:
-
-      // If we want to allow popping the screen to go back to previous screen (Login? Home?), we can.
-      // But if we want to restrict going to PREVIOUS QUESTIONS of PREVIOUS SECTIONS, we just don't decrement section order.
-
-      Navigator.pop(context);
     }
   }
 
@@ -388,9 +375,12 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
-            if (_currentIndex > 0) {
-              _onBack();
-            }
+            // Navigator.pushAndRemoveUntil(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => const HomePage()),
+            //   (route) => false,
+            // );
+            Navigator.pop(context);
           },
         ),
         backgroundColor: AppColors.primaryLight,
@@ -580,23 +570,40 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.all(24.0),
-                    child: CustomButton(
-                      width: double.infinity,
-                      height: 50,
-                      onPressed: _isSaving || !isValid
-                          ? null
-                          : () {
-                              // Hide keyboard
-                              FocusScope.of(context).unfocus();
-                              _onNext();
-                            },
-                      isLoading: _isSaving,
-                      text: isLastQuestion
-                          ? (widget.isPrimaryFlow
-                                ? "Upload Profile Pictures"
-                                : "Done")
-                          : "Continue",
-                      backgroundColor: AppColors.primary,
+                    child: Row(
+                      children: [
+                        if (_currentIndex > 0) ...[
+                          Expanded(
+                            child: CustomButton(
+                              onPressed: _isSaving ? null : _onBack,
+                              text: "Back",
+                              type: CustomButtonType.secondary,
+                              height: 50,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                        ],
+                        Expanded(
+                          flex: 2,
+                          child: CustomButton(
+                            onPressed: _isSaving || !isValid
+                                ? null
+                                : () {
+                                    // Hide keyboard
+                                    FocusScope.of(context).unfocus();
+                                    _onNext();
+                                  },
+                            isLoading: _isSaving,
+                            text: isLastQuestion
+                                ? (widget.isPrimaryFlow
+                                      ? "Upload Profile Pictures"
+                                      : "Done")
+                                : "Continue",
+                            backgroundColor: AppColors.primary,
+                            height: 50,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],

@@ -12,7 +12,6 @@ import '../home_screen/home_screen.dart';
 import '../partner_preference/partner_preference_screen.dart';
 import '../profile_completion/profile_completion_screen.dart';
 import '../profile_image_upload/profile_image_upload_screen.dart';
-import '../questionaire_screen/questionaire_screen.dart';
 import '../selfie_verification/selfie_verification_screen.dart';
 
 class PasswordScreen extends StatefulWidget {
@@ -106,12 +105,6 @@ class _PasswordScreenState extends State<PasswordScreen> {
             MaterialPageRoute(
               builder: (context) => const PartnerPreferenceScreen(),
             ),
-            ModalRoute.withName('/'),
-          );
-        } else if (user.profileStatus == "INCOMPLETE") {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => const QuestionaireScreen()),
             ModalRoute.withName('/'),
           );
         } else {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
+import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
@@ -147,13 +147,15 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         'annualIncomeTo': _annualIncomeTo,
       });
 
-      final sharedPrefs = await SharedPreferences.getInstance();
-      await sharedPrefs.setBool("hasCompletedPartnerPreference", true);
+      // final sharedPrefs = await SharedPreferences.getInstance();
+      // await sharedPrefs.setBool("hasCompletedPartnerPreference", true);
 
       if (mounted) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const QuestionaireScreen()),
+          MaterialPageRoute(
+            builder: (context) => const ProfileImageUploadScreen(),
+          ),
         );
       }
     } catch (e) {

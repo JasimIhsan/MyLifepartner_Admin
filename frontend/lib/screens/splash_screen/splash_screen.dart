@@ -6,7 +6,6 @@ import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
 import 'package:mylifepartner/screens/profile_completion/profile_completion_screen.dart';
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:mylifepartner/services/auth_service.dart';
 import 'package:mylifepartner/services/token_service.dart';
@@ -46,8 +45,6 @@ class _SplashScreenState extends State<SplashScreen> {
         _goTo(const ProfileCompletionScreen());
       } else if (!me.hasCompletedPartnerPreference) {
         _goTo(const PartnerPreferenceScreen());
-      } else if (me.profileStatus == "INCOMPLETE") {
-        _goTo(const QuestionaireScreen());
       } else if (!me.hasCompletedImageUpload) {
         _goTo(const ProfileImageUploadScreen());
       } else if (me.selfieStatus == null || me.selfieStatus == "NONE") {

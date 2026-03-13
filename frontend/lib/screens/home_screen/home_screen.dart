@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/home_screen/widgets/matches_list_tab.dart';
+import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
@@ -23,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   final ProfileRepository _profileRepository = ProfileRepository();
   bool _isSheetShowing = false;
+  bool _isCheckingProfile = false;
 
   @override
   void initState() {
@@ -36,41 +37,57 @@ class _HomePageState extends State<HomePage> {
   // ─── Profile completion check ──────────────────────────────────────────────
 
   Future<void> _checkProfileCompletion() async {
-    if (_isSheetShowing) return;
+    if (!mounted || _isSheetShowing || _isCheckingProfile) return;
+
+    _isCheckingProfile = true;
+
     try {
       final status = await _profileRepository.getCompletionStatus();
+
+      if (!mounted) return;
+
       if (status['isCompleted'] == false) {
-        if (mounted && !_isSheetShowing) {
-          _isSheetShowing = true;
-          await CustomBottomSheet.show(
-            context: context,
-            type: BottomSheetType.info,
-            isScrollControlled: true,
-            isDismissible: false,
-            title: "Complete Your Profile",
-            message:
-                "You have pending profile questions. Complete them to find better matches.",
-            primaryButtonText: "Continue",
-            onPrimaryPressed: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => QuestionaireScreen(
-                    isPrimaryFlow: false,
-                    initialSectionOrder: status['nextPendingSectionOrder'],
+        _isSheetShowing = true;
+
+        await CustomBottomSheet.show(
+          context: context,
+          type: BottomSheetType.info,
+          isScrollControlled: true,
+          isDismissible: false,
+          title: "Complete Your Profile",
+          message:
+              "You have pending profile questions. Complete them to find better matches.",
+          primaryButtonText: "Continue",
+          onPrimaryPressed: () {
+            Navigator.of(context).pop();
+
+            Navigator.of(context)
+                .push(
+                  MaterialPageRoute(
+                    builder: (_) => QuestionaireScreen(
+                      isPrimaryFlow: false,
+                      initialSectionOrder: status['nextPendingSectionOrder'],
+                    ),
                   ),
-                ),
-              ).then((_) => _checkProfileCompletion());
-            },
-            secondaryButtonText: "Later",
-            onSecondaryPressed: () => Navigator.pop(context),
-          );
-          _isSheetShowing = false;
-        }
+                )
+                .then((_) {
+                  if (mounted) {
+                    _checkProfileCompletion();
+                  }
+                });
+          },
+          secondaryButtonText: "Later",
+          onSecondaryPressed: () {
+            Navigator.of(context).pop();
+          },
+        );
+
+        _isSheetShowing = false;
       }
     } catch (e) {
       debugPrint("Error checking profile completion: $e");
+    } finally {
+      _isCheckingProfile = false;
     }
   }
 
@@ -156,22 +173,13 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBody() {
     switch (_selectedIndex) {
       case 0:
-        return const MatchesListTab(
-          title: 'Discover',
-          showActions: true,
-        );
+        return const MatchesListTab(title: 'Discover', showActions: true);
       case 1:
-        return const MatchesListTab(
-          title: 'Your Matches',
-          showActions: false,
-        );
+        return const MatchesListTab(title: 'Your Matches', showActions: false);
       case 3:
         return const ProfileScreen();
       default:
-        return const MatchesListTab(
-          title: 'Discover',
-          showActions: true,
-        );
+        return const MatchesListTab(title: 'Discover', showActions: true);
     }
   }
 }
