@@ -7,12 +7,14 @@ class AuthLayout extends StatelessWidget {
   final Widget child;
   final bool showLogo;
   final String? title;
+  final String? topImage;
 
   const AuthLayout({
     super.key,
     required this.child,
     this.showLogo = true,
     this.title,
+    this.topImage,
   });
 
   @override
@@ -106,47 +108,102 @@ class AuthLayout extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(Size size) {
-    return Container(
-      color: Colors.white,
+    return SizedBox(
       width: double.infinity,
       height: size.height,
-      child: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 40),
-                // Title Section
-                if (showLogo) ...[
-                  Text(
-                    "lifepartneragain",
-                    style: GoogleFonts.poppins(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (topImage != null)
+              Stack(
+                alignment: Alignment.bottomCenter,
+                children: [
+                  Image.asset(
+                    topImage!,
+                    width: double.infinity,
+                    height: size.height * 0.45,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                  ),
+                  Container(
+                    height: size.height * 0.2, // Gradient fade area
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.background.withValues(alpha: 0.0),
+                          AppColors.background,
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "A trusted platform for emotionally\nmature relationships.",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
                 ],
+              ),
+            
+            Transform.translate(
+              offset: Offset(0, topImage != null ? -45.0 : 0.0),
+              child: SafeArea(
+                top: topImage == null, // Only avoid notch if no top image bleeds into it
+                bottom: false,
+                left: false,
+                right: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (topImage == null) const SizedBox(height: 40),
+                      // Title Section
+                      if (showLogo) ...[
+                        if (topImage != null) ...[
+                          Container(
+                            width: 90,
+                            height: 90,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            "Life Partner Again",
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ] else ...[
+                          Text(
+                            "lifepartneragain",
+                            style: GoogleFonts.poppins(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                        Text(
+                          "A trusted platform for emotionally\nmature relationships.",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            height: 1.5,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                      ],
 
-                // Content
-                child,
-                const SizedBox(height: 24),
-              ],
+                      // Content
+                      child,
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

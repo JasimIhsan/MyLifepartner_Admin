@@ -19,9 +19,9 @@ class _LandingScreenState extends State<LandingScreen> {
   double _currentPage = 0.0;
 
   final List<String> _images = [
-    'assets/images/placeholder_couple_1.jpg',
-    'assets/images/placeholder_couple_2.jpg',
-    'assets/images/placeholder_couple_3.jpg',
+    'assets/images/landing_couple_1.png',
+    'assets/images/landing_couple_2.png',
+    'assets/images/landing_couple_3.png',
   ];
 
   @override
@@ -222,28 +222,9 @@ class _LandingScreenState extends State<LandingScreen> {
   }
 
   Widget _buildImage(int index) {
-    // Basic placeholder for now, you can load real assets later
-    IconData icon = Icons.favorite;
-    Color color = Colors.white;
-    Color iconColor = Colors.grey[400]!;
-    
-    if (index % 3 == 0) {
-      icon = Icons.favorite;
-    } else if (index % 3 == 1) {
-      icon = Icons.volunteer_activism;
-    } else {
-      icon = Icons.celebration;
-    }
-    
-    return Container(
-      color: color,
-      child: Center(
-        child: Icon(
-          icon,
-          size: 80,
-          color: iconColor,
-        ),
-      ),
+    return Image.asset(
+      _images[index % _images.length],
+      fit: BoxFit.cover,
     );
   }
 }

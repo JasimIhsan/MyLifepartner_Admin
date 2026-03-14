@@ -81,6 +81,7 @@ flutter:
    # An image asset can refer to one or more resolution-specific "variants", see
    assets:
       - assets/icons/
+      - assets/images/
 
    # For details regarding adding assets from package dependencies, see
    # https://flutter.dev/to/asset-from-package

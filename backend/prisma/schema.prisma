@@ -47,6 +47,15 @@ model Profile {
   annualIncome     Int?
   bio              String?
 
+  languages            String[]
+
+  childrenStatus       ChildrenStatus?
+  emotionalReadiness   EmotionalReadiness?
+  lookingFor           LookingFor?
+  relationshipTimeline RelationshipTimeline?
+  smokingHabit         SmokingHabit?
+  drinkingHabit        DrinkingHabit?
+
   profileCompletion Int           @default(10)
   profileStatus     ProfileStatus @default(INCOMPLETE)
 
@@ -94,6 +103,43 @@ enum MaritalStatus {
   DIVORCED
   WIDOWED
   ANNULLED
+  LEGALLY_SEPARATED
+}
+
+enum ChildrenStatus {
+  LIVING_WITH_ME
+  NOT_LIVING_WITH_ME
+  NO_CHILDREN
+}
+
+enum EmotionalReadiness {
+  YES
+  MOSTLY
+  NOT_SURE
+}
+
+enum LookingFor {
+  MARRIAGE
+  LONG_TERM_RELATIONSHIP
+  SERIOUS_COMPANIONSHIP
+}
+
+enum RelationshipTimeline {
+  ZERO_TO_SIX_MONTHS
+  SIX_TO_TWELVE_MONTHS
+  NO_FIXED_TIMELINE
+}
+
+enum SmokingHabit {
+  NO
+  OCCASIONALLY
+  YES
+}
+
+enum DrinkingHabit {
+  NO
+  SOCIALLY
+  YES
 }
 
 model EmailVerificationToken {

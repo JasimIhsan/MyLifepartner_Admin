@@ -138,6 +138,7 @@ class _OtpPageState extends State<OtpPage> {
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
+      topImage: 'assets/images/login_young_couple.png',
       child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWeb = MediaQuery.of(context).size.width > 900;
