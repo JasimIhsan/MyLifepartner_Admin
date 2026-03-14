@@ -84,17 +84,17 @@ class CustomBottomSheet {
         break;
       case BottomSheetType.error:
         icon = Icons.error;
-        iconColor = Colors.red;
+        iconColor = Colors.black;
         defaultPrimaryText = "Close";
         break;
       case BottomSheetType.warning:
         icon = Icons.warning_rounded;
-        iconColor = Colors.orange;
+        iconColor = Colors.black;
         defaultPrimaryText = "Okay";
         break;
       case BottomSheetType.info:
         icon = Icons.info;
-        iconColor = Colors.blue;
+        iconColor = Colors.black;
         defaultPrimaryText = "Okay";
         break;
       case BottomSheetType.confirmation:

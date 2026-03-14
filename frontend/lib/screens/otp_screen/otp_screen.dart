@@ -174,7 +174,7 @@ class _OtpPageState extends State<OtpPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Colors.black,
           ),
         );
       }
@@ -208,7 +208,7 @@ class _OtpPageState extends State<OtpPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text("OTP resent successfully"),
-                backgroundColor: Colors.green,
+                backgroundColor: Colors.black,
               ),
             );
           }
@@ -222,7 +222,7 @@ class _OtpPageState extends State<OtpPage> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(errorMessage),
-                backgroundColor: Colors.redAccent,
+                backgroundColor: Colors.black,
               ),
             );
           }

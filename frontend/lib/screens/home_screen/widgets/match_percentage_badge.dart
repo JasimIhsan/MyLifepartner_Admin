@@ -7,9 +7,7 @@ class MatchPercentageBadge extends StatelessWidget {
   const MatchPercentageBadge({super.key, required this.percentage});
 
   Color _badgeColor() {
-    if (percentage >= 90) return const Color(0xFF1A6B3A); // dark green
-    if (percentage >= 80) return const Color(0xFF2E8B57); // green
-    return const Color(0xFF5CB85C); // light green
+    return Colors.black;
   }
 
   @override

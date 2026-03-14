@@ -132,7 +132,7 @@ class ProfileSwipeCard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ColoredBox(
-                        color: const Color(0xFFF8F9FA),
+                        color: const Color(0xFFF5F5F5),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -164,7 +164,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                           vertical: 3,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFE8F5E9),
+                                          color: const Color(0xFFF0F0F0),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -172,7 +172,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                         child: Text(
                                           h,
                                           style: const TextStyle(
-                                            color: Color(0xFF2E7D32),
+                                            color: Colors.black,
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                           ),

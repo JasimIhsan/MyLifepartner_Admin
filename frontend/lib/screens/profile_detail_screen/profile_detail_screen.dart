@@ -254,17 +254,17 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF2E8B57).withValues(alpha: 0.10),
+                color: Colors.black.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: const Color(0xFF2E8B57).withValues(alpha: 0.20),
+                  color: Colors.black.withValues(alpha: 0.15),
                 ),
               ),
               child: Text(
                 h,
                 style: GoogleFonts.poppins(
                   fontSize: 12,
-                  color: const Color(0xFF1A6B3A),
+                  color: Colors.black,
                   fontWeight: FontWeight.w500,
                 ),
               ),

@@ -45,7 +45,7 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
     if (images.isEmpty) {
       return Container(
         height: widget.height,
-        color: const Color(0xFF2D2D3A),
+        color: Colors.black,
         child: const Center(
           child: Icon(Icons.person, size: 80, color: Colors.white24),
         ),
@@ -68,13 +68,13 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
               height: widget.height,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
-                color: const Color(0xFF2D2D3A),
+                color: Colors.black,
                 child: const Center(
                   child: CircularProgressIndicator(color: Colors.white),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
-                color: const Color(0xFF2D2D3A),
+                color: Colors.black,
                 child: const Icon(
                   Icons.person,
                   size: 80,

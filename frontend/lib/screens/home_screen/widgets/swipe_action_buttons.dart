@@ -20,7 +20,7 @@ class SwipeActionButtons extends StatelessWidget {
         _ActionButton(
           onTap: onNotInterested,
           icon: Icons.close,
-          color: const Color(0xFFFF5252),
+          color: Colors.black,
           label: 'Not Interested',
           size: 52,
         ),
@@ -34,7 +34,7 @@ class SwipeActionButtons extends StatelessWidget {
         _ActionButton(
           onTap: onInterested,
           icon: Icons.favorite,
-          color: const Color(0xFF4CAF50),
+          color: Colors.black,
           label: 'Interested',
           size: 52,
         ),

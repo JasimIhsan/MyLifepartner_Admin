@@ -172,6 +172,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(
         leading: null,
         title: 'Partner Preferences',

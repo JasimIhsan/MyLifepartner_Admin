@@ -68,17 +68,17 @@ class OtpForm extends StatelessWidget {
               onCompleted: onVerify,
               focusedPinTheme: defaultPinTheme.copyWith(
                 decoration: defaultPinTheme.decoration!.copyWith(
-                  border: Border.all(color: const Color(0xFFA67C68)),
+                  border: Border.all(color: Colors.black),
                 ),
               ),
               submittedPinTheme: defaultPinTheme.copyWith(
                 decoration: defaultPinTheme.decoration!.copyWith(
-                  color: const Color(0xFFA67C68).withValues(alpha: 0.1),
-                  border: Border.all(color: const Color(0xFFA67C68)),
+                  color: Colors.black.withValues(alpha: 0.1),
+                  border: Border.all(color: Colors.black),
                 ),
               ),
               errorPinTheme: defaultPinTheme.copyBorderWith(
-                border: Border.all(color: Colors.redAccent),
+                border: Border.all(color: Colors.black),
               ),
             ),
           ),
@@ -103,7 +103,7 @@ class OtpForm extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: const Color(0xFFA67C68),
+                            color: Colors.black,
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -116,7 +116,7 @@ class OtpForm extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.redAccent,
+                        color: Colors.black,
                       ),
                     ),
                 ],
@@ -139,7 +139,7 @@ class OtpForm extends StatelessWidget {
                   : null,
               isLoading: isLoading,
               text: "Verify",
-              backgroundColor: const Color(0xFFA67C68),
+              backgroundColor: Colors.black,
               borderRadius: 12,
               fontSize: 18,
               fontWeight: FontWeight.w600,

@@ -8,7 +8,7 @@ import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:provider/provider.dart';
 
-import 'screens/splash_screen/splash_screen.dart';
+import 'screens/landing_screen/landing_screen.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -75,14 +75,14 @@ class _MyAppState extends State<MyApp> {
       scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Email verified successfully!'),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.black,
         ),
       );
     } catch (e) {
       scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
         ),
       );
     }
@@ -99,18 +99,29 @@ class _MyAppState extends State<MyApp> {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: AppColors.primary,
-            surface: AppColors.background,
+          ).copyWith(
+            surface: Colors.white,
+            surfaceTint: Colors.transparent,
+            surfaceContainerLowest: Colors.white,
+            surfaceContainerLow: Colors.white,
+            surfaceContainer: Colors.white,
+            surfaceContainerHigh: Colors.white,
+            surfaceContainerHighest: Colors.white,
           ),
           useMaterial3: true,
+          canvasColor: Colors.white,
+          cardColor: Colors.white,
+          dialogBackgroundColor: Colors.white,
           textTheme: GoogleFonts.poppinsTextTheme(),
-          scaffoldBackgroundColor: AppColors.background,
+          scaffoldBackgroundColor: Colors.white,
           appBarTheme: const AppBarTheme(
             elevation: 0,
-            backgroundColor: AppColors.background,
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
             centerTitle: true,
           ),
         ),
-        home: const SplashScreen(),
+        home: const LandingScreen(),
       ),
     );
   }

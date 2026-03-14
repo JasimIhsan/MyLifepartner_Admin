@@ -88,7 +88,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Verification link sent! Please check your inbox."),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.black,
           ),
         );
       }
@@ -97,7 +97,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Colors.black,
           ),
         );
       }
@@ -127,7 +127,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Profile updated successfully"),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.black,
           ),
         );
         Navigator.pop(context, true); // Return true to indicate success
@@ -141,7 +141,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: Colors.redAccent,
+            backgroundColor: Colors.black,
           ),
         );
       }
@@ -269,13 +269,13 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: _isEmailVerified
-                                  ? Colors.green
+                                  ? Colors.black
                                   : AppColors.primary,
                             ),
                           ),
                         ),
                   if (_isEmailVerified)
-                    Icon(Icons.check_circle, color: Colors.green, size: 16),
+                    Icon(Icons.check_circle, color: Colors.black, size: 16),
                 ],
               ),
 

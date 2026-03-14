@@ -149,8 +149,8 @@ class _LoginPageState extends State<LoginPage> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(
-                  color: Color(0xFFA67C68),
-                ), // Brown focus
+                  color: Colors.black,
+                ), // Black focus
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -201,7 +201,7 @@ class _LoginPageState extends State<LoginPage> {
                     },
               isLoading: _isLoading,
               text: "Continue",
-              backgroundColor: const Color(0xFFA67C68),
+              backgroundColor: Colors.black,
               borderRadius: 12,
             ),
           ),

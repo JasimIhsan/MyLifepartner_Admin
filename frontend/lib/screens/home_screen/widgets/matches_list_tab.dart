@@ -412,10 +412,10 @@ class _MatchListCard extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFF2E8B57).withValues(alpha: 0.10),
+            color: Colors.black.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
-              color: const Color(0xFF2E8B57).withValues(alpha: 0.20),
+              color: Colors.black.withValues(alpha: 0.15),
               width: 0.8,
             ),
           ),
@@ -423,7 +423,7 @@ class _MatchListCard extends StatelessWidget {
             h,
             style: GoogleFonts.poppins(
               fontSize: 11,
-              color: const Color(0xFF1A6B3A),
+              color: Colors.black,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -459,11 +459,11 @@ class _MatchListCard extends StatelessWidget {
 
     return Row(
       children: [
-        btn(Icons.close_rounded, 'Pass', const Color(0xFFFF5252), const Color(0xFFFF5252).withValues(alpha: 0.08), onNotInterested),
+        btn(Icons.close_rounded, 'Pass', Colors.black, Colors.black.withValues(alpha: 0.08), onNotInterested),
         const SizedBox(width: 8),
         btn(Icons.fast_forward_rounded, 'Skip', AppColors.textSecondary, const Color(0xFF9E9E9E).withValues(alpha: 0.08), onSkip),
         const SizedBox(width: 8),
-        btn(Icons.favorite_rounded, 'Interested', const Color(0xFF4CAF50), const Color(0xFF4CAF50).withValues(alpha: 0.08), onInterested),
+        btn(Icons.favorite_rounded, 'Interested', Colors.black, Colors.black.withValues(alpha: 0.08), onInterested),
       ],
     );
   }
