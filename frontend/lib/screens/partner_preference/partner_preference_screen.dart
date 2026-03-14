@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/home_screen/home_screen.dart';
+import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -74,7 +74,7 @@ class _PartnerPreferenceScreenState
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-              builder: (_) => const HomePage()),
+              builder: (_) => const ProfileImageUploadScreen()),
         );
       }
     } catch (e) {

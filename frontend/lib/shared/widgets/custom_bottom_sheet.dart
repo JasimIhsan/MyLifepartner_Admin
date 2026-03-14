@@ -23,6 +23,7 @@ class CustomBottomSheet {
       isDismissible: isDismissible,
       enableDrag: isDismissible,
       isScrollControlled: isScrollControlled,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -107,6 +108,7 @@ class CustomBottomSheet {
     return Container(
       padding: const EdgeInsets.all(24),
       width: double.infinity,
+      color: Colors.white,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
