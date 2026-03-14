@@ -2,11 +2,10 @@ import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User } from "@
 
 export interface UserDto {
    id: number;
-   mobileNumber: string;
+   mobileNumber?: string | null;
    name: string | null;
    email: string | null;
    role: string;
-   isEmailVerified: boolean;
    isBlocked: boolean;
    isDeleted: boolean;
    profileStatus: ProfileStatus;
@@ -43,7 +42,6 @@ export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPri
    name: user.profile?.name || null,
    email: user.email,
    role: user.role,
-   isEmailVerified: user.isEmailVerified,
    isBlocked: user.isBlocked,
    isDeleted: user.isDeleted,
    profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,

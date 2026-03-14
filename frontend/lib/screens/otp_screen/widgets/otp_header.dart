@@ -4,22 +4,20 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/app_colors.dart';
 
 class OtpHeader extends StatelessWidget {
-  final String verificationMethod;
-  final String phoneNumber;
-  final String code;
+  final String email;
   final bool isWeb;
 
   const OtpHeader({
     super.key,
     required this.isWeb,
-    required this.code,
-    required this.verificationMethod,
-    required this.phoneNumber,
+    required this.email,
   });
 
-  String get _maskedPhoneNumber {
-    if (phoneNumber.length <= 4) return phoneNumber;
-    return "$code******${phoneNumber.substring(phoneNumber.length - 4)}";
+  String get _maskedEmail {
+    if (email.length <= 4 || !email.contains('@')) return email;
+    final parts = email.split('@');
+    if (parts[0].length <= 2) return "${parts[0]}***@${parts[1]}";
+    return "${parts[0].substring(0, 2)}***@${parts[1]}";
   }
 
   @override
@@ -39,11 +37,11 @@ class OtpHeader extends StatelessWidget {
         Text.rich(
           TextSpan(
             text:
-                "We’ve sent a 6-digit verification code via $verificationMethod to ",
+                "We’ve sent a 6-digit verification code to ",
             style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600]),
             children: [
               TextSpan(
-                text: "$_maskedPhoneNumber.",
+                text: "$_maskedEmail.",
                 style: GoogleFonts.poppins(
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
@@ -58,9 +56,7 @@ class OtpHeader extends StatelessWidget {
 }
 
 class OtpWebBanner extends StatelessWidget {
-  final String verificationMethod;
-
-  const OtpWebBanner({super.key, required this.verificationMethod});
+  const OtpWebBanner({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +81,7 @@ class OtpWebBanner extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            "We've sent a 6-digit code via $verificationMethod to your phone. Please enter it to verify your identity.",
+            "We've sent a 6-digit code to your email. Please enter it to verify your identity.",
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 16,

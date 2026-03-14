@@ -7,16 +7,16 @@ datasource db {
 }
 
 model User {
-  id              Int      @id @default(autoincrement())
-  mobileNumber    String   @unique
-  email           String?  @unique
-  isVerified      Boolean  @default(false)
-  isEmailVerified Boolean  @default(false)
-  isBlocked       Boolean  @default(false)
-  isDeleted       Boolean  @default(false)
-  role            Role     @default(USER)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           Int      @id @default(autoincrement())
+  mobileNumber String?  @unique
+  email        String   @unique
+  password     String?
+  isVerified   Boolean  @default(false)
+  isBlocked    Boolean  @default(false)
+  isDeleted    Boolean  @default(false)
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   profile                 Profile?
   emailVerificationTokens EmailVerificationToken[]

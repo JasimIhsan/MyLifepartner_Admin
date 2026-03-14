@@ -179,7 +179,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
-        leading: null,
+        showLeading: false,
         title: 'Basic Details',
         actions: [
           TextButton(

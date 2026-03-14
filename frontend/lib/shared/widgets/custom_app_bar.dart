@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import '../../core/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -55,7 +54,11 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     Icons.arrow_back,
                     color: AppColors.textPrimary,
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                  },
                 ))
           : null,
       automaticallyImplyLeading: showLeading,

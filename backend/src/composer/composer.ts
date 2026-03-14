@@ -38,7 +38,7 @@ import { S3Service } from "@/services/s3.service";
 export const cacheService = new CacheService();
 export const emailService = new EmailService();
 export const jwtService = new JwtService();
-export const otpService = new OtpService(cacheService);
+export const otpService = new OtpService(cacheService, emailService);
 export const s3Service = new S3Service();
 
 // ─── 3. Domain Services ──────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ export const adminQuestionnaireService = new AdminQuestionnaireService(questionn
 
 // User services
 export const userService = new UserService(userRepository);
-export const authService = new AuthService(userService, otpService, emailService, jwtService);
+export const authService = new AuthService(userService, otpService, emailService, jwtService, cacheService);
 export const profileService = new ProfileService(profileRepository);
 
 import { MatchService } from "@/services/match.service";
@@ -79,7 +79,7 @@ export const adminQuestionnaireController = new AdminQuestionnaireController(adm
 export const adminUsersController = new AdminUsersController(userService);
 
 // User controllers
-export const authController = new AuthController(authService);
+export const authController = new AuthController(authService, userService);
 export const profileController = new ProfileController(profileService);
 export const profileImageController = new ProfileImageController(profileService, s3Service);
 export const userController = new UserController(userService);

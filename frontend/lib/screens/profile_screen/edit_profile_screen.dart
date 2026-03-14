@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/auth_response.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/services/user_repository.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
@@ -24,10 +23,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   late TextEditingController _emailController;
 
   final UserRepository _userRepository = UserRepository();
-  final ProfileRepository _profileRepository = ProfileRepository();
   bool _isLoading = false;
-  bool _isSendingVerification = false;
-  bool _isEmailVerified = false;
 
   @override
   void initState() {
@@ -35,7 +31,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     WidgetsBinding.instance.addObserver(this);
     _nameController = TextEditingController(text: widget.user.name ?? '');
     _emailController = TextEditingController(text: widget.user.email ?? '');
-    _isEmailVerified = widget.user.isEmailVerified ?? false;
   }
 
   @override
@@ -44,70 +39,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _nameController.dispose();
     _emailController.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // Refresh profile to check if email is verified
-      _refreshProfile();
-    }
-  }
-
-  Future<void> _refreshProfile() async {
-    try {
-      final user = await _userRepository.getUser();
-      if (mounted) {
-        setState(() {
-          _isEmailVerified = user.isEmailVerified ?? false;
-        });
-      }
-    } catch (e) {
-      debugPrint('Error refreshing profile: $e');
-    }
-  }
-
-  Future<void> _sendVerification() async {
-    if (_emailController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter an email address")),
-      );
-      return;
-    }
-
-    setState(() {
-      _isSendingVerification = true;
-    });
-
-    try {
-      await _profileRepository.sendEmailVerificationLink(
-        email: _emailController.text.trim(),
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Verification link sent! Please check your inbox."),
-            backgroundColor: Colors.black,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.black,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isSendingVerification = false;
-        });
-      }
-    }
   }
 
   Future<void> _saveProfile() async {
@@ -139,10 +70,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           errorMessage = getDioErrorMessage(e, fallback: errorMessage);
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.black,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.black),
         );
       }
     } finally {
@@ -249,34 +177,6 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                   }
                   return null;
                 },
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  _isSendingVerification
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : TextButton(
-                          onPressed: _isEmailVerified
-                              ? null
-                              : _sendVerification,
-                          child: Text(
-                            _isEmailVerified ? 'Verified' : 'Verify email',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: _isEmailVerified
-                                  ? Colors.black
-                                  : AppColors.primary,
-                            ),
-                          ),
-                        ),
-                  if (_isEmailVerified)
-                    Icon(Icons.check_circle, color: Colors.black, size: 16),
-                ],
               ),
 
               const SizedBox(height: 48),

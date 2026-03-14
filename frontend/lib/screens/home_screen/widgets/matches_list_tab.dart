@@ -50,7 +50,7 @@ class MatchesListTab extends StatelessWidget {
           SizedBox(height: 16),
           Text(
             'Finding your matches…',
-            style: TextStyle(color: Color(0xFF9E9E9E)),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
         ],
       ),
@@ -62,7 +62,11 @@ class MatchesListTab extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.wifi_off_rounded, size: 64, color: Color(0xFF9E9E9E)),
+          const Icon(
+            Icons.wifi_off_rounded,
+            size: 64,
+            color: AppColors.textSecondary,
+          ),
           const SizedBox(height: 16),
           Text(
             'Could not load matches',
@@ -96,7 +100,7 @@ class MatchesListTab extends StatelessWidget {
           const Icon(
             Icons.people_outline_rounded,
             size: 64,
-            color: Color(0xFF9E9E9E),
+            color: AppColors.textSecondary,
           ),
           const SizedBox(height: 16),
           Text(
@@ -174,23 +178,22 @@ class MatchesListTab extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 return _MatchListCard(
-                  profile: profiles[index],
-                  showActions: showActions,
-                  onInterested: showActions
-                      ? () => provider.swipeRight()
-                      : null,
-                  onNotInterested: showActions
-                      ? () => provider.swipeLeft()
-                      : null,
-                  onSkip: showActions
-                      ? () => provider.swipeUp()
-                      : null,
-                ).animate().fadeIn(
-                  duration: 350.ms,
-                  delay: Duration(
-                    milliseconds: 50 * index.clamp(0, 10),
-                  ),
-                ).slideY(begin: 0.04, end: 0);
+                      profile: profiles[index],
+                      showActions: showActions,
+                      onInterested: showActions
+                          ? () => provider.swipeRight()
+                          : null,
+                      onNotInterested: showActions
+                          ? () => provider.swipeLeft()
+                          : null,
+                      onSkip: showActions ? () => provider.swipeUp() : null,
+                    )
+                    .animate()
+                    .fadeIn(
+                      duration: 350.ms,
+                      delay: Duration(milliseconds: 50 * index.clamp(0, 10)),
+                    )
+                    .slideY(begin: 0.04, end: 0);
               },
             ),
           ),
@@ -304,9 +307,7 @@ class _MatchListCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    MatchPercentageBadge(
-                      percentage: profile.matchPercentage,
-                    ),
+                    MatchPercentageBadge(percentage: profile.matchPercentage),
                   ],
                 ),
 
@@ -343,10 +344,7 @@ class _MatchListCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         color: AppColors.primaryLight,
         image: imageUrl != null
-            ? DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              )
+            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
             : null,
       ),
       child: imageUrl == null
@@ -433,7 +431,13 @@ class _MatchListCard extends StatelessWidget {
   }
 
   Widget _buildActionButtons() {
-    Widget btn(IconData icon, String label, Color color, Color bg, VoidCallback? onTap) {
+    Widget btn(
+      IconData icon,
+      String label,
+      Color color,
+      Color bg,
+      VoidCallback? onTap,
+    ) {
       return Expanded(
         child: Material(
           color: bg,
@@ -448,7 +452,14 @@ class _MatchListCard extends StatelessWidget {
                 children: [
                   Icon(icon, size: 16, color: color),
                   const SizedBox(width: 4),
-                  Text(label, style: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+                  Text(
+                    label,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -459,11 +470,29 @@ class _MatchListCard extends StatelessWidget {
 
     return Row(
       children: [
-        btn(Icons.close_rounded, 'Pass', Colors.black, Colors.black.withValues(alpha: 0.08), onNotInterested),
+        btn(
+          Icons.close_rounded,
+          'Pass',
+          Colors.black,
+          Colors.black.withValues(alpha: 0.08),
+          onNotInterested,
+        ),
         const SizedBox(width: 8),
-        btn(Icons.fast_forward_rounded, 'Skip', AppColors.textSecondary, const Color(0xFF9E9E9E).withValues(alpha: 0.08), onSkip),
+        btn(
+          Icons.fast_forward_rounded,
+          'Skip',
+          AppColors.textSecondary,
+          AppColors.primary,
+          onSkip,
+        ),
         const SizedBox(width: 8),
-        btn(Icons.favorite_rounded, 'Interested', Colors.black, Colors.black.withValues(alpha: 0.08), onInterested),
+        btn(
+          Icons.favorite_rounded,
+          'Interested',
+          Colors.black,
+          Colors.black.withValues(alpha: 0.08),
+          onInterested,
+        ),
       ],
     );
   }

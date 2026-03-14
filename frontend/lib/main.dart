@@ -27,6 +27,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   StreamSubscription? _sub;
   final ProfileRepository _profileRepo = ProfileRepository();
+  late final AppLinks _appLinks = AppLinks();
 
   @override
   void initState() {
@@ -39,8 +40,6 @@ class _MyAppState extends State<MyApp> {
     _sub?.cancel();
     super.dispose();
   }
-
-  late final AppLinks _appLinks = AppLinks();
 
   void _handleIncomingLinks() {
     _appLinks.getInitialLink().then((uri) {
@@ -96,24 +95,25 @@ class _MyAppState extends State<MyApp> {
         title: 'Life Partner Again',
         debugShowCheckedModeBanner: false,
         scaffoldMessengerKey: scaffoldMessengerKey,
+
         theme: ThemeData(
+          useMaterial3: true,
+
+          // Prevent gray elevation tint from Material 3
+          applyElevationOverlayColor: false,
+
           colorScheme: ColorScheme.fromSeed(
             seedColor: AppColors.primary,
-          ).copyWith(
-            surface: Colors.white,
-            surfaceTint: Colors.transparent,
-            surfaceContainerLowest: Colors.white,
-            surfaceContainerLow: Colors.white,
-            surfaceContainer: Colors.white,
-            surfaceContainerHigh: Colors.white,
-            surfaceContainerHighest: Colors.white,
-          ),
-          useMaterial3: true,
+            brightness: Brightness.light,
+          ).copyWith(surface: Colors.white, surfaceTint: Colors.transparent),
+
+          scaffoldBackgroundColor: Colors.white,
           canvasColor: Colors.white,
           cardColor: Colors.white,
           dialogBackgroundColor: Colors.white,
+
           textTheme: GoogleFonts.poppinsTextTheme(),
-          scaffoldBackgroundColor: Colors.white,
+
           appBarTheme: const AppBarTheme(
             elevation: 0,
             backgroundColor: Colors.white,
@@ -121,6 +121,7 @@ class _MyAppState extends State<MyApp> {
             centerTitle: true,
           ),
         ),
+
         home: const LandingScreen(),
       ),
     );

@@ -1,25 +1,35 @@
 import { UserDto, toUserDto } from "@/dtos/user.dto";
+import { UserOnboardingStatusDto } from "@/dtos/auth.me.dto";
 import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { Prisma, User } from "@prisma/client";
+import { Prisma, ProfileStatus, User } from "@prisma/client";
 
 export class UserService implements IUserService {
    constructor(private userRepository: IUserRepository) {}
 
    async createUser(userData: Prisma.UserCreateInput): Promise<UserDto> {
-      if (await this.userRepository.findByMobileNumber(userData.mobileNumber)) {
+      if (userData.email && (await this.userRepository.findByEmail(userData.email))) {
+         throw new ApiError(409, `User with email ${userData.email} already exists`);
+      }
+      if (userData.mobileNumber && (await this.userRepository.findByMobileNumber(userData.mobileNumber))) {
          throw new ApiError(409, `User with mobile number ${userData.mobileNumber} already exists`);
       }
       return toUserDto(await this.userRepository.create(userData));
    }
 
-   async findOrCreateUser(mobileNumber: string): Promise<UserDto> {
-      const user = await this.userRepository.findByMobileNumber(mobileNumber);
-      if (!user) {
-         return toUserDto(await this.userRepository.create({ mobileNumber }));
+   async findOrCreateUser(email: string): Promise<UserDto> {
+      const existingUser = await this.userRepository.findByEmail(email);
+      if (existingUser) {
+         return toUserDto(existingUser);
       }
-      return toUserDto(user);
+      const newUser = await this.userRepository.create({ email });
+      return toUserDto(newUser);
+   }
+
+   async findUserByEmail(email: string): Promise<UserDto | null> {
+      const user = await this.userRepository.findByEmail(email);
+      return user ? toUserDto(user) : null;
    }
 
    async getUsers(searchQuery?: string, page?: number, limit?: number, selfieStatus?: string): Promise<{ data: UserDto[]; total: number }> {
@@ -46,6 +56,22 @@ export class UserService implements IUserService {
          throw new ApiError(404, "User not found");
       }
       return toUserDto(user);
+   }
+
+   async getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto> {
+      const user = await this.userRepository.findOnboardingStatusById(userId);
+      if (!user || user.isDeleted) {
+         throw new ApiError(404, "User not found");
+      }
+
+      return {
+         id: user.id,
+         hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails || false,
+         hasCompletedPartnerPreference: user.profile?.hasCompletedPartnerPreference || false,
+         profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,
+         hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
+         selfieStatus: user.profile?.selfieStatus || null,
+      };
    }
 
    async updateUser(userId: number, updateData: Prisma.UserUpdateInput): Promise<UserDto> {

@@ -20,4 +20,12 @@ export class CacheService implements ICacheService {
          await redis.del(...keys);
       }
    };
+
+   incrCache = async (key: string): Promise<number> => {
+      return await redis.incr(key);
+   };
+
+   expireCache = async (key: string, ttl: number): Promise<void> => {
+      await redis.expire(key, ttl);
+   };
 }

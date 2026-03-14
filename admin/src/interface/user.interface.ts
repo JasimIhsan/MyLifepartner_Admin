@@ -3,7 +3,6 @@ export interface UserInterface {
    mobileNumber: string;
    name: string | null;
    email: string | null;
-   isEmailVerified: boolean;
    isBlocked: boolean;
    isDeleted: boolean;
    profileStatus: "INCOMPLETE" | "ONBOARDING_COMPLETED" | "COMPLETED";

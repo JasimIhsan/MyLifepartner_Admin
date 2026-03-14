@@ -1,260 +1,128 @@
-import 'package:dio/dio.dart';
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mylifepartner/services/auth_repository.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
-import 'package:phone_form_field/phone_form_field.dart';
+import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/providers/match_provider.dart';
+import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
+import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:provider/provider.dart';
 
-import '../../core/app_colors.dart';
-import '../../shared/widgets/auth_layout.dart';
-import '../../shared/widgets/custom_button.dart';
-import '../otp_screen/otp_screen.dart';
-import 'widgets/otp_method_selector.dart';
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  State<LoginPage> createState() => _LoginPageState();
+void main() {
+  runApp(const MyApp());
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late final PhoneController _phoneController;
-  final AuthRepository _authRepository = AuthRepository();
-  PhoneNumber _phoneNumber = const PhoneNumber(isoCode: IsoCode.US, nsn: "");
-  bool _isLoading = false;
+class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  StreamSubscription? _sub;
+  final ProfileRepository _profileRepo = ProfileRepository();
+  late final AppLinks _appLinks = AppLinks();
 
   @override
   void initState() {
     super.initState();
-    _phoneController = PhoneController(initialValue: _phoneNumber);
-    _detectCountry();
+    _handleIncomingLinks();
   }
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _sub?.cancel();
     super.dispose();
   }
 
-  Future<void> _detectCountry() async {
-    try {
-      final response = await _authRepository.detectCountry();
-      if (response.success && response.countryCode != null) {
-        final String code = response.countryCode!;
-        final detectedIsoCode = IsoCode.values.firstWhere(
-          (e) => e.name.toUpperCase() == code.toUpperCase(),
-          orElse: () => IsoCode.IN,
-        );
+  void _handleIncomingLinks() {
+    _appLinks.getInitialLink().then((uri) {
+      if (uri != null) _processUri(uri);
+    });
 
-        if (mounted) {
-          setState(() {
-            _phoneNumber = PhoneNumber(isoCode: detectedIsoCode, nsn: "");
-            _phoneController.value = _phoneNumber;
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Country detection failed: $e");
-    }
+    _sub = _appLinks.uriLinkStream.listen(
+      (Uri uri) {
+        _processUri(uri);
+      },
+      onError: (err) {
+        debugPrint("Failed to handle incoming link: $err");
+      },
+    );
   }
 
-  Future<bool> _sendOtp(String method) async {
-    setState(() {
-      _isLoading = true;
-    });
+  Future<void> _processUri(Uri uri) async {
+    if (uri.scheme != 'mylifepartner' || uri.host != 'verify-email') {
+      return;
+    }
+
+    final token = uri.queryParameters['token'];
+    if (token == null) return;
+
     try {
-      final response = await _authRepository.sendOtp(
-        mobileNumber: "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
-        sendOption: method.toLowerCase(),
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(content: Text('Verifying email...')),
       );
 
-      debugPrint("OTP Response: ${response.message}");
-      return response.success;
+      final result = await _profileRepo.verifyEmail(token);
+
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Email verified successfully!'),
+          backgroundColor: Colors.black,
+        ),
+      );
     } catch (e) {
-      debugPrint("Send OTP Error: $e");
-      String errorMessage = "Failed to send OTP. Please try again.";
-      if (e is DioException) {
-        errorMessage = getDioErrorMessage(e);
-      }
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-      return false;
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: Colors.black,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return AuthLayout(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Check screen width for responsive text/style, matching AuthLayout breakpoint logic partially
-          // AuthLayout uses 900 breakpoint for split screen.
-          final bool isWeb = MediaQuery.of(context).size.width > 900;
-          return _buildFormContent(isWeb);
-        },
-      ),
-    );
-  }
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => MatchProvider())],
+      child: MaterialApp(
+        title: 'Life Partner Again',
+        debugShowCheckedModeBanner: false,
+        scaffoldMessengerKey: scaffoldMessengerKey,
 
-  Widget _buildFormContent(bool isWeb) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        mainAxisSize: MainAxisSize.min, // Important for the bottom sheet layout
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Continue with Phone",
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 12),
-          PhoneFormField(
-            controller: _phoneController,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: EdgeInsets.symmetric(
-                vertical: isWeb ? 16 : 14,
-                horizontal: isWeb ? 16 : 10,
-              ),
-              hintText: "000 000 0000",
-              hintStyle: const TextStyle(color: Colors.grey),
-              counterText: "",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: Colors.black,
-                ), // Black focus
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.error),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.error),
-              ),
-            ),
-            validator: PhoneValidator.compose([
-              PhoneValidator.required(
-                context,
-                errorText: "Please enter your mobile number",
-              ),
-              PhoneValidator.validMobile(
-                context,
-                errorText: "Please enter a valid mobile number",
-              ),
-            ]),
-            countrySelectorNavigator: isWeb
-                ? const CountrySelectorNavigator.dialog()
-                : const CountrySelectorNavigator.draggableBottomSheet(),
-            onChanged: (value) => _phoneNumber = value,
-            isCountrySelectionEnabled: true,
-            isCountryButtonPersistent: true,
-            countryButtonStyle: const CountryButtonStyle(
-              showIsoCode: false,
-              showFlag: true,
-              flagSize: 20,
-            ),
-          ),
+        theme: ThemeData(
+          useMaterial3: true,
 
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: CustomButton(
-              onPressed: _isLoading
-                  ? null
-                  : () {
-                      if (_formKey.currentState!.validate()) {
-                        OtpMethodSelector.show(
-                          context,
-                          isWeb: isWeb,
-                          onMethodSelected: _navigateToOtp,
-                        );
-                      }
-                    },
-              isLoading: _isLoading,
-              text: "Continue",
-              backgroundColor: Colors.black,
-              borderRadius: 12,
-            ),
-          ),
+          // Prevent gray elevation tint from Material 3
+          applyElevationOverlayColor: false,
 
-          const SizedBox(height: 24),
-          _buildFooterText(),
-        ],
-      ),
-    );
-  }
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: AppColors.primary,
+            brightness: Brightness.light,
+          ).copyWith(surface: Colors.white, surfaceTint: Colors.transparent),
 
-  Widget _buildFooterText() {
-    return Text.rich(
-      TextSpan(
-        text: "By continue, you agree to our ",
-        style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[400]),
-        children: [
-          TextSpan(
-            text: "Terms of Service",
-            style: GoogleFonts.poppins(
-              decoration: TextDecoration.underline,
-              color: Colors.grey[400],
-            ),
-          ),
-          const TextSpan(text: " and\n"),
-          TextSpan(
-            text: "Privacy Policy",
-            style: GoogleFonts.poppins(
-              decoration: TextDecoration.underline,
-              color: Colors.grey[400],
-            ),
-          ),
-          const TextSpan(text: "."),
-        ],
-      ),
-      textAlign: TextAlign.center,
-    );
-  }
+          scaffoldBackgroundColor: Colors.white,
+          canvasColor: Colors.white,
+          cardColor: Colors.white,
+          dialogBackgroundColor: Colors.white,
 
-  void _navigateToOtp(String method) async {
-    final bool success = await _sendOtp(method);
+          textTheme: GoogleFonts.poppinsTextTheme(),
 
-    if (success && mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => OtpPage(
-            code: "+${_phoneNumber.countryCode}",
-            phoneNumber: "+${_phoneNumber.countryCode}${_phoneNumber.nsn}",
-            verificationMethod: method,
+          appBarTheme: const AppBarTheme(
+            elevation: 0,
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            centerTitle: true,
           ),
         ),
-      );
-    }
+
+        home: const LandingScreen(),
+      ),
+    );
   }
 }
