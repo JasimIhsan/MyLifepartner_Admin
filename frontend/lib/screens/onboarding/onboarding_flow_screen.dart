@@ -19,20 +19,19 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   int _currentStep = 0;
   bool _goingForward = true;
 
-  // Step 0  : First name + Last name + Country + City
+  // Step 0  : First name + Last name + DOB + Country + City
   // Step 1  : Gender
-  // Step 2  : Date of birth
-  // Step 3  : Marital status
-  // Step 4  : Children
-  // Step 5  : Emotional readiness
-  // Step 6  : Looking for
-  // Step 7  : Relationship timeline
-  // Step 8  : Education
-  // Step 9  : Profession
-  // Step 10 : Languages spoken
-  // Step 11 : Smoking
-  // Step 12 : Drinking
-  static const int _totalSteps = 13;
+  // Step 2  : Marital status
+  // Step 3  : Children
+  // Step 4  : Emotional readiness
+  // Step 5  : Looking for
+  // Step 6  : Relationship timeline
+  // Step 7  : Education
+  // Step 8  : Profession
+  // Step 9  : Languages spoken
+  // Step 10 : Smoking
+  // Step 11 : Drinking
+  static const int _totalSteps = 12;
 
   // Collected data
   String? _firstName;
@@ -75,6 +74,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _firstName!.trim().isNotEmpty &&
             _lastName != null &&
             _lastName!.trim().isNotEmpty &&
+            _dateOfBirth != null &&
             _country != null &&
             _country!.trim().isNotEmpty &&
             _city != null &&
@@ -82,26 +82,24 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       case 1:
         return _gender != null;
       case 2:
-        return _dateOfBirth != null;
-      case 3:
         return _maritalStatus != null;
-      case 4:
+      case 3:
         return _childrenStatus != null;
-      case 5:
+      case 4:
         return _emotionalReadiness != null;
-      case 6:
+      case 5:
         return _lookingFor != null;
-      case 7:
+      case 6:
         return _relationshipTimeline != null;
-      case 8:
+      case 7:
         return _highestEducation != null;
-      case 9:
+      case 8:
         return _profession != null && _profession!.trim().isNotEmpty;
-      case 10:
+      case 9:
         return _languages.isNotEmpty;
-      case 11:
+      case 10:
         return _smokingHabit != null;
-      case 12:
+      case 11:
         return _drinkingHabit != null;
       default:
         return false;
@@ -344,6 +342,63 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
           const SizedBox(height: 24),
 
+          // Date of birth
+          _sectionLabel("Date of birth"),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _dateOfBirth ??
+                    DateTime.now().subtract(const Duration(days: 365 * 30)),
+                firstDate: DateTime(1930),
+                lastDate:
+                    DateTime.now().subtract(const Duration(days: 365 * 18)),
+                builder: (ctx, child) => Theme(
+                  data: Theme.of(ctx).copyWith(
+                    colorScheme: const ColorScheme.light(
+                        primary: AppColors.primary),
+                  ),
+                  child: child!,
+                ),
+              );
+              if (picked != null) setState(() => _dateOfBirth = picked);
+            },
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: _dateOfBirth != null
+                      ? AppColors.primary
+                      : AppColors.borderColor,
+                  width: _dateOfBirth != null ? 1.5 : 1,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined,
+                      size: 18, color: AppColors.textSecondary),
+                  const SizedBox(width: 12),
+                  Text(
+                    _dateOfBirth == null
+                        ? 'Select date of birth'
+                        : '${_dateOfBirth!.day} / ${_dateOfBirth!.month} / ${_dateOfBirth!.year}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      color: _dateOfBirth != null
+                          ? AppColors.textPrimary
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
           // Location
           _sectionLabel("Where do you live?"),
           const SizedBox(height: 10),
@@ -455,81 +510,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     );
   }
 
-  // Step 2 — Date of birth
-  Widget _buildDobStep() {
-    final display = _dateOfBirth == null
-        ? 'Tap to select your date of birth'
-        : '${_dateOfBirth!.day} / ${_dateOfBirth!.month} / ${_dateOfBirth!.year}';
-
-    return _StepContainer(
-      key: const ValueKey(2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "When were you born?",
-            subtitle: "You must be 18 or older to use this app.",
-          ),
-          const SizedBox(height: 32),
-          GestureDetector(
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _dateOfBirth ??
-                    DateTime.now()
-                        .subtract(const Duration(days: 365 * 30)),
-                firstDate: DateTime(1930),
-                lastDate: DateTime.now()
-                    .subtract(const Duration(days: 365 * 18)),
-                builder: (ctx, child) => Theme(
-                  data: Theme.of(ctx).copyWith(
-                    colorScheme: const ColorScheme.light(
-                      primary: AppColors.primary,
-                    ),
-                  ),
-                  child: child!,
-                ),
-              );
-              if (picked != null) {
-                setState(() => _dateOfBirth = picked);
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  vertical: 17, horizontal: 16),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _dateOfBirth != null
-                      ? AppColors.primary
-                      : AppColors.borderColor,
-                  width: _dateOfBirth != null ? 1.5 : 1,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 20, color: AppColors.textSecondary),
-                  const SizedBox(width: 12),
-                  Text(
-                    display,
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: _dateOfBirth != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Step 3 — Marital status
+  // Step 2 — Marital status
   Widget _buildMaritalStatusStep() {
     const options = [
       ('Never Married', 'NEVER_MARRIED'),
@@ -538,7 +519,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       ('Legally Separated', 'LEGALLY_SEPARATED'),
     ];
     return _StepContainer(
-      key: const ValueKey(3),
+      key: const ValueKey(2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -556,10 +537,10 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     );
   }
 
-  // Step 4 — Children
+  // Step 3 — Children
   Widget _buildChildrenStep() {
     return _StepContainer(
-      key: const ValueKey(4),
+      key: const ValueKey(3),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -594,7 +575,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   // Step 5 — Emotional readiness
   Widget _buildEmotionalReadinessStep() {
     return _StepContainer(
-      key: const ValueKey(5),
+      key: const ValueKey(4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -630,7 +611,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   // Step 6 — Looking for
   Widget _buildLookingForStep() {
     return _StepContainer(
-      key: const ValueKey(6),
+      key: const ValueKey(5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -668,7 +649,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   // Step 7 — Timeline
   Widget _buildTimelineStep() {
     return _StepContainer(
-      key: const ValueKey(7),
+      key: const ValueKey(6),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -716,7 +697,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       ('Other', 'OTHER'),
     ];
     return _StepContainer(
-      key: const ValueKey(8),
+      key: const ValueKey(7),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -738,7 +719,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   // Step 9 — Profession
   Widget _buildProfessionStep() {
     return _StepContainer(
-      key: const ValueKey(9),
+      key: const ValueKey(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -767,7 +748,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       'Malay', 'Swahili', 'Punjabi', 'Tamil', 'Other',
     ];
     return _StepContainer(
-      key: const ValueKey(10),
+      key: const ValueKey(9),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -825,7 +806,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   // Step 11 — Smoking
   Widget _buildSmokingStep() {
     return _StepContainer(
-      key: const ValueKey(11),
+      key: const ValueKey(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -858,7 +839,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   // Step 12 — Drinking
   Widget _buildDrinkingStep() {
     return _StepContainer(
-      key: const ValueKey(12),
+      key: const ValueKey(11),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -895,26 +876,24 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       case 1:
         return _buildGenderStep();
       case 2:
-        return _buildDobStep();
-      case 3:
         return _buildMaritalStatusStep();
-      case 4:
+      case 3:
         return _buildChildrenStep();
-      case 5:
+      case 4:
         return _buildEmotionalReadinessStep();
-      case 6:
+      case 5:
         return _buildLookingForStep();
-      case 7:
+      case 6:
         return _buildTimelineStep();
-      case 8:
+      case 7:
         return _buildEducationStep();
-      case 9:
+      case 8:
         return _buildProfessionStep();
-      case 10:
+      case 9:
         return _buildLanguagesStep();
-      case 11:
+      case 10:
         return _buildSmokingStep();
-      case 12:
+      case 11:
         return _buildDrinkingStep();
       default:
         return const SizedBox();
