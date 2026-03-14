@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
+import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:provider/provider.dart';
-
-import 'screens/landing_screen/landing_screen.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -105,7 +104,11 @@ class _MyAppState extends State<MyApp> {
           colorScheme: ColorScheme.fromSeed(
             seedColor: AppColors.primary,
             brightness: Brightness.light,
-          ).copyWith(surface: Colors.white, surfaceTint: Colors.transparent),
+          ).copyWith(
+            surface: Colors.white,
+            background: Colors.white,
+            surfaceTint: Colors.transparent,
+          ),
 
           scaffoldBackgroundColor: Colors.white,
           canvasColor: Colors.white,

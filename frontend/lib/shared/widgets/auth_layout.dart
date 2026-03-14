@@ -118,22 +118,8 @@ class AuthLayout extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-                // Logo & Title Section
+                // Title Section
                 if (showLogo) ...[
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: AppColors.divider),
-                      image: const DecorationImage(
-                        image: AssetImage('assets/icons/app_logo.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
                   Text(
                     "lifepartneragain",
                     style: GoogleFonts.poppins(
@@ -171,7 +157,7 @@ class AuthLayout extends StatelessWidget {
     return Column(
       children: [
         Text(
-          "lifepartneragain",
+          "Life Partner Again",
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.bold,

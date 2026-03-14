@@ -400,7 +400,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     onPressed: _isLoading ? null : _submit,
                     isLoading: _isLoading,
                     text: widget.isExistingUser ? "Log In" : "Register",
-                    backgroundColor: const Color(0xFFA67C68),
+                    backgroundColor: AppColors.primary,
                     borderRadius: 12,
                   ),
                 ),

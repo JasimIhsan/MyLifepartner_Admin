@@ -1,128 +1,199 @@
-import 'dart:async';
-
-import 'package:app_links/app_links.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:provider/provider.dart';
+import 'package:mylifepartner/services/auth_repository.dart';
+import 'package:mylifepartner/utils/dio_error_helper.dart';
 
-final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
-    GlobalKey<ScaffoldMessengerState>();
+import '../../core/app_colors.dart';
+import '../../shared/widgets/auth_layout.dart';
+import '../../shared/widgets/custom_button.dart';
+import '../otp_screen/otp_screen.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _MyAppState extends State<MyApp> {
-  StreamSubscription? _sub;
-  final ProfileRepository _profileRepo = ProfileRepository();
-  late final AppLinks _appLinks = AppLinks();
-
-  @override
-  void initState() {
-    super.initState();
-    _handleIncomingLinks();
-  }
+class _LoginPageState extends State<LoginPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final AuthRepository _authRepository = AuthRepository();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _sub?.cancel();
+    _emailController.dispose();
     super.dispose();
   }
 
-  void _handleIncomingLinks() {
-    _appLinks.getInitialLink().then((uri) {
-      if (uri != null) _processUri(uri);
+  Future<void> _initiateAuth() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
     });
-
-    _sub = _appLinks.uriLinkStream.listen(
-      (Uri uri) {
-        _processUri(uri);
-      },
-      onError: (err) {
-        debugPrint("Failed to handle incoming link: $err");
-      },
-    );
-  }
-
-  Future<void> _processUri(Uri uri) async {
-    if (uri.scheme != 'mylifepartner' || uri.host != 'verify-email') {
-      return;
-    }
-
-    final token = uri.queryParameters['token'];
-    if (token == null) return;
-
     try {
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        const SnackBar(content: Text('Verifying email...')),
-      );
+      final email = _emailController.text.trim();
+      final response = await _authRepository.initiateAuth(email: email);
 
-      final result = await _profileRepo.verifyEmail(token);
-
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Email verified successfully!'),
-          backgroundColor: Colors.black,
-        ),
-      );
+      debugPrint("Initiate Auth Response: ${response.message}");
+      if (response.success && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                OtpPage(email: email, isExistingUser: response.exists),
+          ),
+        );
+      }
     } catch (e) {
-      scaffoldMessengerKey.currentState?.showSnackBar(
-        SnackBar(
-          content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.black,
-        ),
-      );
+      debugPrint("Auth Error: $e");
+      String errorMessage = "Failed to start authentication. Please try again.";
+      if (e is DioException) {
+        errorMessage = getDioErrorMessage(e);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => MatchProvider())],
-      child: MaterialApp(
-        title: 'Life Partner Again',
-        debugShowCheckedModeBanner: false,
-        scaffoldMessengerKey: scaffoldMessengerKey,
-
-        theme: ThemeData(
-          useMaterial3: true,
-
-          // Prevent gray elevation tint from Material 3
-          applyElevationOverlayColor: false,
-
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.primary,
-            brightness: Brightness.light,
-          ).copyWith(surface: Colors.white, surfaceTint: Colors.transparent),
-
-          scaffoldBackgroundColor: Colors.white,
-          canvasColor: Colors.white,
-          cardColor: Colors.white,
-          dialogBackgroundColor: Colors.white,
-
-          textTheme: GoogleFonts.poppinsTextTheme(),
-
-          appBarTheme: const AppBarTheme(
-            elevation: 0,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
-            centerTitle: true,
-          ),
-        ),
-
-        home: const LandingScreen(),
+    return AuthLayout(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // Check screen width for responsive text/style, matching AuthLayout breakpoint logic partially
+          // AuthLayout uses 900 breakpoint for split screen.
+          final bool isWeb = MediaQuery.of(context).size.width > 900;
+          return _buildFormContent(isWeb);
+        },
       ),
+    );
+  }
+
+  Widget _buildFormContent(bool isWeb) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // Important for the bottom sheet layout
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Continue with Email",
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: EdgeInsets.symmetric(
+                vertical: isWeb ? 16 : 14,
+                horizontal: isWeb ? 16 : 10,
+              ),
+              hintText: "Enter your email address",
+              hintStyle: const TextStyle(color: Colors.grey),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFFA67C68),
+                ), // Brown focus
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.error),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.error),
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your email';
+              }
+              final emailRegex = RegExp(
+                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+              );
+              if (!emailRegex.hasMatch(value)) {
+                return 'Please enter a valid email address';
+              }
+              return null;
+            },
+          ),
+
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            child: CustomButton(
+              onPressed: _isLoading ? null : _initiateAuth,
+              isLoading: _isLoading,
+              text: "Continue",
+              backgroundColor: AppColors.primary,
+              borderRadius: 12,
+            ),
+          ),
+
+          const SizedBox(height: 24),
+          _buildFooterText(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFooterText() {
+    return Text.rich(
+      TextSpan(
+        text: "By continue, you agree to our ",
+        style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[400]),
+        children: [
+          TextSpan(
+            text: "Terms of Service",
+            style: GoogleFonts.poppins(
+              decoration: TextDecoration.underline,
+              color: Colors.grey[400],
+            ),
+          ),
+          const TextSpan(text: " and\n"),
+          TextSpan(
+            text: "Privacy Policy",
+            style: GoogleFonts.poppins(
+              decoration: TextDecoration.underline,
+              color: Colors.grey[400],
+            ),
+          ),
+          const TextSpan(text: "."),
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }
