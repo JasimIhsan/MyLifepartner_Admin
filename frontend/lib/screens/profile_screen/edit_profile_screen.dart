@@ -58,7 +58,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Profile updated successfully"),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.black,
           ),
         );
         Navigator.pop(context, true); // Return true to indicate success
@@ -70,10 +70,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           errorMessage = getDioErrorMessage(e, fallback: errorMessage);
         }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.redAccent,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.black),
         );
       }
     } finally {

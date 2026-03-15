@@ -10,7 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/app_colors.dart';
 import '../home_screen/home_screen.dart';
 import '../partner_preference/partner_preference_screen.dart';
-import '../profile_completion/profile_completion_screen.dart';
+import '../onboarding/onboarding_flow_screen.dart';
 import '../profile_image_upload/profile_image_upload_screen.dart';
 import '../selfie_verification/selfie_verification_screen.dart';
 
@@ -95,7 +95,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
-              builder: (context) => const ProfileCompletionScreen(),
+              builder: (context) => const OnboardingFlowScreen(),
             ),
             ModalRoute.withName('/'),
           );
@@ -237,6 +237,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
   Widget build(BuildContext context) {
     final bool isWeb = MediaQuery.of(context).size.width > 900;
     return AuthLayout(
+      topImage: 'assets/images/login_young_couple.png',
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Form(
@@ -393,7 +394,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     onPressed: _isLoading ? null : _submit,
                     isLoading: _isLoading,
                     text: widget.isExistingUser ? "Log In" : "Register",
-                    backgroundColor: const Color(0xFFA67C68),
+                    backgroundColor: AppColors.primary,
                     borderRadius: 12,
                   ),
                 ),

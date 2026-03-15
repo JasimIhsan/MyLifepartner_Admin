@@ -39,7 +39,7 @@ class LoginWebBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
-        color: Colors.deepPurple.shade50,
+        color: const Color(0xFFF5F5F5),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Column(

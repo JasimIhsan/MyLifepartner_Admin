@@ -158,10 +158,10 @@ class _ManageProfilePicturesScreenState
                   },
                 ),
               ListTile(
-                leading: const Icon(Icons.delete, color: Colors.red),
+                leading: const Icon(Icons.delete, color: Colors.black),
                 title: const Text(
                   'Delete Image',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.black),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -286,7 +286,7 @@ class _ManageProfilePicturesScreenState
                                                     const Center(
                                                       child: Icon(
                                                         Icons.error,
-                                                        color: Colors.red,
+                                                        color: Colors.black,
                                                       ),
                                                     ),
                                           ),

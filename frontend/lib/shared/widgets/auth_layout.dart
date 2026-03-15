@@ -7,12 +7,14 @@ class AuthLayout extends StatelessWidget {
   final Widget child;
   final bool showLogo;
   final String? title;
+  final String? topImage;
 
   const AuthLayout({
     super.key,
     required this.child,
     this.showLogo = true,
     this.title,
+    this.topImage,
   });
 
   @override
@@ -36,60 +38,42 @@ class AuthLayout extends StatelessWidget {
   Widget _buildWebLayout(Size size) {
     return Row(
       children: [
-        // Left Side - Image
+        // Left Side - Info
         Expanded(
           flex: 1,
           child: Container(
-            color: Colors.black,
-            child: Stack(
-              fit: StackFit.expand,
+            color: Colors.white,
+            padding: const EdgeInsets.all(40),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Image.asset('assets/icons/background.png', fit: BoxFit.cover),
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.3),
-                        Colors.transparent,
-                      ],
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.favorite,
+                      color: AppColors.primary,
+                      size: 24,
                     ),
-                  ),
-                ),
-                Positioned(
-                  top: 40,
-                  left: 40,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
+                    const SizedBox(width: 8),
+                    Text(
+                      "lifepartneragain",
+                      style: GoogleFonts.poppins(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 20,
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.favorite,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "lifepartneragain",
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "A trusted platform for emotionally\nmature relationships.",
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                    height: 1.5,
                   ),
                 ),
               ],
@@ -101,7 +85,7 @@ class AuthLayout extends StatelessWidget {
         Expanded(
           flex: 1,
           child: Container(
-            color: AppColors.background,
+            color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 60.0),
             child: Center(
               child: ConstrainedBox(
@@ -124,117 +108,100 @@ class AuthLayout extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(Size size) {
-    return SingleChildScrollView(
-      child: SizedBox(
-        height: size.height,
-        child: Stack(
+    return SizedBox(
+      width: double.infinity,
+      height: size.height,
+      child: SingleChildScrollView(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Background Image
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              height: size.height * 0.7, // Extended height for background
-              child: Stack(
-                fit: StackFit.passthrough,
+            if (topImage != null)
+              Stack(
+                alignment: Alignment.bottomCenter,
                 children: [
-                  Image.asset('assets/icons/background.png', fit: BoxFit.cover),
+                  Image.asset(
+                    topImage!,
+                    width: double.infinity,
+                    height: size.height * 0.45,
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                  ),
                   Container(
+                    height: size.height * 0.2, // Gradient fade area
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withValues(alpha: 0.2),
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.6),
+                          AppColors.background.withValues(alpha: 0.0),
+                          AppColors.background,
                         ],
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-
-            // Content
-            Column(
-              children: [
-                const Spacer(),
-                // Logo & Title Section (Outside the white card)
-                if (showLogo) ...[
-                  Column(
+            
+            Transform.translate(
+              offset: Offset(0, topImage != null ? -45.0 : 0.0),
+              child: SafeArea(
+                top: topImage == null, // Only avoid notch if no top image bleeds into it
+                bottom: false,
+                left: false,
+                right: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: Colors.black,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 15,
-                              offset: const Offset(0, 5),
+                      if (topImage == null) const SizedBox(height: 40),
+                      // Title Section
+                      if (showLogo) ...[
+                        if (topImage != null) ...[
+                          Container(
+                            width: 90,
+                            height: 90,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            "Life Partner Again",
+                            style: GoogleFonts.poppins(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
                             ),
-                          ],
-                          image: const DecorationImage(
-                            image: AssetImage('assets/icons/app_logo.png'),
-                            fit: BoxFit.cover,
+                          ),
+                        ] else ...[
+                          Text(
+                            "lifepartneragain",
+                            style: GoogleFonts.poppins(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                        Text(
+                          "A trusted platform for emotionally\nmature relationships.",
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: AppColors.textSecondary,
+                            height: 1.5,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "lifepartneragain",
-                        style: GoogleFonts.poppins(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white, // Text is now on background
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              offset: const Offset(0, 2),
-                              blurRadius: 4,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        "A trusted platform for emotionally\nmature relationships.",
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.white.withValues(alpha: 0.9),
-                          height: 1.5,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.5),
-                              offset: const Offset(0, 1),
-                              blurRadius: 2,
-                            ),
-                          ],
-                        ),
-                      ),
+                        const SizedBox(height: 32),
+                      ],
+
+                      // Content
+                      child,
+                      const SizedBox(height: 24),
                     ],
                   ),
-                  const SizedBox(height: 32),
-                ],
-
-                // White Card Sheet
-                Container(
-                  width: double.infinity,
-                  decoration: const BoxDecoration(
-                    color: AppColors.background,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
-                    ),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-                  child: child,
                 ),
-              ],
+              ),
             ),
           ],
         ),
@@ -247,7 +214,7 @@ class AuthLayout extends StatelessWidget {
     return Column(
       children: [
         Text(
-          "lifepartneragain",
+          "Life Partner Again",
           style: GoogleFonts.poppins(
             fontSize: 24,
             fontWeight: FontWeight.bold,

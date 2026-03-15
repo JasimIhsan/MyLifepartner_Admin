@@ -83,10 +83,7 @@ class _OtpPageState extends State<OtpPage> {
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.redAccent,
-          ),
+          SnackBar(content: Text(errorMessage), backgroundColor: Colors.black),
         );
       }
     } finally {
@@ -141,6 +138,7 @@ class _OtpPageState extends State<OtpPage> {
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
+      topImage: 'assets/images/login_young_couple.png',
       child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWeb = MediaQuery.of(context).size.width > 900;

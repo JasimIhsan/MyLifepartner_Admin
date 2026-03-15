@@ -4,7 +4,7 @@ import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
-import 'package:mylifepartner/screens/profile_completion/profile_completion_screen.dart';
+import 'package:mylifepartner/screens/onboarding/onboarding_flow_screen.dart';
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:mylifepartner/services/auth_service.dart';
@@ -42,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (!me.hasCompletedBasicDetails) {
-        _goTo(const ProfileCompletionScreen());
+        _goTo(const OnboardingFlowScreen());
       } else if (!me.hasCompletedPartnerPreference) {
         _goTo(const PartnerPreferenceScreen());
       } else if (!me.hasCompletedImageUpload) {
@@ -82,23 +82,7 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    // padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Image.asset(
-                        "assets/icons/app_logo.png",
-                        width: 120,
-                        height: 120,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 40),
+
                   Column(
                     children: [
                       Text(

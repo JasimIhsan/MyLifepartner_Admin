@@ -370,7 +370,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.primaryLight,
+      backgroundColor: Colors.white,
       appBar: CustomAppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
@@ -383,7 +383,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
             Navigator.pop(context);
           },
         ),
-        backgroundColor: AppColors.primaryLight,
+        backgroundColor: Colors.white,
         elevation: 0,
         toolbarHeight: 100,
         titleWidget: Column(
@@ -525,7 +525,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
             ? Center(
                 child: Text(
                   _errorMessage!,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.black),
                 ),
               )
             : (_questions.isEmpty || question == null)

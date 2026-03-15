@@ -86,7 +86,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    AppColors.transparentOverlay,
+                                    AppColors.primary,
                                   ],
                                 ),
                               ),
@@ -107,7 +107,9 @@ class ProfileSwipeCard extends StatelessWidget {
                                   Text(
                                     _buildSubtitle(),
                                     style: TextStyle(
-                                      color: AppColors.textWhite.withValues(alpha: 0.7),
+                                      color: AppColors.textWhite.withValues(
+                                        alpha: 0.7,
+                                      ),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -115,7 +117,9 @@ class ProfileSwipeCard extends StatelessWidget {
                                   Text(
                                     _buildReligionOccupation(),
                                     style: TextStyle(
-                                      color: AppColors.textWhite.withValues(alpha: 0.6),
+                                      color: AppColors.textWhite.withValues(
+                                        alpha: 0.6,
+                                      ),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -133,7 +137,7 @@ class ProfileSwipeCard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ColoredBox(
-                        color: AppColors.highlightBackground,
+                        color: const Color(0xFFF5F5F5),
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -165,7 +169,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                           vertical: 3,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: AppColors.highlightTagBackground,
+                                          color: const Color(0xFFF0F0F0),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -173,7 +177,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                         child: Text(
                                           h,
                                           style: const TextStyle(
-                                            color: AppColors.highlightTagText,
+                                            color: Colors.black,
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                           ),

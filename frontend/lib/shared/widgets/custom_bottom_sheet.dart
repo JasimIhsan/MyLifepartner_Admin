@@ -23,6 +23,7 @@ class CustomBottomSheet {
       isDismissible: isDismissible,
       enableDrag: isDismissible,
       isScrollControlled: isScrollControlled,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -84,17 +85,17 @@ class CustomBottomSheet {
         break;
       case BottomSheetType.error:
         icon = Icons.error;
-        iconColor = Colors.red;
+        iconColor = Colors.black;
         defaultPrimaryText = "Close";
         break;
       case BottomSheetType.warning:
         icon = Icons.warning_rounded;
-        iconColor = Colors.orange;
+        iconColor = Colors.black;
         defaultPrimaryText = "Okay";
         break;
       case BottomSheetType.info:
         icon = Icons.info;
-        iconColor = Colors.blue;
+        iconColor = Colors.black;
         defaultPrimaryText = "Okay";
         break;
       case BottomSheetType.confirmation:
@@ -107,6 +108,7 @@ class CustomBottomSheet {
     return Container(
       padding: const EdgeInsets.all(24),
       width: double.infinity,
+      color: Colors.white,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

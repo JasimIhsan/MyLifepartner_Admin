@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
+import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:provider/provider.dart';
-
-import 'screens/splash_screen/splash_screen.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -27,6 +26,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   StreamSubscription? _sub;
   final ProfileRepository _profileRepo = ProfileRepository();
+  late final AppLinks _appLinks = AppLinks();
 
   @override
   void initState() {
@@ -39,8 +39,6 @@ class _MyAppState extends State<MyApp> {
     _sub?.cancel();
     super.dispose();
   }
-
-  late final AppLinks _appLinks = AppLinks();
 
   void _handleIncomingLinks() {
     _appLinks.getInitialLink().then((uri) {
@@ -75,14 +73,14 @@ class _MyAppState extends State<MyApp> {
       scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Email verified successfully!'),
-          backgroundColor: Colors.green,
+          backgroundColor: Colors.black,
         ),
       );
     } catch (e) {
       scaffoldMessengerKey.currentState?.showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.black,
         ),
       );
     }
@@ -96,21 +94,38 @@ class _MyAppState extends State<MyApp> {
         title: 'Life Partner Again',
         debugShowCheckedModeBanner: false,
         scaffoldMessengerKey: scaffoldMessengerKey,
+
         theme: ThemeData(
+          useMaterial3: true,
+
+          // Prevent gray elevation tint from Material 3
+          applyElevationOverlayColor: false,
+
           colorScheme: ColorScheme.fromSeed(
             seedColor: AppColors.primary,
-            surface: AppColors.background,
+            brightness: Brightness.light,
+          ).copyWith(
+            surface: Colors.white,
+            background: Colors.white,
+            surfaceTint: Colors.transparent,
           ),
-          useMaterial3: true,
+
+          scaffoldBackgroundColor: Colors.white,
+          canvasColor: Colors.white,
+          cardColor: Colors.white,
+          dialogBackgroundColor: Colors.white,
+
           textTheme: GoogleFonts.poppinsTextTheme(),
-          scaffoldBackgroundColor: AppColors.background,
+
           appBarTheme: const AppBarTheme(
             elevation: 0,
-            backgroundColor: AppColors.background,
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
             centerTitle: true,
           ),
         ),
-        home: const SplashScreen(),
+
+        home: const LandingScreen(),
       ),
     );
   }

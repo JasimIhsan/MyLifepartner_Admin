@@ -130,12 +130,8 @@ class _OtpMethodSelectionContentState
                 ? () => widget.onMethodSelected(_selectedMethod!)
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(
-                0xFFA67C68,
-              ), // Brown color from screenshot
-              disabledBackgroundColor: const Color(
-                0xFFA67C68,
-              ).withValues(alpha: 0.5),
+              backgroundColor: Colors.black,
+              disabledBackgroundColor: Colors.black.withValues(alpha: 0.5),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -187,13 +183,13 @@ class _OtpMethodSelectionContentState
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isWhatsApp
-                    ? Colors.green.withValues(alpha: 0.1)
-                    : const Color(0xFFA67C68).withValues(alpha: 0.1),
+                    ? Colors.black.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isWhatsApp ? Colors.green : Colors.blue,
+                color: isWhatsApp ? Colors.black : Colors.black,
                 size: 24,
               ),
             ),

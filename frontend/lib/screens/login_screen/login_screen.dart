@@ -74,6 +74,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
+      topImage: 'assets/images/login_young_couple.png',
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Check screen width for responsive text/style, matching AuthLayout breakpoint logic partially
@@ -157,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
               onPressed: _isLoading ? null : _initiateAuth,
               isLoading: _isLoading,
               text: "Continue",
-              backgroundColor: const Color(0xFFA67C68),
+              backgroundColor: AppColors.primary,
               borderRadius: 12,
             ),
           ),
