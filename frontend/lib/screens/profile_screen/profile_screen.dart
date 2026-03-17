@@ -70,61 +70,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _user == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
         child: Column(
           children: [
             const SizedBox(height: 20),
             Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 140,
-                    height: 140,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary, width: 4),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: _primaryImage != null
+              child: Container(
+                width: 140,
+                height: 140,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderColor, width: 2),
+                  color: AppColors.surface,
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    _primaryImage != null
                         ? ClipOval(
                             child: CachedNetworkImage(
+                              width: 140,
+                              height: 140,
                               imageUrl: _primaryImage!.imageUrl,
                               fit: BoxFit.cover,
                               placeholder: (context, url) =>
-                                  const CircularProgressIndicator(),
+                                  const CircularProgressIndicator(color: AppColors.primary),
                               errorWidget: (context, url, error) => const Icon(
                                 Icons.person,
                                 size: 50,
-                                color: Colors.grey,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           )
                         : const Icon(
                             Icons.person,
-                            size: 80,
-                            color: Colors.grey,
+                            size: 70,
+                            color: AppColors.textSecondary,
                           ),
-                  ),
-                ],
+                    Positioned(
+                      bottom: 0,
+                      right: 10,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.surface, width: 3),
+                        ),
+                        child: const Icon(Icons.edit, color: AppColors.onPrimary, size: 18),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
             Text(
               _user!.name ?? "Your Name",
               style: GoogleFonts.poppins(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+                fontSize: 26,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -132,60 +143,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text(
               _user!.email ?? "your.email@example.com",
               style: GoogleFonts.poppins(
-                fontSize: 16,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 32),
-            _buildActionItem(
-              icon: Icons.person_outline,
-              title: "Edit Profile Info",
-              onTap: () async {
-                if (_user != null) {
+            const SizedBox(height: 40),
+
+            _buildSectionHeader("Account"),
+            _buildActionGroup([
+              _buildActionItem(
+                icon: Icons.person_outline,
+                title: "Edit Profile Info",
+                onTap: () async {
+                  if (_user != null) {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EditProfileScreen(user: _user!),
+                      ),
+                    );
+                    if (result == true) {
+                      _fetchProfileData(); // Refresh data after update
+                    }
+                  }
+                },
+              ),
+              _buildActionItem(
+                icon: Icons.photo_library_outlined,
+                title: "Manage Profile Pictures",
+                showDivider: false,
+                onTap: () async {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => EditProfileScreen(user: _user!),
+                      builder: (context) => const ManageProfilePicturesScreen(),
                     ),
                   );
                   if (result == true) {
                     _fetchProfileData(); // Refresh data after update
                   }
-                }
-              },
-            ),
-            _buildActionItem(
-              icon: Icons.photo_library_outlined,
-              title: "Manage Profile Pictures",
-              onTap: () async {
-                // Import manage_profile_pictures_screen.dart at the top of file
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ManageProfilePicturesScreen(),
-                  ),
-                );
-                if (result == true) {
-                  _fetchProfileData(); // Refresh data after update
-                }
-              },
-            ),
-            _buildActionItem(
-              icon: Icons.settings_outlined,
-              title: "Settings",
-              onTap: () {},
-            ),
-            _buildActionItem(
-              icon: Icons.notifications_outlined,
-              title: "Notifications",
-              onTap: () {},
-            ),
-            _buildActionItem(
-              icon: Icons.help_outline,
-              title: "Help & Support",
-              onTap: () {},
-            ),
-            const SizedBox(height: 32),
+                },
+              ),
+            ]),
+
+            _buildSectionHeader("Preferences"),
+            _buildActionGroup([
+              _buildActionItem(
+                icon: Icons.settings_outlined,
+                title: "Settings",
+                onTap: () {},
+              ),
+              _buildActionItem(
+                icon: Icons.notifications_outlined,
+                title: "Notifications",
+                showDivider: false,
+                onTap: () {},
+              ),
+            ]),
+
+            _buildSectionHeader("Support"),
+            _buildActionGroup([
+              _buildActionItem(
+                icon: Icons.help_outline,
+                title: "Help & Support",
+                showDivider: false,
+                onTap: () {},
+              ),
+            ]),
+
+            const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
               child: CustomButton(
@@ -212,13 +239,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   );
                 },
                 text: "Logout",
-                type: CustomButtonType.secondary,
-                backgroundColor: Colors.black.withValues(alpha: 0.1),
-                textColor: Colors.black,
-                height: 54,
+                type: CustomButtonType.outline,
+                textColor: AppColors.primary,
+                height: 56,
                 borderRadius: 16,
                 fontSize: 16,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 50),
@@ -228,49 +254,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildSectionHeader(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, bottom: 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          title.toUpperCase(),
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1.0,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionGroup(List<Widget> children) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.borderColor, width: 1.2),
+      ),
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+
   Widget _buildActionItem({
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    bool showDivider = true,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowColor,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              children: [
+                Icon(icon, color: AppColors.primary, size: 22),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: AppColors.textSecondary.withValues(alpha: 0.5),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
+        ),
+        if (showDivider)
+          const Divider(
+            height: 1,
+            thickness: 1,
+            indent: 56, // aligns with text
+            color: AppColors.divider,
           ),
-          child: Icon(icon, color: AppColors.primary),
-        ),
-        title: Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-          size: 18,
-          color: AppColors.textSecondary,
-        ),
-        onTap: onTap,
-      ),
+      ],
     );
   }
 }

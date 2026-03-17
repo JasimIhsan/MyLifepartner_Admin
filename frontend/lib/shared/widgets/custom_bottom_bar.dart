@@ -28,29 +28,77 @@ class CustomBottomBar extends StatelessWidget {
         color: backgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 24,
+            offset: const Offset(0, -4),
           ),
         ],
       ),
-      child: BottomNavigationBar(
-        currentIndex: selectedIndex,
-        onTap: onTap,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.transparent, // Use container color
-        elevation: 0,
-        selectedItemColor: selectedItemColor,
-        unselectedItemColor: unselectedItemColor,
-        selectedLabelStyle: GoogleFonts.poppins(
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
+      child: SafeArea(
+        child: Container(
+          height: 65,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (index) {
+              final isSelected = selectedIndex == index;
+              final item = items[index];
+
+              return GestureDetector(
+                onTap: () => onTap(index),
+                behavior: HitTestBehavior.opaque,
+                child: SizedBox(
+                  width: 65,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Animated Indicator Line
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutQuint,
+                        height: 3,
+                        width: isSelected ? 20 : 0,
+                        decoration: BoxDecoration(
+                          color: selectedItemColor,
+                          borderRadius: BorderRadius.circular(1.5),
+                        ),
+                        margin: const EdgeInsets.only(bottom: 6),
+                      ),
+
+                      // Icon
+                      IconTheme(
+                        data: IconThemeData(
+                          color: isSelected
+                              ? selectedItemColor
+                              : unselectedItemColor,
+                          size: 24,
+                        ),
+                        child: item.icon,
+                      ),
+                      const SizedBox(height: 4),
+
+                      // Label
+                      if (item.label != null)
+                        Text(
+                          item.label!,
+                          style: GoogleFonts.poppins(
+                            color: isSelected
+                                ? selectedItemColor
+                                : unselectedItemColor,
+                            fontWeight:
+                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                            fontSize: 10,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
-        unselectedLabelStyle: GoogleFonts.poppins(
-          fontWeight: FontWeight.w500,
-          fontSize: 12,
-        ),
-        items: items,
       ),
     );
   }

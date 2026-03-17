@@ -4,6 +4,82 @@ import 'package:mylifepartner/services/match_service.dart';
 
 enum MatchLoadState { idle, loading, loaded, error }
 
+// ── Dummy data for UI testing ─────────────────────────────────────────────────
+final _dummyProfiles = [
+  MatchRecommendation(
+    id: 1,
+    name: 'Aisha Rahman',
+    age: 27,
+    heightCm: 163,
+    city: 'Karachi',
+    religion: 'Islam',
+    occupation: 'Software Engineer',
+    matchPercentage: 92,
+    compatibilityHighlights: ['Family-oriented', 'Love for travel', 'Similar values'],
+    images: [
+      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/44.jpg', isPrimary: true),
+    ],
+  ),
+  MatchRecommendation(
+    id: 2,
+    name: 'Sana Malik',
+    age: 25,
+    heightCm: 158,
+    city: 'Lahore',
+    religion: 'Islam',
+    occupation: 'Doctor',
+    matchPercentage: 87,
+    compatibilityHighlights: ['Loves cooking', 'Fitness enthusiast', 'Career-driven'],
+    images: [
+      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/68.jpg', isPrimary: true),
+    ],
+  ),
+  MatchRecommendation(
+    id: 3,
+    name: 'Fatima Zahra',
+    age: 29,
+    heightCm: 165,
+    city: 'Islamabad',
+    religion: 'Islam',
+    occupation: 'Teacher',
+    matchPercentage: 81,
+    compatibilityHighlights: ['Book lover', 'Kind-hearted', 'Strong deen'],
+    images: [
+      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/33.jpg', isPrimary: true),
+    ],
+  ),
+  MatchRecommendation(
+    id: 4,
+    name: 'Nadia Khan',
+    age: 26,
+    heightCm: 160,
+    city: 'Peshawar',
+    religion: 'Islam',
+    occupation: 'Graphic Designer',
+    matchPercentage: 76,
+    compatibilityHighlights: ['Creative', 'Down to earth', 'Family values'],
+    images: [
+      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/21.jpg', isPrimary: true),
+    ],
+  ),
+  MatchRecommendation(
+    id: 5,
+    name: 'Mariam Siddiqui',
+    age: 28,
+    heightCm: 162,
+    city: 'Dubai',
+    religion: 'Islam',
+    occupation: 'Accountant',
+    matchPercentage: 73,
+    compatibilityHighlights: ['Ambitious', 'Travel lover', 'Respectful'],
+    images: [
+      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/57.jpg', isPrimary: true),
+    ],
+  ),
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 class MatchProvider extends ChangeNotifier {
   List<MatchRecommendation> _profiles = [];
   MatchLoadState _state = MatchLoadState.idle;
@@ -26,13 +102,16 @@ class MatchProvider extends ChangeNotifier {
     _currentIndex = 0;
     notifyListeners();
 
+    // Keep the real API call so it still fires correctly in production.
+    // For now we discard the result and load dummy data instead for UI testing.
     try {
-      _profiles = await MatchService.getRecommendations();
-      _state = MatchLoadState.loaded;
-    } catch (e) {
-      _state = MatchLoadState.error;
-      _error = e.toString();
+      await MatchService.getRecommendations();
+    } catch (_) {
+      // Swallow errors during testing phase — dummy data will still load.
     }
+
+    _profiles = List<MatchRecommendation>.from(_dummyProfiles);
+    _state = MatchLoadState.loaded;
     notifyListeners();
   }
 
@@ -60,7 +139,6 @@ class MatchProvider extends ChangeNotifier {
   void _advanceIndex() {
     _currentIndex++;
     if (_currentIndex >= _profiles.length) {
-      // Reload when exhausted
       loadRecommendations();
     } else {
       notifyListeners();

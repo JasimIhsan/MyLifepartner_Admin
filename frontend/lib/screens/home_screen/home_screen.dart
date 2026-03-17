@@ -173,13 +173,13 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBody() {
     switch (_selectedIndex) {
       case 0:
-        return const MatchesListTab(title: 'Discover', showActions: true);
+        return const MatchesListTab(title: 'Discover');
       case 1:
-        return const MatchesListTab(title: 'Your Matches', showActions: false);
+        return const MatchesListTab(title: 'Your Matches');
       case 3:
         return const ProfileScreen();
       default:
-        return const MatchesListTab(title: 'Discover', showActions: true);
+        return const MatchesListTab(title: 'Discover');
     }
   }
 }

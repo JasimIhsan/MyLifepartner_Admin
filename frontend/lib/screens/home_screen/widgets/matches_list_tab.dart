@@ -4,23 +4,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/home_screen/widgets/match_percentage_badge.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:provider/provider.dart';
 
-/// A comprehensive list view for displaying match profiles.
-/// Used in both the Discover and Matches tabs.
-///
-/// When [showActions] is true, each card shows interested / not-interested
-/// buttons (for the Discover tab). When false, it's a read-only list.
+/// Discover listing – clean card list, no action buttons here.
+/// Actions (Interested / Pass) live on the profile detail page.
 class MatchesListTab extends StatelessWidget {
   final String title;
-  final bool showActions;
 
   const MatchesListTab({
     super.key,
     this.title = 'Your Matches',
-    this.showActions = false,
   });
 
   @override
@@ -42,15 +36,25 @@ class MatchesListTab extends StatelessWidget {
   }
 
   Widget _buildLoading() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppColors.primary),
-          SizedBox(height: 16),
+          const SizedBox(
+            width: 32,
+            height: 32,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          ),
+          const SizedBox(height: 20),
           Text(
             'Finding your matches…',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
           ),
         ],
       ),
@@ -59,107 +63,134 @@ class MatchesListTab extends StatelessWidget {
 
   Widget _buildError(MatchProvider provider) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.wifi_off_rounded,
-            size: 64,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Could not load matches',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: AppColors.textPrimary,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 56,
+              color: AppColors.textSecondary,
             ),
-          ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: provider.loadRecommendations,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 16),
+            Text(
+              'Could not load matches',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
             ),
-            child: const Text('Try Again'),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              'Check your connection and try again',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            _buildRetryButton(provider),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildEmpty(MatchProvider provider) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(
-            Icons.people_outline_rounded,
-            size: 64,
-            color: AppColors.textSecondary,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No matches right now',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Check back soon for new profiles',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton.icon(
-            onPressed: provider.loadRecommendations,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Refresh'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.people_outline_rounded,
+                size: 42,
+                color: AppColors.textSecondary,
               ),
             ),
+            const SizedBox(height: 20),
+            Text(
+              'No matches right now',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check back soon, new profiles are added daily',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 28),
+            _buildRetryButton(provider),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRetryButton(MatchProvider provider) {
+    return GestureDetector(
+      onTap: provider.loadRecommendations,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.primary,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Text(
+          'Refresh',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildList(BuildContext context, MatchProvider provider) {
-    final profiles = provider.profiles;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Header
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
             children: [
               Text(
                 title,
                 style: GoogleFonts.poppins(
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
+                  letterSpacing: -0.3,
                 ),
               ),
               Text(
-                '${profiles.length} profiles',
+                '${provider.profiles.length} profiles',
                 style: GoogleFonts.poppins(
-                  fontSize: 13,
+                  fontSize: 12,
                   color: AppColors.textSecondary,
                 ),
               ),
@@ -171,29 +202,22 @@ class MatchesListTab extends StatelessWidget {
         Expanded(
           child: RefreshIndicator(
             color: AppColors.primary,
+            strokeWidth: 2,
             onRefresh: provider.loadRecommendations,
-            child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-              itemCount: profiles.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+              itemCount: provider.profiles.length,
               itemBuilder: (context, index) {
-                return _MatchListCard(
-                      profile: profiles[index],
-                      showActions: showActions,
-                      onInterested: showActions
-                          ? () => provider.swipeRight()
-                          : null,
-                      onNotInterested: showActions
-                          ? () => provider.swipeLeft()
-                          : null,
-                      onSkip: showActions ? () => provider.swipeUp() : null,
-                    )
-                    .animate()
-                    .fadeIn(
-                      duration: 350.ms,
-                      delay: Duration(milliseconds: 50 * index.clamp(0, 10)),
-                    )
-                    .slideY(begin: 0.04, end: 0);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _MatchCard(profile: provider.profiles[index])
+                      .animate()
+                      .fadeIn(
+                        duration: 400.ms,
+                        delay: Duration(milliseconds: 40 * index.clamp(0, 12)),
+                      )
+                      .slideY(begin: 0.06, end: 0, curve: Curves.easeOut),
+                );
               },
             ),
           ),
@@ -203,22 +227,12 @@ class MatchesListTab extends StatelessWidget {
   }
 }
 
-// ─── Individual match card ────────────────────────────────────────────────────
+// ─── Card ─────────────────────────────────────────────────────────────────────
 
-class _MatchListCard extends StatelessWidget {
+class _MatchCard extends StatelessWidget {
   final MatchRecommendation profile;
-  final bool showActions;
-  final VoidCallback? onInterested;
-  final VoidCallback? onNotInterested;
-  final VoidCallback? onSkip;
 
-  const _MatchListCard({
-    required this.profile,
-    this.showActions = false,
-    this.onInterested,
-    this.onNotInterested,
-    this.onSkip,
-  });
+  const _MatchCard({required this.profile});
 
   String? get _primaryImageUrl {
     final primary = profile.images.where((img) => img.isPrimary);
@@ -229,277 +243,189 @@ class _MatchListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ProfileDetailScreen(
-                  profileId: profile.id,
-                  profileName: profile.name,
-                ),
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProfileDetailScreen(
+                profileId: profile.id,
+                profileName: profile.name,
+                seedProfile: profile,
               ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top row: avatar + name/location + chevron
-                Row(
-                  children: [
-                    _buildAvatar(),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${profile.name}, ${profile.age}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (profile.city != null)
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.location_on_outlined,
-                                  size: 13,
-                                  color: AppColors.textSecondary,
-                                ),
-                                const SizedBox(width: 3),
-                                Flexible(
-                                  child: Text(
-                                    profile.city!,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    MatchPercentageBadge(percentage: profile.matchPercentage),
-                  ],
-                ),
-
-                // Detail chips
-                const SizedBox(height: 10),
-                _buildInfo(),
-
-                // Compatibility highlights
-                if (profile.compatibilityHighlights.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  _buildHighlights(),
-                ],
-
-                // Action buttons for Discover
-                if (showActions) ...[
-                  const SizedBox(height: 8),
-                  _buildActionButtons(),
-                ],
-              ],
             ),
+          );
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: const Color(0xFFEEEEEE),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              _buildPhoto(),
+              const SizedBox(width: 14),
+              Expanded(child: _buildInfo()),
+              _buildChevron(),
+              const SizedBox(width: 12),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAvatar() {
-    final imageUrl = _primaryImageUrl;
-
-    return Container(
-      width: 56,
-      height: 56,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        color: AppColors.primaryLight,
-        image: imageUrl != null
-            ? DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover)
-            : null,
+  Widget _buildPhoto() {
+    final url = _primaryImageUrl;
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(20),
+        bottomLeft: Radius.circular(20),
       ),
-      child: imageUrl == null
-          ? const Center(
-              child: Icon(
-                Icons.person_rounded,
-                size: 28,
-                color: AppColors.primary,
-              ),
-            )
-          : null,
+      child: SizedBox(
+        width: 90,
+        height: 110,
+        child: url != null
+            ? Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _photoPlaceholder(),
+              )
+            : _photoPlaceholder(),
+      ),
+    );
+  }
+
+  Widget _photoPlaceholder() {
+    return Container(
+      color: AppColors.primaryLight,
+      child: const Center(
+        child: Icon(Icons.person_rounded, size: 36, color: Color(0xFFBBBBBB)),
+      ),
     );
   }
 
   Widget _buildInfo() {
-    return Wrap(
-      spacing: 6,
-      runSpacing: 4,
-      children: [
-        if (profile.religion != null)
-          _detailChip(Icons.auto_awesome_outlined, profile.religion!),
-        if (profile.occupation != null)
-          _detailChip(Icons.work_outline_rounded, profile.occupation!),
-        if (profile.heightCm != null)
-          _detailChip(
-            Icons.straighten_rounded,
-            _formatHeight(profile.heightCm!),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Name + match badge
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${profile.name}, ${profile.age}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              _buildMatchBadge(),
+            ],
           ),
-      ],
+          const SizedBox(height: 4),
+          // Location
+          if (profile.city != null)
+            Row(
+              children: [
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 12,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  profile.city!,
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          const SizedBox(height: 8),
+          // Info chips
+          _buildInfoRow(),
+        ],
+      ),
     );
   }
 
-  Widget _detailChip(IconData icon, String label) {
+  Widget _buildMatchBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        '${profile.matchPercentage}%',
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow() {
+    final chips = <Widget>[];
+    if (profile.religion != null) {
+      chips.add(_chip(profile.religion!));
+    }
+    if (profile.occupation != null) {
+      chips.add(_chip(profile.occupation!));
+    }
+    if (chips.isEmpty) return const SizedBox.shrink();
+    return Wrap(spacing: 6, runSpacing: 4, children: chips);
+  }
+
+  Widget _chip(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: AppColors.primaryDark),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 11.5,
-              color: AppColors.primaryDark,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
 
-  Widget _buildHighlights() {
-    return Wrap(
-      spacing: 6,
-      runSpacing: 4,
-      children: profile.compatibilityHighlights.take(3).map((h) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: Colors.black.withValues(alpha: 0.15),
-              width: 0.8,
-            ),
-          ),
-          child: Text(
-            h,
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              color: Colors.black,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        );
-      }).toList(),
+  Widget _buildChevron() {
+    return const Icon(
+      Icons.chevron_right_rounded,
+      color: AppColors.textSecondary,
+      size: 20,
     );
-  }
-
-  Widget _buildActionButtons() {
-    Widget btn(
-      IconData icon,
-      String label,
-      Color color,
-      Color bg,
-      VoidCallback? onTap,
-    ) {
-      return Expanded(
-        child: Material(
-          color: bg,
-          borderRadius: BorderRadius.circular(10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(10),
-            onTap: onTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 16, color: color),
-                  const SizedBox(width: 4),
-                  Text(
-                    label,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: color,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Row(
-      children: [
-        btn(
-          Icons.close_rounded,
-          'Pass',
-          Colors.black,
-          Colors.black.withValues(alpha: 0.08),
-          onNotInterested,
-        ),
-        const SizedBox(width: 8),
-        btn(
-          Icons.fast_forward_rounded,
-          'Skip',
-          AppColors.textSecondary,
-          AppColors.primary,
-          onSkip,
-        ),
-        const SizedBox(width: 8),
-        btn(
-          Icons.favorite_rounded,
-          'Interested',
-          Colors.black,
-          Colors.black.withValues(alpha: 0.08),
-          onInterested,
-        ),
-      ],
-    );
-  }
-
-  String _formatHeight(int cm) {
-    final feet = cm ~/ 30.48;
-    final inches = ((cm % 30.48) / 2.54).round();
-    return '$feet\'$inches" ($cm cm)';
   }
 }
