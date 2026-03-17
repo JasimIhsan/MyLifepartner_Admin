@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 class MatchesListTab extends StatefulWidget {
   final String title;
 
-  const MatchesListTab({super.key, this.title = 'Discover'});
+  const MatchesListTab({super.key, this.title = ''});
 
   @override
   State<MatchesListTab> createState() => _MatchesListTabState();
@@ -227,7 +227,6 @@ class _MatchesListTabState extends State<MatchesListTab> {
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          _buildHeader(provider),
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverList(
@@ -259,60 +258,6 @@ class _MatchesListTabState extends State<MatchesListTab> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildHeader(MatchProvider provider) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.title,
-                    style: GoogleFonts.cormorantGaramond(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
-                      height: 1,
-                      letterSpacing: -0.8,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Curated for you',
-                    style: GoogleFonts.lato(
-                      fontSize: 13,
-                      color: AppColors.textSecondary,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFDDDDDD)),
-                borderRadius: BorderRadius.circular(100),
-              ),
-              child: Text(
-                '${provider.profiles.length} profiles',
-                style: GoogleFonts.lato(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
