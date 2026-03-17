@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 const GenderEnum = z.enum(["MALE", "FEMALE", "OTHER"]);
-const MaritalStatusEnum = z.enum(["NEVER_MARRIED", "AWATING_DIVORCE", "DIVORCED", "WIDOWED", "ANNULLED"]);
+const MaritalStatusEnum = z.enum(["NEVER_MARRIED", "AWATING_DIVORCE", "DIVORCED", "WIDOWED", "ANNULLED", "LEGALLY_SEPARATED"]);
 
 export const basicProfileSchema = z.object({
    body: z.object({
@@ -19,6 +19,13 @@ export const basicProfileSchema = z.object({
       occupation: z.string().nullish(),
       annualIncome: z.number().int().min(0, "Income cannot be negative").nullish(),
       bio: z.string().min(50, "Bio must be at least 50 characters").max(1000, "Bio cannot exceed 1000 characters").nullish(),
+      languages: z.array(z.string()).nullish(),
+      childrenStatus: z.enum(["LIVING_WITH_ME", "NOT_LIVING_WITH_ME", "NO_CHILDREN"]).nullish(),
+      emotionalReadiness: z.enum(["YES", "MOSTLY", "NOT_SURE"]).nullish(),
+      lookingFor: z.enum(["MARRIAGE", "LONG_TERM_RELATIONSHIP", "SERIOUS_COMPANIONSHIP"]).nullish(),
+      relationshipTimeline: z.enum(["ZERO_TO_SIX_MONTHS", "SIX_TO_TWELVE_MONTHS", "NO_FIXED_TIMELINE"]).nullish(),
+      smokingHabit: z.enum(["NO", "OCCASIONALLY", "YES"]).nullish(),
+      drinkingHabit: z.enum(["NO", "SOCIALLY", "YES"]).nullish(),
    }),
 });
 
