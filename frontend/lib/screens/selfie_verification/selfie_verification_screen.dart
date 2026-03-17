@@ -92,16 +92,17 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to take picture: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to take picture: $e')));
       }
     }
   }
 
   /// Requests location permission, fetches GPS, and completes verification.
   Future<void> _submitVerification() async {
-    if (_frontImage == null || _leftImage == null || _rightImage == null) return;
+    if (_frontImage == null || _leftImage == null || _rightImage == null)
+      return;
 
     setState(() {
       _isLoading = true;
@@ -133,7 +134,11 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
         ),
       );
 
-      await _profileRepository.uploadSelfie(_frontImage!, _leftImage!, _rightImage!);
+      await _profileRepository.uploadSelfie(
+        _frontImage!,
+        _leftImage!,
+        _rightImage!,
+      );
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('selfieStatus', 'PENDING');
@@ -151,9 +156,9 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
         _errorMessage = e.toString();
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(_errorMessage!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(_errorMessage!)));
       }
     }
   }
@@ -313,11 +318,10 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                         width: circleDia + 10,
                         height: circleDia + 10,
                         decoration: BoxDecoration(
-                          shape: _currentStep == 3 ? BoxShape.rectangle : BoxShape.circle,
-                          borderRadius: _currentStep == 3 ? BorderRadius.circular(24) : null,
+                          shape: BoxShape.circle,
                           border: Border.all(
-                            color: (_currentImage != null ||
-                                    _isCameraInitialized)
+                            color:
+                                (_currentImage != null || _isCameraInitialized)
                                 ? AppColors.primary.withValues(alpha: 0.2)
                                 : AppColors.borderColor,
                             width: 5,
@@ -329,57 +333,53 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                         width: circleDia,
                         height: circleDia,
                         decoration: BoxDecoration(
-                          shape: _currentStep == 3 ? BoxShape.rectangle : BoxShape.circle,
-                          borderRadius: _currentStep == 3 ? BorderRadius.circular(20) : null,
+                          shape: BoxShape.circle,
                           border: Border.all(
-                            color: (_currentImage != null ||
-                                    _isCameraInitialized)
+                            color:
+                                (_currentImage != null || _isCameraInitialized)
                                 ? AppColors.primary
                                 : AppColors.borderColor,
                             width: 2,
                           ),
                           color: AppColors.primaryLight,
                         ),
-                        child: ClipPath(
-                          clipper: _currentStep == 3
-                              ? ShapeBorderClipper(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)))
-                              : const ShapeBorderClipper(shape: CircleBorder()),
+                        child: ClipOval(
                           child: _currentImage != null
                               ? (kIsWeb
-                                  ? Image.network(
-                                      _currentImage!.path,
-                                      width: circleDia,
-                                      height: circleDia,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.file(
-                                      File(_currentImage!.path),
-                                      width: circleDia,
-                                      height: circleDia,
-                                      fit: BoxFit.cover,
-                                    ))
+                                    ? Image.network(
+                                        _currentImage!.path,
+                                        width: circleDia,
+                                        height: circleDia,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.file(
+                                        File(_currentImage!.path),
+                                        width: circleDia,
+                                        height: circleDia,
+                                        fit: BoxFit.cover,
+                                      ))
                               : _isCameraInitialized
-                                  ? _buildCameraFill(circleDia)
-                                  : _errorMessage != null
-                                      ? Center(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(24),
-                                            child: Text(
-                                              _errorMessage!,
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 13,
-                                                color: AppColors.textSecondary,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ),
-                                        )
-                                      : const Center(
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: AppColors.primary,
-                                          ),
-                                        ),
+                              ? _buildCameraFill(circleDia)
+                              : _errorMessage != null
+                              ? Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(24),
+                                    child: Text(
+                                      _errorMessage!,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                )
+                              : const Center(
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
                         ),
                       ),
                       // ── Animated direction overlay ──
@@ -400,10 +400,9 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               if (_currentStep < 3) ...[
                 _PrimaryButton(
                   label: 'Take Selfie',
-                  onPressed:
-                      _isCameraInitialized && !_isLoading
-                          ? _takeSelfie
-                          : null,
+                  onPressed: _isCameraInitialized && !_isLoading
+                      ? _takeSelfie
+                      : null,
                 ),
               ] else ...[
                 _buildPreviewThumbnails(),
@@ -458,7 +457,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
+              shape: BoxShape.circle,
               border: Border.all(
                 color: isSelected ? AppColors.primary : AppColors.borderColor,
                 width: isSelected ? 3 : 1,
@@ -566,10 +565,8 @@ class _SelfieTipsSheet extends StatelessWidget {
                 child: ListView.separated(
                   controller: ctrl,
                   itemCount: tips.length,
-                  separatorBuilder: (_, __) => const Divider(
-                    height: 28,
-                    color: AppColors.borderColor,
-                  ),
+                  separatorBuilder: (_, __) =>
+                      const Divider(height: 28, color: AppColors.borderColor),
                   itemBuilder: (_, i) {
                     final (icon, title, desc) = tips[i];
                     return Row(
@@ -582,11 +579,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                             color: AppColors.primaryLight,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
-                            icon,
-                            size: 20,
-                            color: AppColors.primary,
-                          ),
+                          child: Icon(icon, size: 20, color: AppColors.primary),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
