@@ -3,15 +3,14 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
-import 'package:mylifepartner/screens/location_verification/location_verification_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/screens/selfie_verification/face_direction_overlay.dart';
+// import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// NEW: Import the location screen
 
 class SelfieVerificationScreen extends StatefulWidget {
   const SelfieVerificationScreen({super.key});
@@ -22,7 +21,7 @@ class SelfieVerificationScreen extends StatefulWidget {
 }
 
 class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
-  final ProfileRepository _profileRepository = ProfileRepository();
+  // final ProfileRepository _profileRepository = ProfileRepository();
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
 
@@ -72,8 +71,9 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   }
 
   Future<void> _takeSelfie() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized)
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
       return;
+    }
 
     try {
       final image = await _cameraController!.takePicture();
@@ -86,52 +86,87 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
           _currentStep = 2;
         } else if (_currentStep == 2) {
           _rightImage = image;
-          _currentStep = 3; // All selfies taken → show submit
+          _currentStep = 3;
         }
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to take picture: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to take picture: $e')),
+        );
       }
     }
   }
 
-  Future<void> _goToLocationScreen() async {
-    if (_frontImage == null || _leftImage == null || _rightImage == null)
-      return;
+  /// Requests location permission, fetches GPS, and completes verification.
+  Future<void> _submitVerification() async {
+    if (_frontImage == null || _leftImage == null || _rightImage == null) return;
 
-    final result = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => LocationVerificationScreen(
-          front: _frontImage!,
-          left: _leftImage!,
-          right: _rightImage!,
-          onSuccess: () async {
-            // Optional: mark onboarding done
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('onboardingCompleted', true);
-            if (mounted) {
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const HomePage()),
-                (route) => false,
-              );
-            }
-          },
-        ),
-      ),
-    );
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
 
-    if (result != true && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Location access is required to complete verification'),
-          duration: Duration(seconds: 4),
+    try {
+      // 1. Check if location service is enabled
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw 'Location services are disabled. Please enable them in settings.';
+      }
+
+      // 2. Check & request permission
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw 'Location permission denied.';
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw 'Location permission permanently denied.\n'
+            'Please enable it in app settings.';
+      }
+
+      // 3. Get position
+      await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.medium,
         ),
       );
+
+      // 4. TODO: Send selfies + location to backend
+      // await _profileRepository.uploadVerificationSelfiesAndLocation(
+      //   front: _frontImage!,
+      //   left: _leftImage!,
+      //   right: _rightImage!,
+      //   latitude: position.latitude,
+      //   longitude: position.longitude,
+      // );
+
+      // 5. Mark as pending / success
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('selfieStatus', 'PENDING');
+      await prefs.setBool('locationVerified', true);
+      await prefs.setBool('onboardingCompleted', true);
+
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
+      setState(() => _errorMessage = msg);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -166,21 +201,6 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
     });
   }
 
-  String get _title {
-    switch (_currentStep) {
-      case 0:
-        return "Take Front Face";
-      case 1:
-        return "Turn Left (Profile)";
-      case 2:
-        return "Turn Right (Profile)";
-      case 3:
-        return "All selfies captured!";
-      default:
-        return "";
-    }
-  }
-
   XFile? get _currentImage {
     switch (_currentStep) {
       case 0:
@@ -190,7 +210,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
       case 2:
         return _rightImage;
       default:
-        return _frontImage; // fallback to front when done
+        return _frontImage;
     }
   }
 
@@ -204,15 +224,13 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
         fit: BoxFit.cover,
         clipBehavior: Clip.hardEdge,
         child: SizedBox(
-          width: previewH, // swapped for portrait
+          width: previewH,
           height: previewW,
           child: CameraPreview(_cameraController!),
         ),
       ),
     );
   }
-
-  // ... keep _showTips(), _logout(), _SelfieTipsSheet, _PrimaryButton as they are ...
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +291,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Take a clear selfie to help us keep\nthe community safe and authentic.',
+                'Take a clear selfie to help us keep\n'
+                'the community safe and authentic.',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: AppColors.textSecondary,
@@ -281,45 +300,38 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 8),
-              Text(
-                _title,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                  color: AppColors.primary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
               const SizedBox(height: 36),
 
+              // ── Camera circle with animated overlay ──
               Expanded(
                 child: Center(
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
+                      // Outer glow ring
                       Container(
                         width: circleDia + 10,
                         height: circleDia + 10,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color:
-                                (_currentImage != null || _isCameraInitialized)
-                                ? AppColors.primary.withOpacity(0.2)
+                            color: (_currentImage != null ||
+                                    _isCameraInitialized)
+                                ? AppColors.primary.withValues(alpha: 0.2)
                                 : AppColors.borderColor,
                             width: 5,
                           ),
                         ),
                       ),
+                      // Camera / captured image circle
                       Container(
                         width: circleDia,
                         height: circleDia,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color:
-                                (_currentImage != null || _isCameraInitialized)
+                            color: (_currentImage != null ||
+                                    _isCameraInitialized)
                                 ? AppColors.primary
                                 : AppColors.borderColor,
                             width: 2,
@@ -329,42 +341,50 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                         child: ClipOval(
                           child: _currentImage != null
                               ? (kIsWeb
-                                    ? Image.network(
-                                        _currentImage!.path,
-                                        width: circleDia,
-                                        height: circleDia,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Image.file(
-                                        File(_currentImage!.path),
-                                        width: circleDia,
-                                        height: circleDia,
-                                        fit: BoxFit.cover,
-                                      ))
+                                  ? Image.network(
+                                      _currentImage!.path,
+                                      width: circleDia,
+                                      height: circleDia,
+                                      fit: BoxFit.cover,
+                                    )
+                                  : Image.file(
+                                      File(_currentImage!.path),
+                                      width: circleDia,
+                                      height: circleDia,
+                                      fit: BoxFit.cover,
+                                    ))
                               : _isCameraInitialized
-                              ? _buildCameraFill(circleDia)
-                              : _errorMessage != null
-                              ? Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(24),
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 13,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                )
-                              : const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
+                                  ? _buildCameraFill(circleDia)
+                                  : _errorMessage != null
+                                      ? Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(24),
+                                            child: Text(
+                                              _errorMessage!,
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 13,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        )
+                                      : const Center(
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
                         ),
                       ),
+                      // ── Animated direction overlay ──
+                      if (_currentStep < 3 && _isCameraInitialized)
+                        IgnorePointer(
+                          child: FaceDirectionOverlay(
+                            step: _currentStep,
+                            size: circleDia,
+                          ),
+                        ),
                     ],
                   ),
                 ),
@@ -375,15 +395,16 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               if (_currentStep < 3) ...[
                 _PrimaryButton(
                   label: 'Take Selfie',
-                  onPressed: _isCameraInitialized && !_isLoading
-                      ? _takeSelfie
-                      : null,
+                  onPressed:
+                      _isCameraInitialized && !_isLoading
+                          ? _takeSelfie
+                          : null,
                 ),
               ] else ...[
                 _PrimaryButton(
-                  label: 'Continue to Location',
+                  label: 'Complete Verification',
                   isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _goToLocationScreen,
+                  onPressed: _isLoading ? null : _submitVerification,
                 ),
                 const SizedBox(height: 14),
                 TextButton(
@@ -407,7 +428,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   }
 }
 
-// ── Tips bottom sheet ─────────────────────────────────────────────────────────
+// ── Tips bottom sheet ────────────────────────────────────────────────────────
 class _SelfieTipsSheet extends StatelessWidget {
   const _SelfieTipsSheet();
 
@@ -417,32 +438,32 @@ class _SelfieTipsSheet extends StatelessWidget {
       (
         Icons.wb_sunny_outlined,
         'Good lighting',
-        'Face a window or a light source. Avoid harsh shadows or very bright backlighting.',
+        'Face a window or light source. Avoid harsh shadows.',
       ),
       (
         Icons.face_retouching_natural,
         'Face the camera',
-        'Look directly into the lens. Keep your face centred and fully visible.',
+        'Look directly into the lens. Keep your face centred.',
       ),
       (
         Icons.do_not_disturb_alt_outlined,
         'No filters or glasses',
-        'Remove sunglasses and avoid heavy filters. Your face should be clearly recognisable.',
+        'Remove sunglasses and avoid heavy filters.',
       ),
       (
         Icons.sentiment_satisfied_alt,
         'Neutral expression',
-        'A relaxed, natural expression works best. No need to smile — just be yourself.',
+        'A relaxed expression works best. Just be yourself.',
       ),
       (
         Icons.crop_free,
         'Stay within the circle',
-        'Keep your head centred inside the circular frame, with a little space around the top of your head.',
+        'Keep your head centred inside the circular frame.',
       ),
       (
         Icons.no_photography_outlined,
         'No photos of photos',
-        "Don't photograph a picture on screen or paper. Take a live selfie only.",
+        "Don't photograph a picture on screen. Take a live selfie.",
       ),
     ];
 
@@ -457,7 +478,6 @@ class _SelfieTipsSheet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle
               Center(
                 child: Container(
                   width: 40,
@@ -469,7 +489,6 @@ class _SelfieTipsSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-
               Text(
                 'How to take a great selfie',
                 style: GoogleFonts.poppins(
@@ -487,13 +506,14 @@ class _SelfieTipsSheet extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-
               Expanded(
                 child: ListView.separated(
                   controller: ctrl,
                   itemCount: tips.length,
-                  separatorBuilder: (_, __) =>
-                      const Divider(height: 28, color: AppColors.borderColor),
+                  separatorBuilder: (_, __) => const Divider(
+                    height: 28,
+                    color: AppColors.borderColor,
+                  ),
                   itemBuilder: (_, i) {
                     final (icon, title, desc) = tips[i];
                     return Row(
@@ -506,7 +526,11 @@ class _SelfieTipsSheet extends StatelessWidget {
                             color: AppColors.primaryLight,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, size: 20, color: AppColors.primary),
+                          child: Icon(
+                            icon,
+                            size: 20,
+                            color: AppColors.primary,
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -538,7 +562,6 @@ class _SelfieTipsSheet extends StatelessWidget {
                   },
                 ),
               ),
-
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
@@ -570,7 +593,7 @@ class _SelfieTipsSheet extends StatelessWidget {
   }
 }
 
-// ── Reusable primary button ───────────────────────────────────────────────────
+// ── Reusable primary button ──────────────────────────────────────────────────
 class _PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
