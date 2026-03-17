@@ -104,26 +104,41 @@ export class ProfileImageController {
       const userId = req.params.userId || req.user.id;
       if (!userId) throw new ApiError(401, "Unauthorized");
 
-      if (!req.file) {
-         throw new ApiError(400, "No selfie image file provided");
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
+      if (!files || !files.frontImage || !files.leftImage || !files.rightImage) {
+         throw new ApiError(400, "All three selfie images (front, left, right) are required");
       }
 
+      const frontFile = files.frontImage[0];
+      const leftFile = files.leftImage[0];
+      const rightFile = files.rightImage[0];
+
       // 1. Upload to S3
-      const s3Url = await this.s3Service.uploadToS3(req.file, `${userId}/selfie`);
+      const [frontS3Url, leftS3Url, rightS3Url] = await Promise.all([
+         this.s3Service.uploadToS3(frontFile, `${userId}/selfie_front`),
+         this.s3Service.uploadToS3(leftFile, `${userId}/selfie_left`),
+         this.s3Service.uploadToS3(rightFile, `${userId}/selfie_right`),
+      ]);
 
       // 2. Save to DB
       try {
-         const { user, oldSelfieUrl } = await this.profileService.uploadSelfie(Number(userId), s3Url);
+         const { user, oldSelfieUrls } = await this.profileService.uploadSelfie(Number(userId), frontS3Url, leftS3Url, rightS3Url);
 
-         // Delete old selfie from S3 if it exists
-         if (oldSelfieUrl) {
-            await this.s3Service.deleteFromS3(oldSelfieUrl);
-         }
+         // Delete old selfies from S3 if they exist
+         const deletePromises: Promise<void>[] = [];
+         if (oldSelfieUrls.front) deletePromises.push(this.s3Service.deleteFromS3(oldSelfieUrls.front));
+         if (oldSelfieUrls.left) deletePromises.push(this.s3Service.deleteFromS3(oldSelfieUrls.left));
+         if (oldSelfieUrls.right) deletePromises.push(this.s3Service.deleteFromS3(oldSelfieUrls.right));
+         await Promise.all(deletePromises);
 
-         res.status(201).json(new ApiResponse(201, { selfieStatus: user.selfieStatus }, "Selfie uploaded successfully. Awaiting review."));
+         res.status(201).json(new ApiResponse(201, { selfieStatus: user.selfieStatus }, "Selfies uploaded successfully. Awaiting review."));
       } catch (error) {
-         // Rollback S3 upload if DB fails
-         await this.s3Service.deleteFromS3(s3Url);
+         // Rollback S3 uploads if DB fails
+         await Promise.all([
+            this.s3Service.deleteFromS3(frontS3Url),
+            this.s3Service.deleteFromS3(leftS3Url),
+            this.s3Service.deleteFromS3(rightS3Url),
+         ]);
          throw error;
       }
    });

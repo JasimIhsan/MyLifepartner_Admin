@@ -9,7 +9,7 @@ import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/selfie_verification/face_direction_overlay.dart';
-// import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {
@@ -21,7 +21,7 @@ class SelfieVerificationScreen extends StatefulWidget {
 }
 
 class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
-  // final ProfileRepository _profileRepository = ProfileRepository();
+  final ProfileRepository _profileRepository = ProfileRepository();
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
 
@@ -34,6 +34,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   XFile? _rightImage;
 
   int _currentStep = 0; // 0=front, 1=left, 2=right, 3=all done
+  int _previewIndex = 0; // 0=front, 1=left, 2=right
 
   @override
   void initState() {
@@ -108,13 +109,11 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
     });
 
     try {
-      // 1. Check if location service is enabled
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         throw 'Location services are disabled. Please enable them in settings.';
       }
 
-      // 2. Check & request permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
@@ -128,45 +127,34 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
             'Please enable it in app settings.';
       }
 
-      // 3. Get position
       await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
         ),
       );
 
-      // 4. TODO: Send selfies + location to backend
-      // await _profileRepository.uploadVerificationSelfiesAndLocation(
-      //   front: _frontImage!,
-      //   left: _leftImage!,
-      //   right: _rightImage!,
-      //   latitude: position.latitude,
-      //   longitude: position.longitude,
-      // );
+      await _profileRepository.uploadSelfie(_frontImage!, _leftImage!, _rightImage!);
 
-      // 5. Mark as pending / success
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('selfieStatus', 'PENDING');
       await prefs.setBool('locationVerified', true);
-      await prefs.setBool('onboardingCompleted', true);
 
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const HomePage()),
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const HomePage()),
           (route) => false,
         );
       }
     } catch (e) {
-      final msg = e.toString().replaceAll('Exception: ', '');
-      setState(() => _errorMessage = msg);
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
+          SnackBar(content: Text(_errorMessage!)),
         );
       }
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -202,6 +190,18 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   }
 
   XFile? get _currentImage {
+    if (_currentStep == 3) {
+      switch (_previewIndex) {
+        case 0:
+          return _frontImage;
+        case 1:
+          return _leftImage;
+        case 2:
+          return _rightImage;
+        default:
+          return _frontImage;
+      }
+    }
     switch (_currentStep) {
       case 0:
         return _frontImage;
@@ -313,7 +313,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                         width: circleDia + 10,
                         height: circleDia + 10,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          shape: _currentStep == 3 ? BoxShape.rectangle : BoxShape.circle,
+                          borderRadius: _currentStep == 3 ? BorderRadius.circular(24) : null,
                           border: Border.all(
                             color: (_currentImage != null ||
                                     _isCameraInitialized)
@@ -328,7 +329,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                         width: circleDia,
                         height: circleDia,
                         decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                          shape: _currentStep == 3 ? BoxShape.rectangle : BoxShape.circle,
+                          borderRadius: _currentStep == 3 ? BorderRadius.circular(20) : null,
                           border: Border.all(
                             color: (_currentImage != null ||
                                     _isCameraInitialized)
@@ -338,7 +340,10 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                           ),
                           color: AppColors.primaryLight,
                         ),
-                        child: ClipOval(
+                        child: ClipPath(
+                          clipper: _currentStep == 3
+                              ? ShapeBorderClipper(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)))
+                              : const ShapeBorderClipper(shape: CircleBorder()),
                           child: _currentImage != null
                               ? (kIsWeb
                                   ? Image.network(
@@ -401,6 +406,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                           : null,
                 ),
               ] else ...[
+                _buildPreviewThumbnails(),
+                const SizedBox(height: 32),
                 _PrimaryButton(
                   label: 'Complete Verification',
                   isLoading: _isLoading,
@@ -423,6 +430,55 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPreviewThumbnails() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _buildThumbnail(0, 'Front', _frontImage),
+        const SizedBox(width: 16),
+        _buildThumbnail(1, 'Left', _leftImage),
+        const SizedBox(width: 16),
+        _buildThumbnail(2, 'Right', _rightImage),
+      ],
+    );
+  }
+
+  Widget _buildThumbnail(int index, String label, XFile? image) {
+    if (image == null) return const SizedBox();
+    final isSelected = _previewIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _previewIndex = index),
+      child: Column(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.borderColor,
+                width: isSelected ? 3 : 1,
+              ),
+              image: DecorationImage(
+                image: FileImage(File(image.path)),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

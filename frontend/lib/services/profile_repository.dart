@@ -262,22 +262,31 @@ class ProfileRepository {
     }
   }
 
-  Future<void> uploadSelfie(XFile imageFile) async {
+  Future<void> uploadSelfie(XFile front, XFile left, XFile right) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
-      final bytes = await imageFile.readAsBytes();
-
-      final mimeType = imageFile.mimeType ?? 'image/jpeg';
-      final mediaType = MediaType.parse(mimeType);
+      final frontBytes = await front.readAsBytes();
+      final leftBytes = await left.readAsBytes();
+      final rightBytes = await right.readAsBytes();
 
       FormData formData = FormData.fromMap({
-        "image": MultipartFile.fromBytes(
-          bytes,
-          filename: imageFile.name.isEmpty ? 'selfie.jpg' : imageFile.name,
-          contentType: mediaType,
+        "frontImage": MultipartFile.fromBytes(
+          frontBytes,
+          filename: front.name.isEmpty ? 'front.jpg' : front.name,
+          contentType: MediaType.parse(front.mimeType ?? 'image/jpeg'),
+        ),
+        "leftImage": MultipartFile.fromBytes(
+          leftBytes,
+          filename: left.name.isEmpty ? 'left.jpg' : left.name,
+          contentType: MediaType.parse(left.mimeType ?? 'image/jpeg'),
+        ),
+        "rightImage": MultipartFile.fromBytes(
+          rightBytes,
+          filename: right.name.isEmpty ? 'right.jpg' : right.name,
+          contentType: MediaType.parse(right.mimeType ?? 'image/jpeg'),
         ),
       });
 

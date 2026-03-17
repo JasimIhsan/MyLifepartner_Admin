@@ -63,6 +63,8 @@ model Profile {
   hasCompletedPartnerPreference Boolean       @default(false)
   hasCompletedImageUpload       Boolean       @default(false)
   selfieUrl                     String?
+  leftSelfieUrl                 String?
+  rightSelfieUrl                String?
   selfieStatus                  SelfieStatus?
 
   images     UserImage[]

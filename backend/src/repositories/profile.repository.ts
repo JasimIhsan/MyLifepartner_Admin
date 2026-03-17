@@ -209,20 +209,26 @@ export class ProfileRepository implements IProfileRepository {
       });
    }
 
-   async saveSelfie(userId: number, selfieUrl: string) {
+   async saveSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string) {
       let profile = await prisma.profile.findUnique({ where: { userId } });
       if (!profile) profile = await prisma.profile.create({ data: { userId } });
 
-      const oldSelfieUrl = profile.selfieUrl;
+      const oldSelfieUrls = {
+         front: profile.selfieUrl,
+         left: (profile as any).leftSelfieUrl,
+         right: (profile as any).rightSelfieUrl,
+      };
 
       const updatedProfile = await prisma.profile.update({
          where: { userId },
          data: {
-            selfieUrl,
+            selfieUrl: frontUrl,
+            leftSelfieUrl: leftUrl,
+            rightSelfieUrl: rightUrl,
             selfieStatus: "PENDING",
-         },
+         } as any,
       });
 
-      return { user: updatedProfile, oldSelfieUrl };
+      return { user: updatedProfile, oldSelfieUrls };
    }
 }

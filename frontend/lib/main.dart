@@ -106,14 +106,13 @@ class _MyAppState extends State<MyApp> {
             brightness: Brightness.light,
           ).copyWith(
             surface: Colors.white,
-            background: Colors.white,
             surfaceTint: Colors.transparent,
           ),
 
           scaffoldBackgroundColor: Colors.white,
           canvasColor: Colors.white,
           cardColor: Colors.white,
-          dialogBackgroundColor: Colors.white,
+          dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
 
           textTheme: GoogleFonts.poppinsTextTheme(),
 

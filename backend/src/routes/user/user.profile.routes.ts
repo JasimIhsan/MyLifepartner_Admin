@@ -20,7 +20,15 @@ router.post("/upload-image/:userId", multerConfig.single("image"), profileImageC
 router.delete("/remove-image/:userId/:imageId", profileImageController.removeImage);
 router.patch("/set-primary/:userId/:imageId", profileImageController.setPrimaryImage);
 router.get("/images/:userId", profileImageController.getImages);
-router.post("/complete-image-upload/:userId", profileImageController.completeImageUpload);
-router.post("/upload-selfie/:userId", multerConfig.single("image"), profileImageController.uploadSelfie);
+   router.post("/complete-image-upload/:userId", profileImageController.completeImageUpload);
+router.post(
+   "/upload-selfie/:userId",
+   multerConfig.fields([
+      { name: "frontImage", maxCount: 1 },
+      { name: "leftImage", maxCount: 1 },
+      { name: "rightImage", maxCount: 1 },
+   ]),
+   profileImageController.uploadSelfie
+);
 
 export default router;

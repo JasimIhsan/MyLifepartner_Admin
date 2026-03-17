@@ -159,7 +159,7 @@ class AuthLayout extends StatelessWidget {
                       // Title Section
                       if (showLogo) ...[
                         if (topImage != null) ...[
-                          Container(
+                          const SizedBox(
                             width: 90,
                             height: 90,
                           ),
