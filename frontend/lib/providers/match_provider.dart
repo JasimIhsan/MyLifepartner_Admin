@@ -15,9 +15,17 @@ final _dummyProfiles = [
     religion: 'Islam',
     occupation: 'Software Engineer',
     matchPercentage: 92,
-    compatibilityHighlights: ['Family-oriented', 'Love for travel', 'Similar values'],
+    compatibilityHighlights: [
+      'Family-oriented',
+      'Love for travel',
+      'Similar values',
+    ],
     images: [
-      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/44.jpg', isPrimary: true),
+      MatchImage(
+        imageUrl:
+            'https://images.unsplash.com/photo-1609505848912-b7c3b8b4beda?q=80&w=765&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        isPrimary: true,
+      ),
     ],
   ),
   MatchRecommendation(
@@ -29,9 +37,17 @@ final _dummyProfiles = [
     religion: 'Islam',
     occupation: 'Doctor',
     matchPercentage: 87,
-    compatibilityHighlights: ['Loves cooking', 'Fitness enthusiast', 'Career-driven'],
+    compatibilityHighlights: [
+      'Loves cooking',
+      'Fitness enthusiast',
+      'Career-driven',
+    ],
     images: [
-      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/68.jpg', isPrimary: true),
+      MatchImage(
+        imageUrl:
+            'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Z2lybHxlbnwwfHwwfHx8MA%3D%3D',
+        isPrimary: true,
+      ),
     ],
   ),
   MatchRecommendation(
@@ -45,7 +61,11 @@ final _dummyProfiles = [
     matchPercentage: 81,
     compatibilityHighlights: ['Book lover', 'Kind-hearted', 'Strong deen'],
     images: [
-      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/33.jpg', isPrimary: true),
+      MatchImage(
+        imageUrl:
+            'https://images.unsplash.com/photo-1589571894960-20bbe2828d0a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDN8fGdpcmx8ZW58MHx8MHx8fDA%3D',
+        isPrimary: true,
+      ),
     ],
   ),
   MatchRecommendation(
@@ -59,7 +79,11 @@ final _dummyProfiles = [
     matchPercentage: 76,
     compatibilityHighlights: ['Creative', 'Down to earth', 'Family values'],
     images: [
-      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/21.jpg', isPrimary: true),
+      MatchImage(
+        imageUrl:
+            'https://images.unsplash.com/photo-1604004215402-e0be233f39be?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDZ8fGdpcmx8ZW58MHx8MHx8fDA%3D',
+        isPrimary: true,
+      ),
     ],
   ),
   MatchRecommendation(
@@ -73,7 +97,11 @@ final _dummyProfiles = [
     matchPercentage: 73,
     compatibilityHighlights: ['Ambitious', 'Travel lover', 'Respectful'],
     images: [
-      MatchImage(imageUrl: 'https://randomuser.me/api/portraits/women/57.jpg', isPrimary: true),
+      MatchImage(
+        imageUrl:
+            'https://plus.unsplash.com/premium_photo-1673792686134-f8cbeb0ad3e3?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        isPrimary: true,
+      ),
     ],
   ),
 ];

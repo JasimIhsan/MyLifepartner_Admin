@@ -137,10 +137,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     ],
                     ProfileDetailsGrid(profile: p),
                     const SizedBox(height: 20),
-                    if (images.length > 1) ...[
-                      _buildSectionLabel('Photos (${images.length})'),
-                      const SizedBox(height: 10),
-                      _buildPhotoGrid(images),
+                    if (images.isNotEmpty) ...[
+                      _buildSectionLabel(
+                          'Photos (${images.length})'),
+                      const SizedBox(height: 12),
+                      _BodyPhotoCarousel(images: images),
                       const SizedBox(height: 20),
                     ],
                     // Space for fixed bottom bar
@@ -358,63 +359,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     ).animate().fadeIn(duration: 300.ms, delay: 100.ms);
   }
 
-  Widget _buildPhotoGrid(List<dynamic> images) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.85,
-      ),
-      itemCount: images.length,
-      itemBuilder: (context, index) {
-        final img = images[index] as Map<String, dynamic>;
-        final url = img['imageUrl'] as String?;
-        return GestureDetector(
-          onTap: () => _showFullImage(context, url),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: url != null
-                ? Image.network(
-                    url,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _imagePlaceholder(),
-                  )
-                : _imagePlaceholder(),
-          ),
-        );
-      },
-    ).animate().fadeIn(duration: 300.ms, delay: 200.ms);
-  }
 
-  Widget _imagePlaceholder() {
-    return Container(
-      color: AppColors.primaryLight,
-      child: const Center(
-        child: Icon(Icons.image_rounded, size: 40, color: Color(0xFFCCCCCC)),
-      ),
-    );
-  }
-
-  void _showFullImage(BuildContext context, String? url) {
-    if (url == null) return;
-    showDialog(
-      context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
-        child: GestureDetector(
-          onTap: () => Navigator.pop(ctx),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Image.network(url, fit: BoxFit.contain),
-          ),
-        ),
-      ),
-    );
-  }
 
   // ─── Bottom action bar ─────────────────────────────────────────────────────
 
@@ -501,6 +446,130 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ─── Body photo carousel ───────────────────────────────────────────────────
+
+class _BodyPhotoCarousel extends StatefulWidget {
+  final List<dynamic> images;
+
+  const _BodyPhotoCarousel({required this.images});
+
+  @override
+  State<_BodyPhotoCarousel> createState() => _BodyPhotoCarouselState();
+}
+
+class _BodyPhotoCarouselState extends State<_BodyPhotoCarousel> {
+  final PageController _controller = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _showFullImage(String url) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: GestureDetector(
+          onTap: () => Navigator.pop(ctx),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Image.network(url, fit: BoxFit.contain),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Carousel
+        ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: SizedBox(
+            height: 260,
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: widget.images.length,
+              onPageChanged: (i) => setState(() => _page = i),
+              itemBuilder: (_, i) {
+                final img = widget.images[i] as Map<String, dynamic>;
+                final url = img['imageUrl'] as String?;
+                return GestureDetector(
+                  onTap: url != null ? () => _showFullImage(url) : null,
+                  child: url != null
+                      ? Image.network(
+                          url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: AppColors.primaryLight,
+                            child: const Center(
+                              child: Icon(
+                                Icons.image_rounded,
+                                size: 40,
+                                color: Color(0xFFCCCCCC),
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: AppColors.primaryLight,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_rounded,
+                              size: 40,
+                              color: Color(0xFFCCCCCC),
+                            ),
+                          ),
+                        ),
+                );
+              },
+            ),
+          ),
+        ),
+        if (widget.images.length > 1) ...[
+          const SizedBox(height: 10),
+          // Dot indicators + counter
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ...List.generate(widget.images.length, (i) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: _page == i ? 20 : 7,
+                  height: 7,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: _page == i
+                        ? AppColors.primary
+                        : AppColors.primary.withValues(alpha: 0.25),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+              const SizedBox(width: 10),
+              Text(
+                '${_page + 1} / ${widget.images.length}',
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
     );
   }
 }
