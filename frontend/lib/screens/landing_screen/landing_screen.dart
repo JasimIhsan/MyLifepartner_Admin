@@ -15,9 +15,12 @@ class LandingScreen extends StatefulWidget {
   State<LandingScreen> createState() => _LandingScreenState();
 }
 
-class _LandingScreenState extends State<LandingScreen> {
-  late PageController _pageController;
+class _LandingScreenState extends State<LandingScreen>
+    with TickerProviderStateMixin {
   double _currentPage = 0.0;
+  late AnimationController _snapController;
+  late Animation<double> _snapAnimation;
+  double _dragStartPage = 0.0;
 
   final List<String> _images = [
     'assets/images/landing_couple_1.png',
@@ -25,7 +28,6 @@ class _LandingScreenState extends State<LandingScreen> {
     'assets/images/landing_couple_3.png',
   ];
 
-  // Taglines that cycle with the carousel
   final List<String> _taglines = [
     'Every story begins\nwith a single moment.',
     'Crafted for those who\nbelieve in forever.',
@@ -35,21 +37,36 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(viewportFraction: 0.65);
-    _pageController.addListener(() {
-      setState(() {
-        _currentPage = _pageController.page ?? 0.0;
-      });
-    });
+    _snapController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 380),
+    );
+    _snapAnimation = _snapController;
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _snapController.dispose();
     super.dispose();
   }
 
   int get _activePage => _currentPage.round().clamp(0, _images.length - 1);
+
+  void _snapToPage(int page) {
+    final double target = page.toDouble().clamp(0, _images.length - 1.0);
+    _snapAnimation = Tween<double>(
+      begin: _currentPage,
+      end: target,
+    ).animate(CurvedAnimation(
+      parent: _snapController,
+      curve: Curves.easeOutCubic,
+    ));
+    _snapController.reset();
+    _snapController.forward();
+    _snapAnimation.addListener(() {
+      if (mounted) setState(() => _currentPage = _snapAnimation.value);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,7 +101,7 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  // ─── Header ────────────────────────────────────────────────────────────────
+  // ─── Header ──────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Padding(
@@ -92,7 +109,6 @@ class _LandingScreenState extends State<LandingScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // App label
           Row(
             children: [
               Container(
@@ -119,7 +135,6 @@ class _LandingScreenState extends State<LandingScreen> {
               .fadeIn(duration: 600.ms, delay: 100.ms)
               .slideY(begin: -0.2, end: 0, curve: Curves.easeOut),
           const SizedBox(height: 14),
-          // Main headline
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 500),
             transitionBuilder: (child, animation) => FadeTransition(
@@ -155,7 +170,7 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  // ─── Subtitle ──────────────────────────────────────────────────────────────
+  // ─── Subtitle ────────────────────────────────────────────────────────────
 
   Widget _buildSubtitle() {
     return Padding(
@@ -175,44 +190,77 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  // ─── Carousel ──────────────────────────────────────────────────────────────
+  // ─── Carousel ────────────────────────────────────────────────────────────
 
   Widget _buildCarousel() {
+    // Sort: non-active indices first, active last → active card draws ON TOP
+    final List<int> sorted = List.generate(_images.length, (i) => i)
+      ..sort((a, b) {
+        if (a == _activePage) return 1;
+        if (b == _activePage) return -1;
+        return 0;
+      });
+
     return SizedBox(
       height: 380,
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: _images.length,
-        clipBehavior: Clip.none,
-        itemBuilder: (context, index) {
-          double value = 0.0;
-          if (_pageController.position.haveDimensions) {
-            value = index - _currentPage;
-          } else {
-            value = (index - _currentPage).toDouble();
-          }
-
-          final double scale = max(0.82, 1 - (value.abs() * 0.13));
-          final double angle = value * 0.12;
-          final double translateX = -value * 55;
-          final double translateY = value.abs() * 24;
-          final double opacity = max(0.45, 1 - (value.abs() * 0.45));
-          final bool isActive = index == _activePage;
-
-          return Transform.translate(
-            offset: Offset(translateX, translateY),
-            child: Transform.rotate(
-              angle: angle,
-              child: Transform.scale(
-                scale: scale,
-                child: Opacity(
-                  opacity: opacity,
-                  child: _buildCard(index, isActive),
-                ),
-              ),
-            ),
-          );
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onHorizontalDragStart: (_) {
+          _snapController.stop();
+          _dragStartPage = _currentPage;
         },
+        onHorizontalDragUpdate: (d) {
+          final delta = -(d.primaryDelta ?? 0) / 160;
+          setState(() {
+            _currentPage =
+                (_dragStartPage + delta).clamp(0, _images.length - 1.0);
+            _dragStartPage = _currentPage;
+          });
+        },
+        onHorizontalDragEnd: (d) {
+          final velocity = d.primaryVelocity ?? 0;
+          if (velocity < -200 && _activePage < _images.length - 1) {
+            _snapToPage(_activePage + 1);
+          } else if (velocity > 200 && _activePage > 0) {
+            _snapToPage(_activePage - 1);
+          } else {
+            _snapToPage(_activePage);
+          }
+        },
+        child: OverflowBox(
+          maxWidth: double.infinity,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: sorted.map((index) {
+              final double value = index - _currentPage;
+              final double scale = max(0.82, 1 - (value.abs() * 0.13));
+              final double angle = value * 0.12;
+              final double translateX = value * 210.0;
+              final double translateY = value.abs() * 22;
+              final double opacity = max(0.45, 1 - (value.abs() * 0.45));
+              final bool isActive = index == _activePage;
+
+              return Transform.translate(
+                offset: Offset(translateX, translateY),
+                child: Transform.rotate(
+                  angle: angle,
+                  child: Transform.scale(
+                    scale: scale,
+                    child: Opacity(
+                      opacity: opacity,
+                      child: SizedBox(
+                        width: 240,
+                        height: 360,
+                        child: _buildCard(index, isActive),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
       ),
     ).animate().fadeIn(duration: 800.ms, delay: 400.ms).slideY(
         begin: 0.06, end: 0, duration: 700.ms, curve: Curves.easeOutCubic);
@@ -224,8 +272,8 @@ class _LandingScreenState extends State<LandingScreen> {
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isActive ? 0.18 : 0.08),
-            blurRadius: isActive ? 32 : 16,
+            color: Colors.black.withValues(alpha: isActive ? 0.22 : 0.06),
+            blurRadius: isActive ? 36 : 14,
             spreadRadius: 0,
             offset: const Offset(0, 12),
           ),
@@ -236,7 +284,6 @@ class _LandingScreenState extends State<LandingScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Photo
             Image.asset(
               _images[index % _images.length],
               fit: BoxFit.cover,
@@ -248,7 +295,6 @@ class _LandingScreenState extends State<LandingScreen> {
                 ),
               ),
             ),
-            // Bottom gradient — deeper on active
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
@@ -258,14 +304,13 @@ class _LandingScreenState extends State<LandingScreen> {
                     stops: const [0.5, 1.0],
                     colors: [
                       Colors.transparent,
-                      Colors.black.withValues(
-                          alpha: isActive ? 0.55 : 0.2),
+                      Colors.black
+                          .withValues(alpha: isActive ? 0.55 : 0.2),
                     ],
                   ),
                 ),
               ),
             ),
-            // Index pill — only on active
             if (isActive)
               Positioned(
                 bottom: 18,
@@ -296,7 +341,7 @@ class _LandingScreenState extends State<LandingScreen> {
     );
   }
 
-  // ─── Dot indicators ────────────────────────────────────────────────────────
+  // ─── Dot indicators ──────────────────────────────────────────────────────
 
   Widget _buildDots() {
     return Row(
@@ -318,14 +363,13 @@ class _LandingScreenState extends State<LandingScreen> {
     ).animate().fadeIn(duration: 500.ms, delay: 600.ms);
   }
 
-  // ─── CTA Button ────────────────────────────────────────────────────────────
+  // ─── CTA Button ──────────────────────────────────────────────────────────
 
   Widget _buildCta() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 28),
       child: Column(
         children: [
-          // Primary CTA
           GestureDetector(
             onTap: () => Navigator.pushReplacement(
               context,
@@ -374,7 +418,6 @@ class _LandingScreenState extends State<LandingScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          // Fine-print
           Text(
             'Free to join · No hidden fees',
             style: GoogleFonts.lato(
