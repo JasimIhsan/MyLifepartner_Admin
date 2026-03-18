@@ -6,11 +6,13 @@ import '../../../core/app_colors.dart';
 class OtpHeader extends StatelessWidget {
   final String email;
   final bool isWeb;
+  final bool isPasswordReset;
 
   const OtpHeader({
     super.key,
     required this.isWeb,
     required this.email,
+    this.isPasswordReset = false,
   });
 
   String get _maskedEmail {
@@ -26,7 +28,7 @@ class OtpHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Enter Verification Code",
+          isPasswordReset ? "Reset Password" : "Enter Verification Code",
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -36,8 +38,9 @@ class OtpHeader extends StatelessWidget {
         const SizedBox(height: 12),
         Text.rich(
           TextSpan(
-            text:
-                "We’ve sent a 6-digit verification code to ",
+            text: isPasswordReset
+                ? "We’ve sent a 6-digit password reset code to "
+                : "We’ve sent a 6-digit verification code to ",
             style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600]),
             children: [
               TextSpan(

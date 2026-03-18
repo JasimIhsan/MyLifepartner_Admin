@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
 import 'package:mylifepartner/config/env.dart';
 import 'package:mylifepartner/services/token_service.dart';
 
@@ -23,9 +22,7 @@ class ApiService {
     dio = Dio(
       BaseOptions(
         // The base URL for your API. All requests will be relative to this URL.
-        baseUrl: defaultTargetPlatform == TargetPlatform.android
-            ? Env.ipUrl
-            : Env.localUrl,
+        baseUrl: Env.baseUrl,
 
         // Timeout for opening the connection to the server.
         connectTimeout: const Duration(seconds: 10),

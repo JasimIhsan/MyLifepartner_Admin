@@ -13,7 +13,14 @@ import 'widgets/otp_form.dart';
 class OtpPage extends StatefulWidget {
   final String email;
   final bool isExistingUser;
-  const OtpPage({super.key, required this.email, required this.isExistingUser});
+  final bool isPasswordReset;
+
+  const OtpPage({
+    super.key,
+    required this.email,
+    required this.isExistingUser,
+    this.isPasswordReset = false,
+  });
 
   @override
   State<OtpPage> createState() => _OtpPageState();
@@ -60,6 +67,7 @@ class _OtpPageState extends State<OtpPage> {
       final response = await _authRepository.verifyOtp(
         email: widget.email,
         otp: pin,
+        purpose: widget.isPasswordReset ? "password_reset" : "auth",
       );
 
       debugPrint("OTP Verify Response: ${response.message}");
@@ -71,6 +79,7 @@ class _OtpPageState extends State<OtpPage> {
             builder: (context) => PasswordScreen(
               email: widget.email,
               isExistingUser: widget.isExistingUser,
+              isPasswordReset: widget.isPasswordReset,
             ),
           ),
         );
@@ -99,7 +108,10 @@ class _OtpPageState extends State<OtpPage> {
     if (!_isResendEnabled) return;
 
     try {
-      await _authRepository.sendOtp(email: widget.email);
+      await _authRepository.resendOtp(
+        email: widget.email,
+        purpose: widget.isPasswordReset ? "password_reset" : "auth",
+      );
       _startTimer();
 
       if (mounted) {
@@ -147,7 +159,11 @@ class _OtpPageState extends State<OtpPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              OtpHeader(email: widget.email, isWeb: isWeb),
+              OtpHeader(
+                email: widget.email,
+                isWeb: isWeb,
+                isPasswordReset: widget.isPasswordReset,
+              ),
               const SizedBox(height: 32),
               OtpForm(
                 formKey: formKey,

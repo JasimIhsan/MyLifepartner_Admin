@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:mylifepartner/models/auth_response.dart';
-import 'package:mylifepartner/models/country_detection_response.dart';
+
 import 'package:mylifepartner/models/onboarding_status.dart';
 import 'package:mylifepartner/services/api_service.dart';
 import 'package:mylifepartner/services/token_service.dart';
@@ -17,14 +17,6 @@ class AuthRepository {
     }
   }
 
-  Future<CountryDetectionResponse> detectCountry() async {
-    try {
-      final response = await _dio.get("/user/auth/detect-country");
-      return CountryDetectionResponse.fromJson(response.data);
-    } catch (e) {
-      rethrow;
-    }
-  }
 
   Future<InitiateAuthResponse> initiateAuth({required String email}) async {
     try {
@@ -41,11 +33,12 @@ class AuthRepository {
   Future<SimpleMessageResponse> verifyOtp({
     required String email,
     required String otp,
+    String purpose = "auth",
   }) async {
     try {
       final response = await _dio.post(
         "/user/auth/verify-otp",
-        data: {"email": email, "otp": otp},
+        data: {"email": email, "otp": otp, "purpose": purpose},
       );
       return SimpleMessageResponse.fromJson(response.data);
     } catch (e) {
@@ -112,41 +105,34 @@ class AuthRepository {
     }
   }
 
-  Future<SendOtpResponse> sendOtp({required String email}) async {
-    try {
-      final response = await _dio.post(
-        "/user/auth/send-otp",
-        data: {"email": email},
-      );
-      return SendOtpResponse.fromJson(response.data);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<SendOtpResponse> resendOtp({required String email}) async {
-    try {
-      final response = await _dio.post(
-        "/user/auth/resend-otp",
-        data: {"email": email},
-      );
-      return SendOtpResponse.fromJson(response.data);
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<SimpleMessageResponse> sendPasswordResetLink({
+  Future<SendOtpResponse> sendOtp({
     required String email,
+    String purpose = "auth",
   }) async {
     try {
       final response = await _dio.post(
-        "/user/auth/forgot-password/send-link",
-        data: {"email": email},
+        "/user/auth/send-otp",
+        data: {"email": email, "purpose": purpose},
       );
-      return SimpleMessageResponse.fromJson(response.data);
+      return SendOtpResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
   }
+
+  Future<SendOtpResponse> resendOtp({
+    required String email,
+    String purpose = "auth",
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/user/auth/resend-otp",
+        data: {"email": email, "purpose": purpose},
+      );
+      return SendOtpResponse.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }

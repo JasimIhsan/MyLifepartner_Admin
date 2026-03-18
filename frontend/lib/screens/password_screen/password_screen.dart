@@ -13,15 +13,18 @@ import '../partner_preference/partner_preference_screen.dart';
 import '../onboarding/onboarding_flow_screen.dart';
 import '../profile_image_upload/profile_image_upload_screen.dart';
 import '../selfie_verification/selfie_verification_screen.dart';
+import '../otp_screen/otp_screen.dart';
 
 class PasswordScreen extends StatefulWidget {
   final String email;
   final bool isExistingUser;
+  final bool isPasswordReset;
 
   const PasswordScreen({
     super.key,
     required this.email,
     required this.isExistingUser,
+    this.isPasswordReset = false,
   });
 
   @override
@@ -53,6 +56,31 @@ class _PasswordScreenState extends State<PasswordScreen> {
     });
 
     try {
+      if (widget.isPasswordReset) {
+        final response = await _authRepository.forgotPassword(
+          email: widget.email,
+          password: _passwordController.text,
+        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.message),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PasswordScreen(
+                email: widget.email,
+                isExistingUser: true,
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
       final response = widget.isExistingUser
           ? await _authRepository.login(
               email: widget.email,
@@ -163,7 +191,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
         return AlertDialog(
           title: const Text("Reset Password"),
           content: Text(
-            "Are you sure you want to reset the password for ${widget.email}? We will send a magic link to your email address.",
+            "Are you sure you want to reset the password for ${widget.email}? We will send an OTP to your email address.",
           ),
           actions: [
             TextButton(
@@ -173,7 +201,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               child: const Text(
-                "Send Link",
+                "Send OTP",
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -190,24 +218,20 @@ class _PasswordScreenState extends State<PasswordScreen> {
     });
 
     try {
-      await _authRepository.sendPasswordResetLink(email: widget.email);
+      await _authRepository.sendOtp(
+        email: widget.email,
+        purpose: "password_reset",
+      );
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Magic Link Sent"),
-              content: Text(
-                "A password reset link has been sent to ${widget.email}. Please check your email to reset your password.",
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("OK"),
-                ),
-              ],
-            );
-          },
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtpPage(
+              email: widget.email,
+              isExistingUser: widget.isExistingUser,
+              isPasswordReset: true,
+            ),
+          ),
         );
       }
     } catch (e) {
@@ -247,7 +271,9 @@ class _PasswordScreenState extends State<PasswordScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.isExistingUser ? "Enter Password" : "Create Password",
+                  widget.isPasswordReset
+                      ? "Reset Password"
+                      : (widget.isExistingUser ? "Enter Password" : "Create Password"),
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -317,7 +343,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     return null;
                   },
                 ),
-                if (widget.isExistingUser) ...[
+                if (widget.isExistingUser && !widget.isPasswordReset) ...[
                   SizedBox(
                     width: double.infinity,
                     child: TextButton(
@@ -326,7 +352,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     ),
                   ),
                 ],
-                if (!widget.isExistingUser) ...[
+                if (!widget.isExistingUser || widget.isPasswordReset) ...[
                   const SizedBox(height: 24),
                   TextFormField(
                     controller: _confirmPasswordController,
@@ -393,7 +419,9 @@ class _PasswordScreenState extends State<PasswordScreen> {
                   child: CustomButton(
                     onPressed: _isLoading ? null : _submit,
                     isLoading: _isLoading,
-                    text: widget.isExistingUser ? "Log In" : "Register",
+                    text: widget.isPasswordReset
+                        ? "Update Password"
+                        : (widget.isExistingUser ? "Log In" : "Register"),
                     backgroundColor: AppColors.primary,
                     borderRadius: 12,
                   ),

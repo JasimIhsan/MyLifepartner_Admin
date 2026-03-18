@@ -1,11 +1,11 @@
 export const CACHE_KEYS = {
-   OTP: (email: string) => `otp:${email}`,
+   OTP: (email: string, purpose: string) => `otp:${purpose}:${email}`,
    REFRESH_TOKEN: (userId: string | number) => `refresh_token:${userId}`,
    OTP_IP_REQ_COUNT: (ip: string) => `otp_ip_count:${ip}`,
    OTP_EMAIL_REQ_COUNT: (email: string) => `otp_email_count:${email}`,
-   OTP_VERIFY_ATTEMPTS: (email: string) => `otp_verify_attempts:${email}`,
-   OTP_RESEND_LOCK: (email: string) => `otp_resend_lock:${email}`,
-   OTP_VERIFIED: (email: string) => `otp_verified:${email}`,
+   OTP_VERIFY_ATTEMPTS: (email: string, purpose: string) => `otp_verify_attempts:${purpose}:${email}`,
+   OTP_RESEND_LOCK: (email: string, purpose: string) => `otp_resend_lock:${purpose}:${email}`,
+   OTP_VERIFIED: (email: string, purpose: string) => `otp_verified:${purpose}:${email}`,
    ACCOUNT_LOCK: (email: string) => `account_lock:${email}`,
    PASSWORD_RESET_TOKEN: (token: string) => `password_reset:${token}`,
 };

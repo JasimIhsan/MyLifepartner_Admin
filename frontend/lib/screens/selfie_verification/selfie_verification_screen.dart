@@ -101,8 +101,9 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
 
   /// Requests location permission, fetches GPS, and completes verification.
   Future<void> _submitVerification() async {
-    if (_frontImage == null || _leftImage == null || _rightImage == null)
+    if (_frontImage == null || _leftImage == null || _rightImage == null) {
       return;
+    }
 
     setState(() {
       _isLoading = true;

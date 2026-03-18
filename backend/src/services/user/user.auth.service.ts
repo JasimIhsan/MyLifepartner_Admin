@@ -24,27 +24,27 @@ export class AuthService implements IUserAuthService {
       private cacheService: ICacheService
    ) {}
 
-   async initiateAuth(email: string, ip: string) {
+   async initiateAuth(email: string, ip: string, purpose: string = "auth") {
       if (!email) throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
 
       const user = await this.userService.findUserByEmail(email);
       const exists = !!user;
 
-      const otpResult = await this.otpService.sendOtp(email, ip);
+      const otpResult = await this.otpService.sendOtp(email, ip, purpose);
 
       return { exists, otp: otpResult };
    }
 
-   private async assertOtpVerified(email: string) {
-      const isVerified = await this.cacheService.getCache(CACHE_KEYS.OTP_VERIFIED(email));
+   private async assertOtpVerified(email: string, purpose: string) {
+      const isVerified = await this.cacheService.getCache(CACHE_KEYS.OTP_VERIFIED(email, purpose));
       if (!isVerified) {
          throw new ApiError(HTTP_STATUS.FORBIDDEN, "Please verify OTP before proceeding");
       }
       return true;
    }
 
-   private async clearOtpVerified(email: string) {
-      await this.cacheService.deleteCache(CACHE_KEYS.OTP_VERIFIED(email));
+   private async clearOtpVerified(email: string, purpose: string) {
+      await this.cacheService.deleteCache(CACHE_KEYS.OTP_VERIFIED(email, purpose));
    }
 
    private async checkAccountLock(email: string) {
@@ -66,11 +66,11 @@ export class AuthService implements IUserAuthService {
       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid password");
    }
 
-   async verifyOtp(email: string, otp: string) {
+   async verifyOtp(email: string, otp: string, purpose: string = "auth") {
       if (!email || !otp) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email and OTP are required");
       }
-      const verifyResult = await this.otpService.verifyOtp(email, otp);
+      const verifyResult = await this.otpService.verifyOtp(email, otp, purpose);
       if (!verifyResult.isValid) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired OTP");
       }
@@ -78,7 +78,7 @@ export class AuthService implements IUserAuthService {
    }
 
    async login(email: string, passwordPlain: string) {
-      await this.assertOtpVerified(email);
+      await this.assertOtpVerified(email, "auth");
       await this.checkAccountLock(email);
 
       const user = await prisma.user.findUnique({ where: { email }, include: { profile: true } });
@@ -94,7 +94,7 @@ export class AuthService implements IUserAuthService {
          await this.handleFailedAttempt(email);
       }
 
-      await this.clearOtpVerified(email);
+      await this.clearOtpVerified(email, "auth");
       await this.cacheService.deleteCache(CACHE_KEYS.ACCOUNT_LOCK(email));
 
       const accessToken = this.jwtService.signAccess({ id: user.id, email: user.email, role: user.role }, "1d");
@@ -104,7 +104,7 @@ export class AuthService implements IUserAuthService {
    }
 
    async register(email: string, passwordPlain: string) {
-      await this.assertOtpVerified(email);
+      await this.assertOtpVerified(email, "auth");
 
       const existingUser = await prisma.user.findUnique({ where: { email } });
       if (existingUser) {
@@ -120,7 +120,7 @@ export class AuthService implements IUserAuthService {
          include: { profile: true },
       });
 
-      await this.clearOtpVerified(email);
+      await this.clearOtpVerified(email, "auth");
 
       const accessToken = this.jwtService.signAccess({ id: user.id, email: user.email, role: user.role }, "1d");
       const refreshToken = this.jwtService.signRefresh({ id: user.id, email: user.email, role: user.role }, "30d");
@@ -129,7 +129,7 @@ export class AuthService implements IUserAuthService {
    }
 
    async forgotPassword(email: string, passwordPlain: string) {
-      await this.assertOtpVerified(email);
+      await this.assertOtpVerified(email, "password_reset");
 
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
@@ -142,63 +142,13 @@ export class AuthService implements IUserAuthService {
          data: { password: hashedPassword },
       });
 
-      await this.clearOtpVerified(email);
+      await this.clearOtpVerified(email, "password_reset");
       await this.cacheService.deleteCache(CACHE_KEYS.ACCOUNT_LOCK(email)); // unlock if it was locked
 
       return { message: "Password updated successfully" };
    }
 
-   async detectCountryAsync(ip: string | undefined, countryCodeHeader: string | undefined) {
-      const isLocal = !ip || ip === "::1" || ip === "127.0.0.1" || ip.startsWith("192.168.") || ip.startsWith("10.");
 
-      if (countryCodeHeader && !isLocal) {
-         const countryNames: Record<string, string> = { IN: "India", US: "United States", GB: "United Kingdom", AE: "United Arab Emirates" };
-         const callingCodes: Record<string, string> = { IN: "+91", US: "+1", GB: "+44", AE: "+971" };
-
-         if (callingCodes[countryCodeHeader.toUpperCase()]) {
-            return {
-               country: countryNames[countryCodeHeader.toUpperCase()] || countryCodeHeader,
-               countryCode: countryCodeHeader.toUpperCase(),
-               callingCode: callingCodes[countryCodeHeader.toUpperCase()],
-               message: "Country detected from platform headers",
-            };
-         }
-      }
-
-      if (isLocal) {
-         return {
-            country: "India",
-            countryCode: "IN",
-            callingCode: "+91",
-            message: "Localhost detected, returning default country",
-         };
-      }
-
-      try {
-         const response = await fetch(`https://ipapi.co/${ip}/json/`);
-         const data = await response.json();
-
-         console.log(`👉 ip response : `, data);
-
-         if (data.error) {
-            throw new Error(data.reason);
-         }
-
-         return {
-            country: data.country_name || "India",
-            countryCode: data.country_code || "IN",
-            callingCode: data.country_calling_code || "+91",
-            message: "Country detected successfully",
-         };
-      } catch (error) {
-         return {
-            country: "India",
-            countryCode: "IN",
-            callingCode: "+91",
-            message: "Detection failed, returning fallback",
-         };
-      }
-   }
 
    async refreshToken(refreshToken: string) {
       if (!refreshToken) {
@@ -223,149 +173,16 @@ export class AuthService implements IUserAuthService {
       }
    }
 
-   sendMagicLink(userId: number | undefined, email: string): Promise<void> {
-      throw new Error("Method not implemented.");
-   }
 
-   verifyEmailLink(token: string | undefined | null): Promise<{ verified: boolean; message: string }> {
-      throw new Error("Method not implemented.");
-   }
-
-   // async sendMagicLink(userId: number | undefined, email: string) {
-   //    if (!userId) {
-   //       throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not authenticated");
-   //    }
-
-   //    if (!email) {
-   //       throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
-   //    }
-
-   //    const user = await this.userService.getUserById(userId);
-   //    if (!user) {
-   //       throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
-   //    }
-
-   //    if (user.email !== email) {
-   //       await this.userService.updateUser(userId, { email, isEmailVerified: false } as import("@prisma/client").Prisma.UserUpdateInput);
-   //    } else if (user.isEmailVerified) {
-   //       throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is already verified");
-   //    }
-
-   //    // Expire any existing unused tokens for this user first
-   //    await prisma.emailVerificationToken.updateMany({
-   //       where: { userId, isUsed: false },
-   //       data: { isUsed: true },
-   //    });
-
-   //    const token = crypto.randomBytes(32).toString("hex");
-   //    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
-
-   //    await prisma.emailVerificationToken.create({
-   //       data: {
-   //          userId,
-   //          token,
-   //          expiresAt,
-   //       },
-   //    });
-
-   //    // Point to our HTTPS route instead of direct deep link
-   //    // Use env or request host, but falling back to default localhost or production domain
-   //    const baseUrl = "https://mudfish-welcomed-guinea.ngrok-free.app";
-   //    const verificationUrl = `${baseUrl}/api/user/auth/verify-email?token=${token}`;
-
-   //    await this.emailService.sendVerificationEmail(email, verificationUrl);
-   // }
-
-   async sendOtp(email: string, ip: string) {
-      const otp = await this.otpService.sendOtp(email, ip);
+   async sendOtp(email: string, ip: string, purpose: string = "auth") {
+      const otp = await this.otpService.sendOtp(email, ip, purpose);
       return { otp };
    }
 
-   async resendOtp(email: string, ip: string) {
-      const otp = await this.otpService.resendOtp(email, ip);
+   async resendOtp(email: string, ip: string, purpose: string = "auth") {
+      const otp = await this.otpService.resendOtp(email, ip, purpose);
       return { otp };
    }
 
-   async sendPasswordResetLink(email: string) {
-      if (!email) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
-      }
 
-      const user = await this.userService.findUserByEmail(email);
-      if (!user) {
-         // Return silently to prevent email enumeration
-         return;
-      }
-
-      const token = crypto.randomBytes(32).toString("hex");
-      const expiresAtSeconds = 15 * 60; // 15 minutes
-
-      await this.cacheService.setCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token), user.id.toString(), expiresAtSeconds);
-
-      // const baseUrl = "https://mudfish-welcomed-guinea.ngrok-free.app";
-      const baseUrl = env.BASE_URL;
-      const resetUrl = `${baseUrl}/api/user/auth/forgot-password/reset?token=${token}`;
-
-      await this.emailService.sendPasswordResetEmail(email, resetUrl);
-   }
-
-   async renderPasswordResetPage(token: string | undefined | null | any) {
-      if (!token || typeof token !== "string") {
-         return this.getErrorHtml("Invalid Link", "The reset link is missing or invalid.");
-      }
-
-      const userIdStr = await this.cacheService.getCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token));
-
-      if (!userIdStr) {
-         return this.getErrorHtml("Invalid or Expired Link", "This reset link is invalid or has expired. Please request a new one.");
-      }
-
-      const templatePath = path.join(__dirname, "../../../src/templates/pages/reset-password-form.html");
-      let html = fs.readFileSync(templatePath, "utf-8");
-
-      html = html.replace(/{{TOKEN}}/g, token);
-
-      return html;
-   }
-
-   async resetPasswordWithLink(token: string | undefined | null | any, passwordPlain: string) {
-      if (!token || typeof token !== "string") {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "The reset link is missing or invalid.");
-      }
-
-      if (!passwordPlain || passwordPlain.length < 8) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Password must be at least 8 characters.");
-      }
-
-      const userIdStr = await this.cacheService.getCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token));
-
-      if (!userIdStr) {
-         throw new ApiError(HTTP_STATUS.NOT_FOUND, "This reset link is invalid or has expired. Please request a new one.");
-      }
-
-      const userId = parseInt(userIdStr, 10);
-      const user = await prisma.user.findUnique({ where: { id: userId } });
-
-      if (!user) {
-         throw new ApiError(HTTP_STATUS.NOT_FOUND, "We couldn't find the account associated with this link.");
-      }
-
-      const hashedPassword = await bcrypt.hash(passwordPlain, 10);
-
-      await this.userService.updateUser(userId, { password: hashedPassword });
-
-      await this.cacheService.deleteCache(CACHE_KEYS.PASSWORD_RESET_TOKEN(token));
-
-      return { success: true, message: "Password reset successfully" };
-   }
-
-   private getErrorHtml(title: string, message: string) {
-      const templatePath = path.join(__dirname, "../../../src/templates/pages/error.html");
-      let html = fs.readFileSync(templatePath, "utf-8");
-
-      html = html.replace(/{{TITLE}}/g, title);
-      html = html.replace(/{{MESSAGE}}/g, message);
-
-      return html;
-   }
 }

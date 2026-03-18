@@ -17,13 +17,13 @@ export class EmailService implements IEmailService {
       });
    }
 
-   public async sendVerificationEmail(to: string, verificationUrl: string) {
+   public async sendOtpEmail(to: string, otp: string) {
       try {
          const info = await this.transporter.sendMail({
             from: `"MyLifePartner" <${env.SMTP_FROM || env.SMTP_USER}>`,
             to,
-            subject: "Verify Your Email - MyLifePartner",
-            html: this.getVerificationEmailHtml(verificationUrl),
+            subject: "Your OTP - MyLifePartner",
+            html: this.getOtpEmailHtml(otp),
          });
 
          console.log("Message sent: %s", info.messageId);
@@ -31,45 +31,16 @@ export class EmailService implements IEmailService {
          return info;
       } catch (error) {
          console.error("Error sending email: ", error);
-         throw new Error("Failed to send verification email");
+         throw new Error("Failed to send OTP email");
       }
    }
 
-   private getVerificationEmailHtml(verificationUrl: string): string {
-      const templatePath = path.join(__dirname, "../../src/templates/emails/verification.html");
+   private getOtpEmailHtml(otp: string): string {
+      const templatePath = path.join(__dirname, "../../src/templates/emails/otp.html");
       let html = fs.readFileSync(templatePath, "utf-8");
       
       const year = new Date().getFullYear().toString();
-      html = html.replace(/{{VERIFICATION_URL}}/g, verificationUrl);
-      html = html.replace(/{{YEAR}}/g, year);
-      
-      return html;
-   }
-
-   public async sendPasswordResetEmail(to: string, resetUrl: string) {
-      try {
-         const info = await this.transporter.sendMail({
-            from: `"MyLifePartner" <${env.SMTP_FROM || env.SMTP_USER}>`,
-            to,
-            subject: "Reset Your Password - MyLifePartner",
-            html: this.getPasswordResetEmailHtml(resetUrl),
-         });
-
-         console.log("Message sent: %s", info.messageId);
-
-         return info;
-      } catch (error) {
-         console.error("Error sending email: ", error);
-         throw new Error("Failed to send password reset email");
-      }
-   }
-
-   private getPasswordResetEmailHtml(resetUrl: string): string {
-      const templatePath = path.join(__dirname, "../../src/templates/emails/password-reset.html");
-      let html = fs.readFileSync(templatePath, "utf-8");
-      
-      const year = new Date().getFullYear().toString();
-      html = html.replace(/{{RESET_URL}}/g, resetUrl);
+      html = html.replace(/{{OTP}}/g, otp);
       html = html.replace(/{{YEAR}}/g, year);
       
       return html;
