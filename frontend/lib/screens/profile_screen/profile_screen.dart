@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../shared/widgets/custom_bottom_sheet.dart';
 import '../../shared/widgets/custom_button.dart';
 import '../login_screen/login_screen.dart';
+import '../subscription_screen/subscription_screen.dart';
 import 'manage_profile_pictures_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -183,6 +184,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   if (result == true) {
                     _fetchProfileData(); // Refresh data after update
                   }
+                },
+              ),
+            ]),
+
+            _buildSectionHeader("Subscription"),
+            _buildActionGroup([
+              _buildActionItem(
+                icon: Icons.star_outline,
+                title: "My Subscription",
+                showDivider: false,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SubscriptionScreen(),
+                    ),
+                  );
                 },
               ),
             ]),

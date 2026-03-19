@@ -8,7 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/selfie_verification/face_direction_overlay.dart';
+import 'package:mylifepartner/screens/selfie_verification/widgets/face_direction_overlay.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -308,7 +308,10 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               ),
               const SizedBox(height: 24),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryLight,
                   borderRadius: BorderRadius.circular(12),
