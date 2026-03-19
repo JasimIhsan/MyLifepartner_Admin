@@ -27,10 +27,10 @@ export class OtpService implements IOtpService {
       const ipCount = parseInt(ipCountStr || "0", 10);
 
       if (emailCount >= RATE_LIMIT_CONFIG.OTP_REQUEST_EMAIL) {
-         throw new ApiError(HTTP_STATUS.TOO_MANY_REQUESTS || 429, "Too many OTP requests for this email. Please try again later.");
+         throw new ApiError(HTTP_STATUS.TOO_MANY_REQUESTS || 429, "Too many OTP requests for this email. Please try again in 1 hour.");
       }
       if (ipCount >= RATE_LIMIT_CONFIG.OTP_REQUEST_IP) {
-         throw new ApiError(HTTP_STATUS.TOO_MANY_REQUESTS || 429, "Too many OTP requests from this IP. Please try again later.");
+         throw new ApiError(HTTP_STATUS.TOO_MANY_REQUESTS || 429, "Too many OTP requests from this IP. Please try again in 1 hour.");
       }
 
       await this.cacheService.incrCache(emailCountKey);
@@ -45,7 +45,7 @@ export class OtpService implements IOtpService {
       const resendLockKey = CACHE_KEYS.OTP_RESEND_LOCK(email, purpose);
       const isLocked = await this.cacheService.getCache(resendLockKey);
       if (isLocked) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, `Please wait before requesting another OTP for ${purpose}.`);
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, `Please wait 1 minute before requesting another OTP for ${purpose}.`);
       }
 
       await this.checkRateLimits(email, ip);
@@ -81,7 +81,7 @@ export class OtpService implements IOtpService {
       const attempts = parseInt(attemptsStr || "0", 10);
 
       if (attempts >= RATE_LIMIT_CONFIG.OTP_VERIFY_ATTEMPTS) {
-         throw new ApiError(HTTP_STATUS.TOO_MANY_REQUESTS || 429, "Too many incorrect attempts. Please request a new OTP.");
+         throw new ApiError(HTTP_STATUS.TOO_MANY_REQUESTS || 429, "Too many incorrect attempts. Please try again in 15 minutes or request a new OTP.");
       }
 
       const storedOtp = await this.cacheService.getCache(CACHE_KEYS.OTP(email, purpose));
