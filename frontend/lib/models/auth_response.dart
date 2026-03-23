@@ -103,6 +103,13 @@ class User {
   final int? annualIncome;
   final String? bio;
   final int? profileCompletion;
+  final String? childrenStatus;
+  final String? emotionalReadiness;
+  final String? lookingFor;
+  final String? relationshipTimeline;
+  final List<String> languages;
+  final String? smokingHabit;
+  final String? drinkingHabit;
 
   User({
     required this.id,
@@ -129,9 +136,18 @@ class User {
     this.annualIncome,
     this.bio,
     this.profileCompletion,
+    this.childrenStatus,
+    this.emotionalReadiness,
+    this.lookingFor,
+    this.relationshipTimeline,
+    this.languages = const [],
+    this.smokingHabit,
+    this.drinkingHabit,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    final rawLanguages = json['languages'];
+
     return User(
       id: json['id'] ?? 0,
       mobileNumber: json['mobileNumber'],
@@ -160,6 +176,25 @@ class User {
       annualIncome: json['annualIncome'],
       bio: json['bio'],
       profileCompletion: json['profileCompletion'],
+      childrenStatus: json['childrenStatus'],
+      emotionalReadiness: json['emotionalReadiness'],
+      lookingFor: json['lookingFor'],
+      relationshipTimeline: json['relationshipTimeline'],
+      languages: rawLanguages is List
+          ? rawLanguages
+              .whereType<dynamic>()
+              .map((item) => item.toString())
+              .where((item) => item.trim().isNotEmpty)
+              .toList()
+          : rawLanguages is String
+              ? rawLanguages
+                  .split(',')
+                  .map((item) => item.trim())
+                  .where((item) => item.isNotEmpty)
+                  .toList()
+              : const [],
+      smokingHabit: json['smokingHabit'],
+      drinkingHabit: json['drinkingHabit'],
     );
   }
 }
