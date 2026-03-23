@@ -93,6 +93,17 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       return;
     }
 
+    final age = int.tryParse(_ageController.text) ?? 0;
+    if (age < 18) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You must be at least 18 years old'),
+          backgroundColor: Colors.black,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -102,6 +113,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         'name': _nameController.text.trim(),
         'country': _country,
         'city': _cityController.text.trim(),
+        'dateOfBirth': _dateOfBirth?.toIso8601String(),
       });
 
       final prefs = await SharedPreferences.getInstance();
@@ -184,6 +196,41 @@ class _EditProfileScreenState extends State<EditProfileScreen>
               _buildTextField(
                 controller: _dateController,
                 hintText: 'Date of birth',
+                readOnly: true,
+                onTap: () async {
+                  final now = DateTime.now();
+                  final eighteenYearsAgo =
+                      DateTime(now.year - 18, now.month, now.day);
+                  final DateTime? picked = await showDatePicker(
+                    context: context,
+                    initialDate:
+                        _dateOfBirth != null &&
+                                _dateOfBirth!.isBefore(eighteenYearsAgo)
+                            ? _dateOfBirth!
+                            : eighteenYearsAgo,
+                    firstDate: DateTime(1900),
+                    lastDate: eighteenYearsAgo,
+                    builder: (context, child) {
+                      return Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.light(
+                            primary: AppColors.primary,
+                            onPrimary: Colors.white,
+                            onSurface: AppColors.textPrimary,
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  );
+                  if (picked != null && picked != _dateOfBirth) {
+                    setState(() {
+                      _dateOfBirth = picked;
+                      _dateController.text = _formatDate(picked);
+                      _ageController.text = _calculateAge(picked);
+                    });
+                  }
+                },
               ),
               const SizedBox(height: 20),
               _buildLabel('Email'),
@@ -244,12 +291,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
     bool enabled = true,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
       enabled: enabled,
+      readOnly: readOnly,
+      onTap: onTap,
       style: GoogleFonts.poppins(
         color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
       ),
