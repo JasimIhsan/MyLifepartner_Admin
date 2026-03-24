@@ -2,12 +2,21 @@ import axiosInstance from "./api.config";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface GlobalFeature {
+   id: number;
+   key: string;
+   name: string;
+   description?: string;
+   createdAt: string;
+}
+
 export interface PlanFeature {
    id: number;
    planId: number;
-   key: string;
-   value: string;
+   featureId: number;
+   limit: string;
    createdAt: string;
+   feature?: GlobalFeature; // Extrapolated from the backend 'include'
 }
 
 export interface SubscriptionPlan {
@@ -52,19 +61,41 @@ export const deletePlan = async (planId: number) => {
    return res.data;
 };
 
-// ─── Feature APIs ─────────────────────────────────────────────────────────────
+// ─── Plan Feature Mapping APIs ────────────────────────────────────────────────
 
-export const addFeatures = async (planId: number, features: { key: string; value: string }[]) => {
+export const addFeaturesToPlan = async (planId: number, features: { featureId: number; limit: string }[]) => {
    const res = await axiosInstance.post(`/admin/plans/${planId}/features`, features);
    return res.data;
 };
 
-export const updateFeature = async (featureId: number, value: string) => {
-   const res = await axiosInstance.patch(`/admin/features/${featureId}`, { value });
+export const updatePlanFeature = async (planId: number, planFeatureId: number, limit: string) => {
+   const res = await axiosInstance.patch(`/admin/plans/${planId}/features/${planFeatureId}`, { limit });
    return res.data;
 };
 
-export const deleteFeature = async (featureId: number) => {
+export const deletePlanFeature = async (planId: number, planFeatureId: number) => {
+   const res = await axiosInstance.delete(`/admin/plans/${planId}/features/${planFeatureId}`);
+   return res.data;
+};
+
+// ─── Global Feature APIs ──────────────────────────────────────────────────────
+
+export const getGlobalFeatures = async () => {
+   const res = await axiosInstance.get("/admin/features");
+   return res.data;
+};
+
+export const createGlobalFeature = async (data: { key: string; name: string; description?: string }) => {
+   const res = await axiosInstance.post("/admin/features", data);
+   return res.data;
+};
+
+export const updateGlobalFeature = async (featureId: number, data: { name?: string; description?: string }) => {
+   const res = await axiosInstance.patch(`/admin/features/${featureId}`, data);
+   return res.data;
+};
+
+export const deleteGlobalFeature = async (featureId: number) => {
    const res = await axiosInstance.delete(`/admin/features/${featureId}`);
    return res.data;
 };

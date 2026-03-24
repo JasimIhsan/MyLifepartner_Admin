@@ -28,6 +28,8 @@ export const userRepository = new UserRepository();
 export const profileRepository = new ProfileRepository();
 export const questionnaireRepository = new QuestionnaireRepository();
 export const subscriptionRepository = new SubscriptionRepository();
+import { FeatureRepository } from "@/repositories/feature.repository";
+export const featureRepository = new FeatureRepository();
 export const matchRepository = new MatchRepository();
 
 // ─── 2. Infrastructure / Utility Services ────────────────────────────────────
@@ -59,6 +61,9 @@ export const adminQuestionnaireService = new AdminQuestionnaireService(questionn
 import { AdminSubscriptionService } from "@/services/admin/admin.subscription.service";
 export const adminSubscriptionService = new AdminSubscriptionService(subscriptionRepository);
 
+import { AdminFeatureService } from "@/services/admin/admin.feature.service";
+export const adminFeatureService = new AdminFeatureService(featureRepository);
+
 // User services
 export const userService = new UserService(userRepository);
 export const authService = new AuthService(userService, otpService, emailService, jwtService, cacheService);
@@ -85,6 +90,9 @@ export const adminUsersController = new AdminUsersController(userService);
 
 import { AdminSubscriptionController } from "@/controllers/admin/admin.subscription.controller";
 export const adminSubscriptionController = new AdminSubscriptionController(adminSubscriptionService);
+
+import { AdminFeatureController } from "@/controllers/admin/admin.feature.controller"; // New
+export const adminFeatureController = new AdminFeatureController(adminFeatureService); // New
 
 // User controllers
 export const authController = new AuthController(authService, userService);

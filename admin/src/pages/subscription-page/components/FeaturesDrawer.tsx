@@ -1,11 +1,23 @@
-import { addFeatures, deleteFeature, updateFeature, type PlanFeature, type SubscriptionPlan } from "@/api/subscription.service";
+import { useState, useEffect } from "react";
+import type { AxiosError } from "axios";
+import { toast } from "sonner";
+import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
+
+import {
+   addFeaturesToPlan,
+   deletePlanFeature,
+   updatePlanFeature,
+   getGlobalFeatures,
+   type GlobalFeature,
+   type PlanFeature,
+   type SubscriptionPlan,
+} from "@/api/subscription.service";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import type { AxiosError } from "axios";
-import { Check, Pencil, Plus, Trash2, X } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface FeaturesDrawerProps {
    plan: SubscriptionPlan | null;
@@ -16,50 +28,54 @@ interface FeaturesDrawerProps {
 
 /** A single editable feature row */
 function FeatureRow({
+   planId,
    feature,
    onUpdate,
    onDelete,
 }: {
+   planId: number;
    feature: PlanFeature;
-   onUpdate: (id: number, value: string) => Promise<void>;
-   onDelete: (id: number) => Promise<void>;
+   onUpdate: (planId: number, id: number, limit: string) => Promise<void>;
+   onDelete: (planId: number, id: number) => Promise<void>;
 }) {
    const [editing, setEditing] = useState(false);
-   const [editedValue, setEditedValue] = useState(feature.value);
+   const [editedLimit, setEditedLimit] = useState(feature.limit);
    const [loading, setLoading] = useState(false);
 
    const handleSave = async () => {
-      if (editedValue.trim() === "") {
-         toast.error("Value cannot be empty");
+      if (editedLimit.trim() === "") {
+         toast.error("Limit cannot be empty");
          return;
       }
       setLoading(true);
-      await onUpdate(feature.id, editedValue.trim());
+      await onUpdate(planId, feature.id, editedLimit.trim());
       setLoading(false);
       setEditing(false);
    };
 
    const handleCancel = () => {
-      setEditedValue(feature.value);
+      setEditedLimit(feature.limit);
       setEditing(false);
    };
 
    const handleDelete = async () => {
       setLoading(true);
-      await onDelete(feature.id);
+      await onDelete(planId, feature.id);
       setLoading(false);
    };
 
    return (
       <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors">
          {/* Key */}
-         <code className="text-xs font-mono text-muted-foreground flex-1 min-w-0 truncate">{feature.key}</code>
+         <code className="text-xs font-mono text-muted-foreground flex-1 min-w-0 truncate">
+            {feature.feature?.name || `Feature ID: ${feature.featureId}`}
+         </code>
 
-         {/* Value */}
+         {/* Limit */}
          {editing ? (
             <Input
-               value={editedValue}
-               onChange={(e) => setEditedValue(e.target.value)}
+               value={editedLimit}
+               onChange={(e) => setEditedLimit(e.target.value)}
                className="h-7 text-xs w-32"
                autoFocus
                onKeyDown={(e) => {
@@ -68,7 +84,7 @@ function FeatureRow({
                }}
             />
          ) : (
-            <span className="text-xs font-semibold w-24 text-right truncate">{feature.value}</span>
+            <span className="text-xs font-semibold w-24 text-right truncate">{feature.limit}</span>
          )}
 
          {/* Actions */}
@@ -98,26 +114,40 @@ function FeatureRow({
 }
 
 export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: FeaturesDrawerProps) {
-   const [newKey, setNewKey] = useState("");
-   const [newValue, setNewValue] = useState("");
+   const [globalFeatures, setGlobalFeatures] = useState<GlobalFeature[]>([]);
+   const [selectedFeatureId, setSelectedFeatureId] = useState<string>("");
+   const [newLimit, setNewLimit] = useState("");
    const [addLoading, setAddLoading] = useState(false);
+
+   useEffect(() => {
+      if (isOpen) {
+         fetchGlobalFeatures();
+      }
+   }, [isOpen]);
+
+   const fetchGlobalFeatures = async () => {
+      try {
+         const res = await getGlobalFeatures();
+         setGlobalFeatures(res.data);
+      } catch (err) {
+         console.error("Failed to load global features for drawer", err);
+      }
+   };
 
    if (!plan) return null;
 
    // ── Add feature ────────────────────────────────────────────────────────────
    const handleAdd = async () => {
-      const key = newKey.trim().toLowerCase().replace(/\s+/g, "_");
-      const value = newValue.trim();
-      if (!key || !value) {
-         toast.error("Both key and value are required");
+      if (!selectedFeatureId || !newLimit.trim()) {
+         toast.error("Please select a feature and enter a limit");
          return;
       }
       try {
          setAddLoading(true);
-         await addFeatures(plan.id, [{ key, value }]);
-         toast.success("Feature added");
-         setNewKey("");
-         setNewValue("");
+         await addFeaturesToPlan(plan.id, [{ featureId: parseInt(selectedFeatureId), limit: newLimit.trim() }]);
+         toast.success("Feature added to plan");
+         setSelectedFeatureId("");
+         setNewLimit("");
          onSuccess();
       } catch (err) {
          const axiosError = err as AxiosError<{ message: string }>;
@@ -128,10 +158,10 @@ export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: Fea
    };
 
    // ── Update feature ─────────────────────────────────────────────────────────
-   const handleUpdate = async (id: number, value: string) => {
+   const handleUpdate = async (planId: number, planFeatureId: number, limit: string) => {
       try {
-         await updateFeature(id, value);
-         toast.success("Feature updated");
+         await updatePlanFeature(planId, planFeatureId, limit);
+         toast.success("Plan feature updated");
          onSuccess();
       } catch (err) {
          const axiosError = err as AxiosError<{ message: string }>;
@@ -140,16 +170,19 @@ export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: Fea
    };
 
    // ── Delete feature ─────────────────────────────────────────────────────────
-   const handleDelete = async (id: number) => {
+   const handleDelete = async (planId: number, planFeatureId: number) => {
       try {
-         await deleteFeature(id);
-         toast.success("Feature deleted");
+         await deletePlanFeature(planId, planFeatureId);
+         toast.success("Plan feature deleted");
          onSuccess();
       } catch (err) {
          const axiosError = err as AxiosError<{ message: string }>;
          toast.error(axiosError.response?.data?.message || "Failed to delete feature");
       }
    };
+
+   // Filter out features that the plan already has
+   const availableFeatures = globalFeatures.filter((gf) => !plan.features.some((pf) => pf.featureId === gf.id));
 
    return (
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -168,34 +201,48 @@ export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: Fea
                   <p className="text-sm text-muted-foreground text-center py-8">No features yet. Add one below.</p>
                )}
                {plan.features.map((f) => (
-                  <FeatureRow key={f.id} feature={f} onUpdate={handleUpdate} onDelete={handleDelete} />
+                  <FeatureRow key={f.id} planId={plan.id} feature={f} onUpdate={handleUpdate} onDelete={handleDelete} />
                ))}
             </div>
 
             {/* Add new feature row */}
-            <div className="border-t px-6 py-4 space-y-3">
-               <p className="text-sm font-semibold">Add Feature</p>
-               <p className="text-xs text-muted-foreground -mt-1">
-                  Key: lowercase, underscores. Example keys: <code>can_message</code>, <code>video_call_minutes</code>
-               </p>
-               <div className="flex gap-2">
-                  <Input
-                     placeholder="key (e.g. can_message)"
-                     value={newKey}
-                     onChange={(e) => setNewKey(e.target.value)}
-                     className="text-xs font-mono h-8"
-                  />
-                  <Input
-                     placeholder="value"
-                     value={newValue}
-                     onChange={(e) => setNewValue(e.target.value)}
-                     className="text-xs h-8"
-                     onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-                  />
-                  <Button size="sm" className="h-8 gap-1 shrink-0" onClick={handleAdd} disabled={addLoading}>
-                     <Plus className="h-3.5 w-3.5" />
-                     Add
-                  </Button>
+            <div className="border-t px-6 py-4 space-y-3 bg-muted/10">
+               <p className="text-sm font-semibold">Extend Plan</p>
+               <div className="flex flex-col gap-3">
+                  <div className="space-y-1">
+                     <Label className="text-xs">Feature</Label>
+                     <Select value={selectedFeatureId} onValueChange={setSelectedFeatureId}>
+                        <SelectTrigger className="h-8 text-xs">
+                           <SelectValue placeholder="Select a generic feature" />
+                        </SelectTrigger>
+                        <SelectContent>
+                           {availableFeatures.length === 0 && (
+                              <div className="p-2 text-xs text-muted-foreground text-center">No more features available</div>
+                           )}
+                           {availableFeatures.map((gf) => (
+                              <SelectItem key={gf.id} value={gf.id.toString()} className="text-xs">
+                                 {gf.name} ({gf.key})
+                              </SelectItem>
+                           ))}
+                        </SelectContent>
+                     </Select>
+                  </div>
+                  <div className="space-y-1">
+                     <Label className="text-xs">Limit Definition</Label>
+                     <div className="flex gap-2">
+                        <Input
+                           placeholder="e.g. 100, Unlimited, 5 / day"
+                           value={newLimit}
+                           onChange={(e) => setNewLimit(e.target.value)}
+                           className="h-8 text-xs font-medium bg-background"
+                           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+                        />
+                        <Button size="sm" className="h-8 gap-1 shrink-0" onClick={handleAdd} disabled={addLoading}>
+                           <Plus className="h-3.5 w-3.5" />
+                           Add
+                        </Button>
+                     </div>
+                  </div>
                </div>
             </div>
          </SheetContent>

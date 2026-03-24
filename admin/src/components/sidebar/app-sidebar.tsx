@@ -43,7 +43,7 @@ const data = {
             },
             {
                title: "Features",
-               url: "#",
+               url: "/subscriptions/features",
             },
          ],
       },

@@ -1,16 +1,19 @@
 import { PlanFeature, SubscriptionPlan } from "@prisma/client";
-import { SubscriptionPlanWithFeatures } from "../repositories/subscription.repository.interface";
+import { CreatePlanInput, UpdatePlanInput } from "@/validators/subscription.validator";
+
+export interface AddFeaturesInput {
+   featureId: number;
+   limit: string;
+}
 
 export interface IAdminSubscriptionService {
-   // ── Plans ──────────────────────────────────────────────────────────────
-   createPlan(data: { name: string; price: number; durationDays: number }): Promise<SubscriptionPlan>;
-   getPlans(): Promise<SubscriptionPlanWithFeatures[]>;
-   getPlanById(id: number): Promise<SubscriptionPlanWithFeatures>;
-   updatePlan(id: number, data: { price?: number; durationDays?: number; isActive?: boolean }): Promise<SubscriptionPlan>;
-   deletePlan(id: number): Promise<SubscriptionPlan>;
+   createPlan(data: CreatePlanInput): Promise<any>;
+   getPlans(): Promise<any[]>;
+   getPlanById(planId: number): Promise<any>;
+   updatePlan(planId: number, data: UpdatePlanInput): Promise<any>;
+   deletePlan(planId: number): Promise<any>;
 
-   // ── Features ───────────────────────────────────────────────────────────
-   addFeatures(planId: number, features: { key: string; value: string }[]): Promise<PlanFeature[]>;
-   updateFeature(featureId: number, value: string): Promise<PlanFeature>;
-   deleteFeature(featureId: number): Promise<PlanFeature>;
+   addFeatures(planId: number, features: AddFeaturesInput[]): Promise<any[]>;
+   updatePlanFeature(planFeatureId: number, limit: string): Promise<any>;
+   deletePlanFeature(planFeatureId: number): Promise<void>;
 }

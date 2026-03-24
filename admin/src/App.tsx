@@ -14,6 +14,8 @@ import SubscriptionPage from "./pages/subscription-page/SubscriptionPage";
 import UsersPage from "./pages/users-page/UsersPage";
 import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 
+import { FeaturesPage } from "./pages/features-page/FeaturesPage"; // New
+
 function App() {
    const dispatch = useDispatch();
    const location = useLocation();
@@ -51,6 +53,7 @@ function App() {
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
                   <Route path="/subscriptions" element={<SubscriptionPage />} />
+                  <Route path="/subscriptions/features" element={<FeaturesPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                </Route>
             </Route>

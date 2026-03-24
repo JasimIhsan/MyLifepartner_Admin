@@ -24,10 +24,15 @@ router.use("/admin/questionnaire", authenticateAdmin, adminQuestionnaireRoute);
 router.use("/admin/managers", adminManagementRoute); // verifyJWT & isSuperAdmin are inside the route
 
 // ── Subscription Management ────────────────────────────────────────────────
+import adminFeatureRoute from "./admin/admin.feature.route";
+router.use("/admin/features", authenticateAdmin, adminFeatureRoute);
+
+// Plan routes
 router.use("/admin/plans", authenticateAdmin, adminSubscriptionRoute);
-// Feature-level mutations go through a flat /admin/features/:featureId path
-router.patch("/admin/features/:featureId", authenticateAdmin, adminSubscriptionController.updateFeature);
-router.delete("/admin/features/:featureId", authenticateAdmin, adminSubscriptionController.deleteFeature);
+
+// Feature mapping mutations on plans
+router.patch("/admin/plans/:planId/features/:featureId", authenticateAdmin, adminSubscriptionController.updatePlanFeature);
+router.delete("/admin/plans/:planId/features/:featureId", authenticateAdmin, adminSubscriptionController.deletePlanFeature);
 
 export default router;
 

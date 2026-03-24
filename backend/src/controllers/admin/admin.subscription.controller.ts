@@ -68,21 +68,21 @@ export class AdminSubscriptionController {
       res.status(201).json(new ApiResponse(201, features, "Features added successfully"));
    });
 
-   /** PATCH /admin/features/:featureId */
-   updateFeature = asyncHandler(async (req: Request, res: Response) => {
-      const featureId = parseInt(req.params.featureId as string);
+   /** PATCH /admin/plans/:planId/features/:featureId */
+   updatePlanFeature = asyncHandler(async (req: Request, res: Response) => {
+      const planFeatureId = parseInt(req.params.featureId as string);
       const parsed = updateFeatureSchema.safeParse(req.body);
       if (!parsed.success) {
          throw new ApiError(400, parsed.error.issues[0].message);
       }
-      const feature = await this.adminSubscriptionService.updateFeature(featureId, parsed.data.value);
-      res.status(200).json(new ApiResponse(200, feature, "Feature updated successfully"));
+      const feature = await this.adminSubscriptionService.updatePlanFeature(planFeatureId, parsed.data.limit);
+      res.status(200).json(new ApiResponse(200, feature, "Plan feature updated successfully"));
    });
 
-   /** DELETE /admin/features/:featureId */
-   deleteFeature = asyncHandler(async (req: Request, res: Response) => {
-      const featureId = parseInt(req.params.featureId as string);
-      await this.adminSubscriptionService.deleteFeature(featureId);
-      res.status(200).json(new ApiResponse(200, null, "Feature deleted successfully"));
+   /** DELETE /admin/plans/:planId/features/:featureId */
+   deletePlanFeature = asyncHandler(async (req: Request, res: Response) => {
+      const planFeatureId = parseInt(req.params.featureId as string);
+      await this.adminSubscriptionService.deletePlanFeature(planFeatureId);
+      res.status(200).json(new ApiResponse(200, null, "Plan feature deleted successfully"));
    });
 }

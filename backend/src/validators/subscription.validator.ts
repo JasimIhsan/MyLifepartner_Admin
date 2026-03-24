@@ -30,19 +30,15 @@ export const updatePlanSchema = z
 export const addFeaturesSchema = z
    .array(
       z.object({
-         key: z
-            .string()
-            .min(1, "Feature key is required")
-            .max(100, "Feature key must be at most 100 characters")
-            .regex(/^[a-z0-9_]+$/, "Feature key must be lowercase letters, numbers, or underscores"),
-         value: z.string().min(1, "Feature value is required").max(255, "Feature value must be at most 255 characters"),
+         featureId: z.number().int().positive("Feature ID must be a positive integer"),
+         limit: z.string().min(1, "Feature limit is required").max(255, "Feature limit must be at most 255 characters"),
       })
    )
    .min(1, "At least one feature is required");
 
 // ── Update Feature ────────────────────────────────────────────────────────────
 export const updateFeatureSchema = z.object({
-   value: z.string().min(1, "Feature value is required").max(255, "Feature value must be at most 255 characters"),
+   limit: z.string().min(1, "Feature limit is required").max(255, "Feature limit must be at most 255 characters"),
 });
 
 export type CreatePlanInput = z.infer<typeof createPlanSchema>;

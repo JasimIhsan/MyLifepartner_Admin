@@ -282,14 +282,28 @@ model SubscriptionPlan {
   @@map("subscription_plans")
 }
 
+model Feature {
+  id          Int           @id @default(autoincrement())
+  key         String        @unique // e.g. "swipe_limit"
+  name        String        // e.g. "Daily Swipe Limit"
+  description String?       // e.g. "Number of swipes allowed per day"
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  planFeatures PlanFeature[]
+
+  @@map("features")
+}
+
 model PlanFeature {
   id        Int              @id @default(autoincrement())
   planId    Int
   plan      SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  key       String // "video_call_minutes", "can_message"
-  value     String // "50", "true"
+  featureId Int
+  feature   Feature          @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  limit     String           // e.g. "50", "UNLIMITED", "true"
   createdAt DateTime         @default(now())
 
-  @@unique([planId, key]) // feature key must be unique per plan
+  @@unique([planId, featureId]) // one limit per feature per plan
   @@map("plan_features")
 }

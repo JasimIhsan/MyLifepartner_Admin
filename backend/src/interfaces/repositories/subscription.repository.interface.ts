@@ -1,22 +1,18 @@
 import { PlanFeature, Prisma, SubscriptionPlan } from "@prisma/client";
 
-// ─── Return type: plan with its features array ─────────────────────────────
-export type SubscriptionPlanWithFeatures = SubscriptionPlan & {
-   features: PlanFeature[];
-};
-
 export interface ISubscriptionRepository {
-   // ── Plans ──────────────────────────────────────────────────────────────
-   createPlan(data: Prisma.SubscriptionPlanCreateInput): Promise<SubscriptionPlan>;
-   getPlans(): Promise<SubscriptionPlanWithFeatures[]>;
-   getPlanById(id: number): Promise<SubscriptionPlanWithFeatures | null>;
+   // -- Plans --
+   createPlan(data: Prisma.SubscriptionPlanCreateInput): Promise<SubscriptionPlan & { features: any[] }>;
    getPlanByName(name: string): Promise<SubscriptionPlan | null>;
-   updatePlan(id: number, data: Prisma.SubscriptionPlanUpdateInput): Promise<SubscriptionPlan>;
+   getAllPlansWithFeatures(): Promise<(SubscriptionPlan & { features: any[] })[]>;
+   getPlanById(id: number): Promise<(SubscriptionPlan & { features: any[] }) | null>;
+   updatePlan(id: number, data: Prisma.SubscriptionPlanUpdateInput): Promise<SubscriptionPlan & { features: any[] }>;
    deletePlan(id: number): Promise<SubscriptionPlan>;
 
-   // ── Features ───────────────────────────────────────────────────────────
-   addFeatures(planId: number, features: { key: string; value: string }[]): Promise<PlanFeature[]>;
-   getFeatureById(id: number): Promise<PlanFeature | null>;
-   updateFeature(id: number, value: string): Promise<PlanFeature>;
-   deleteFeature(id: number): Promise<PlanFeature>;
+   // -- Features (Plan logic) --
+   addFeaturesToPlan(planId: number, featureData: { featureId: number; limit: string }[]): Promise<any[]>;
+   getPlanFeaturesByKeys(planId: number, featureIds: number[]): Promise<any[]>;
+   getPlanFeatureById(id: number): Promise<any | null>;
+   updatePlanFeature(id: number, limit: string): Promise<any>;
+   deletePlanFeature(id: number): Promise<any>;
 }
