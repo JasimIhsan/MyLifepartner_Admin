@@ -262,7 +262,7 @@ class ProfileRepository {
     }
   }
 
-  Future<void> uploadSelfie(XFile front, XFile left, XFile right) async {
+  Future<void> uploadSelfie(XFile front, XFile left, XFile right, [double? latitude, double? longitude]) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -289,6 +289,13 @@ class ProfileRepository {
           contentType: MediaType.parse(right.mimeType ?? 'image/jpeg'),
         ),
       });
+
+      if (latitude != null) {
+        formData.fields.add(MapEntry('latitude', latitude.toString()));
+      }
+      if (longitude != null) {
+        formData.fields.add(MapEntry('longitude', longitude.toString()));
+      }
 
       final response = await ApiService.client.post(
         '/user/profile/upload-selfie/$userId',

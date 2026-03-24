@@ -164,7 +164,7 @@ export class ProfileService implements IProfileService {
       return toImageUploadStatusDto(true, true);
    }
 
-   async uploadSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string) {
-      return await this.profileRepository.saveSelfie(userId, frontUrl, leftUrl, rightUrl);
+   async uploadSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number) {
+      return await this.profileRepository.saveSelfie(userId, frontUrl, leftUrl, rightUrl, latitude, longitude);
    }
 }

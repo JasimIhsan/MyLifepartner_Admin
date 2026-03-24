@@ -17,5 +17,5 @@ export interface IProfileService {
    deleteUserImage(userId: number, imageId: number): Promise<{ success: boolean }>;
    setPrimaryImage(userId: number, imageId: number): Promise<UserImageDto>;
    completeImageUpload(userId: number): Promise<ImageUploadStatusDto>;
-   uploadSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string): Promise<{ user: import("@prisma/client").Profile; oldSelfieUrls: { front: string | null; left: string | null; right: string | null } }>;
+   uploadSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number): Promise<{ user: import("@prisma/client").Profile; oldSelfieUrls: { front: string | null; left: string | null; right: string | null } }>;
 }

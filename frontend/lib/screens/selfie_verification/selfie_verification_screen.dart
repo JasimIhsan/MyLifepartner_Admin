@@ -129,7 +129,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
             'Please enable it in app settings.';
       }
 
-      await Geolocator.getCurrentPosition(
+      final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.medium,
         ),
@@ -139,6 +139,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
         _frontImage!,
         _leftImage!,
         _rightImage!,
+        position.latitude,
+        position.longitude,
       );
 
       final prefs = await SharedPreferences.getInstance();

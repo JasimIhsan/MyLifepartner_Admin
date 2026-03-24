@@ -113,6 +113,9 @@ export class ProfileImageController {
       const leftFile = files.leftImage[0];
       const rightFile = files.rightImage[0];
 
+      const latitude = req.body.latitude ? parseFloat(req.body.latitude) : undefined;
+      const longitude = req.body.longitude ? parseFloat(req.body.longitude) : undefined;
+
       // 1. Upload to S3
       const [frontS3Url, leftS3Url, rightS3Url] = await Promise.all([
          this.s3Service.uploadToS3(frontFile, `${userId}/selfie_front`),
@@ -122,7 +125,7 @@ export class ProfileImageController {
 
       // 2. Save to DB
       try {
-         const { user, oldSelfieUrls } = await this.profileService.uploadSelfie(Number(userId), frontS3Url, leftS3Url, rightS3Url);
+         const { user, oldSelfieUrls } = await this.profileService.uploadSelfie(Number(userId), frontS3Url, leftS3Url, rightS3Url, latitude, longitude);
 
          // Delete old selfies from S3 if they exist
          const deletePromises: Promise<void>[] = [];

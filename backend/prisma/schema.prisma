@@ -42,6 +42,9 @@ model Profile {
   state   String?
   country String?
 
+  lastLocationLat Float?
+  lastLocationLng Float?
+
   highestEducation String?
   occupation       String?
   annualIncome     Int?

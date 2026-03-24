@@ -209,7 +209,7 @@ export class ProfileRepository implements IProfileRepository {
       });
    }
 
-   async saveSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string) {
+   async saveSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number) {
       let profile = await prisma.profile.findUnique({ where: { userId } });
       if (!profile) profile = await prisma.profile.create({ data: { userId } });
 
@@ -226,6 +226,8 @@ export class ProfileRepository implements IProfileRepository {
             leftSelfieUrl: leftUrl,
             rightSelfieUrl: rightUrl,
             selfieStatus: "PENDING",
+            ...(latitude !== undefined && { lastLocationLat: latitude }),
+            ...(longitude !== undefined && { lastLocationLng: longitude }),
          } as any,
       });
 
