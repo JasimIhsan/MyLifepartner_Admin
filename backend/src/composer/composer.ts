@@ -20,12 +20,14 @@ import { AdminRepository } from "@/repositories/admin.repository";
 import { MatchRepository } from "@/repositories/match.repository";
 import { ProfileRepository } from "@/repositories/profile.repository";
 import { QuestionnaireRepository } from "@/repositories/questionnaire.repository";
+import { SubscriptionRepository } from "@/repositories/subscription.repository";
 import { UserRepository } from "@/repositories/user.repository";
 
 export const adminRepository = new AdminRepository();
 export const userRepository = new UserRepository();
 export const profileRepository = new ProfileRepository();
 export const questionnaireRepository = new QuestionnaireRepository();
+export const subscriptionRepository = new SubscriptionRepository();
 export const matchRepository = new MatchRepository();
 
 // ─── 2. Infrastructure / Utility Services ────────────────────────────────────
@@ -54,6 +56,9 @@ export const adminAuthService = new AdminAuthService(adminRepository, jwtService
 export const adminManagementService = new AdminManagementService(adminRepository);
 export const adminQuestionnaireService = new AdminQuestionnaireService(questionnaireRepository);
 
+import { AdminSubscriptionService } from "@/services/admin/admin.subscription.service";
+export const adminSubscriptionService = new AdminSubscriptionService(subscriptionRepository);
+
 // User services
 export const userService = new UserService(userRepository);
 export const authService = new AuthService(userService, otpService, emailService, jwtService, cacheService);
@@ -77,6 +82,9 @@ export const adminAuthController = new AdminAuthController(adminAuthService);
 export const adminManagementController = new AdminManagementController(adminManagementService);
 export const adminQuestionnaireController = new AdminQuestionnaireController(adminQuestionnaireService);
 export const adminUsersController = new AdminUsersController(userService);
+
+import { AdminSubscriptionController } from "@/controllers/admin/admin.subscription.controller";
+export const adminSubscriptionController = new AdminSubscriptionController(adminSubscriptionService);
 
 // User controllers
 export const authController = new AuthController(authService, userService);

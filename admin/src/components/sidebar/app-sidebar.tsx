@@ -4,99 +4,50 @@ import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { RootState } from "@/store";
-import { Command, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
+import { Command, CreditCard, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
-import { NavProjects } from "./nav-projects";
+import { NavMain } from "./nav-main";
 
 const data = {
-   // navMain: [
-   //    {
-   //       title: "Playground",
-   //       url: "#",
-   //       icon: SquareTerminal,
-   //       isActive: true,
-   //       items: [
-   //          {
-   //             title: "History",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Starred",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Settings",
-   //             url: "#",
-   //          },
-   //       ],
-   //    },
-   //    {
-   //       title: "Models",
-   //       url: "#",
-   //       icon: Bot,
-   //       items: [
-   //          {
-   //             title: "Genesis",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Explorer",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Quantum",
-   //             url: "#",
-   //          },
-   //       ],
-   //    },
-   //    {
-   //       title: "Documentation",
-   //       url: "#",
-   //       icon: BookOpen,
-   //       items: [
-   //          {
-   //             title: "Introduction",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Get Started",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Tutorials",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Changelog",
-   //             url: "#",
-   //          },
-   //       ],
-   //    },
-   //    {
-   //       title: "Settings",
-   //       url: "#",
-   //       icon: Settings2,
-   //       items: [
-   //          {
-   //             title: "General",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Team",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Billing",
-   //             url: "#",
-   //          },
-   //          {
-   //             title: "Limits",
-   //             url: "#",
-   //          },
-   //       ],
-   //    },
-   // ],
+   navMain: [
+      {
+         title: "Dashboard",
+         url: "/",
+         icon: LayoutDashboard,
+      },
+      {
+         title: "Users",
+         url: "/users",
+         icon: UsersIcon,
+      },
+      {
+         title: "Questionnaire",
+         url: "/questionnaire",
+         icon: ListChecks,
+      },
+      {
+         title: "Profile Verification",
+         url: "/profile-verification",
+         icon: UserCheck2Icon,
+      },
+      {
+         title: "Subscriptions",
+         url: "#",
+         icon: CreditCard,
+         isActive: true,
+         items: [
+            {
+               title: "Plans",
+               url: "/subscriptions",
+            },
+            {
+               title: "Features",
+               url: "#",
+            },
+         ],
+      },
+   ],
    navSecondary: [
       {
          title: "Admins",
@@ -113,29 +64,6 @@ const data = {
          title: "Feedback",
          url: "#",
          icon: Send,
-      },
-   ],
-   projects: [
-      {
-         name: "Dashboard",
-         url: "/",
-         icon: LayoutDashboard,
-      },
-
-      {
-         name: "Users",
-         url: "/users",
-         icon: UsersIcon,
-      },
-      {
-         name: "Questionnaire",
-         url: "/questionnaire",
-         icon: ListChecks,
-      },
-      {
-         name: "Profile Verification",
-         url: "/profile-verification",
-         icon: UserCheck2Icon,
       },
    ],
 };
@@ -165,8 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenu>
          </SidebarHeader>
          <SidebarContent>
-            {/* <NavMain items={data.navMain} /> */}
-            <NavProjects projects={data.projects} />
+            <NavMain items={data.navMain} label="Platform" />
             <NavSecondary items={visibleNavSecondary} className="mt-auto" />
          </SidebarContent>
          <SidebarFooter>
@@ -175,3 +102,4 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </Sidebar>
    );
 }
+

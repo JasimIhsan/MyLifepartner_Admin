@@ -266,3 +266,30 @@ model ProfileSwipe {
 
   @@map("profile_swipes")
 }
+
+// ─── Subscription Plans ──────────────────────────────────────────────────────
+
+model SubscriptionPlan {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique // FREE, PREMIUM, GOLD
+  price        Int // price in paise (₹1 = 100 paise)
+  durationDays Int
+  isActive     Boolean       @default(true)
+  features     PlanFeature[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("subscription_plans")
+}
+
+model PlanFeature {
+  id        Int              @id @default(autoincrement())
+  planId    Int
+  plan      SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  key       String // "video_call_minutes", "can_message"
+  value     String // "50", "true"
+  createdAt DateTime         @default(now())
+
+  @@unique([planId, key]) // feature key must be unique per plan
+  @@map("plan_features")
+}

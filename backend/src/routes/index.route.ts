@@ -7,7 +7,9 @@ import userRoute from "@/routes/user/user.route";
 import { Router } from "express";
 import adminManagementRoute from "./admin/admin.management.route";
 import adminQuestionnaireRoute from "./admin/admin.questionnaire.route";
+import adminSubscriptionRoute from "./admin/admin.subscription.route";
 import adminUsersRoute from "./admin/admin.users.route";
+import { adminSubscriptionController } from "@/composer/composer";
 
 const router = Router();
 
@@ -21,4 +23,11 @@ router.use("/admin/users", authenticateAdmin, adminUsersRoute);
 router.use("/admin/questionnaire", authenticateAdmin, adminQuestionnaireRoute);
 router.use("/admin/managers", adminManagementRoute); // verifyJWT & isSuperAdmin are inside the route
 
+// ── Subscription Management ────────────────────────────────────────────────
+router.use("/admin/plans", authenticateAdmin, adminSubscriptionRoute);
+// Feature-level mutations go through a flat /admin/features/:featureId path
+router.patch("/admin/features/:featureId", authenticateAdmin, adminSubscriptionController.updateFeature);
+router.delete("/admin/features/:featureId", authenticateAdmin, adminSubscriptionController.deleteFeature);
+
 export default router;
+

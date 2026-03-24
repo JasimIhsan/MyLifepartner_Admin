@@ -10,6 +10,7 @@ import LoginPage from "./pages/login-page/LoginPage";
 import NotFoundPage from "./pages/not-found-page/NotFoundPage";
 import ProfileVerificationPage from "./pages/profile-verification-page/ProfileVerificationPage";
 import QuestionnairePage from "./pages/questionnaire-page/QuestionnairePage";
+import SubscriptionPage from "./pages/subscription-page/SubscriptionPage";
 import UsersPage from "./pages/users-page/UsersPage";
 import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 
@@ -49,6 +50,7 @@ function App() {
                   <Route path="/users" element={<UsersPage />} />
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
+                  <Route path="/subscriptions" element={<SubscriptionPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                </Route>
             </Route>
