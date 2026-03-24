@@ -9,6 +9,10 @@ export interface UserInterface {
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
+   leftSelfieUrl?: string | null;
+   rightSelfieUrl?: string | null;
+   lastLocationLat?: number | null;
+   lastLocationLng?: number | null;
    primaryImageUrl?: string | null;
 
    // Profile demographics

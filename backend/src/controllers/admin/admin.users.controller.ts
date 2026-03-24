@@ -56,14 +56,41 @@ export class AdminUsersController {
 
    getSelfieUrl = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
-      const user = await this.userService.getUserById(userId);
-      if (!user.selfieUrl) {
-         return res.status(HTTP_STATUS.NOT_FOUND).json(new ApiResponse(HTTP_STATUS.NOT_FOUND, null, "User has no uploaded selfie"));
+      const { prisma } = await import("@/config/prisma");
+
+      const profile = await prisma.profile.findUnique({
+         where: { userId },
+         select: {
+            selfieUrl: true,
+            leftSelfieUrl: true,
+            rightSelfieUrl: true,
+            lastLocationLat: true,
+            lastLocationLng: true,
+         }
+      });
+
+      if (!profile) {
+         return res.status(HTTP_STATUS.NOT_FOUND).json(new ApiResponse(HTTP_STATUS.NOT_FOUND, null, "User profile not found"));
       }
 
       const { S3Service } = await import("@/services/s3.service");
-      const signedUrl = await new S3Service().getPresignedUrl(user.selfieUrl, 3600);
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { url: signedUrl }, "Signed URL generated successfully"));
+      const s3Service = new S3Service();
+      
+      const url = profile.selfieUrl ? await s3Service.getPresignedUrl(profile.selfieUrl, 3600) : null;
+      const leftUrl = profile.leftSelfieUrl ? await s3Service.getPresignedUrl(profile.leftSelfieUrl, 3600) : null;
+      const rightUrl = profile.rightSelfieUrl ? await s3Service.getPresignedUrl(profile.rightSelfieUrl, 3600) : null;
+
+      if (!url && !leftUrl && !rightUrl) {
+         return res.status(HTTP_STATUS.NOT_FOUND).json(new ApiResponse(HTTP_STATUS.NOT_FOUND, null, "User has no uploaded selfies"));
+      }
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { 
+         url, 
+         leftUrl, 
+         rightUrl, 
+         locationLat: profile.lastLocationLat, 
+         locationLng: profile.lastLocationLng 
+      }, "Selfie data fetched successfully"));
    });
 
    getUserImages = asyncHandler(async (req: AuthRequest, res: Response) => {
