@@ -39,7 +39,7 @@ const data = {
          items: [
             {
                title: "Plans",
-               url: "/subscriptions",
+               url: "/subscriptions/plans",
             },
             {
                title: "Features",
@@ -102,4 +102,3 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </Sidebar>
    );
 }
-

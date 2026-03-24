@@ -52,7 +52,7 @@ function App() {
                   <Route path="/users" element={<UsersPage />} />
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
-                  <Route path="/subscriptions" element={<SubscriptionPage />} />
+                  <Route path="/subscriptions/plans" element={<SubscriptionPage />} />
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                </Route>
