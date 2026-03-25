@@ -10,9 +10,10 @@ export interface ISubscriptionRepository {
    deletePlan(id: number): Promise<SubscriptionPlan>;
 
    // -- Features (Plan logic) --
-   addFeaturesToPlan(planId: number, featureData: { featureId: number; limit: string }[]): Promise<any[]>;
-   getPlanFeaturesByKeys(planId: number, featureIds: number[]): Promise<any[]>;
+   addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string }[]): Promise<any[]>;
+   getPlanFeaturesByKeys(planId: number, featureKeys: string[]): Promise<any[]>;
    getPlanFeatureById(id: number): Promise<any | null>;
    updatePlanFeature(id: number, limit: string): Promise<any>;
    deletePlanFeature(id: number): Promise<any>;
 }
+

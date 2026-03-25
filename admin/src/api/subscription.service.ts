@@ -13,10 +13,9 @@ export interface GlobalFeature {
 export interface PlanFeature {
    id: number;
    planId: number;
-   featureId: number;
+   featureKey: string;
    limit: string;
    createdAt: string;
-   feature?: GlobalFeature; // Extrapolated from the backend 'include'
 }
 
 export interface SubscriptionPlan {
@@ -63,7 +62,7 @@ export const deletePlan = async (planId: number) => {
 
 // ─── Plan Feature Mapping APIs ────────────────────────────────────────────────
 
-export const addFeaturesToPlan = async (planId: number, features: { featureId: number; limit: string }[]) => {
+export const addFeaturesToPlan = async (planId: number, features: { featureKey: string; limit: string }[]) => {
    const res = await axiosInstance.post(`/admin/plans/${planId}/features`, features);
    return res.data;
 };

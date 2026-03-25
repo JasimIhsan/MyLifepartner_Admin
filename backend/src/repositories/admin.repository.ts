@@ -1,42 +1,43 @@
 import prisma from "@/config/prisma";
-import { Admin, Prisma, Role } from "@prisma/client";
+import { Admins, Prisma, Role } from "@prisma/client";
 import { IAdminRepository } from "../interfaces/repositories/admin.repository.interface";
 
 export class AdminRepository implements IAdminRepository {
-   async findById(id: number): Promise<Admin | null> {
-      return prisma.admin.findUnique({ where: { id } });
+   async findById(id: number): Promise<Admins | null> {
+      return prisma.admins.findUnique({ where: { id } });
    }
 
-   async findByUsername(username: string): Promise<Admin | null> {
-      return prisma.admin.findUnique({ where: { username } });
+   async findByUsername(username: string): Promise<Admins | null> {
+      return prisma.admins.findUnique({ where: { username } });
    }
 
-   async findAll(): Promise<Admin[]> {
-      return prisma.admin.findMany({
+   async findAll(): Promise<Admins[]> {
+      return prisma.admins.findMany({
          orderBy: { createdAt: "desc" },
       });
    }
 
-   async create(data: Prisma.AdminCreateInput): Promise<Admin> {
-      return prisma.admin.create({ data });
+   async create(data: Prisma.AdminsCreateInput): Promise<Admins> {
+      return prisma.admins.create({ data });
    }
 
-   async update(id: number, data: Prisma.AdminUpdateInput): Promise<Admin> {
-      return prisma.admin.update({
+   async update(id: number, data: Prisma.AdminsUpdateInput): Promise<Admins> {
+      return prisma.admins.update({
          where: { id },
          data,
       });
    }
 
-   async delete(id: number): Promise<Admin> {
-      return prisma.admin.delete({
+   async delete(id: number): Promise<Admins> {
+      return prisma.admins.delete({
          where: { id },
       });
    }
 
    async countValidators(role: Role = "SUPER_ADMIN" as Role): Promise<number> {
-      return prisma.admin.count({
+      return prisma.admins.count({
          where: { role },
       });
    }
 }
+

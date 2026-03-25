@@ -8,7 +8,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       // Find all active plans, including features
       return await prisma.subscriptionPlan.findMany({
          where: { isActive: true },
-         include: { features: { include: { feature: true } } },
+         include: { features: true },
          orderBy: { price: "asc" },
       });
    }
@@ -16,7 +16,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    async getMySubscription(userId: number): Promise<UserSubscription | null> {
       return await prisma.userSubscription.findFirst({
          where: { userId, status: "ACTIVE" },
-         include: { plan: { include: { features: { include: { feature: true } } } } },
+         include: { plan: { include: { features: true } } },
          orderBy: { createdAt: "desc" },
       });
    }
@@ -31,7 +31,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    async subscribe(userId: number, planId: number): Promise<UserSubscription> {
       const plan = await prisma.subscriptionPlan.findUnique({
          where: { id: planId },
-         include: { features: { include: { feature: true } } }
+         include: { features: true }
       });
 
       if (!plan) {
@@ -62,7 +62,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             endDate,
          },
          include: {
-            plan: { include: { features: { include: { feature: true } } } },
+            plan: { include: { features: true } },
          },
       });
 
@@ -79,7 +79,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       };
 
       for (const pf of plan.features) {
-         const key = pf.feature.key;
+         const key = pf.featureKey;
          const valStr = pf.limit;
          
          if (key === 'audio_call') newLimits.canAudioCall = valStr === 'true';

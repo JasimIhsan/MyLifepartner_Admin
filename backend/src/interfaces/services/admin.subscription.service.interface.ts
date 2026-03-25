@@ -2,9 +2,10 @@ import { PlanFeature, SubscriptionPlan } from "@prisma/client";
 import { CreatePlanInput, UpdatePlanInput } from "@/validators/subscription.validator";
 
 export interface AddFeaturesInput {
-   featureId: number;
+   featureKey: string;
    limit: string;
 }
+
 
 export interface IAdminSubscriptionService {
    createPlan(data: CreatePlanInput): Promise<any>;

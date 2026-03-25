@@ -1,11 +1,12 @@
-import { Admin, Prisma, Role } from "@prisma/client";
+import { Admins, Prisma, Role } from "@prisma/client";
 
 export interface IAdminRepository {
-   findById(id: number): Promise<Admin | null>;
-   findByUsername(username: string): Promise<Admin | null>;
-   findAll(): Promise<Admin[]>;
-   create(data: Prisma.AdminCreateInput): Promise<Admin>;
-   update(id: number, data: Prisma.AdminUpdateInput): Promise<Admin>;
-   delete(id: number): Promise<Admin>;
+   findById(id: number): Promise<Admins | null>;
+   findByUsername(username: string): Promise<Admins | null>;
+   findAll(): Promise<Admins[]>;
+   create(data: Prisma.AdminsCreateInput): Promise<Admins>;
+   update(id: number, data: Prisma.AdminsUpdateInput): Promise<Admins>;
+   delete(id: number): Promise<Admins>;
    countValidators(role?: Role): Promise<number>;
 }
+

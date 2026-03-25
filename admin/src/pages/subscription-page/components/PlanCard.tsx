@@ -56,9 +56,10 @@ export default function PlanCard({ plan, onEdit, onToggleActive, onDelete, onMan
                   <div className="flex flex-wrap gap-1.5">
                      {plan.features.slice(0, 5).map((f) => (
                         <Badge key={f.id} variant="outline" className="text-xs font-mono">
-                           {f.feature?.name || `Feature ${f.featureId}`}: {f.limit}
+                           {f.featureKey}: {f.limit}
                         </Badge>
                      ))}
+
                      {plan.features.length > 5 && (
                         <Badge variant="outline" className="text-xs">
                            +{plan.features.length - 5} more

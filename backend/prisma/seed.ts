@@ -23,7 +23,7 @@ async function main() {
 
       // Seed Admin
       const adminPasswordHash = await bcrypt.hash("asdfasdf", 10);
-      const mainAdmin = await prisma.admin.upsert({
+      const mainAdmin = await prisma.admins.upsert({
          where: { username: "admin" },
          update: {},
          create: {

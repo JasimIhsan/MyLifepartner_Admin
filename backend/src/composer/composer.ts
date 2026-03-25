@@ -28,8 +28,6 @@ export const userRepository = new UserRepository();
 export const profileRepository = new ProfileRepository();
 export const questionnaireRepository = new QuestionnaireRepository();
 export const subscriptionRepository = new SubscriptionRepository();
-import { FeatureRepository } from "@/repositories/feature.repository";
-export const featureRepository = new FeatureRepository();
 export const matchRepository = new MatchRepository();
 
 // ─── 2. Infrastructure / Utility Services ────────────────────────────────────
@@ -62,7 +60,7 @@ import { AdminSubscriptionService } from "@/services/admin/admin.subscription.se
 export const adminSubscriptionService = new AdminSubscriptionService(subscriptionRepository);
 
 import { AdminFeatureService } from "@/services/admin/admin.feature.service";
-export const adminFeatureService = new AdminFeatureService(featureRepository);
+export const adminFeatureService = new AdminFeatureService();
 
 // User services
 export const userService = new UserService(userRepository);
@@ -74,7 +72,6 @@ export const matchService = new MatchService(matchRepository, s3Service);
 
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 export const userSubscriptionService = new UserSubscriptionService();
-
 
 // ─── 4. Controllers ───────────────────────────────────────────────────────────
 import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";
@@ -109,4 +106,3 @@ export const matchController = new MatchController(matchService);
 
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService);
-

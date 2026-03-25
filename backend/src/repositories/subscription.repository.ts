@@ -8,13 +8,13 @@ export class SubscriptionRepository implements ISubscriptionRepository {
    async createPlan(data: Prisma.SubscriptionPlanCreateInput): Promise<any> {
       return prisma.subscriptionPlan.create({
          data,
-         include: { features: { include: { feature: true } } },
+         include: { features: true },
       });
    }
 
    async getAllPlansWithFeatures(): Promise<any[]> {
       return prisma.subscriptionPlan.findMany({
-         include: { features: { include: { feature: true }, orderBy: { createdAt: "asc" } } },
+         include: { features: { orderBy: { createdAt: "asc" } } },
          orderBy: { createdAt: "asc" },
       });
    }
@@ -22,7 +22,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
    async getPlanById(id: number): Promise<any | null> {
       return prisma.subscriptionPlan.findUnique({
          where: { id },
-         include: { features: { include: { feature: true }, orderBy: { createdAt: "asc" } } },
+         include: { features: { orderBy: { createdAt: "asc" } } },
       });
    }
 
@@ -34,7 +34,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       return prisma.subscriptionPlan.update({
          where: { id },
          data,
-         include: { features: { include: { feature: true } } },
+         include: { features: true },
       });
    }
 
@@ -49,10 +49,10 @@ export class SubscriptionRepository implements ISubscriptionRepository {
    // Features (Plan mapping)
    // ══════════════════════════════════════════════
 
-   async addFeaturesToPlan(planId: number, featureData: { featureId: number; limit: string }[]): Promise<any[]> {
+   async addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string }[]): Promise<any[]> {
       const data = featureData.map((f) => ({
          planId,
-         featureId: f.featureId,
+         featureKey: f.featureKey,
          limit: f.limit,
       }));
 
@@ -63,24 +63,21 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
 
       // Return newly created
-      const featureIds = featureData.map((f) => f.featureId);
+      const featureKeys = featureData.map((f) => f.featureKey);
       return await prisma.planFeature.findMany({
-         where: { planId, featureId: { in: featureIds } },
-         include: { feature: true },
+         where: { planId, featureKey: { in: featureKeys } },
       });
    }
 
-   async getPlanFeaturesByKeys(planId: number, featureIds: number[]): Promise<any[]> {
+   async getPlanFeaturesByKeys(planId: number, featureKeys: string[]): Promise<any[]> {
       return await prisma.planFeature.findMany({
-         where: { planId, featureId: { in: featureIds } },
-         include: { feature: true },
+         where: { planId, featureKey: { in: featureKeys } },
       });
    }
 
    async getPlanFeatureById(id: number): Promise<any | null> {
       return await prisma.planFeature.findUnique({
          where: { id },
-         include: { feature: true },
       });
    }
 
@@ -88,7 +85,6 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       return await prisma.planFeature.update({
          where: { id },
          data: { limit },
-         include: { feature: true },
       });
    }
 

@@ -46,23 +46,23 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
    // Feature Management for Plans
    // ══════════════════════════════════════════════
 
-   async addFeatures(planId: number, features: { featureId: number; limit: string }[]): Promise<any[]> {
+   async addFeatures(planId: number, features: { featureKey: string; limit: string }[]): Promise<any[]> {
       // 1. Ensure plan exists
       await this.getPlanById(planId);
 
       // 2. Check for duplicate assignments
-      // The payload shouldn't have duplicate featureIds for the same request
-      const featureIds = features.map((f) => f.featureId);
-      const uniqueFeatureIds = new Set(featureIds);
-      if (uniqueFeatureIds.size !== featureIds.length) {
+      // The payload shouldn't have duplicate featureKeys for the same request
+      const featureKeys = features.map((f) => f.featureKey);
+      const uniqueFeatureKeys = new Set(featureKeys);
+      if (uniqueFeatureKeys.size !== featureKeys.length) {
          throw new ApiError(400, "Duplicate features in request");
       }
 
       // Check against DB
-      const existingFeatures = await this.subscriptionRepository.getPlanFeaturesByKeys(planId, featureIds);
+      const existingFeatures = await this.subscriptionRepository.getPlanFeaturesByKeys(planId, featureKeys);
       if (existingFeatures.length > 0) {
-         const existingIds = existingFeatures.map((f) => f.featureId).join(", ");
-         throw new ApiError(409, `Feature IDs [${existingIds}] already exist for this plan`);
+         const existingKeys = existingFeatures.map((f) => f.featureKey).join(", ");
+         throw new ApiError(409, `Feature Keys [${existingKeys}] already exist for this plan`);
       }
 
       return await this.subscriptionRepository.addFeaturesToPlan(planId, features);

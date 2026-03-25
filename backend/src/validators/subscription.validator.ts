@@ -30,11 +30,16 @@ export const updatePlanSchema = z
 export const addFeaturesSchema = z
    .array(
       z.object({
-         featureId: z.number().int().positive("Feature ID must be a positive integer"),
+         featureKey: z
+            .string()
+            .min(1, "Feature key is required")
+            .max(100, "Feature key must be at most 100 characters")
+            .regex(/^[a-z0-9_]+$/, "Feature key must be lowercase letters, numbers, or underscores"),
          limit: z.string().min(1, "Feature limit is required").max(255, "Feature limit must be at most 255 characters"),
       })
    )
    .min(1, "At least one feature is required");
+
 
 // ── Update Feature ────────────────────────────────────────────────────────────
 export const updateFeatureSchema = z.object({

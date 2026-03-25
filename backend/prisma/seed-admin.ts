@@ -22,7 +22,7 @@ async function main() {
       const password = process.argv[3] || "asdfasdf"; // Default password if none provided
 
       const adminPasswordHash = await bcrypt.hash(password, 10);
-      const admin = await prisma.admin.upsert({
+      const admin = await prisma.admins.upsert({
          where: { username },
          update: {
             password: adminPasswordHash,

@@ -66,9 +66,8 @@ function FeatureRow({
 
    return (
       <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 hover:bg-muted/70 transition-colors">
-         {/* Key */}
          <code className="text-xs font-mono text-muted-foreground flex-1 min-w-0 truncate">
-            {feature.feature?.name || `Feature ID: ${feature.featureId}`}
+            {feature.featureKey}
          </code>
 
          {/* Limit */}
@@ -115,7 +114,7 @@ function FeatureRow({
 
 export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: FeaturesDrawerProps) {
    const [globalFeatures, setGlobalFeatures] = useState<GlobalFeature[]>([]);
-   const [selectedFeatureId, setSelectedFeatureId] = useState<string>("");
+   const [selectedFeatureKey, setSelectedFeatureKey] = useState<string>("");
    const [newLimit, setNewLimit] = useState("");
    const [addLoading, setAddLoading] = useState(false);
 
@@ -138,15 +137,15 @@ export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: Fea
 
    // ── Add feature ────────────────────────────────────────────────────────────
    const handleAdd = async () => {
-      if (!selectedFeatureId || !newLimit.trim()) {
+      if (!selectedFeatureKey || !newLimit.trim()) {
          toast.error("Please select a feature and enter a limit");
          return;
       }
       try {
          setAddLoading(true);
-         await addFeaturesToPlan(plan.id, [{ featureId: parseInt(selectedFeatureId), limit: newLimit.trim() }]);
+         await addFeaturesToPlan(plan.id, [{ featureKey: selectedFeatureKey, limit: newLimit.trim() }]);
          toast.success("Feature added to plan");
-         setSelectedFeatureId("");
+         setSelectedFeatureKey("");
          setNewLimit("");
          onSuccess();
       } catch (err) {
@@ -182,7 +181,7 @@ export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: Fea
    };
 
    // Filter out features that the plan already has
-   const availableFeatures = globalFeatures.filter((gf) => !plan.features.some((pf) => pf.featureId === gf.id));
+   const availableFeatures = globalFeatures.filter((gf) => !plan.features.some((pf) => pf.featureKey === gf.key));
 
    return (
       <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -211,7 +210,7 @@ export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: Fea
                <div className="flex flex-col gap-3">
                   <div className="space-y-1">
                      <Label className="text-xs">Feature</Label>
-                     <Select value={selectedFeatureId} onValueChange={setSelectedFeatureId}>
+                     <Select value={selectedFeatureKey} onValueChange={setSelectedFeatureKey}>
                         <SelectTrigger className="h-8 text-xs">
                            <SelectValue placeholder="Select a generic feature" />
                         </SelectTrigger>
@@ -220,12 +219,13 @@ export default function FeaturesDrawer({ plan, isOpen, onClose, onSuccess }: Fea
                               <div className="p-2 text-xs text-muted-foreground text-center">No more features available</div>
                            )}
                            {availableFeatures.map((gf) => (
-                              <SelectItem key={gf.id} value={gf.id.toString()} className="text-xs">
+                              <SelectItem key={gf.key} value={gf.key} className="text-xs">
                                  {gf.name} ({gf.key})
                               </SelectItem>
                            ))}
                         </SelectContent>
                      </Select>
+
                   </div>
                   <div className="space-y-1">
                      <Label className="text-xs">Limit Definition</Label>
