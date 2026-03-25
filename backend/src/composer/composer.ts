@@ -72,6 +72,10 @@ export const profileService = new ProfileService(profileRepository);
 import { MatchService } from "@/services/match.service";
 export const matchService = new MatchService(matchRepository, s3Service);
 
+import { UserSubscriptionService } from "@/services/user/user.subscription.service";
+export const userSubscriptionService = new UserSubscriptionService();
+
+
 // ─── 4. Controllers ───────────────────────────────────────────────────────────
 import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";
 import { AdminManagementController } from "@/controllers/admin/admin.management.controller";
@@ -102,3 +106,7 @@ export const userController = new UserController(userService);
 
 import { MatchController } from "@/controllers/user/match.controller";
 export const matchController = new MatchController(matchService);
+
+import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
+export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService);
+

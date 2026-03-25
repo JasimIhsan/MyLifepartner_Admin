@@ -22,6 +22,7 @@ model User {
   emailVerificationTokens EmailVerificationToken[]
   partnerPreference       PartnerPreference?
   profileSwipes           ProfileSwipe[]           @relation("UserSwipes")
+  subscriptions           UserSubscription[]
 }
 
 model Profile {
@@ -276,6 +277,7 @@ model SubscriptionPlan {
   durationDays Int
   isActive     Boolean       @default(true)
   features     PlanFeature[]
+  userSubscriptions UserSubscription[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -306,4 +308,26 @@ model PlanFeature {
 
   @@unique([planId, featureId]) // one limit per feature per plan
   @@map("plan_features")
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+model UserSubscription {
+  id        Int               @id @default(autoincrement())
+  userId    Int
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    Int
+  plan      SubscriptionPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  startDate DateTime          @default(now())
+  endDate   DateTime
+  status    SubscriptionStatus @default(ACTIVE)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("user_subscriptions")
 }

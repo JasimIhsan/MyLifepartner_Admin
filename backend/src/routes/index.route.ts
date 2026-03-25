@@ -4,6 +4,7 @@ import matchRoute from "@/routes/user/match.routes";
 import userAuthRoute from "@/routes/user/user.auth.route";
 import profileRoute from "@/routes/user/user.profile.routes";
 import userRoute from "@/routes/user/user.route";
+import userSubscriptionRoute from "@/routes/user/user.subscription.routes";
 import { Router } from "express";
 import adminManagementRoute from "./admin/admin.management.route";
 import adminQuestionnaireRoute from "./admin/admin.questionnaire.route";
@@ -16,6 +17,7 @@ const router = Router();
 router.use("/user", userRoute);
 router.use("/user/auth", userAuthRoute);
 router.use("/user/profile", profileRoute);
+router.use("/user/subscriptions", userSubscriptionRoute);
 router.use("/matches", matchRoute);
 
 router.use("/admin/auth", adminAuthRoute);
