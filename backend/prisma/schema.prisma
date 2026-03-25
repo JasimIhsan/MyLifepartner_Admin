@@ -6,6 +6,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── User Management ─────────────────────────────────────────────────────────
+
 model User {
   id           Int      @id @default(autoincrement())
   mobileNumber String?  @unique
@@ -18,11 +20,13 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  profile                 Profile?
-  emailVerificationTokens EmailVerificationToken[]
-  partnerPreference       PartnerPreference?
-  profileSwipes           ProfileSwipe[]           @relation("UserSwipes")
-  subscriptions           UserSubscription[]
+  profile           Profile?
+  partnerPreference PartnerPreference?
+  profileSwipes     ProfileSwipe[]     @relation("UserSwipes")
+  subscriptions     UserSubscription[]
+  userFeature       UserFeature?
+
+  @@map("users")
 }
 
 model Profile {
@@ -51,7 +55,7 @@ model Profile {
   annualIncome     Int?
   bio              String?
 
-  languages            String[]
+  languages String[]
 
   childrenStatus       ChildrenStatus?
   emotionalReadiness   EmotionalReadiness?
@@ -95,6 +99,173 @@ model PartnerPreference {
   annualIncomeTo   Int?
 
   @@map("partner_preferences")
+}
+
+model UserImage {
+  id        Int      @id @default(autoincrement())
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  imageUrl  String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_images")
+}
+
+model ProfileSwipe {
+  id              Int         @id @default(autoincrement())
+  userId          Int
+  user            User        @relation("UserSwipes", fields: [userId], references: [id])
+  targetProfileId Int
+  targetProfile   Profile     @relation("ProfileMatches", fields: [targetProfileId], references: [id])
+  action          SwipeAction
+  createdAt       DateTime    @default(now())
+
+  @@map("profile_swipes")
+}
+
+// ─── Survey & compatibility ──────────────────────────────────────────────────
+
+model ProfileSection {
+  id        Int               @id @default(autoincrement())
+  key       String            @unique // e.g. "emotional_maturity"
+  title     String
+  orderNo   Int               @default(0)
+  isPrimary Boolean           @default(false)
+  questions ProfileQuestion[]
+
+  @@map("profile_sections")
+}
+
+model ProfileQuestion {
+  id         Int            @id @default(autoincrement())
+  sectionId  Int
+  section    ProfileSection @relation(fields: [sectionId], references: [id])
+  question   String
+  answerType AnswerType
+  options    Json? // JSONB for choices/options
+  minWords   Int?
+  weight     Int            @default(1)
+  isRequired Boolean        @default(true)
+  orderNo    Int            @default(0)
+  isActive   Boolean        @default(true)
+  answers    UserAnswer[]
+
+  @@map("profile_questions")
+}
+
+model UserAnswer {
+  id         Int             @id @default(autoincrement())
+  profileId  Int
+  profile    Profile         @relation(fields: [profileId], references: [id])
+  questionId Int
+  question   ProfileQuestion @relation(fields: [questionId], references: [id])
+  answer     Json // JSONB for the answer content
+  score      Int?
+  createdAt  DateTime        @default(now())
+
+  @@unique([profileId, questionId]) // One answer per question per user
+  @@map("user_answers")
+}
+
+// ─── Administration ──────────────────────────────────────────────────────────
+
+model Admins {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admins")
+}
+
+// ─── Subscription Plans ──────────────────────────────────────────────────────
+
+model SubscriptionPlan {
+  id                Int                @id @default(autoincrement())
+  name              String             @unique // FREE, PREMIUM, GOLD
+  price             Int // price in paise (₹1 = 100 paise)
+  durationDays      Int
+  isActive          Boolean            @default(true)
+  features          PlanFeature[]
+  userSubscriptions UserSubscription[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@map("subscription_plans")
+}
+
+model PlanFeature {
+  id         Int              @id @default(autoincrement())
+  planId     Int
+  plan       SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureKey String
+  limit      String // e.g. "50", "UNLIMITED", "true"
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@unique([planId, featureKey]) // one limit per feature per plan
+  @@map("plan_features")
+}
+
+model UserSubscription {
+  id        Int                @id @default(autoincrement())
+  userId    Int
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId    Int
+  plan      SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  startDate DateTime           @default(now())
+  endDate   DateTime
+  status    SubscriptionStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([userId, status])
+  @@map("user_subscriptions")
+}
+
+model UserFeature {
+  id     Int  @id @default(autoincrement())
+  userId Int  @unique
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Boolean Features
+  canAudioCall         Boolean @default(false)
+  canVideoCall         Boolean @default(false)
+  canSendMessage       Boolean @default(false)
+  isProfileBlurEnabled Boolean @default(false)
+
+  // Interest Limits
+  maxInterests       Int @default(0)
+  remainingInterests Int @default(0)
+
+  // Video Call Minutes
+  maxVideoCallMinutes       Int @default(0)
+  remainingVideoCallMinutes Int @default(0)
+
+  // Audio Call Minutes
+  maxAudioCallMinutes       Int @default(0)
+  remainingAudioCallMinutes Int @default(0)
+
+  // Message Limits
+  maxMessages       Int @default(0)
+  remainingMessages Int @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_features")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  USER
+  ADMIN
+  SUPER_ADMIN
 }
 
 enum Gender {
@@ -148,65 +319,16 @@ enum DrinkingHabit {
   YES
 }
 
-model EmailVerificationToken {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  token     String   @unique
-  expiresAt DateTime
-  isUsed    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([token])
-  @@map("email_verification_tokens")
-}
-
 enum SelfieStatus {
   PENDING
   APPROVED
   REJECTED
 }
 
-model ProfileSection {
-  id        Int               @id @default(autoincrement())
-  key       String            @unique // e.g. "emotional_maturity"
-  title     String
-  orderNo   Int               @default(0)
-  isPrimary Boolean           @default(false)
-  questions ProfileQuestion[]
-
-  @@map("profile_sections")
-}
-
-model ProfileQuestion {
-  id         Int            @id @default(autoincrement())
-  sectionId  Int
-  section    ProfileSection @relation(fields: [sectionId], references: [id])
-  question   String
-  answerType AnswerType
-  options    Json? // JSONB for choices/options
-  minWords   Int?
-  weight     Int            @default(1)
-  isRequired Boolean        @default(true)
-  orderNo    Int            @default(0)
-  isActive   Boolean        @default(true)
-  answers    UserAnswer[]
-
-  @@map("profile_questions")
-}
-
-model UserAnswer {
-  id         Int             @id @default(autoincrement())
-  profileId  Int
-  profile    Profile         @relation(fields: [profileId], references: [id])
-  questionId Int
-  question   ProfileQuestion @relation(fields: [questionId], references: [id])
-  answer     Json // JSONB for the answer content
-  score      Int?
-  createdAt  DateTime        @default(now())
-
-  @@unique([profileId, questionId]) // One answer per question per user
-  @@map("user_answers")
+enum ProfileStatus {
+  INCOMPLETE
+  ONBOARDING_COMPLETED
+  COMPLETED
 }
 
 enum AnswerType {
@@ -217,97 +339,10 @@ enum AnswerType {
   BOOLEAN
 }
 
-enum Role {
-  USER
-  ADMIN
-  SUPER_ADMIN
-}
-
-model Admin {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  role      Role     @default(ADMIN)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model UserImage {
-  id        Int      @id @default(autoincrement())
-  profileId Int
-  profile   Profile  @relation(fields: [profileId], references: [id])
-  imageUrl  String
-  isPrimary Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("user_images")
-}
-
-enum ProfileStatus {
-  INCOMPLETE
-  ONBOARDING_COMPLETED
-  COMPLETED
-}
-
 enum SwipeAction {
   LEFT
   RIGHT
   UP
-}
-
-model ProfileSwipe {
-  id              Int         @id @default(autoincrement())
-  userId          Int
-  user            User        @relation("UserSwipes", fields: [userId], references: [id])
-  targetProfileId Int
-  targetProfile   Profile     @relation("ProfileMatches", fields: [targetProfileId], references: [id])
-  action          SwipeAction
-  createdAt       DateTime    @default(now())
-
-  @@map("profile_swipes")
-}
-
-// ─── Subscription Plans ──────────────────────────────────────────────────────
-
-model SubscriptionPlan {
-  id           Int           @id @default(autoincrement())
-  name         String        @unique // FREE, PREMIUM, GOLD
-  price        Int // price in paise (₹1 = 100 paise)
-  durationDays Int
-  isActive     Boolean       @default(true)
-  features     PlanFeature[]
-  userSubscriptions UserSubscription[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-
-  @@map("subscription_plans")
-}
-
-model Feature {
-  id          Int           @id @default(autoincrement())
-  key         String        @unique // e.g. "swipe_limit"
-  name        String        // e.g. "Daily Swipe Limit"
-  description String?       // e.g. "Number of swipes allowed per day"
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  planFeatures PlanFeature[]
-
-  @@map("features")
-}
-
-model PlanFeature {
-  id        Int              @id @default(autoincrement())
-  planId    Int
-  plan      SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  featureId Int
-  feature   Feature          @relation(fields: [featureId], references: [id], onDelete: Cascade)
-  limit     String           // e.g. "50", "UNLIMITED", "true"
-  createdAt DateTime         @default(now())
-
-  @@unique([planId, featureId]) // one limit per feature per plan
-  @@map("plan_features")
 }
 
 enum SubscriptionStatus {
@@ -315,19 +350,4 @@ enum SubscriptionStatus {
   INACTIVE
   CANCELLED
   EXPIRED
-}
-
-model UserSubscription {
-  id        Int               @id @default(autoincrement())
-  userId    Int
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId    Int
-  plan      SubscriptionPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
-  startDate DateTime          @default(now())
-  endDate   DateTime
-  status    SubscriptionStatus @default(ACTIVE)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-
-  @@map("user_subscriptions")
 }

@@ -20,6 +20,12 @@ router.get("/plans", userSubscriptionController.getPlans);
 router.get("/my-subscription", userSubscriptionController.getMySubscription);
 
 /**
+ * @route GET /user/subscriptions/features
+ * @desc Get the current user's power/features
+ */
+router.get("/features", userSubscriptionController.getUserFeatures);
+
+/**
  * @route POST /user/subscriptions/subscribe
  * @desc Subscribe to a plan (mocks payment logic by activating immediately)
  */

@@ -19,6 +19,13 @@ export class UserSubscriptionController {
       res.status(200).json(new ApiResponse(200, subscription, "Current subscription retrieved"));
    });
 
+   /** GET /user/subscriptions/features */
+   getUserFeatures = asyncHandler(async (req: Request, res: Response) => {
+      const userId = req.user!.id; // assuming auth middleware sets req.user
+      const features = await this.userSubscriptionService.getUserFeatures(userId);
+      res.status(200).json(new ApiResponse(200, features, "Current features retrieved"));
+   });
+
    /** POST /user/subscriptions/subscribe */
    subscribe = asyncHandler(async (req: Request, res: Response) => {
       const userId = req.user!.id; // assuming auth middleware sets req.user

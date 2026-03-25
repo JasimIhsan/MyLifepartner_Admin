@@ -1,4 +1,5 @@
 import 'package:mylifepartner/models/subscription_plan.dart';
+import 'package:mylifepartner/models/user_feature.dart';
 import 'package:mylifepartner/services/api_service.dart';
 
 class SubscriptionService {
@@ -42,6 +43,19 @@ class SubscriptionService {
       throw Exception(response.data['message'] ?? 'Failed to subscribe');
     } catch (e) {
       throw Exception('Failed to subscribe: $e');
+    }
+  }
+
+  Future<UserFeature?> getUserFeatures() async {
+    try {
+      final response = await _apiService.dio.get('/user/subscriptions/features');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        if (response.data['data'] == null) return null;
+        return UserFeature.fromJson(response.data['data']);
+      }
+      throw Exception(response.data['message'] ?? 'Failed to fetch features');
+    } catch (e) {
+      throw Exception('Failed to load user features: $e');
     }
   }
 }
