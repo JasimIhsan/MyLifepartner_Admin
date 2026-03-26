@@ -1,7 +1,7 @@
 import { CreateAdminDto, UpdateAdminDto } from "@/dtos/admin.management.dto";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { IAdminRepository } from "../../interfaces/repositories/admin.repository.interface";
 import { IAdminManagementService } from "../../interfaces/services/admin.management.service.interface";
@@ -74,7 +74,7 @@ export class AdminManagementService implements IAdminManagementService {
          }
       }
 
-      const updateData: any = {};
+      const updateData: Prisma.AdminsUpdateInput = {};
       if (data.username) updateData.username = data.username;
       if (data.role) updateData.role = data.role as Role;
 

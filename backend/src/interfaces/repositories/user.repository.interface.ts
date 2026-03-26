@@ -1,9 +1,15 @@
-import { Prisma, User } from "@prisma/client";
+import { PartnerPreference, Prisma, Profile, User, UserFeature } from "@prisma/client";
+
+export type UserWithProfile = User & { 
+   profile: (Profile & { images: { id: number; imageUrl: string; isPrimary: boolean }[] }) | null;
+   partnerPreference?: PartnerPreference | null;
+   userFeature?: UserFeature | null;
+};
 
 export interface IUserRepository {
-   create(data: Prisma.UserCreateInput): Promise<User>;
+   create(data: Prisma.UserCreateInput): Promise<UserWithProfile>;
    findAll(where?: Prisma.UserWhereInput, skip?: number, take?: number, include?: Prisma.UserInclude): Promise<{ users: User[]; total: number }>;
-   findById(id: number): Promise<User | null>;
+   findById(id: number): Promise<UserWithProfile | null>;
    findOnboardingStatusById(
       id: number
    ): Promise<{
@@ -17,8 +23,8 @@ export interface IUserRepository {
          selfieStatus: import("@prisma/client").SelfieStatus | null;
       } | null;
    } | null>;
-   findByEmail(email: string): Promise<User | null>;
-   findByMobileNumber(mobileNumber: string): Promise<User | null>;
-   update(id: number, data: Prisma.UserUpdateInput): Promise<User>;
+   findByEmail(email: string): Promise<UserWithProfile | null>;
+   findByMobileNumber(mobileNumber: string): Promise<UserWithProfile | null>;
+   update(id: number, data: Prisma.UserUpdateInput): Promise<UserWithProfile>;
    delete(id: number): Promise<User>;
 }

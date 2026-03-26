@@ -1,10 +1,22 @@
 import prisma from "@/config/prisma";
 import { Prisma, User } from "@prisma/client";
-import { IUserRepository } from "../interfaces/repositories/user.repository.interface";
+import { IUserRepository, UserWithProfile } from "../interfaces/repositories/user.repository.interface";
 
 export class UserRepository implements IUserRepository {
-   async create(data: Prisma.UserCreateInput): Promise<User> {
-      return prisma.user.create({ data });
+   private static readonly STANDARD_INCLUDE: Prisma.UserInclude = {
+      profile: { include: { images: true } },
+      partnerPreference: true,
+      userFeature: true,
+   };
+
+   async create(data: Prisma.UserCreateInput): Promise<UserWithProfile> {
+      return prisma.user.create({
+         data: {
+            ...data,
+            userFeature: data.userFeature || { create: {} },
+         },
+         include: UserRepository.STANDARD_INCLUDE,
+      }) as unknown as Promise<UserWithProfile>;
    }
 
    async findAll(where?: Prisma.UserWhereInput, skip?: number, take?: number, include?: Prisma.UserInclude): Promise<{ users: User[]; total: number }> {
@@ -21,8 +33,11 @@ export class UserRepository implements IUserRepository {
       return { users, total };
    }
 
-   async findById(id: number): Promise<User | null> {
-      return prisma.user.findUnique({ where: { id }, include: { profile: { include: { images: true } }, partnerPreference: true } });
+   async findById(id: number): Promise<UserWithProfile | null> {
+      return prisma.user.findUnique({
+         where: { id },
+         include: UserRepository.STANDARD_INCLUDE,
+      }) as unknown as Promise<UserWithProfile | null>;
    }
 
    async findOnboardingStatusById(id: number) {
@@ -44,16 +59,26 @@ export class UserRepository implements IUserRepository {
       });
    }
 
-   async findByEmail(email: string): Promise<User | null> {
-      return prisma.user.findUnique({ where: { email }, include: { profile: { include: { images: true } }, partnerPreference: true } });
+   async findByEmail(email: string): Promise<UserWithProfile | null> {
+      return prisma.user.findUnique({
+         where: { email },
+         include: UserRepository.STANDARD_INCLUDE,
+      }) as unknown as Promise<UserWithProfile | null>;
    }
 
-   async findByMobileNumber(mobileNumber: string): Promise<User | null> {
-      return prisma.user.findUnique({ where: { mobileNumber }, include: { profile: { include: { images: true } }, partnerPreference: true } });
+   async findByMobileNumber(mobileNumber: string): Promise<UserWithProfile | null> {
+      return prisma.user.findUnique({
+         where: { mobileNumber },
+         include: UserRepository.STANDARD_INCLUDE,
+      }) as unknown as Promise<UserWithProfile | null>;
    }
 
-   async update(id: number, data: Prisma.UserUpdateInput): Promise<User> {
-      return prisma.user.update({ where: { id }, data, include: { profile: { include: { images: true } }, partnerPreference: true } });
+   async update(id: number, data: Prisma.UserUpdateInput): Promise<UserWithProfile> {
+      return prisma.user.update({
+         where: { id },
+         data,
+         include: UserRepository.STANDARD_INCLUDE,
+      }) as unknown as Promise<UserWithProfile>;
    }
 
    async delete(id: number): Promise<User> {

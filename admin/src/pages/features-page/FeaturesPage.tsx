@@ -28,9 +28,7 @@ export function FeaturesPage() {
          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                <h1 className="text-3xl font-bold tracking-tight">System Features</h1>
-               <p className="text-muted-foreground mt-1 text-sm sm:text-base">
-                  These are core capabilities defined in the application. They can be assigned to subscription plans to control user access.
-               </p>
+               <p className="text-muted-foreground mt-1 text-sm sm:text-base">These are core capabilities defined in the application. They can be assigned to subscription plans to control user access.</p>
             </div>
             <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-semibold flex items-center gap-2">
                <Settings2 className="h-3.5 w-3.5" />
@@ -44,9 +42,15 @@ export function FeaturesPage() {
                   <table className="w-full text-left">
                      <thead className="bg-muted/30 border-b border-border/40 h-10">
                         <tr>
-                           <th className="px-6 py-3 w-1/3"><div className="h-3 bg-muted/60 rounded w-24 animate-pulse"></div></th>
-                           <th className="px-6 py-3 w-1/2"><div className="h-3 bg-muted/60 rounded w-24 animate-pulse"></div></th>
-                           <th className="px-6 py-3 w-1/6 text-right"><div className="h-3 bg-muted/60 rounded w-16 ml-auto animate-pulse"></div></th>
+                           <th className="px-6 py-3 w-1/3">
+                              <div className="h-3 bg-muted/60 rounded w-24 animate-pulse"></div>
+                           </th>
+                           <th className="px-6 py-3 w-1/2">
+                              <div className="h-3 bg-muted/60 rounded w-24 animate-pulse"></div>
+                           </th>
+                           <th className="px-6 py-3 w-1/6 text-right">
+                              <div className="h-3 bg-muted/60 rounded w-16 ml-auto animate-pulse"></div>
+                           </th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-border/40">
@@ -61,8 +65,12 @@ export function FeaturesPage() {
                                     </div>
                                  </div>
                               </td>
-                              <td className="px-6 py-4"><div className="h-3 bg-muted/60 rounded w-full max-w-50"></div></td>
-                              <td className="px-6 py-4 text-right"><div className="h-3 bg-muted/60 rounded w-16 ml-auto"></div></td>
+                              <td className="px-6 py-4">
+                                 <div className="h-3 bg-muted/60 rounded w-full max-w-50"></div>
+                              </td>
+                              <td className="px-6 py-4 text-right">
+                                 <div className="h-3 bg-muted/60 rounded w-16 ml-auto"></div>
+                              </td>
                            </tr>
                         ))}
                      </tbody>
@@ -75,9 +83,15 @@ export function FeaturesPage() {
                   <table className="w-full text-sm text-left">
                      <thead className="text-xs text-muted-foreground uppercase bg-muted/30 border-b border-border/40">
                         <tr>
-                           <th scope="col" className="px-6 py-4 font-medium tracking-wider">Feature</th>
-                           <th scope="col" className="px-6 py-4 font-medium tracking-wider">Description</th>
-                           <th scope="col" className="px-6 py-4 font-medium tracking-wider text-right">Registry</th>
+                           <th scope="col" className="px-6 py-4 font-medium tracking-wider">
+                              Feature
+                           </th>
+                           <th scope="col" className="px-6 py-4 font-medium tracking-wider">
+                              Description
+                           </th>
+                           <th scope="col" className="px-6 py-4 font-medium tracking-wider text-right">
+                              Registry
+                           </th>
                         </tr>
                      </thead>
                      <tbody className="divide-y divide-border/40">
@@ -89,14 +103,10 @@ export function FeaturesPage() {
                                        <Settings2 className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                                     </div>
                                     <div className="flex flex-col min-w-0">
-                                       <span className="font-semibold text-base sm:text-md text-foreground/90 group-hover:text-foreground transition-colors truncate">
-                                          {feature.name}
-                                       </span>
+                                       <span className="font-semibold text-base sm:text-md text-foreground/90 group-hover:text-foreground transition-colors truncate">{feature.name}</span>
                                        <div className="flex items-center gap-1.5 mt-0.5 opacity-80">
                                           <Fingerprint className="h-3 w-3 text-primary/60" />
-                                          <span className="font-mono text-[10px] sm:text-xs text-muted-foreground/80 truncate">
-                                             {feature.key}
-                                          </span>
+                                          <span className="font-mono text-[10px] sm:text-xs text-muted-foreground/80 truncate">{feature.key}</span>
                                        </div>
                                     </div>
                                  </div>
@@ -122,4 +132,3 @@ export function FeaturesPage() {
       </div>
    );
 }
-

@@ -13,9 +13,9 @@ class Feature {
 
   factory Feature.fromJson(Map<String, dynamic> json) {
     return Feature(
-      id: json['id'],
-      key: json['key'],
-      name: json['name'],
+      id: json['id'] ?? 0,
+      key: json['key'] ?? '',
+      name: json['name'] ?? '',
       description: json['description'],
     );
   }
@@ -34,9 +34,15 @@ class PlanFeature {
 
   factory PlanFeature.fromJson(Map<String, dynamic> json) {
     return PlanFeature(
-      id: json['id'],
-      limit: json['limit'],
-      feature: Feature.fromJson(json['feature']),
+      id: json['id'] ?? 0,
+      limit: json['limit']?.toString() ?? '0',
+      feature: json['feature'] != null
+          ? Feature.fromJson(json['feature'])
+          : Feature(
+            id: 0,
+            key: json['featureKey'] ?? 'unknown',
+            name: json['featureKey'] ?? 'Unknown',
+          ),
     );
   }
 }
@@ -60,10 +66,10 @@ class SubscriptionPlan {
 
   factory SubscriptionPlan.fromJson(Map<String, dynamic> json) {
     return SubscriptionPlan(
-      id: json['id'],
-      name: json['name'],
-      price: json['price'],
-      durationDays: json['durationDays'],
+      id: json['id'] ?? 0,
+      name: json['name'] ?? 'Unknown',
+      price: json['price'] ?? 0,
+      durationDays: json['durationDays'] ?? 0,
       isActive: json['isActive'] ?? true,
       features: (json['features'] as List?)
               ?.map((e) => PlanFeature.fromJson(e))

@@ -1,43 +1,74 @@
 import { ApiError } from "@/utils/ApiError";
 import { ISubscriptionRepository } from "../../interfaces/repositories/subscription.repository.interface";
 import { IAdminSubscriptionService } from "../../interfaces/services/admin.subscription.service.interface";
+import { EnrichedSubscriptionPlan } from "../../interfaces/services/user.subscription.service.interface";
+import { PlanFeature, SubscriptionPlan } from "@prisma/client";
+import { SYSTEM_FEATURES } from "./admin.feature.service";
 
 export class AdminSubscriptionService implements IAdminSubscriptionService {
    constructor(private subscriptionRepository: ISubscriptionRepository) {}
 
    // ── Plans ────────────────────────────────────────────────────────────────
 
-   async createPlan(data: { name: string; price: number; durationDays: number }): Promise<any> {
+   async createPlan(data: { name: string; price: number; durationDays: number }): Promise<EnrichedSubscriptionPlan> {
       // Ensure plan name is unique (case-insensitive normalisation)
       const existing = await this.subscriptionRepository.getPlanByName(data.name.toUpperCase());
       if (existing) {
          throw new ApiError(409, `A subscription plan named '${data.name}' already exists.`);
       }
 
-      return this.subscriptionRepository.createPlan({
+      const plan = await this.subscriptionRepository.createPlan({
          name: data.name.toUpperCase(),
          price: data.price,
          durationDays: data.durationDays,
       });
+
+      return {
+         ...plan,
+         features: plan.features.map((pf) => ({
+            ...pf,
+            feature: SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey),
+         })),
+      } as EnrichedSubscriptionPlan;
    }
 
-   async getPlans(): Promise<any[]> {
-      return this.subscriptionRepository.getAllPlansWithFeatures();
+   async getPlans(): Promise<EnrichedSubscriptionPlan[]> {
+      const plans = await this.subscriptionRepository.getAllPlansWithFeatures();
+      return plans.map((plan) => ({
+         ...plan,
+         features: plan.features.map((pf) => ({
+            ...pf,
+            feature: SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey),
+         })),
+      })) as EnrichedSubscriptionPlan[];
    }
 
-   async getPlanById(id: number): Promise<any> {
+   async getPlanById(id: number): Promise<EnrichedSubscriptionPlan> {
       const plan = await this.subscriptionRepository.getPlanById(id);
       if (!plan) throw new ApiError(404, "Subscription plan not found.");
-      return plan;
+      return {
+         ...plan,
+         features: plan.features.map((pf) => ({
+            ...pf,
+            feature: SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey),
+         })),
+      } as EnrichedSubscriptionPlan;
    }
 
-   async updatePlan(id: number, data: { price?: number; durationDays?: number; isActive?: boolean }): Promise<any> {
+   async updatePlan(id: number, data: { price?: number; durationDays?: number; isActive?: boolean }): Promise<EnrichedSubscriptionPlan> {
       const plan = await this.subscriptionRepository.getPlanById(id);
       if (!plan) throw new ApiError(404, "Subscription plan not found.");
-      return this.subscriptionRepository.updatePlan(id, data);
+      const updated = await this.subscriptionRepository.updatePlan(id, data);
+      return {
+         ...updated,
+         features: updated.features.map((pf) => ({
+            ...pf,
+            feature: SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey),
+         })),
+      } as EnrichedSubscriptionPlan;
    }
 
-   async deletePlan(id: number): Promise<any> {
+   async deletePlan(id: number): Promise<SubscriptionPlan> {
       const plan = await this.subscriptionRepository.getPlanById(id);
       if (!plan) throw new ApiError(404, "Subscription plan not found.");
       return this.subscriptionRepository.deletePlan(id);
@@ -46,7 +77,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
    // Feature Management for Plans
    // ══════════════════════════════════════════════
 
-   async addFeatures(planId: number, features: { featureKey: string; limit: string }[]): Promise<any[]> {
+   async addFeatures(planId: number, features: { featureKey: string; limit: string }[]): Promise<PlanFeature[]> {
       // 1. Ensure plan exists
       await this.getPlanById(planId);
 
@@ -68,7 +99,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
       return await this.subscriptionRepository.addFeaturesToPlan(planId, features);
    }
 
-   async updatePlanFeature(planFeatureId: number, limit: string): Promise<any> {
+   async updatePlanFeature(planFeatureId: number, limit: string): Promise<PlanFeature> {
       const existing = await this.subscriptionRepository.getPlanFeatureById(planFeatureId);
       if (!existing) {
          throw new ApiError(404, "Plan Feature mapping not found");

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+
 import '../../core/app_colors.dart';
-import '../../shared/widgets/custom_button.dart';
-import '../../providers/subscription_provider.dart';
 import '../../models/subscription_plan.dart' as model;
+import '../../providers/subscription_provider.dart';
+import '../../shared/widgets/custom_button.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -72,10 +73,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           builder: (context, provider, child) {
             if (provider.isLoading && provider.plans.isEmpty) {
               return const Center(
-                  child: Padding(
-                padding: EdgeInsets.all(40.0),
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ));
+                child: Padding(
+                  padding: EdgeInsets.all(40.0),
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              );
             }
 
             if (provider.error != null && provider.plans.isEmpty) {
@@ -85,8 +87,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline,
-                          color: Colors.red, size: 48),
+                      const Icon(
+                        Icons.error_outline,
+                        color: Colors.red,
+                        size: 48,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         provider.error!,
@@ -97,7 +102,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       CustomButton(
                         onPressed: provider.fetchPlans,
                         text: 'Retry',
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -107,27 +112,35 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             final plans = provider.plans;
             final currentSub = provider.currentSubscription;
 
+            debugPrint("👉 plans: $plans");
+
             return Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Unlock Premium Features',
-                    style: GoogleFonts.poppins(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.2, end: 0),
+                        'Unlock Premium Features',
+                        style: GoogleFonts.poppins(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(duration: 400.ms)
+                      .slideY(begin: 0.2, end: 0),
                   const SizedBox(height: 8),
                   Text(
-                    'Choose a plan that fits your needs and start your journey towards finding your life partner.',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                    ),
-                  ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideY(begin: 0.2, end: 0),
+                        'Choose a plan that fits your needs and start your journey towards finding your life partner.',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 400.ms)
+                      .slideY(begin: 0.2, end: 0),
                   const SizedBox(height: 32),
                   if (currentSub?.isActive ?? false) ...[
                     Container(
@@ -135,11 +148,18 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.primary, width: 1.5),
+                        border: Border.all(
+                          color: AppColors.primary,
+                          width: 1.5,
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.stars_rounded, color: AppColors.primary, size: 32),
+                          const Icon(
+                            Icons.stars_rounded,
+                            color: AppColors.primary,
+                            size: 32,
+                          ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -148,20 +168,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 Text(
                                   'Current Active Plan',
                                   style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.primary),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                  ),
                                 ),
                                 Text(
                                   currentSub!.plan?.name ?? 'Unknown',
                                   style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppColors.textPrimary),
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
                               ],
                             ),
-                          )
+                          ),
                         ],
                       ),
                     ).animate().fadeIn().slideY(begin: 0.2, end: 0),
@@ -170,10 +192,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ...plans.asMap().entries.map((entry) {
                     final index = entry.key;
                     final plan = entry.value;
-                    final isCurrentPlan = currentSub?.isActive == true && currentSub?.planId == plan.id;
-                    return _buildPlanCard(plan, isCurrentPlan, provider.isLoading)
+                    final isCurrentPlan =
+                        currentSub?.isActive == true &&
+                        currentSub?.planId == plan.id;
+                    return _buildPlanCard(
+                          plan,
+                          isCurrentPlan,
+                          provider.isLoading,
+                        )
                         .animate()
-                        .fadeIn(delay: (400 + (index * 100)).ms, duration: 500.ms)
+                        .fadeIn(
+                          delay: (400 + (index * 100)).ms,
+                          duration: 500.ms,
+                        )
                         .slideX(begin: 0.1, end: 0);
                   }),
                   const SizedBox(height: 40),
@@ -186,7 +217,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     );
   }
 
-  Widget _buildPlanCard(model.SubscriptionPlan plan, bool isCurrentPlan, bool isLoading) {
+  Widget _buildPlanCard(
+    model.SubscriptionPlan plan,
+    bool isCurrentPlan,
+    bool isLoading,
+  ) {
     // Assuming the most expensive or second expensive plan is popular typically
     final isPopular = plan.price > 0 && plan.price < 500000; // heuristic
 
@@ -196,7 +231,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         color: isPopular ? AppColors.primary : AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isPopular ? AppColors.primary : isCurrentPlan ? AppColors.primary : AppColors.borderColor,
+          color: isPopular
+              ? AppColors.primary
+              : isCurrentPlan
+              ? AppColors.primary
+              : AppColors.borderColor,
           width: 1.5,
         ),
         boxShadow: [
@@ -214,7 +253,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               top: 16,
               right: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.onPrimary,
                   borderRadius: BorderRadius.circular(20),
@@ -234,7 +276,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               top: 16,
               right: 16,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.onPrimary,
                   borderRadius: BorderRadius.circular(20),
@@ -242,7 +287,11 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.check_circle_rounded, size: 14, color: AppColors.primary),
+                    const Icon(
+                      Icons.check_circle_rounded,
+                      size: 14,
+                      color: AppColors.primary,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'ACTIVE',
@@ -266,7 +315,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
-                    color: isPopular ? AppColors.onPrimary : AppColors.textPrimary,
+                    color: isPopular
+                        ? AppColors.onPrimary
+                        : AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -278,7 +329,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.w800,
-                        color: isPopular ? AppColors.onPrimary : AppColors.textPrimary,
+                        color: isPopular
+                            ? AppColors.onPrimary
+                            : AppColors.textPrimary,
                       ),
                     ),
                     Padding(
@@ -287,7 +340,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         ' / ${plan.durationDays} days',
                         style: GoogleFonts.poppins(
                           fontSize: 14,
-                          color: isPopular ? AppColors.onPrimary.withValues(alpha: 0.7) : AppColors.textSecondary,
+                          color: isPopular
+                              ? AppColors.onPrimary.withValues(alpha: 0.7)
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -296,36 +351,56 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 const SizedBox(height: 24),
                 const Divider(color: AppColors.divider),
                 const SizedBox(height: 24),
-                ...plan.featureDescriptions.map((feature) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle_rounded,
-                            size: 20,
-                            color: isPopular ? AppColors.onPrimary : AppColors.primary,
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              feature,
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: isPopular ? AppColors.onPrimary : AppColors.textPrimary,
-                              ),
+                ...plan.featureDescriptions.map(
+                  (feature) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle_rounded,
+                          size: 20,
+                          color: isPopular
+                              ? AppColors.onPrimary
+                              : AppColors.primary,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            feature,
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: isPopular
+                                  ? AppColors.onPrimary
+                                  : AppColors.textPrimary,
                             ),
                           ),
-                        ],
-                      ),
-                    )),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 CustomButton(
-                  onPressed: isCurrentPlan || isLoading ? () {} : () => _handleSubscribe(plan),
+                  onPressed: isCurrentPlan || isLoading
+                      ? () {}
+                      : () => _handleSubscribe(plan),
                   text: Theme.of(context).platform == TargetPlatform.iOS
-                      ? (isCurrentPlan ? 'Current Plan' : isLoading ? 'Processing...' : 'Select ${plan.name}')
-                      : (isCurrentPlan ? 'Current Plan' : isLoading ? 'Processing...' : 'Select ${plan.name}'),
-                  type: isPopular ? CustomButtonType.primary : CustomButtonType.outline,
-                  backgroundColor: isPopular ? AppColors.onPrimary : AppColors.primary,
+                      ? (isCurrentPlan
+                            ? 'Current Plan'
+                            : isLoading
+                            ? 'Processing...'
+                            : 'Select ${plan.name}')
+                      : (isCurrentPlan
+                            ? 'Current Plan'
+                            : isLoading
+                            ? 'Processing...'
+                            : 'Select ${plan.name}'),
+                  type: isPopular
+                      ? CustomButtonType.primary
+                      : CustomButtonType.outline,
+                  backgroundColor: isPopular
+                      ? AppColors.onPrimary
+                      : AppColors.primary,
                   textColor: isPopular ? AppColors.primary : AppColors.primary,
                   width: double.infinity,
                   borderRadius: 16,

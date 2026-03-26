@@ -22,9 +22,11 @@ import { ProfileRepository } from "@/repositories/profile.repository";
 import { QuestionnaireRepository } from "@/repositories/questionnaire.repository";
 import { SubscriptionRepository } from "@/repositories/subscription.repository";
 import { UserRepository } from "@/repositories/user.repository";
+import { UserFeatureRepository } from "@/repositories/user.feature.repository";
 
 export const adminRepository = new AdminRepository();
 export const userRepository = new UserRepository();
+export const userFeatureRepository = new UserFeatureRepository();
 export const profileRepository = new ProfileRepository();
 export const questionnaireRepository = new QuestionnaireRepository();
 export const subscriptionRepository = new SubscriptionRepository();
@@ -50,6 +52,7 @@ import { AdminQuestionnaireService } from "@/services/admin/admin.questionnaire.
 import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/user/user.auth.service";
 import { ProfileService } from "@/services/user/user.profile.service";
+import { UserFeatureService } from "@/services/user/user.feature.service";
 
 // Admin services
 export const adminAuthService = new AdminAuthService(adminRepository, jwtService);
@@ -64,14 +67,15 @@ export const adminFeatureService = new AdminFeatureService();
 
 // User services
 export const userService = new UserService(userRepository);
-export const authService = new AuthService(userService, otpService, emailService, jwtService, cacheService);
+export const userFeatureService = new UserFeatureService(userFeatureRepository);
+export const authService = new AuthService(userRepository, userService, otpService, emailService, jwtService, cacheService, userFeatureService);
 export const profileService = new ProfileService(profileRepository);
 
 import { MatchService } from "@/services/match.service";
 export const matchService = new MatchService(matchRepository, s3Service);
 
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
-export const userSubscriptionService = new UserSubscriptionService();
+export const userSubscriptionService = new UserSubscriptionService(subscriptionRepository, userFeatureRepository);
 
 // ─── 4. Controllers ───────────────────────────────────────────────────────────
 import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";

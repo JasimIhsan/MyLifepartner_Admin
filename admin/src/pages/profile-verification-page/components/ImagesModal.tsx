@@ -91,7 +91,7 @@ export function ImagesModal({ isOpen, onClose, user }: ImagesModalProps) {
             setRightSelfieUrl(null);
             setLocationText(null);
          }
-      } catch (error: any) {
+      } catch (error: unknown) {
          console.error("Failed to load data", error);
          toast.error("Failed to load user pictures");
          onClose();

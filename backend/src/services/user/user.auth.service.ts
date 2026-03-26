@@ -1,33 +1,32 @@
-import prisma from "@/config/prisma";
 import { toUserDto } from "@/dtos/user.dto";
+import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
 import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS, HTTP_STATUS, RATE_LIMIT_CONFIG } from "@/utils/constants";
 import bcrypt from "bcrypt";
-import crypto from "crypto";
-import fs from "fs";
-import path from "path";
 
-import env from "@/config/env";
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
 import { IOtpService } from "@/interfaces/services/otp.service.interface";
+import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 
 export class AuthService implements IUserAuthService {
    constructor(
+      private userRepository: IUserRepository,
       private userService: IUserService,
       private otpService: IOtpService,
       private emailService: IEmailService,
       private jwtService: IJwtService,
-      private cacheService: ICacheService
+      private cacheService: ICacheService,
+      private userFeatureService: IUserFeatureService
    ) {}
 
    async initiateAuth(email: string, ip: string, purpose: string = "auth") {
       if (!email) throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
 
-      const user = await this.userService.findUserByEmail(email);
+      const user = await this.userRepository.findByEmail(email);
       const exists = !!user;
 
       const otpResult = await this.otpService.sendOtp(email, ip, purpose);
@@ -81,7 +80,7 @@ export class AuthService implements IUserAuthService {
       await this.assertOtpVerified(email, "auth");
       await this.checkAccountLock(email);
 
-      const user = await prisma.user.findUnique({ where: { email }, include: { profile: true } });
+      const user = await this.userRepository.findByEmail(email);
       if (!user) {
          throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
       }
@@ -106,18 +105,18 @@ export class AuthService implements IUserAuthService {
    async register(email: string, passwordPlain: string) {
       await this.assertOtpVerified(email, "auth");
 
-      const existingUser = await prisma.user.findUnique({ where: { email } });
+      const existingUser = await this.userRepository.findByEmail(email);
       if (existingUser) {
          throw new ApiError(HTTP_STATUS.CONFLICT, "User already exists");
       }
 
       const hashedPassword = await bcrypt.hash(passwordPlain, 10);
-      const user = await prisma.user.create({
-         data: {
-            email,
-            password: hashedPassword,
+      const user = await this.userRepository.create({
+         email,
+         password: hashedPassword,
+         userFeature: {
+            create: {}, // Defaults handled in repository
          },
-         include: { profile: true },
       });
 
       await this.clearOtpVerified(email, "auth");
@@ -131,15 +130,14 @@ export class AuthService implements IUserAuthService {
    async forgotPassword(email: string, passwordPlain: string) {
       await this.assertOtpVerified(email, "password_reset");
 
-      const user = await prisma.user.findUnique({ where: { email } });
+      const user = await this.userRepository.findByEmail(email);
       if (!user) {
          throw new ApiError(HTTP_STATUS.NOT_FOUND, "User not found");
       }
 
       const hashedPassword = await bcrypt.hash(passwordPlain, 10);
-      await prisma.user.update({
-         where: { email },
-         data: { password: hashedPassword },
+      await this.userRepository.update(user.id, {
+         password: hashedPassword,
       });
 
       await this.clearOtpVerified(email, "password_reset");
@@ -147,8 +145,6 @@ export class AuthService implements IUserAuthService {
 
       return { message: "Password updated successfully" };
    }
-
-
 
    async refreshToken(refreshToken: string) {
       if (!refreshToken) {
@@ -161,18 +157,17 @@ export class AuthService implements IUserAuthService {
          if (!decoded.email) {
             throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid token payload: Missing email");
          }
-         const user = await this.userService.findUserByEmail(decoded.email);
+         const user = await this.userRepository.findByEmail(decoded.email);
          if (!user) throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not found");
 
-         const newAccessToken = this.jwtService.signAccess({ id: user.id, email: user.email }, "1d");
-         const newRefreshToken = this.jwtService.signRefresh({ id: user.id, email: user.email }, "30d");
+         const newAccessToken = this.jwtService.signAccess({ id: user.id, email: user.email, role: user.role }, "1d");
+         const newRefreshToken = this.jwtService.signRefresh({ id: user.id, email: user.email, role: user.role }, "30d");
 
          return { accessToken: newAccessToken, refreshToken: newRefreshToken };
       } catch (error) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
       }
    }
-
 
    async sendOtp(email: string, ip: string, purpose: string = "auth") {
       const otp = await this.otpService.sendOtp(email, ip, purpose);
@@ -183,6 +178,4 @@ export class AuthService implements IUserAuthService {
       const otp = await this.otpService.resendOtp(email, ip, purpose);
       return { otp };
    }
-
-
 }
