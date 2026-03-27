@@ -8,13 +8,18 @@ interface PlanCardProps {
    plan: SubscriptionPlan;
    onEdit: (plan: SubscriptionPlan) => void;
    onToggleActive: (plan: SubscriptionPlan) => void;
+   onToggleMostPopular: (plan: SubscriptionPlan) => void;
    onDelete: (plan: SubscriptionPlan) => void;
    onManageFeatures: (plan: SubscriptionPlan) => void;
 }
 
-export default function PlanCard({ plan, onEdit, onToggleActive, onDelete, onManageFeatures }: PlanCardProps) {
+export default function PlanCard({ plan, onEdit, onToggleActive, onToggleMostPopular, onDelete, onManageFeatures }: PlanCardProps) {
    return (
-      <Card className="flex flex-col border shadow-sm hover:shadow-md transition-shadow duration-200">
+      <Card
+         className={`flex flex-col border shadow-sm hover:shadow-md transition-all duration-200 ${
+            plan.isMostPopular ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20" : ""
+         }`}
+      >
          <CardHeader className="pb-3">
             <div className="flex items-start justify-between">
                <div className="flex items-center gap-2">
@@ -22,7 +27,14 @@ export default function PlanCard({ plan, onEdit, onToggleActive, onDelete, onMan
                      <Zap className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                     <h3 className="text-lg font-bold tracking-tight">{plan.name}</h3>
+                     <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-bold tracking-tight">{plan.name}</h3>
+                        {plan.isMostPopular && (
+                           <Badge variant="default" className="bg-primary text-[10px] uppercase font-bold px-1.5 py-0">
+                              Popular
+                           </Badge>
+                        )}
+                     </div>
                      <p className="text-2xl font-extrabold text-primary mt-0.5">{paiseToRupees(plan.price)}</p>
                   </div>
                </div>
@@ -82,14 +94,26 @@ export default function PlanCard({ plan, onEdit, onToggleActive, onDelete, onMan
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(plan)}>
                <Edit2 className="h-3.5 w-3.5" />
             </Button>
+            {/* Toggle Most Popular */}
+            <Button
+               size="sm"
+               variant={plan.isMostPopular ? "default" : "outline"}
+               className={`gap-1.5 ${plan.isMostPopular ? "bg-orange-500 hover:bg-orange-600 border-none" : ""}`}
+               onClick={() => onToggleMostPopular(plan)}
+               title={plan.isMostPopular ? "Unmark as Popular" : "Mark as Popular"}
+            >
+               <Zap className={`h-3.5 w-3.5 ${plan.isMostPopular ? "fill-current" : ""}`} />
+            </Button>
             {/* Toggle Active */}
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onToggleActive(plan)}>
                {plan.isActive ? <XCircle className="h-3.5 w-3.5 text-orange-500" /> : <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />}
             </Button>
             {/* Delete */}
-            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onDelete(plan)}>
-               <Trash2 className="h-3.5 w-3.5 text-destructive" />
-            </Button>
+            {plan.name !== "FREE" && (
+               <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onDelete(plan)}>
+                  <Trash2 className="h-3.5 w-3.5 text-destructive" />
+               </Button>
+            )}
          </CardFooter>
       </Card>
    );

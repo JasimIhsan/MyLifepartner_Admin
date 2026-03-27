@@ -11,6 +11,7 @@ import { IJwtService } from "@/interfaces/services/jwt.service.interface";
 import { IOtpService } from "@/interfaces/services/otp.service.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
+import { ISubscriptionRepository } from "@/interfaces/repositories/subscription.repository.interface";
 
 export class AuthService implements IUserAuthService {
    constructor(
@@ -20,7 +21,8 @@ export class AuthService implements IUserAuthService {
       private emailService: IEmailService,
       private jwtService: IJwtService,
       private cacheService: ICacheService,
-      private userFeatureService: IUserFeatureService
+      private userFeatureService: IUserFeatureService,
+      private subscriptionRepository: ISubscriptionRepository
    ) {}
 
    async initiateAuth(email: string, ip: string, purpose: string = "auth") {
@@ -118,6 +120,21 @@ export class AuthService implements IUserAuthService {
             create: {}, // Defaults handled in repository
          },
       });
+
+      const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
+      if (freePlan) {
+         const startDate = new Date();
+         const endDate = new Date();
+         endDate.setDate(startDate.getDate() + freePlan.durationDays);
+
+         await this.subscriptionRepository.createUserSubscription({
+            user: { connect: { id: user.id } },
+            plan: { connect: { id: freePlan.id } },
+            status: "ACTIVE",
+            startDate,
+            endDate,
+         });
+      }
 
       await this.clearOtpVerified(email, "auth");
 

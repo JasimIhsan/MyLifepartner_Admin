@@ -190,6 +190,7 @@ model SubscriptionPlan {
   price             Int // price in paise (₹1 = 100 paise)
   durationDays      Int
   isActive          Boolean            @default(true)
+  isMostPopular     Boolean            @default(false)
   features          PlanFeature[]
   userSubscriptions UserSubscription[]
   createdAt         DateTime           @default(now())

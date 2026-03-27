@@ -38,6 +38,13 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
    }
 
+   async untoggleMostPopularPlans(): Promise<Prisma.BatchPayload> {
+      return prisma.subscriptionPlan.updateMany({
+         where: { isMostPopular: true },
+         data: { isMostPopular: false },
+      });
+   }
+
    async deletePlan(id: number): Promise<SubscriptionPlan> {
       // PlanFeature records are cascade-deleted by the DB relation
       return prisma.subscriptionPlan.delete({ where: { id } });

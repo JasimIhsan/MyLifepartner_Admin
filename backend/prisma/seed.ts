@@ -16,51 +16,63 @@ async function main() {
    console.log("Start seeding...");
 
    try {
-      // Clean up existing questions to avoid duplicates/conflicts if re-seeding
-      await prisma.userAnswer.deleteMany({});
-      await prisma.profileQuestion.deleteMany({});
-      await prisma.profileSection.deleteMany({});
+      // // Clean up existing questions to avoid duplicates/conflicts if re-seeding
+      // await prisma.userAnswer.deleteMany({});
+      // await prisma.profileQuestion.deleteMany({});
+      // await prisma.profileSection.deleteMany({});
 
-      // Seed Admin
-      const adminPasswordHash = await bcrypt.hash("asdfasdf", 10);
-      const mainAdmin = await prisma.admins.upsert({
-         where: { username: "admin" },
+      // // Seed Admin
+      // const adminPasswordHash = await bcrypt.hash("asdfasdf", 10);
+      // const mainAdmin = await prisma.admins.upsert({
+      //    where: { username: "admin" },
+      //    update: {},
+      //    create: {
+      //       username: "admin",
+      //       password: adminPasswordHash,
+      //       role: Role.SUPER_ADMIN,
+      //    },
+      // });
+
+      // Seed Free Plan
+      await prisma.subscriptionPlan.upsert({
+         where: { name: "FREE" },
          update: {},
          create: {
-            username: "admin",
-            password: adminPasswordHash,
-            role: Role.SUPER_ADMIN,
+            name: "FREE",
+            price: 0,
+            durationDays: 36500, // ~100 years
+            isActive: true,
          },
       });
 
-      // ============================================================
-      // 1. Identity & Seriousness Verification
-      // ============================================================
-      const section1 = await prisma.profileSection.upsert({
-         where: { key: "identity_seriousness" },
-         update: { title: "Identity & Seriousness Verification", orderNo: 1, isPrimary: true },
-         create: {
-            key: "identity_seriousness",
-            title: "Identity & Seriousness Verification",
-            orderNo: 1,
-            isPrimary: true,
-         },
-      });
+      // // ============================================================
+      // // 1. Identity & Seriousness Verification
+      // // ============================================================
+      // const section1 = await prisma.profileSection.upsert({
+      //    where: { key: "identity_seriousness" },
+      //    update: { title: "Identity & Seriousness Verification", orderNo: 1, isPrimary: true },
+      //    create: {
+      //       key: "identity_seriousness",
+      //       title: "Identity & Seriousness Verification",
+      //       orderNo: 1,
+      //       isPrimary: true,
+      //    },
+      // });
 
-      await prisma.profileQuestion.createMany({
-         data: [
-            {
-               sectionId: section1.id,
-               question: "Why are you joining LP at this stage of your life?",
-               answerType: "SINGLE_CHOICE",
-               options: ["Ready to settle down", "Looking for a life partner", "Tired of casual dating", "Family pressure / Recommendation", "Recently single and want something serious", "Want companionship and commitment"],
-               orderNo: 1,
-               isRequired: true,
-               isActive: true,
-            },
-            // Add more profile questions here
-         ],
-      });
+      // await prisma.profileQuestion.createMany({
+      //    data: [
+      //       {
+      //          sectionId: section1.id,
+      //          question: "Why are you joining LP at this stage of your life?",
+      //          answerType: "SINGLE_CHOICE",
+      //          options: ["Ready to settle down", "Looking for a life partner", "Tired of casual dating", "Family pressure / Recommendation", "Recently single and want something serious", "Want companionship and commitment"],
+      //          orderNo: 1,
+      //          isRequired: true,
+      //          isActive: true,
+      //       },
+      //       // Add more profile questions here
+      //    ],
+      // });
 
       // Add more profile sections and profile questions here
 

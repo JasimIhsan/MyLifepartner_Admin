@@ -1,9 +1,9 @@
 import { ApiError } from "@/utils/ApiError";
+import { PlanFeature, SubscriptionPlan } from "@prisma/client";
+import { SYSTEM_FEATURES } from "../../constants/SYSTEM_FEATURES";
 import { ISubscriptionRepository } from "../../interfaces/repositories/subscription.repository.interface";
 import { IAdminSubscriptionService } from "../../interfaces/services/admin.subscription.service.interface";
 import { EnrichedSubscriptionPlan } from "../../interfaces/services/user.subscription.service.interface";
-import { PlanFeature, SubscriptionPlan } from "@prisma/client";
-import { SYSTEM_FEATURES } from "./admin.feature.service";
 
 export class AdminSubscriptionService implements IAdminSubscriptionService {
    constructor(private subscriptionRepository: ISubscriptionRepository) {}
@@ -34,7 +34,15 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
 
    async getPlans(): Promise<EnrichedSubscriptionPlan[]> {
       const plans = await this.subscriptionRepository.getAllPlansWithFeatures();
-      return plans.map((plan) => ({
+
+      // Ensure FREE plan is always first
+      const sortedPlans = [...plans].sort((a, b) => {
+         if (a.name === "FREE") return -1;
+         if (b.name === "FREE") return 1;
+         return 0;
+      });
+
+      return sortedPlans.map((plan) => ({
          ...plan,
          features: plan.features.map((pf) => ({
             ...pf,
@@ -55,9 +63,14 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
       } as EnrichedSubscriptionPlan;
    }
 
-   async updatePlan(id: number, data: { price?: number; durationDays?: number; isActive?: boolean }): Promise<EnrichedSubscriptionPlan> {
+   async updatePlan(id: number, data: { price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean }): Promise<EnrichedSubscriptionPlan> {
       const plan = await this.subscriptionRepository.getPlanById(id);
       if (!plan) throw new ApiError(404, "Subscription plan not found.");
+
+      if (data.isMostPopular) {
+         await this.subscriptionRepository.untoggleMostPopularPlans();
+      }
+
       const updated = await this.subscriptionRepository.updatePlan(id, data);
       return {
          ...updated,
@@ -71,6 +84,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
    async deletePlan(id: number): Promise<SubscriptionPlan> {
       const plan = await this.subscriptionRepository.getPlanById(id);
       if (!plan) throw new ApiError(404, "Subscription plan not found.");
+      if (plan.name === "FREE") throw new ApiError(403, "Cannot delete the FREE plan.");
       return this.subscriptionRepository.deletePlan(id);
    }
    // ══════════════════════════════════════════════

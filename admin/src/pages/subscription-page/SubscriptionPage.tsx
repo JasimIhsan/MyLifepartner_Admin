@@ -75,6 +75,18 @@ export default function SubscriptionPage() {
       }
    };
 
+   const handleToggleMostPopular = async (plan: SubscriptionPlan) => {
+      try {
+         // If it's already most popular, untoggle it. If not, mark it as popular (backend handles untoggling others)
+         await updatePlan(plan.id, { isMostPopular: !plan.isMostPopular });
+         toast.success(`Plan marked as ${!plan.isMostPopular ? "most popular" : "regular"}`);
+         loadPlans();
+      } catch (err) {
+         const axiosError = err as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "Failed to update most popular status");
+      }
+   };
+
    const handleDeleteConfirm = async () => {
       if (!deletingPlan) return;
       try {
@@ -136,6 +148,7 @@ export default function SubscriptionPage() {
                      plan={plan}
                      onEdit={handleOpenEdit}
                      onToggleActive={handleToggleActive}
+                     onToggleMostPopular={handleToggleMostPopular}
                      onDelete={(p) => setDeletingPlan(p)}
                      onManageFeatures={handleManageFeatures}
                   />

@@ -23,6 +23,7 @@ export const updatePlanSchema = z
       price: z.number().int("Price must be an integer (in paise)").min(0, "Price must be non-negative").optional(),
       durationDays: z.number().int("Duration must be an integer").min(1, "Duration must be at least 1 day").optional(),
       isActive: z.boolean().optional(),
+      isMostPopular: z.boolean().optional(),
    })
    .refine((v) => Object.keys(v).length > 0, { message: "At least one field must be provided for update" });
 

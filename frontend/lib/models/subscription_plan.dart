@@ -53,6 +53,7 @@ class SubscriptionPlan {
   final int price; // in paise
   final int durationDays;
   final bool isActive;
+  final bool isMostPopular;
   final List<PlanFeature> features;
 
   SubscriptionPlan({
@@ -61,6 +62,7 @@ class SubscriptionPlan {
     required this.price,
     required this.durationDays,
     required this.isActive,
+    required this.isMostPopular,
     required this.features,
   });
 
@@ -71,6 +73,7 @@ class SubscriptionPlan {
       price: json['price'] ?? 0,
       durationDays: json['durationDays'] ?? 0,
       isActive: json['isActive'] ?? true,
+      isMostPopular: json['isMostPopular'] ?? false,
       features: (json['features'] as List?)
               ?.map((e) => PlanFeature.fromJson(e))
               .toList() ??

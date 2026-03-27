@@ -1,9 +1,9 @@
-import { IUserSubscriptionService, EnrichedSubscriptionPlan, EnrichedUserSubscription } from "@/interfaces/services/user.subscription.service.interface";
 import { ISubscriptionRepository } from "@/interfaces/repositories/subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
-import { UserFeature } from "@prisma/client";
+import { EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { SYSTEM_FEATURES } from "../admin/admin.feature.service";
+import { UserFeature } from "@prisma/client";
+import { SYSTEM_FEATURES } from "../../constants/SYSTEM_FEATURES";
 
 export class UserSubscriptionService implements IUserSubscriptionService {
    constructor(
@@ -13,7 +13,15 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
    async getPlans(): Promise<EnrichedSubscriptionPlan[]> {
       const plans = await this.subscriptionRepository.getAllPlansWithFeatures();
-      return plans.map((plan) => ({
+
+      // Ensure FREE plan is always first
+      const sortedPlans = [...plans].sort((a, b) => {
+         if (a.name === "FREE") return -1;
+         if (b.name === "FREE") return 1;
+         return 0;
+      });
+
+      return sortedPlans.map((plan) => ({
          ...plan,
          features: plan.features.map((pf) => ({
             ...pf,
@@ -23,7 +31,22 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    async getMySubscription(userId: number): Promise<EnrichedUserSubscription | null> {
-      const sub = await this.subscriptionRepository.findActiveSubscriptionByUserId(userId);
+      let sub = await this.subscriptionRepository.findActiveSubscriptionByUserId(userId);
+
+      // If subscription exists but is expired, deactivate it
+      if (sub && new Date() > sub.endDate) {
+         await this.subscriptionRepository.deactivateUserSubscriptions(userId);
+         sub = null;
+      }
+
+      // If no active subscription (either absent or just expired), fallback to FREE plan
+      if (!sub) {
+         const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
+         if (freePlan) {
+            sub = (await this.subscribe(userId, freePlan.id)) as any;
+         }
+      }
+
       if (!sub) return null;
 
       return {
@@ -144,4 +167,3 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       return enrichedSubscription as EnrichedUserSubscription;
    }
 }
-

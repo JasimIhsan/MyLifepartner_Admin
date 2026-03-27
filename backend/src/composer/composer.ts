@@ -68,7 +68,7 @@ export const adminFeatureService = new AdminFeatureService();
 // User services
 export const userService = new UserService(userRepository);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
-export const authService = new AuthService(userRepository, userService, otpService, emailService, jwtService, cacheService, userFeatureService);
+export const authService = new AuthService(userRepository, userService, otpService, emailService, jwtService, cacheService, userFeatureService, subscriptionRepository);
 export const profileService = new ProfileService(profileRepository);
 
 import { MatchService } from "@/services/match.service";

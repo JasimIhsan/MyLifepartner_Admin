@@ -112,8 +112,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             final plans = provider.plans;
             final currentSub = provider.currentSubscription;
 
-            debugPrint("👉 plans: $plans");
-
             return Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
@@ -222,8 +220,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     bool isCurrentPlan,
     bool isLoading,
   ) {
-    // Assuming the most expensive or second expensive plan is popular typically
-    final isPopular = plan.price > 0 && plan.price < 500000; // heuristic
+    final isPopular = plan.isMostPopular;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
@@ -321,33 +318,45 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      plan.displayPrice,
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: isPopular
-                            ? AppColors.onPrimary
-                            : AppColors.textPrimary,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 5, left: 4),
-                      child: Text(
-                        ' / ${plan.durationDays} days',
+                if (plan.price > 0)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        plan.displayPrice,
                         style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
                           color: isPopular
-                              ? AppColors.onPrimary.withValues(alpha: 0.7)
-                              : AppColors.textSecondary,
+                              ? AppColors.onPrimary
+                              : AppColors.textPrimary,
                         ),
                       ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 5, left: 4),
+                        child: Text(
+                          ' / ${plan.durationDays} days',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: isPopular
+                                ? AppColors.onPrimary.withValues(alpha: 0.7)
+                                : AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    'Get Started Free',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: isPopular
+                          ? AppColors.onPrimary
+                          : AppColors.primary,
                     ),
-                  ],
-                ),
+                  ),
                 const SizedBox(height: 24),
                 const Divider(color: AppColors.divider),
                 const SizedBox(height: 24),
