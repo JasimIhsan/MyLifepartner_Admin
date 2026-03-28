@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
+import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_details_grid.dart';
 import 'package:mylifepartner/services/match_service.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +30,9 @@ class ProfileDetailScreen extends StatefulWidget {
 class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   // Full API data (enriched – may arrive later)
   Map<String, dynamic>? _apiProfile;
+
+  bool _isPassing = false;
+  bool _isInterested = false;
 
   @override
   void initState() {
@@ -387,21 +391,27 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             label: 'Pass',
             icon: Icons.close_rounded,
             isOutlined: true,
+            isLoading: _isPassing,
             onTap: () async {
+              if (_isPassing || _isInterested) return;
+              setState(() => _isPassing = true);
               try {
                 await context.read<MatchProvider>().swipeLeft();
                 if (mounted) Navigator.pop(context);
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          context.read<MatchProvider>().error ?? 'Action failed'),
-                      backgroundColor: Colors.redAccent,
-                      behavior: SnackBarBehavior.floating,
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
+                    builder: (_) => InterestLimitBottomSheet(
+                      message: context.read<MatchProvider>().error ??
+                          'Unable to process skip at this moment.',
                     ),
                   );
                 }
+              } finally {
+                if (mounted) setState(() => _isPassing = false);
               }
             },
           ),
@@ -410,21 +420,27 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             label: 'Interested',
             icon: Icons.favorite_rounded,
             isOutlined: false,
+            isLoading: _isInterested,
             onTap: () async {
+              if (_isPassing || _isInterested) return;
+              setState(() => _isInterested = true);
               try {
                 await context.read<MatchProvider>().swipeRight();
                 if (mounted) Navigator.pop(context);
               } catch (e) {
                 if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                          context.read<MatchProvider>().error ?? 'Action failed'),
-                      backgroundColor: Colors.black87,
-                      behavior: SnackBarBehavior.floating,
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    isScrollControlled: true,
+                    builder: (_) => InterestLimitBottomSheet(
+                      message: context.read<MatchProvider>().error ??
+                          'Unable to send interest at this moment.',
                     ),
                   );
                 }
+              } finally {
+                if (mounted) setState(() => _isInterested = false);
               }
             },
           ),
@@ -438,10 +454,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     required IconData icon,
     required bool isOutlined,
     required VoidCallback onTap,
+    bool isLoading = false,
   }) {
     return Expanded(
       child: GestureDetector(
-        onTap: onTap,
+        onTap: isLoading ? null : onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
@@ -454,20 +471,31 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                size: 18,
-                color: isOutlined ? AppColors.textPrimary : Colors.white,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+              if (isLoading)
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: isOutlined ? AppColors.textPrimary : Colors.white,
+                  ),
+                )
+              else ...[
+                Icon(
+                  icon,
+                  size: 18,
                   color: isOutlined ? AppColors.textPrimary : Colors.white,
                 ),
-              ),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: isOutlined ? AppColors.textPrimary : Colors.white,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
