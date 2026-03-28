@@ -1,5 +1,6 @@
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
+import { ApiError } from "@/utils/ApiError";
 import { SwipeAction, UserFeature } from "@prisma/client";
 
 export class UserFeatureService implements IUserFeatureService {
@@ -50,10 +51,9 @@ export class UserFeatureService implements IUserFeatureService {
 
    async checkSwipeAccess(userId: number, action: SwipeAction): Promise<boolean> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      console.log(`features : `, features);
       if (!features) return false;
 
-      if (action === SwipeAction.RIGHT && features.remainingInterests > 0) {
+      if ((action === SwipeAction.RIGHT || action === SwipeAction.LEFT) && features.remainingInterests > 0) {
          return true;
       }
 
@@ -61,10 +61,12 @@ export class UserFeatureService implements IUserFeatureService {
    }
 
    async consumeSwipe(userId: number, action: SwipeAction): Promise<void> {
-      if (action === SwipeAction.RIGHT) {
+      if (action === SwipeAction.RIGHT || action === SwipeAction.LEFT) {
          const features = await this.userFeatureRepository.findByUserId(userId);
          if (features && features.remainingInterests > 0) {
             await this.updateRemainingInterests(userId, -1);
+         } else {
+            throw new ApiError(403, "You have reached your interest limit. Upgrade your plan to send more interests!");
          }
       }
    }
