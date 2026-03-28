@@ -1,4 +1,4 @@
-import { UserFeature } from "@prisma/client";
+import { UserFeature, SwipeAction } from "@prisma/client";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 
@@ -46,5 +46,25 @@ export class UserFeatureService implements IUserFeatureService {
       return this.userFeatureRepository.update(userId, {
          remainingAudioCallMinutes: features.remainingAudioCallMinutes + amount,
       });
+   }
+
+   async checkSwipeAccess(userId: number, action: SwipeAction): Promise<boolean> {
+      const features = await this.userFeatureRepository.findByUserId(userId);
+      if (!features) return false;
+
+      if (action === SwipeAction.RIGHT) {
+         return features.remainingInterests > 0;
+      }
+
+      return true;
+   }
+
+   async consumeSwipe(userId: number, action: SwipeAction): Promise<void> {
+      if (action === SwipeAction.RIGHT) {
+         const features = await this.userFeatureRepository.findByUserId(userId);
+         if (features && features.remainingInterests > 0) {
+            await this.updateRemainingInterests(userId, -1);
+         }
+      }
    }
 }

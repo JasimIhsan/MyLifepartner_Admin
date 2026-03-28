@@ -117,7 +117,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Connection lost',
+              'Oops! Something went wrong',
               style: GoogleFonts.cormorantGaramond(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
@@ -127,7 +127,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Check your network and try again',
+              provider.error ?? 'Check your network and try again',
               textAlign: TextAlign.center,
               style: GoogleFonts.lato(
                 fontSize: 14,

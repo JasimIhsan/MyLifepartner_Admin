@@ -2,6 +2,8 @@ import { SwipeAction } from "@prisma/client";
 import { CandidateProfile, IMatchRepository, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
 import { IMatchService, MatchRecommendationItem, ProfileDetail, SwipeInput } from "../interfaces/services/match.service.interface";
 import { IS3Service } from "../interfaces/services/s3.service.interface";
+import { IUserFeatureService } from "../interfaces/services/user.feature.service.interface";
+import { ApiError } from "../utils/ApiError";
 
 type CompatibilityScore = {
    totalScore: number;
@@ -11,7 +13,8 @@ type CompatibilityScore = {
 export class MatchService implements IMatchService {
    constructor(
       private readonly matchRepository: IMatchRepository,
-      private readonly s3Service: IS3Service
+      private readonly s3Service: IS3Service,
+      private readonly userFeatureService: IUserFeatureService
    ) {}
 
    async getRecommendations(userId: number): Promise<MatchRecommendationItem[]> {
@@ -24,13 +27,18 @@ export class MatchService implements IMatchService {
       // 2. Fetch eligible candidate profiles
       const candidates = await this.matchRepository.getCandidateProfiles(userId, excludedIds);
 
+      console.log(`👉 candidates : `, candidates);
+
       // 3. Score each candidate
       const scored: MatchRecommendationItem[] = [];
       for (const candidate of candidates) {
          const { totalScore, highlights } = this.calculateCompatibility(candidate, userPref, userAnswers);
 
+         console.log(`👉 totalScore : `, totalScore);
+         console.log(`👉 highlights : `, highlights);
+
          // 4. Filter by minimum 70%
-         if (totalScore >= 70) {
+         if (totalScore >= 30) {
             const age = candidate.dateOfBirth ? this.calculateAge(candidate.dateOfBirth) : 0;
 
             const presignedImages = await Promise.all(
@@ -55,13 +63,23 @@ export class MatchService implements IMatchService {
          }
       }
 
+      console.log(`👉 scored : `, scored);
+
       // 5. Sort descending and limit to 20
       scored.sort((a, b) => b.matchPercentage - a.matchPercentage);
       return scored.slice(0, 20);
    }
 
    async swipeProfile(input: SwipeInput): Promise<void> {
+      const isAllowed = await this.userFeatureService.checkSwipeAccess(input.userId, input.action);
+      if (!isAllowed) {
+         throw new ApiError(403, "You have reached your interest limit. Upgrade your plan to send more interests!");
+      }
+
       await this.matchRepository.recordSwipe(input.userId, input.targetProfileId, input.action);
+
+      // Consume the swipe (decrement limit if applicable)
+      await this.userFeatureService.consumeSwipe(input.userId, input.action);
    }
 
    async getProfileDetail(userId: number, profileId: number): Promise<ProfileDetail | null> {

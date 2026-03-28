@@ -72,7 +72,7 @@ export const authService = new AuthService(userRepository, userService, otpServi
 export const profileService = new ProfileService(profileRepository);
 
 import { MatchService } from "@/services/match.service";
-export const matchService = new MatchService(matchRepository, s3Service);
+export const matchService = new MatchService(matchRepository, s3Service, userFeatureService);
 
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 export const userSubscriptionService = new UserSubscriptionService(subscriptionRepository, userFeatureRepository);

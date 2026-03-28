@@ -387,9 +387,22 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             label: 'Pass',
             icon: Icons.close_rounded,
             isOutlined: true,
-            onTap: () {
-              context.read<MatchProvider>().swipeLeft();
-              Navigator.pop(context);
+            onTap: () async {
+              try {
+                await context.read<MatchProvider>().swipeLeft();
+                if (mounted) Navigator.pop(context);
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          context.read<MatchProvider>().error ?? 'Action failed'),
+                      backgroundColor: Colors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
             },
           ),
           const SizedBox(width: 12),
@@ -397,9 +410,22 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             label: 'Interested',
             icon: Icons.favorite_rounded,
             isOutlined: false,
-            onTap: () {
-              context.read<MatchProvider>().swipeRight();
-              Navigator.pop(context);
+            onTap: () async {
+              try {
+                await context.read<MatchProvider>().swipeRight();
+                if (mounted) Navigator.pop(context);
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          context.read<MatchProvider>().error ?? 'Action failed'),
+                      backgroundColor: Colors.black87,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              }
             },
           ),
         ],

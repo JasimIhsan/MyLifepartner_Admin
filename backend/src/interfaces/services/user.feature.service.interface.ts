@@ -1,4 +1,4 @@
-import { UserFeature } from "@prisma/client";
+import { UserFeature, SwipeAction } from "@prisma/client";
 
 export interface IUserFeatureService {
    getUserFeatures(userId: number): Promise<UserFeature | null>;
@@ -7,4 +7,6 @@ export interface IUserFeatureService {
    updateRemainingMessages(userId: number, amount: number): Promise<UserFeature>;
    updateRemainingVideoCallMinutes(userId: number, amount: number): Promise<UserFeature>;
    updateRemainingAudioCallMinutes(userId: number, amount: number): Promise<UserFeature>;
+   checkSwipeAccess(userId: number, action: SwipeAction): Promise<boolean>;
+   consumeSwipe(userId: number, action: SwipeAction): Promise<void>;
 }
