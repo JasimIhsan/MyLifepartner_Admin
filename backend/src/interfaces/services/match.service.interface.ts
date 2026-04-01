@@ -1,5 +1,12 @@
 import { SwipeAction } from "@prisma/client";
 
+export enum InteractionState {
+  NONE = "NONE",
+  INTEREST_SENT = "INTEREST_SENT",
+  INTEREST_RECEIVED = "INTEREST_RECEIVED",
+  MATCHED = "MATCHED",
+}
+
 export interface MatchRecommendationItem {
    id: number;
    name: string;
@@ -11,6 +18,7 @@ export interface MatchRecommendationItem {
    matchPercentage: number;
    compatibilityHighlights: string[];
    images: Array<{ imageUrl: string; isPrimary: boolean }>;
+   interactionState: InteractionState;
 }
 
 export interface SwipeInput {
@@ -38,10 +46,14 @@ export interface ProfileDetail {
    matchPercentage: number;
    compatibilityHighlights: string[];
    images: Array<{ imageUrl: string; isPrimary: boolean }>;
+   interactionState: InteractionState;
 }
 
 export interface IMatchService {
    getRecommendations(userId: number): Promise<MatchRecommendationItem[]>;
    swipeProfile(input: SwipeInput): Promise<void>;
    getProfileDetail(userId: number, profileId: number): Promise<ProfileDetail | null>;
+   getSentInterests(userId: number): Promise<MatchRecommendationItem[]>;
+   getReceivedInterests(userId: number): Promise<MatchRecommendationItem[]>;
+   getMutualMatches(userId: number): Promise<MatchRecommendationItem[]>;
 }

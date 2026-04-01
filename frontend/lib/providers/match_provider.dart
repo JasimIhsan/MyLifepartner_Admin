@@ -22,6 +22,14 @@ class MatchProvider extends ChangeNotifier {
   MatchRecommendation? get currentProfile =>
       hasProfiles ? _profiles[_currentIndex] : null;
 
+  List<MatchRecommendation> _sentInterests = [];
+  List<MatchRecommendation> _receivedInterests = [];
+  List<MatchRecommendation> _mutualMatches = [];
+
+  List<MatchRecommendation> get sentInterests => _sentInterests;
+  List<MatchRecommendation> get receivedInterests => _receivedInterests;
+  List<MatchRecommendation> get mutualMatches => _mutualMatches;
+
   void clearError() {
     _error = null;
     notifyListeners();
@@ -39,6 +47,63 @@ class MatchProvider extends ChangeNotifier {
       _state = MatchLoadState.loaded;
     } on DioException catch (e) {
       _error = getDioErrorMessage(e, fallback: 'Failed to load recommendations');
+      _state = MatchLoadState.error;
+    } catch (e) {
+      _error = 'An unexpected error occurred: ${e.toString()}';
+      _state = MatchLoadState.error;
+    }
+    notifyListeners();
+  }
+
+  Future<void> loadSentInterests() async {
+    _state = MatchLoadState.loading;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final results = await MatchService.getSentInterests();
+      _sentInterests = results;
+      _state = MatchLoadState.loaded;
+    } on DioException catch (e) {
+      _error = getDioErrorMessage(e, fallback: 'Failed to load sent interests');
+      _state = MatchLoadState.error;
+    } catch (e) {
+      _error = 'An unexpected error occurred: ${e.toString()}';
+      _state = MatchLoadState.error;
+    }
+    notifyListeners();
+  }
+
+  Future<void> loadReceivedInterests() async {
+    _state = MatchLoadState.loading;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final results = await MatchService.getReceivedInterests();
+      _receivedInterests = results;
+      _state = MatchLoadState.loaded;
+    } on DioException catch (e) {
+      _error = getDioErrorMessage(e, fallback: 'Failed to load received interests');
+      _state = MatchLoadState.error;
+    } catch (e) {
+      _error = 'An unexpected error occurred: ${e.toString()}';
+      _state = MatchLoadState.error;
+    }
+    notifyListeners();
+  }
+
+  Future<void> loadMutualMatches() async {
+    _state = MatchLoadState.loading;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final results = await MatchService.getMutualMatches();
+      _mutualMatches = results;
+      _state = MatchLoadState.loaded;
+    } on DioException catch (e) {
+      _error = getDioErrorMessage(e, fallback: 'Failed to load mutual matches');
       _state = MatchLoadState.error;
     } catch (e) {
       _error = 'An unexpected error occurred: ${e.toString()}';

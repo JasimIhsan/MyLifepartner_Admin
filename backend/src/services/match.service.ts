@@ -1,6 +1,6 @@
 import { SwipeAction } from "@prisma/client";
 import { CandidateProfile, IMatchRepository, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
-import { IMatchService, MatchRecommendationItem, ProfileDetail, SwipeInput } from "../interfaces/services/match.service.interface";
+import { IMatchService, InteractionState, MatchRecommendationItem, ProfileDetail, SwipeInput } from "../interfaces/services/match.service.interface";
 import { IS3Service } from "../interfaces/services/s3.service.interface";
 import { IUserFeatureService } from "../interfaces/services/user.feature.service.interface";
 import { ApiError } from "../utils/ApiError";
@@ -59,6 +59,7 @@ export class MatchService implements IMatchService {
                matchPercentage: Math.round(totalScore),
                compatibilityHighlights: highlights,
                images: presignedImages,
+               interactionState: candidate.interactionState ?? InteractionState.NONE,
             });
          }
       }
@@ -83,7 +84,7 @@ export class MatchService implements IMatchService {
    }
 
    async getProfileDetail(userId: number, profileId: number): Promise<ProfileDetail | null> {
-      const candidate = await this.matchRepository.getProfileById(profileId);
+      const candidate = await this.matchRepository.getProfileById(userId, profileId);
       if (!candidate) return null;
 
       const [userPref, userAnswers] = await Promise.all([this.matchRepository.getUserPreference(userId), this.matchRepository.getUserAnswers(userId)]);
@@ -117,7 +118,58 @@ export class MatchService implements IMatchService {
          matchPercentage: Math.round(totalScore),
          compatibilityHighlights: highlights,
          images: presignedImages,
+         interactionState: candidate.interactionState ?? InteractionState.NONE,
       };
+   }
+ 
+
+   async getSentInterests(userId: number): Promise<MatchRecommendationItem[]> {
+      const profiles = await this.matchRepository.getSentInterests(userId);
+      return this.enrichCandidatesToRecommendations(userId, profiles);
+   }
+
+   async getReceivedInterests(userId: number): Promise<MatchRecommendationItem[]> {
+      const profiles = await this.matchRepository.getReceivedInterests(userId);
+      return this.enrichCandidatesToRecommendations(userId, profiles);
+   }
+
+   async getMutualMatches(userId: number): Promise<MatchRecommendationItem[]> {
+      const profiles = await this.matchRepository.getMutualMatches(userId);
+      return this.enrichCandidatesToRecommendations(userId, profiles);
+   }
+
+   private async enrichCandidatesToRecommendations(userId: number, candidates: CandidateProfile[]): Promise<MatchRecommendationItem[]> {
+      const [userPref, userAnswers] = await Promise.all([this.matchRepository.getUserPreference(userId), this.matchRepository.getUserAnswers(userId)]);
+
+      const result: MatchRecommendationItem[] = [];
+
+      for (const candidate of candidates) {
+         const { totalScore, highlights } = this.calculateCompatibility(candidate, userPref, userAnswers);
+         const age = candidate.dateOfBirth ? this.calculateAge(candidate.dateOfBirth) : 0;
+
+         const presignedImages = await Promise.all(
+            candidate.images.map(async (img) => ({
+               ...img,
+               imageUrl: await this.s3Service.getPresignedUrl(img.imageUrl),
+            }))
+         );
+
+         result.push({
+            id: candidate.id,
+            name: candidate.name ?? "Unknown",
+            age,
+            heightCm: candidate.heightCm,
+            city: candidate.city,
+            religion: candidate.religion,
+            occupation: candidate.occupation,
+            matchPercentage: Math.round(totalScore),
+            compatibilityHighlights: highlights,
+            images: presignedImages,
+            interactionState: candidate.interactionState ?? InteractionState.NONE,
+         });
+      }
+
+      return result;
    }
 
    // ─── Private scoring helpers ──────────────────────────────────────────────

@@ -1,16 +1,22 @@
 import { SwipeAction } from "@prisma/client";
+import { InteractionState } from "../services/match.service.interface";
 
 export interface IMatchRepository {
-   getCandidateProfiles(currentUserId: number, alreadySwipedProfileIds: number[]): Promise<CandidateProfile[]>;
+   getCandidateProfiles(currentUserId: number, excludedProfileIds: number[]): Promise<CandidateProfile[]>;
    getUserPreference(userId: number): Promise<UserPreferenceData | null>;
    getUserAnswers(userId: number): Promise<UserAnswerData[]>;
+   getLikedProfiles(userId: number): Promise<CandidateProfile[]>;
+   getSentInterests(userId: number): Promise<CandidateProfile[]>;
+   getReceivedInterests(userId: number): Promise<CandidateProfile[]>;
+   getMutualMatches(userId: number): Promise<CandidateProfile[]>;
    getSwipedProfileIds(userId: number): Promise<SwipedProfile[]>;
    recordSwipe(userId: number, targetProfileId: number, action: SwipeAction): Promise<void>;
-   getProfileById(profileId: number): Promise<CandidateProfile | null>;
+   getProfileById(currentUserId: number, profileId: number): Promise<CandidateProfile | null>;
 }
 
 export interface CandidateProfile {
    id: number;
+   interactionState?: InteractionState;
    userId: number;
    name: string | null;
    dateOfBirth: Date | null;

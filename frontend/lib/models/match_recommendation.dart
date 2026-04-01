@@ -12,6 +12,23 @@ class MatchImage {
   }
 }
 
+enum InteractionState {
+  none('NONE'),
+  interestSent('INTEREST_SENT'),
+  interestReceived('INTEREST_RECEIVED'),
+  matched('MATCHED');
+
+  final String value;
+  const InteractionState(this.value);
+
+  factory InteractionState.fromString(String status) {
+    return InteractionState.values.firstWhere(
+      (e) => e.value == status,
+      orElse: () => InteractionState.none,
+    );
+  }
+}
+
 class MatchRecommendation {
   final int id;
   final String name;
@@ -23,6 +40,7 @@ class MatchRecommendation {
   final int matchPercentage;
   final List<String> compatibilityHighlights;
   final List<MatchImage> images;
+  final InteractionState interactionState;
 
   MatchRecommendation({
     required this.id,
@@ -35,6 +53,7 @@ class MatchRecommendation {
     required this.matchPercentage,
     required this.compatibilityHighlights,
     required this.images,
+    required this.interactionState,
   });
 
   factory MatchRecommendation.fromJson(Map<String, dynamic> json) {
@@ -54,6 +73,9 @@ class MatchRecommendation {
       images: (json['images'] as List<dynamic>? ?? [])
           .map((e) => MatchImage.fromJson(e as Map<String, dynamic>))
           .toList(),
+      interactionState: InteractionState.fromString(
+        json['interactionState'] as String? ?? 'NONE',
+      ),
     );
   }
 }

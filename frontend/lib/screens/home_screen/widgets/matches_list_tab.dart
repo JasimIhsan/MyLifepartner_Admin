@@ -68,16 +68,18 @@ class _MatchesListTabState extends State<MatchesListTab> {
   Widget build(BuildContext context) {
     return Consumer<MatchProvider>(
       builder: (context, provider, _) {
+        final sourceProfiles = provider.profiles;
+
         if (provider.state == MatchLoadState.loading) {
           return _buildSkeleton();
         }
         if (provider.state == MatchLoadState.error) {
           return _buildError(provider);
         }
-        if (provider.profiles.isEmpty) {
+        if (sourceProfiles.isEmpty) {
           return _buildEmpty(provider);
         }
-        _seedFromProvider(provider.profiles);
+        _seedFromProvider(sourceProfiles);
         return _buildList(context, provider);
       },
     );
@@ -407,6 +409,12 @@ class _HeroCard extends StatelessWidget {
                   ],
                 ),
               ),
+              if (profile.interactionState != InteractionState.none)
+                Positioned(
+                  top: 16,
+                  left: 16,
+                  child: _InteractionBadge(state: profile.interactionState),
+                ),
             ],
           ),
         ),
@@ -557,15 +565,31 @@ class _PortraitCard extends StatelessWidget {
                         ],
                       ],
                     ),
-                    _buildBottom(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(child: _buildBottom()),
+                      ],
+                    )
                   ],
                 ),
               ),
             ),
-            // Match arc
+            // Badges / Match arc
             Padding(
-              padding: const EdgeInsets.only(right: 14),
-              child: _MatchArc(percentage: profile.matchPercentage, size: 40),
+              padding: const EdgeInsets.only(right: 14, top: 14, bottom: 14),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (profile.interactionState != InteractionState.none)
+                    _InteractionBadge(state: profile.interactionState),
+                  if (profile.interactionState == InteractionState.none)
+                    const SizedBox(height: 20),
+                  _MatchArc(percentage: profile.matchPercentage, size: 40),
+                ],
+              ),
             ),
           ],
         ),
@@ -602,6 +626,70 @@ class _PortraitCard extends StatelessWidget {
             ),
           )
           .toList(),
+    );
+  }
+}
+
+class _InteractionBadge extends StatelessWidget {
+  final InteractionState state;
+
+  const _InteractionBadge({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    Color bgColor;
+    String label;
+    IconData icon;
+
+    switch (state) {
+      case InteractionState.matched:
+        bgColor = AppColors.primary;
+        label = 'MATCHED';
+        icon = Icons.favorite_rounded;
+        break;
+      case InteractionState.interestSent:
+        bgColor = Colors.blue.shade600;
+        label = 'INTEREST SENT';
+        icon = Icons.send_rounded;
+        break;
+      case InteractionState.interestReceived:
+        bgColor = Colors.amber.shade600;
+        label = 'INTEREST RECEIVED';
+        icon = Icons.mark_email_unread_rounded;
+        break;
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 12),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.lato(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

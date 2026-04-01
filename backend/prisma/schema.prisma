@@ -352,3 +352,10 @@ enum SubscriptionStatus {
   CANCELLED
   EXPIRED
 }
+
+enum InteractionState {
+  NONE
+  INTEREST_SENT
+  INTEREST_RECEIVED
+  MATCHED
+}

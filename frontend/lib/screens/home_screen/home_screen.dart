@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/home_screen/widgets/matches_list_tab.dart';
+import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
+import 'package:mylifepartner/screens/discover_screen/discover_screen.dart';
+import 'package:mylifepartner/screens/likes_screen/likes_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
@@ -173,13 +175,15 @@ class _HomePageState extends State<HomePage> {
   Widget _buildBody() {
     switch (_selectedIndex) {
       case 0:
-        return const MatchesListTab(title: 'Discover');
+        return const DiscoverScreen();
       case 1:
-        return const MatchesListTab(title: 'Your Matches');
+        return const LikedMatchesScreen();
+      case 2:
+        return const ChatPlaceholderScreen();
       case 3:
         return const ProfileScreen();
       default:
-        return const MatchesListTab(title: 'Discover');
+        return const DiscoverScreen();
     }
   }
 }

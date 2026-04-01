@@ -69,6 +69,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       'heightCm': s.heightCm,
       'matchPercentage': s.matchPercentage,
       'compatibilityHighlights': s.compatibilityHighlights,
+      'interactionState': s.interactionState,
       'images': s.images
           .map((img) => {
                 'imageUrl': img.imageUrl,
@@ -169,7 +170,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           bottom: 0,
           left: 0,
           right: 0,
-          child: _buildActionBar(),
+          child: _buildActionBar(p),
         ),
       ],
     );
@@ -367,7 +368,16 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
   // ─── Bottom action bar ─────────────────────────────────────────────────────
 
-  Widget _buildActionBar() {
+  Widget _buildActionBar(Map<String, dynamic> p) {
+    final interactionStateRaw = p['interactionState'];
+    InteractionState state = InteractionState.none;
+    if (interactionStateRaw is InteractionState) {
+      state = interactionStateRaw;
+    } else if (interactionStateRaw is String) {
+      state = InteractionState.fromString(interactionStateRaw);
+    }
+    final isInteractable = state == InteractionState.none;
+
     return Container(
       padding: EdgeInsets.only(
         left: 20,
@@ -392,80 +402,110 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             icon: Icons.close_rounded,
             isOutlined: true,
             isLoading: _isPassing,
-            onTap: () async {
-              if (_isPassing || _isInterested) return;
-              setState(() => _isPassing = true);
-              try {
-                await context.read<MatchProvider>().swipeLeft();
-                if (mounted) Navigator.pop(context);
-              } catch (e) {
-                if (mounted) {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    isScrollControlled: true,
-                    builder: (_) => InterestLimitBottomSheet(
-                      message: context.read<MatchProvider>().error ??
-                          'Unable to process skip at this moment.',
-                    ),
-                  );
-                }
-              } finally {
-                if (mounted) setState(() => _isPassing = false);
-              }
-            },
+            onTap: isInteractable
+                ? () async {
+                    if (_isPassing || _isInterested) return;
+                    setState(() => _isPassing = true);
+                    try {
+                      await context.read<MatchProvider>().swipeLeft();
+                      if (mounted) Navigator.pop(context);
+                    } catch (e) {
+                      if (mounted) {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          builder: (_) => InterestLimitBottomSheet(
+                            message: context.read<MatchProvider>().error ??
+                                'Unable to process skip at this moment.',
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) setState(() => _isPassing = false);
+                    }
+                  }
+                : null,
           ),
           const SizedBox(width: 12),
           _actionButton(
-            label: 'Interested',
-            icon: Icons.favorite_rounded,
+            label: _getInteractionLabel(state),
+            icon: _getInteractionIcon(state),
             isOutlined: false,
             isLoading: _isInterested,
-            onTap: () async {
-              if (_isPassing || _isInterested) return;
-              setState(() => _isInterested = true);
-              try {
-                await context.read<MatchProvider>().swipeRight();
-                if (mounted) Navigator.pop(context);
-              } catch (e) {
-                if (mounted) {
-                  showModalBottomSheet(
-                    context: context,
-                    backgroundColor: Colors.transparent,
-                    isScrollControlled: true,
-                    builder: (_) => InterestLimitBottomSheet(
-                      message: context.read<MatchProvider>().error ??
-                          'Unable to send interest at this moment.',
-                    ),
-                  );
-                }
-              } finally {
-                if (mounted) setState(() => _isInterested = false);
-              }
-            },
+            isDisabled: !isInteractable,
+            onTap: isInteractable
+                ? () async {
+                    if (_isPassing || _isInterested) return;
+                    setState(() => _isInterested = true);
+                    try {
+                      await context.read<MatchProvider>().swipeRight();
+                      if (mounted) Navigator.pop(context);
+                    } catch (e) {
+                      if (mounted) {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          isScrollControlled: true,
+                          builder: (_) => InterestLimitBottomSheet(
+                            message: context.read<MatchProvider>().error ??
+                                'Unable to send interest at this moment.',
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) setState(() => _isInterested = false);
+                    }
+                  }
+                : null,
           ),
         ],
       ),
     );
   }
 
+  String _getInteractionLabel(InteractionState state) {
+    if (state == InteractionState.interestSent) return 'Interest Sent';
+    if (state == InteractionState.interestReceived) return 'Interest Received';
+    if (state == InteractionState.matched) return 'Matched';
+    return 'Interested';
+  }
+
+  IconData _getInteractionIcon(InteractionState state) {
+    if (state == InteractionState.interestSent) return Icons.send_rounded;
+    if (state == InteractionState.interestReceived) {
+      return Icons.mark_email_unread_rounded;
+    }
+    return Icons.favorite_rounded;
+  }
+
   Widget _actionButton({
     required String label,
     required IconData icon,
     required bool isOutlined,
-    required VoidCallback onTap,
+    required VoidCallback? onTap,
     bool isLoading = false,
+    bool isDisabled = false,
   }) {
+    final bool effectivelyDisabled = isDisabled || onTap == null;
     return Expanded(
       child: GestureDetector(
-        onTap: isLoading ? null : onTap,
+        onTap: isLoading || effectivelyDisabled ? null : onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: isOutlined ? Colors.white : AppColors.primary,
+            color: isOutlined
+                ? Colors.white
+                : effectivelyDisabled
+                    ? AppColors.primary.withValues(alpha: 0.5)
+                    : AppColors.primary,
             borderRadius: BorderRadius.circular(14),
             border: isOutlined
-                ? Border.all(color: const Color(0xFFDDDDDD), width: 1.5)
+                ? Border.all(
+                    color: effectivelyDisabled
+                        ? const Color(0xFFEEEEEE)
+                        : const Color(0xFFDDDDDD),
+                    width: 1.5)
                 : null,
           ),
           child: Row(
@@ -484,7 +524,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 Icon(
                   icon,
                   size: 18,
-                  color: isOutlined ? AppColors.textPrimary : Colors.white,
+                  color: isOutlined
+                      ? (effectivelyDisabled
+                          ? AppColors.textSecondary.withValues(alpha: 0.5)
+                          : AppColors.textPrimary)
+                      : Colors.white,
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -492,7 +536,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   style: GoogleFonts.poppins(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
-                    color: isOutlined ? AppColors.textPrimary : Colors.white,
+                    color: isOutlined
+                        ? (effectivelyDisabled
+                            ? AppColors.textSecondary.withValues(alpha: 0.5)
+                            : AppColors.textPrimary)
+                        : Colors.white,
                   ),
                 ),
               ],

@@ -34,4 +34,40 @@ class MatchService {
     }
     return null;
   }
+
+  static Future<List<MatchRecommendation>> getSentInterests() async {
+    final response = await _client.get('/matches/interests/sent');
+    final data = response.data;
+    if (data['success'] == true) {
+      final list = data['data'] as List<dynamic>;
+      return list
+          .map((e) => MatchRecommendation.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
+  static Future<List<MatchRecommendation>> getReceivedInterests() async {
+    final response = await _client.get('/matches/interests/received');
+    final data = response.data;
+    if (data['success'] == true) {
+      final list = data['data'] as List<dynamic>;
+      return list
+          .map((e) => MatchRecommendation.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
+
+  static Future<List<MatchRecommendation>> getMutualMatches() async {
+    final response = await _client.get('/matches/mutual-matches');
+    final data = response.data;
+    if (data['success'] == true) {
+      final list = data['data'] as List<dynamic>;
+      return list
+          .map((e) => MatchRecommendation.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return [];
+  }
 }

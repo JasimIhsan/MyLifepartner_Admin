@@ -87,4 +87,58 @@ export class MatchController {
          next(err);
       }
    };
+
+   getSentInterests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+         const userId = req.user?.id;
+         if (!userId) {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+            return;
+         }
+
+         const sentInterests = await this.matchService.getSentInterests(userId);
+         res.status(200).json({
+            success: true,
+            data: sentInterests,
+         });
+      } catch (err) {
+         next(err);
+      }
+   };
+
+   getReceivedInterests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+         const userId = req.user?.id;
+         if (!userId) {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+            return;
+         }
+
+         const receivedInterests = await this.matchService.getReceivedInterests(userId);
+         res.status(200).json({
+            success: true,
+            data: receivedInterests,
+         });
+      } catch (err) {
+         next(err);
+      }
+   };
+
+   getMutualMatches = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+      try {
+         const userId = req.user?.id;
+         if (!userId) {
+            res.status(401).json({ success: false, message: "Unauthorized" });
+            return;
+         }
+
+         const mutualMatches = await this.matchService.getMutualMatches(userId);
+         res.status(200).json({
+            success: true,
+            data: mutualMatches,
+         });
+      } catch (err) {
+         next(err);
+      }
+   };
 }
