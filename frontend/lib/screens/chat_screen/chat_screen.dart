@@ -7,40 +7,59 @@ class ChatPlaceholderScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black, width: 1.5),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.message_outlined, size: 36),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: AppColors.textPrimary, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Messages',
+          style: GoogleFonts.poppins(
+            color: AppColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
           ),
-          const SizedBox(height: 24),
-          Text(
-            'Messages coming soon!',
-            style: GoogleFonts.cormorantGaramond(
-              fontSize: 24,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textPrimary,
-              letterSpacing: -0.5,
+        ),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                border: Border.all(color: AppColors.textPrimary, width: 1.5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.message_outlined, size: 36),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Start a conversation with your matches.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.6,
+            const SizedBox(height: 24),
+            Text(
+              'Messages coming soon!',
+              style: GoogleFonts.poppins(
+                fontSize: 24,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.5,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              'Start a conversation with your matches.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+                height: 1.6,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

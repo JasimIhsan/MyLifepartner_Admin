@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -29,6 +30,16 @@ class _MatchesListTabState extends State<MatchesListTab> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final provider = context.read<MatchProvider>();
+        // Always try to load if idle or if we have no profiles yet
+        if (provider.state == MatchLoadState.idle ||
+            provider.profiles.isEmpty) {
+          provider.loadRecommendations();
+        }
+      }
+    });
   }
 
   @override
@@ -38,9 +49,26 @@ class _MatchesListTabState extends State<MatchesListTab> {
   }
 
   void _seedFromProvider(List<MatchRecommendation> profiles) {
-    if (profiles.isEmpty) return;
-    if (_source.length == profiles.length && _source.isNotEmpty) return;
-    _source = profiles;
+    if (profiles.isEmpty) {
+      _source.clear();
+      _displayed.clear();
+      return;
+    }
+
+    if (_source.length == profiles.length &&
+        _source.isNotEmpty &&
+        _source.first.id == profiles.first.id) {
+      return;
+    }
+
+    if (_source.isNotEmpty && profiles.length < _source.length) {
+      final newIds = profiles.map((e) => e.id).toSet();
+      _source = List.from(profiles);
+      _displayed.removeWhere((d) => !newIds.contains(d.id));
+      return;
+    }
+
+    _source = List.from(profiles);
     _displayed
       ..clear()
       ..addAll(_source.take(_pageSize));
@@ -568,10 +596,8 @@ class _PortraitCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(child: _buildBottom()),
-                      ],
-                    )
+                      children: [Expanded(child: _buildBottom())],
+                    ),
                   ],
                 ),
               ),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
+import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_details_grid.dart';
 import 'package:mylifepartner/services/match_service.dart';
@@ -376,7 +377,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     } else if (interactionStateRaw is String) {
       state = InteractionState.fromString(interactionStateRaw);
     }
-    final isInteractable = state == InteractionState.none;
+    final bool isMatched = state == InteractionState.matched;
+    final bool isInterestSent = state == InteractionState.interestSent;
+    final bool isInterestReceived = state == InteractionState.interestReceived;
+    final bool isNone = state == InteractionState.none;
+
+    final bool canPass = isNone || isInterestReceived;
+    final bool canAction = isNone || isInterestReceived || isMatched;
 
     return Container(
       padding: EdgeInsets.only(
@@ -402,12 +409,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             icon: Icons.close_rounded,
             isOutlined: true,
             isLoading: _isPassing,
-            onTap: isInteractable
+            onTap: canPass
                 ? () async {
                     if (_isPassing || _isInterested) return;
                     setState(() => _isPassing = true);
                     try {
-                      await context.read<MatchProvider>().swipeLeft();
+                      await context.read<MatchProvider>().swipeLeft(targetProfileId: p['id']);
                       if (mounted) Navigator.pop(context);
                     } catch (e) {
                       if (mounted) {
@@ -433,13 +440,23 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             icon: _getInteractionIcon(state),
             isOutlined: false,
             isLoading: _isInterested,
-            isDisabled: !isInteractable,
-            onTap: isInteractable
+            isDisabled: !canAction || isInterestSent,
+            onTap: canAction && !isInterestSent
                 ? () async {
                     if (_isPassing || _isInterested) return;
+
+                    // If already matched, navigate to chat
+                    if (isMatched) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const ChatPlaceholderScreen()),
+                      );
+                      return;
+                    }
+
                     setState(() => _isInterested = true);
                     try {
-                      await context.read<MatchProvider>().swipeRight();
+                      await context.read<MatchProvider>().swipeRight(targetProfileId: p['id']);
                       if (mounted) Navigator.pop(context);
                     } catch (e) {
                       if (mounted) {
@@ -465,18 +482,29 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   }
 
   String _getInteractionLabel(InteractionState state) {
-    if (state == InteractionState.interestSent) return 'Interest Sent';
-    if (state == InteractionState.interestReceived) return 'Interest Received';
-    if (state == InteractionState.matched) return 'Matched';
-    return 'Interested';
+    switch (state) {
+      case InteractionState.none:
+        return 'Send Interest';
+      case InteractionState.interestSent:
+        return 'Interest Sent';
+      case InteractionState.interestReceived:
+        return 'Accept';
+      case InteractionState.matched:
+        return 'Chat';
+    }
   }
 
   IconData _getInteractionIcon(InteractionState state) {
-    if (state == InteractionState.interestSent) return Icons.send_rounded;
-    if (state == InteractionState.interestReceived) {
-      return Icons.mark_email_unread_rounded;
+    switch (state) {
+      case InteractionState.none:
+        return Icons.favorite_rounded;
+      case InteractionState.interestSent:
+        return Icons.send_rounded;
+      case InteractionState.interestReceived:
+        return Icons.check_circle_rounded;
+      case InteractionState.matched:
+        return Icons.chat_bubble_rounded;
     }
-    return Icons.favorite_rounded;
   }
 
   Widget _actionButton({

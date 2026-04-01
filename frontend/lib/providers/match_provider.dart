@@ -46,7 +46,10 @@ class MatchProvider extends ChangeNotifier {
       _profiles = results;
       _state = MatchLoadState.loaded;
     } on DioException catch (e) {
-      _error = getDioErrorMessage(e, fallback: 'Failed to load recommendations');
+      _error = getDioErrorMessage(
+        e,
+        fallback: 'Failed to load recommendations',
+      );
       _state = MatchLoadState.error;
     } catch (e) {
       _error = 'An unexpected error occurred: ${e.toString()}';
@@ -84,7 +87,10 @@ class MatchProvider extends ChangeNotifier {
       _receivedInterests = results;
       _state = MatchLoadState.loaded;
     } on DioException catch (e) {
-      _error = getDioErrorMessage(e, fallback: 'Failed to load received interests');
+      _error = getDioErrorMessage(
+        e,
+        fallback: 'Failed to load received interests',
+      );
       _state = MatchLoadState.error;
     } catch (e) {
       _error = 'An unexpected error occurred: ${e.toString()}';
@@ -112,12 +118,16 @@ class MatchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> swipeLeft() async {
-    if (!hasProfiles) return;
-    final profile = _profiles[_currentIndex];
+  Future<void> swipeLeft({int? targetProfileId}) async {
+    final id = targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
+    if (id == null) return;
     try {
-      await MatchService.swipe(targetProfileId: profile.id, action: 'LEFT');
-      _advanceIndex();
+      await MatchService.swipe(targetProfileId: id, action: 'LEFT');
+      if (targetProfileId == null) {
+        _advanceIndex();
+      } else {
+        _removeProfile(id);
+      }
     } on DioException catch (e) {
       _error = getDioErrorMessage(e, fallback: 'Failed to record skip');
       notifyListeners();
@@ -129,12 +139,16 @@ class MatchProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> swipeRight() async {
-    if (!hasProfiles) return;
-    final profile = _profiles[_currentIndex];
+  Future<void> swipeRight({int? targetProfileId}) async {
+    final id = targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
+    if (id == null) return;
     try {
-      await MatchService.swipe(targetProfileId: profile.id, action: 'RIGHT');
-      _advanceIndex();
+      await MatchService.swipe(targetProfileId: id, action: 'RIGHT');
+      if (targetProfileId == null) {
+        _advanceIndex();
+      } else {
+        _removeProfile(id);
+      }
     } on DioException catch (e) {
       _error = getDioErrorMessage(e, fallback: 'Failed to send interest');
       notifyListeners();
@@ -146,12 +160,16 @@ class MatchProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> swipeUp() async {
-    if (!hasProfiles) return;
-    final profile = _profiles[_currentIndex];
+  Future<void> swipeUp({int? targetProfileId}) async {
+    final id = targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
+    if (id == null) return;
     try {
-      await MatchService.swipe(targetProfileId: profile.id, action: 'UP');
-      _advanceIndex();
+      await MatchService.swipe(targetProfileId: id, action: 'UP');
+      if (targetProfileId == null) {
+        _advanceIndex();
+      } else {
+        _removeProfile(id);
+      }
     } on DioException catch (e) {
       _error = getDioErrorMessage(e, fallback: 'Failed to skip profile');
       notifyListeners();
@@ -160,6 +178,21 @@ class MatchProvider extends ChangeNotifier {
       _error = 'An unexpected error occurred during skip';
       notifyListeners();
       rethrow;
+    }
+  }
+
+  void _removeProfile(int id) {
+    final idx = _profiles.indexWhere((p) => p.id == id);
+    if (idx != -1) {
+      _profiles.removeAt(idx);
+      if (_currentIndex >= _profiles.length) {
+        _currentIndex = 0;
+        if (_profiles.isEmpty) {
+          loadRecommendations();
+          return;
+        }
+      }
+      notifyListeners();
     }
   }
 

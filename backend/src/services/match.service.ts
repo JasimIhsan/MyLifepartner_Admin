@@ -38,7 +38,7 @@ export class MatchService implements IMatchService {
          console.log(`👉 highlights : `, highlights);
 
          // 4. Filter by minimum 70%
-         if (totalScore >= 30) {
+         if (totalScore >= 10) {
             const age = candidate.dateOfBirth ? this.calculateAge(candidate.dateOfBirth) : 0;
 
             const presignedImages = await Promise.all(
@@ -73,6 +73,7 @@ export class MatchService implements IMatchService {
 
    async swipeProfile(input: SwipeInput): Promise<void> {
       const isAllowed = await this.userFeatureService.checkSwipeAccess(input.userId, input.action);
+      console.log(`isAllowed : `, isAllowed);
       if (!isAllowed) {
          throw new ApiError(403, "You have reached your interest limit. Upgrade your plan to send more interests!");
       }
@@ -121,7 +122,6 @@ export class MatchService implements IMatchService {
          interactionState: candidate.interactionState ?? InteractionState.NONE,
       };
    }
- 
 
    async getSentInterests(userId: number): Promise<MatchRecommendationItem[]> {
       const profiles = await this.matchRepository.getSentInterests(userId);

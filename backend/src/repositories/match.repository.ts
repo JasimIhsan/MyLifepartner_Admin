@@ -46,7 +46,7 @@ export class MatchRepository implements IMatchRepository {
 
       const profiles = await prisma.profile.findMany({
          where: {
-            profileStatus: "COMPLETED",
+            // profileStatus: "COMPLETED",
             user: {
                isBlocked: false,
                isDeleted: false,
@@ -146,6 +146,9 @@ export class MatchRepository implements IMatchRepository {
    }
 
    async getSentInterests(userId: number): Promise<CandidateProfile[]> {
+      const currentUser = await prisma.user.findUnique({ where: { id: userId }, include: { profile: true } });
+      if (!currentUser?.profile?.id) return [];
+
       const swipes = await prisma.profileSwipe.findMany({
          where: { userId, action: SwipeAction.RIGHT },
          include: {
@@ -158,7 +161,17 @@ export class MatchRepository implements IMatchRepository {
          },
       });
 
-      return swipes.map((s) => this.mapToCandidateProfile(s.targetProfile, InteractionState.INTEREST_SENT));
+      // Find their swipes on me (either they matched or rejected me)
+      const theirSwipesOnMe = await prisma.profileSwipe.findMany({
+         where: { targetProfileId: currentUser.profile.id },
+         select: { userId: true },
+      });
+      const theirSwipeUserIdSet = new Set(theirSwipesOnMe.map((s) => s.userId));
+
+      // Filter out profiles that have swiped on me
+      const validSentInterests = swipes.filter((s) => !theirSwipeUserIdSet.has(s.targetProfile.userId));
+
+      return validSentInterests.map((s) => this.mapToCandidateProfile(s.targetProfile, InteractionState.INTEREST_SENT));
    }
 
    async getReceivedInterests(userId: number): Promise<CandidateProfile[]> {
@@ -181,9 +194,9 @@ export class MatchRepository implements IMatchRepository {
          },
       });
 
-      // Filter out matches, only show received ones that we haven't swiped right on
+      // Filter out received ones that we have already swiped on (whether RIGHT to match or LEFT to reject)
       const mySwipes = await prisma.profileSwipe.findMany({
-         where: { userId, action: SwipeAction.RIGHT },
+         where: { userId },
          select: { targetProfileId: true },
       });
       const mySwipeSet = new Set(mySwipes.map((s) => s.targetProfileId));

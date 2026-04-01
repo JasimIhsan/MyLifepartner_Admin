@@ -32,7 +32,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkProfileCompletion();
-      context.read<MatchProvider>().loadRecommendations();
     });
   }
 
@@ -109,7 +108,13 @@ class _HomePageState extends State<HomePage> {
 
   void _onTabTapped(int index) {
     setState(() => _selectedIndex = index);
-    if (index == 0) _checkProfileCompletion();
+    if (index == 0) {
+      _checkProfileCompletion();
+      final provider = context.read<MatchProvider>();
+      if (provider.profiles.isEmpty) {
+        provider.loadRecommendations();
+      }
+    }
   }
 
   // ─── Build ─────────────────────────────────────────────────────────────────

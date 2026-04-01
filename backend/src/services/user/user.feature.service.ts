@@ -51,6 +51,7 @@ export class UserFeatureService implements IUserFeatureService {
 
    async checkSwipeAccess(userId: number, action: SwipeAction): Promise<boolean> {
       const features = await this.userFeatureRepository.findByUserId(userId);
+      console.log(`features : `, features);
       if (!features) return false;
 
       if ((action === SwipeAction.RIGHT || action === SwipeAction.LEFT) && features.remainingInterests > 0) {

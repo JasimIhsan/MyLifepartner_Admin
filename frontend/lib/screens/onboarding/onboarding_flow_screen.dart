@@ -20,7 +20,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   bool _goingForward = true;
 
   // Step 0  : First name + Last name + DOB + Country + City
-  // Step 1  : Gender
+  // Step 1  : Gender + Height
   // Step 2  : Marital status
   // Step 3  : Children
   // Step 4  : Emotional readiness
@@ -51,11 +51,14 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   String? _smokingHabit;
   String? _drinkingHabit;
 
+  int? _heightCm;
+
   final TextEditingController _firstNameCtrl = TextEditingController();
   final TextEditingController _lastNameCtrl = TextEditingController();
   final TextEditingController _countryCtrl = TextEditingController();
   final TextEditingController _cityCtrl = TextEditingController();
   final TextEditingController _professionCtrl = TextEditingController();
+  final TextEditingController _heightCtrl = TextEditingController();
 
   @override
   void dispose() {
@@ -64,6 +67,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     _countryCtrl.dispose();
     _cityCtrl.dispose();
     _professionCtrl.dispose();
+    _heightCtrl.dispose();
     super.dispose();
   }
 
@@ -80,7 +84,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _city != null &&
             _city!.trim().isNotEmpty;
       case 1:
-        return _gender != null;
+        return _gender != null && _heightCm != null && _heightCm! > 0;
       case 2:
         return _maritalStatus != null;
       case 3:
@@ -139,6 +143,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _dateOfBirth != null ? '${_dateOfBirth!.toIso8601String()}Z' : null,
         'country': _country,
         'city': _city,
+        'heightCm': _heightCm,
         'maritalStatus': _maritalStatus,
         'childrenStatus': _childrenStatus,
         'emotionalReadiness': _emotionalReadiness,
@@ -478,34 +483,75 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     );
   }
 
-  // Step 1 — Gender
+  // Step 1 — Gender + Height
   Widget _buildGenderStep() {
     return _StepContainer(
       key: const ValueKey(1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _stepHeader("What's your gender?"),
+          _stepHeader("Tell us about yourself"),
           const SizedBox(height: 32),
-          _optionCard(
-            label: 'Male',
-            value: 'MALE',
-            selectedValue: _gender,
-            onTap: () => setState(() => _gender = 'MALE'),
+          _sectionLabel("Your gender"),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _genderOption('Male', 'MALE'),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _genderOption('Female', 'FEMALE'),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _genderOption('Other', 'OTHER'),
+              ),
+            ],
           ),
-          _optionCard(
-            label: 'Female',
-            value: 'FEMALE',
-            selectedValue: _gender,
-            onTap: () => setState(() => _gender = 'FEMALE'),
-          ),
-          _optionCard(
-            label: 'Other',
-            value: 'OTHER',
-            selectedValue: _gender,
-            onTap: () => setState(() => _gender = 'OTHER'),
+          const SizedBox(height: 32),
+          _sectionLabel("Your height (cm)"),
+          const SizedBox(height: 12),
+          _inputField(
+            controller: _heightCtrl,
+            hint: 'e.g. 175',
+            keyboardType: TextInputType.number,
+            onChanged: (v) {
+              setState(() {
+                _heightCm = int.tryParse(v);
+              });
+            },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _genderOption(String label, String value) {
+    final isSelected = _gender == value;
+    return GestureDetector(
+      onTap: () => setState(() => _gender = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : Colors.white,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.borderColor,
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              color: isSelected ? Colors.white : AppColors.textPrimary,
+              fontSize: 14,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            ),
+          ),
+        ),
       ),
     );
   }
