@@ -4,6 +4,7 @@ import { SYSTEM_FEATURES } from "../../constants/SYSTEM_FEATURES";
 import { ISubscriptionRepository } from "../../interfaces/repositories/subscription.repository.interface";
 import { IAdminSubscriptionService } from "../../interfaces/services/admin.subscription.service.interface";
 import { EnrichedSubscriptionPlan } from "../../interfaces/services/user.subscription.service.interface";
+import { FeatureKey } from "../../enums/feature-key.enum";
 
 export class AdminSubscriptionService implements IAdminSubscriptionService {
    constructor(private subscriptionRepository: ISubscriptionRepository) {}
@@ -91,7 +92,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
    // Feature Management for Plans
    // ══════════════════════════════════════════════
 
-   async addFeatures(planId: number, features: { featureKey: string; limit: string }[]): Promise<PlanFeature[]> {
+   async addFeatures(planId: number, features: { featureKey: FeatureKey; limit: string }[]): Promise<PlanFeature[]> {
       // 1. Ensure plan exists
       await this.getPlanById(planId);
 
@@ -104,13 +105,13 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
       }
 
       // Check against DB
-      const existingFeatures = await this.subscriptionRepository.getPlanFeaturesByKeys(planId, featureKeys);
+      const existingFeatures = await this.subscriptionRepository.getPlanFeaturesByKeys(planId, featureKeys as any);
       if (existingFeatures.length > 0) {
          const existingKeys = existingFeatures.map((f) => f.featureKey).join(", ");
          throw new ApiError(409, `Feature Keys [${existingKeys}] already exist for this plan`);
       }
 
-      return await this.subscriptionRepository.addFeaturesToPlan(planId, features);
+      return await this.subscriptionRepository.addFeaturesToPlan(planId, features as any);
    }
 
    async updatePlanFeature(planFeatureId: number, limit: string): Promise<PlanFeature> {

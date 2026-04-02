@@ -4,6 +4,7 @@ import { EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionSe
 import { ApiError } from "@/utils/ApiError";
 import { UserFeature } from "@prisma/client";
 import { SYSTEM_FEATURES } from "../../constants/SYSTEM_FEATURES";
+import { FeatureKey } from "../../enums/feature-key.enum";
 
 export class UserSubscriptionService implements IUserSubscriptionService {
    constructor(
@@ -39,7 +40,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          sub = null;
       }
 
-      // If no active subscription (either absent or just expired), fallback to FREE plan
+      // If no active subscription, fallback to FREE plan
       if (!sub) {
          const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
          if (freePlan) {
@@ -76,10 +77,10 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          throw new ApiError(400, "This subscription plan is no longer active");
       }
 
-      // Deactivate any existing active subscriptions for this user
+      // Deactivate any existing active subscriptions
       await this.subscriptionRepository.deactivateUserSubscriptions(userId);
 
-      // Calculate end date based on durationDays
+      // Create new subscription
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(startDate.getDate() + plan.durationDays);
@@ -92,7 +93,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          endDate,
       });
 
-      // ─── Map Dynamic Features to Fixed Columns ───────────────────────────
+      // Map plan features to fixed columns
       const newLimits = {
          canAudioCall: false,
          canVideoCall: false,
@@ -105,53 +106,48 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       };
 
       for (const pf of plan.features) {
-         const key = pf.featureKey;
+         const key = pf.featureKey as FeatureKey;
          const valStr = pf.limit;
 
-         if (key === "audio_call") newLimits.canAudioCall = valStr === "true";
-         if (key === "video_call") newLimits.canVideoCall = valStr === "true";
-         if (key === "send_message") newLimits.canSendMessage = valStr === "true";
-         if (key === "profile_blur") newLimits.isProfileBlurEnabled = valStr === "true";
+         if (key === FeatureKey.AUDIO_CALL) newLimits.canAudioCall = valStr === "true";
+         if (key === FeatureKey.VIDEO_CALL) newLimits.canVideoCall = valStr === "true";
+         if (key === FeatureKey.SEND_MESSAGE) newLimits.canSendMessage = valStr === "true";
+         if (key === FeatureKey.PROFILE_BLUR) newLimits.isProfileBlurEnabled = valStr === "true";
 
-         if (key === "max_interests") newLimits.maxInterests = parseInt(valStr) || 0;
-         if (key === "max_video_call_minutes") newLimits.maxVideoCallMinutes = parseInt(valStr) || 0;
-         if (key === "max_audio_call_minutes") newLimits.maxAudioCallMinutes = parseInt(valStr) || 0;
-         if (key === "max_messages") newLimits.maxMessages = parseInt(valStr) || 0;
+         if (key === FeatureKey.MAX_INTERESTS) newLimits.maxInterests = parseInt(valStr) || 0;
+         if (key === FeatureKey.MAX_VIDEO_CALL_MINUTES) newLimits.maxVideoCallMinutes = parseInt(valStr) || 0;
+         if (key === FeatureKey.MAX_AUDIO_CALL_MINUTES) newLimits.maxAudioCallMinutes = parseInt(valStr) || 0;
+         if (key === FeatureKey.MAX_MESSAGES) newLimits.maxMessages = parseInt(valStr) || 0;
       }
 
       const existingUserFeature = await this.userFeatureRepository.findByUserId(userId);
 
-      let newRemainingInterests = newLimits.maxInterests;
-      let newRemainingVideoCall = newLimits.maxVideoCallMinutes;
-      let newRemainingAudioCall = newLimits.maxAudioCallMinutes;
-      let newRemainingMessages = newLimits.maxMessages;
-
-      if (existingUserFeature) {
-         const calcRemaining = (oldRemaining: number, oldMax: number, newMax: number) => {
-            if (newMax > oldMax) return oldRemaining + (newMax - oldMax); // Upgrade
-            return Math.min(oldRemaining, newMax); // Downgrade
-         };
-
-         newRemainingInterests = calcRemaining(existingUserFeature.remainingInterests, existingUserFeature.maxInterests, newLimits.maxInterests);
-         newRemainingVideoCall = calcRemaining(existingUserFeature.remainingVideoCallMinutes, existingUserFeature.maxVideoCallMinutes, newLimits.maxVideoCallMinutes);
-         newRemainingAudioCall = calcRemaining(existingUserFeature.remainingAudioCallMinutes, existingUserFeature.maxAudioCallMinutes, newLimits.maxAudioCallMinutes);
-         newRemainingMessages = calcRemaining(existingUserFeature.remainingMessages, existingUserFeature.maxMessages, newLimits.maxMessages);
-      }
-
-      await this.userFeatureRepository.update(userId, {
+      const featurePayload = {
          canAudioCall: newLimits.canAudioCall,
          canVideoCall: newLimits.canVideoCall,
          canSendMessage: newLimits.canSendMessage,
          isProfileBlurEnabled: newLimits.isProfileBlurEnabled,
+
          maxInterests: newLimits.maxInterests,
          maxVideoCallMinutes: newLimits.maxVideoCallMinutes,
          maxAudioCallMinutes: newLimits.maxAudioCallMinutes,
          maxMessages: newLimits.maxMessages,
-         remainingInterests: newRemainingInterests,
-         remainingVideoCallMinutes: newRemainingVideoCall,
-         remainingAudioCallMinutes: newRemainingAudioCall,
-         remainingMessages: newRemainingMessages,
-      });
+
+         // Reset usage when changing plan
+         interests: 0,
+         videoCallMinutes: 0,
+         audioCallMinutes: 0,
+         messages: 0,
+      };
+
+      if (existingUserFeature) {
+         await this.userFeatureRepository.update(userId, featurePayload);
+      } else {
+         await this.userFeatureRepository.create({
+            user: { connect: { id: userId } },
+            ...featurePayload,
+         });
+      }
 
       const enrichedSubscription = {
          ...userSubscription,

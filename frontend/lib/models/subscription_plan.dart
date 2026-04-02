@@ -1,6 +1,8 @@
+import 'feature_key.dart';
+
 class Feature {
   final int id;
-  final String key;
+  final FeatureKey key;
   final String name;
   final String? description;
 
@@ -14,7 +16,7 @@ class Feature {
   factory Feature.fromJson(Map<String, dynamic> json) {
     return Feature(
       id: json['id'] ?? 0,
-      key: json['key'] ?? '',
+      key: FeatureKey.fromString(json['key']),
       name: json['name'] ?? '',
       description: json['description'],
     );

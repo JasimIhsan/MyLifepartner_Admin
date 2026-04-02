@@ -13,62 +13,71 @@ export class UserFeatureService implements IUserFeatureService {
    async createDefaultFeatures(userId: number): Promise<UserFeature> {
       return this.userFeatureRepository.create({
          user: { connect: { id: userId } },
-         // default columns will be handled by DB or explicit here
       });
    }
 
-   async updateRemainingInterests(userId: number, amount: number): Promise<UserFeature> {
+   async updateInterests(userId: number, amount: number): Promise<UserFeature> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      if (!features) throw new Error("Features not found");
+      if (!features) throw new ApiError(404, "User features not found");
+
       return this.userFeatureRepository.update(userId, {
-         remainingInterests: features.remainingInterests + amount,
+         interests: Math.max(0, features.interests + amount),
       });
    }
 
-   async updateRemainingMessages(userId: number, amount: number): Promise<UserFeature> {
+   async updateMessages(userId: number, amount: number): Promise<UserFeature> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      if (!features) throw new Error("Features not found");
+      if (!features) throw new ApiError(404, "User features not found");
+
       return this.userFeatureRepository.update(userId, {
-         remainingMessages: features.remainingMessages + amount,
+         messages: Math.max(0, features.messages + amount),
       });
    }
 
-   async updateRemainingVideoCallMinutes(userId: number, amount: number): Promise<UserFeature> {
+   async updateVideoCallMinutes(userId: number, amount: number): Promise<UserFeature> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      if (!features) throw new Error("Features not found");
+      if (!features) throw new ApiError(404, "User features not found");
+
       return this.userFeatureRepository.update(userId, {
-         remainingVideoCallMinutes: features.remainingVideoCallMinutes + amount,
+         videoCallMinutes: Math.max(0, features.videoCallMinutes + amount),
       });
    }
 
-   async updateRemainingAudioCallMinutes(userId: number, amount: number): Promise<UserFeature> {
+   async updateAudioCallMinutes(userId: number, amount: number): Promise<UserFeature> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      if (!features) throw new Error("Features not found");
+      if (!features) throw new ApiError(404, "User features not found");
+
       return this.userFeatureRepository.update(userId, {
-         remainingAudioCallMinutes: features.remainingAudioCallMinutes + amount,
+         audioCallMinutes: Math.max(0, features.audioCallMinutes + amount),
       });
    }
 
    async checkSwipeAccess(userId: number, action: SwipeAction): Promise<boolean> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      console.log(`features : `, features);
+      console.log("features:", features);
+
       if (!features) return false;
 
-      if ((action === SwipeAction.RIGHT || action === SwipeAction.LEFT) && features.remainingInterests > 0) {
-         return true;
+      if (action === SwipeAction.RIGHT || action === SwipeAction.LEFT) {
+         return features.interests < features.maxInterests;
       }
 
       return false;
    }
 
    async consumeSwipe(userId: number, action: SwipeAction): Promise<void> {
-      if (action === SwipeAction.RIGHT || action === SwipeAction.LEFT) {
-         const features = await this.userFeatureRepository.findByUserId(userId);
-         if (features && features.remainingInterests > 0) {
-            await this.updateRemainingInterests(userId, -1);
-         } else {
-            throw new ApiError(403, "You have reached your interest limit. Upgrade your plan to send more interests!");
-         }
+      if (action !== SwipeAction.RIGHT && action !== SwipeAction.LEFT) return;
+
+      const features = await this.userFeatureRepository.findByUserId(userId);
+
+      if (!features) {
+         throw new ApiError(404, "User features not found");
       }
+
+      if (features.interests >= features.maxInterests) {
+         throw new ApiError(403, "You have reached your interest limit. Upgrade your plan to send more interests!");
+      }
+
+      await this.updateInterests(userId, 1);
    }
 }

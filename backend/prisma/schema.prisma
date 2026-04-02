@@ -240,20 +240,20 @@ model UserFeature {
   isProfileBlurEnabled Boolean @default(false)
 
   // Interest Limits
-  maxInterests       Int @default(0)
-  remainingInterests Int @default(0)
+  maxInterests Int @default(0)
+  interests    Int @default(0)
 
   // Video Call Minutes
-  maxVideoCallMinutes       Int @default(0)
-  remainingVideoCallMinutes Int @default(0)
+  maxVideoCallMinutes Int @default(0)
+  videoCallMinutes    Int @default(0)
 
   // Audio Call Minutes
-  maxAudioCallMinutes       Int @default(0)
-  remainingAudioCallMinutes Int @default(0)
+  maxAudioCallMinutes Int @default(0)
+  audioCallMinutes    Int @default(0)
 
   // Message Limits
-  maxMessages       Int @default(0)
-  remainingMessages Int @default(0)
+  maxMessages Int @default(0)
+  messages    Int @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

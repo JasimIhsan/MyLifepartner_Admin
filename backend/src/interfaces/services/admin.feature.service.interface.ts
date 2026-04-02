@@ -1,6 +1,8 @@
+import { FeatureKey } from "../../enums/feature-key.enum";
+
 export interface Feature {
    id: number;
-   key: string;
+   key: FeatureKey;
    name: string;
    description?: string | null;
 }
