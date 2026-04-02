@@ -13,6 +13,9 @@ import 'package:provider/provider.dart';
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
+final RouteObserver<PageRoute> routeObserver =
+    RouteObserver<PageRoute>();
+
 void main() {
   runApp(const MyApp());
 }
@@ -98,6 +101,7 @@ class _MyAppState extends State<MyApp> {
         title: 'Life Partner Again',
         debugShowCheckedModeBanner: false,
         scaffoldMessengerKey: scaffoldMessengerKey,
+        navigatorObservers: [routeObserver],
 
         theme: ThemeData(
           useMaterial3: true,
