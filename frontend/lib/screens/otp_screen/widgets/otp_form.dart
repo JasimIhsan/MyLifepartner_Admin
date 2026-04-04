@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:pinput/pinput.dart';
 
@@ -103,7 +104,7 @@ class OtpForm extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black,
+                            color: AppColors.primary,
                             decoration: TextDecoration.underline,
                           ),
                         ),
@@ -139,7 +140,6 @@ class OtpForm extends StatelessWidget {
                   : null,
               isLoading: isLoading,
               text: "Verify",
-              backgroundColor: Colors.black,
               borderRadius: 12,
               fontSize: 18,
               fontWeight: FontWeight.w600,

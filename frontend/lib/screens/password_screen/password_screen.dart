@@ -2,18 +2,17 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/screens/home_screen/home_screen.dart';
+import 'package:mylifepartner/screens/onboarding/onboarding_flow_screen.dart';
+import 'package:mylifepartner/screens/otp_screen/otp_screen.dart';
+import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
+import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
+import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/shared/widgets/auth_layout.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../home_screen/home_screen.dart';
-import '../onboarding/onboarding_flow_screen.dart';
-import '../otp_screen/otp_screen.dart';
-import '../partner_preference/partner_preference_screen.dart';
-import '../profile_image_upload/profile_image_upload_screen.dart';
-import '../selfie_verification/selfie_verification_screen.dart';
 
 class PasswordScreen extends StatefulWidget {
   final String email;
@@ -259,7 +258,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
   Widget build(BuildContext context) {
     final bool isWeb = MediaQuery.of(context).size.width > 900;
     return AuthLayout(
-      topImage: 'assets/images/login_young_couple.png',
+      topImage: 'assets/images/landing_couple.png',
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Form(

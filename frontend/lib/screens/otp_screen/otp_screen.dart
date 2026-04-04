@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
 import 'package:mylifepartner/screens/password_screen/password_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
+import 'package:mylifepartner/shared/widgets/auth_layout.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 
-import '../../shared/widgets/auth_layout.dart';
 import 'widgets/otp_form.dart';
 
 class OtpPage extends StatefulWidget {
@@ -150,7 +150,7 @@ class _OtpPageState extends State<OtpPage> {
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
-      topImage: 'assets/images/login_young_couple.png',
+      topImage: 'assets/images/landing_couple.png',
       child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWeb = MediaQuery.of(context).size.width > 900;
