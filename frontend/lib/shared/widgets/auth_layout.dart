@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../../core/app_colors.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 
 class AuthLayout extends StatelessWidget {
   final Widget child;
@@ -142,11 +141,13 @@ class AuthLayout extends StatelessWidget {
                   ),
                 ],
               ),
-            
+
             Transform.translate(
               offset: Offset(0, topImage != null ? -45.0 : 0.0),
               child: SafeArea(
-                top: topImage == null, // Only avoid notch if no top image bleeds into it
+                top:
+                    topImage ==
+                    null, // Only avoid notch if no top image bleeds into it
                 bottom: false,
                 left: false,
                 right: false,
@@ -159,10 +160,7 @@ class AuthLayout extends StatelessWidget {
                       // Title Section
                       if (showLogo) ...[
                         if (topImage != null) ...[
-                          const SizedBox(
-                            width: 90,
-                            height: 90,
-                          ),
+                          const SizedBox(width: 90, height: 90),
                           const SizedBox(height: 16),
                           Text(
                             "Life Partner Again",

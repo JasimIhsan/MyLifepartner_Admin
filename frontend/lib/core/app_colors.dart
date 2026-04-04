@@ -1,32 +1,32 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary Brand Colors - Black & White only
-  static const Color primary = Colors.black;
-  static const Color primaryDark = Colors.black;
-  static const Color primaryLight = Color(0xFFF5F5F5); // Very light grey
+  // Primary Brand Colors - Reddish-Pink
+  static const Color primary = Color(0xFFE91E63);
+  static const Color primaryDark = Color(0xFFC2185B);
+  static const Color primaryLight = Color(0xFFF8BBD0);
 
   // Accent Colors
-  static const Color golden = Colors.black;
+  static const Color accent = Color(0xFFFF4081);
 
   // Background Colors
   static const Color background = Colors.white;
   static const Color surface = Colors.white;
-  static const Color inputBackground = Colors.white;
+  static const Color inputBackground = Color(0xFFF8F8F8);
 
   // Text Colors
-  static const Color textPrimary = Colors.black;
-  static const Color textSecondary = Color(0xFF757575); // Grey (neutral)
+  static const Color textPrimary = Color(0xFF212121);
+  static const Color textSecondary = Color(0xFF757575);
   static const Color textWhite = Colors.white;
   static const Color onPrimary = Colors.white;
 
-  // Status Colors - Black & White only
-  static const Color error = Colors.black;
-  static const Color success = Colors.black;
+  // Status Colors
+  static const Color error = Color(0xFFD32F2F);
+  static const Color success = Color(0xFF388E3C);
 
   // UI Elements
-  static const Color divider = Color(0xFFE0E0E0); // Light grey (neutral)
-  static const Color unselectedIcon = Color(0xFF9E9E9E); // Grey (neutral)
-  static const Color shadowColor = Color(0x0D000000); // Black with low opacity
-  static const Color borderColor = Color(0xFFE0E0E0); // Light grey (neutral)
+  static const Color divider = Color(0xFFEEEEEE);
+  static const Color unselectedIcon = Color(0xFFBDBDBD);
+  static const Color shadowColor = Color(0x1F000000);
+  static const Color borderColor = Color(0xFFE0E0E0);
 }

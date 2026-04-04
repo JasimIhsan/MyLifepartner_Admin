@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 
-import '../../core/app_colors.dart';
 import '../../shared/widgets/auth_layout.dart';
 import '../../shared/widgets/custom_button.dart';
 import '../otp_screen/otp_screen.dart';

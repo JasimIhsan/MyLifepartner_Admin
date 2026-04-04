@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/models/subscription_plan.dart' as model;
+import 'package:mylifepartner/providers/subscription_provider.dart';
+import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
-
-import '../../core/app_colors.dart';
-import '../../models/subscription_plan.dart' as model;
-import '../../providers/subscription_provider.dart';
-import '../../shared/widgets/custom_button.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});

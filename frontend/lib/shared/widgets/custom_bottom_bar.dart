@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../../core/app_colors.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 
 class CustomBottomBar extends StatelessWidget {
   final int selectedIndex;
@@ -85,8 +84,9 @@ class CustomBottomBar extends StatelessWidget {
                             color: isSelected
                                 ? selectedItemColor
                                 : unselectedItemColor,
-                            fontWeight:
-                                isSelected ? FontWeight.w600 : FontWeight.w500,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w500,
                             fontSize: 10,
                           ),
                           maxLines: 1,

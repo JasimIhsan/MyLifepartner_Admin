@@ -1,19 +1,19 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/shared/widgets/auth_layout.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../core/app_colors.dart';
 import '../home_screen/home_screen.dart';
-import '../partner_preference/partner_preference_screen.dart';
 import '../onboarding/onboarding_flow_screen.dart';
+import '../otp_screen/otp_screen.dart';
+import '../partner_preference/partner_preference_screen.dart';
 import '../profile_image_upload/profile_image_upload_screen.dart';
 import '../selfie_verification/selfie_verification_screen.dart';
-import '../otp_screen/otp_screen.dart';
 
 class PasswordScreen extends StatefulWidget {
   final String email;
@@ -71,10 +71,8 @@ class _PasswordScreenState extends State<PasswordScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => PasswordScreen(
-                email: widget.email,
-                isExistingUser: true,
-              ),
+              builder: (context) =>
+                  PasswordScreen(email: widget.email, isExistingUser: true),
             ),
           );
         }
@@ -273,7 +271,9 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 Text(
                   widget.isPasswordReset
                       ? "Reset Password"
-                      : (widget.isExistingUser ? "Enter Password" : "Create Password"),
+                      : (widget.isExistingUser
+                            ? "Enter Password"
+                            : "Create Password"),
                   style: GoogleFonts.poppins(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,

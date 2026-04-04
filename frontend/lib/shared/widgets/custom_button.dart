@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-import '../../core/app_colors.dart';
+import 'package:mylifepartner/core/app_colors.dart';
 
 enum CustomButtonType { primary, secondary, outline }
 
@@ -63,13 +62,19 @@ class CustomButton extends StatelessWidget {
   }
 
   ButtonStyle _getStyle() {
+    final Color effectiveBackgroundColor = backgroundColor ?? AppColors.primary;
+    final Color effectiveForegroundColor = textColor ?? AppColors.onPrimary;
+
     switch (type) {
       case CustomButtonType.primary:
         return ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primary,
-          foregroundColor: textColor ?? AppColors.onPrimary,
-          disabledBackgroundColor: (backgroundColor ?? AppColors.primary)
-              .withValues(alpha: 0.5),
+          backgroundColor: effectiveBackgroundColor,
+          foregroundColor: effectiveForegroundColor,
+          surfaceTintColor:
+              Colors.transparent, // Disable Material 3 surface tint overlay
+          disabledBackgroundColor: effectiveBackgroundColor.withValues(
+            alpha: 0.5,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
           ),
@@ -79,6 +84,7 @@ class CustomButton extends StatelessWidget {
         return ElevatedButton.styleFrom(
           backgroundColor: backgroundColor ?? AppColors.primaryLight,
           foregroundColor: textColor ?? AppColors.primary,
+          surfaceTintColor: Colors.transparent,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
@@ -88,6 +94,7 @@ class CustomButton extends StatelessWidget {
         return ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           foregroundColor: textColor ?? AppColors.primary,
+          surfaceTintColor: Colors.transparent,
           elevation: 0,
           side: BorderSide(color: backgroundColor ?? AppColors.primary),
           shape: RoundedRectangleBorder(
