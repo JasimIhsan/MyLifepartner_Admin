@@ -26,15 +26,15 @@ class AuthLayout extends StatelessWidget {
           final size = MediaQuery.of(context).size;
 
           if (isWeb) {
-            return _buildWebLayout(size);
+            return _buildWebLayout(context, size);
           }
-          return _buildMobileLayout(size);
+          return _buildMobileLayout(context, size);
         },
       ),
     );
   }
 
-  Widget _buildWebLayout(Size size) {
+  Widget _buildWebLayout(BuildContext context, Size size) {
     return Row(
       children: [
         // Left Side - Info
@@ -106,103 +106,124 @@ class AuthLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildMobileLayout(Size size) {
+  Widget _buildMobileLayout(BuildContext context, Size size) {
     return SizedBox(
       width: double.infinity,
       height: size.height,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.zero,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (topImage != null)
-              Stack(
-                alignment: Alignment.bottomCenter,
-                children: [
-                  Image.asset(
-                    topImage!,
-                    width: double.infinity,
-                    height: size.height * 0.45,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                  ),
-                  Container(
-                    height: size.height * 0.2, // Gradient fade area
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.background.withValues(alpha: 0.0),
-                          AppColors.background,
+      child: Stack(
+        children: [
+          // Background Image
+          if (topImage != null)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: size.height * 0.55,
+              child: Image.asset(
+                topImage!,
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+              ),
+            ),
+
+          // Scrollable Content
+          Positioned.fill(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: size.height),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Gap to show the image
+                    if (topImage != null) SizedBox(height: size.height * 0.45),
+
+                    // Main Sheet
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(32),
+                          topRight: Radius.circular(32),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, -5),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                ],
-              ),
+                      child: SafeArea(
+                        top: false,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(28.0, 12.0, 28.0, 32.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Grab Handle
+                              Container(
+                                width: 40,
+                                height: 4,
+                                margin: const EdgeInsets.only(bottom: 32),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
 
-            Transform.translate(
-              offset: Offset(0, topImage != null ? -45.0 : 0.0),
-              child: SafeArea(
-                top:
-                    topImage ==
-                    null, // Only avoid notch if no top image bleeds into it
-                bottom: false,
-                left: false,
-                right: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      if (topImage == null) const SizedBox(height: 40),
-                      // Title Section
-                      if (showLogo) ...[
-                        if (topImage != null) ...[
-                          const SizedBox(width: 90, height: 90),
-                          const SizedBox(height: 16),
-                          Text(
-                            "Life Partner Again",
-                            style: GoogleFonts.poppins(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ] else ...[
-                          Text(
-                            "lifepartneragain",
-                            style: GoogleFonts.poppins(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 8),
-                        Text(
-                          "A trusted platform for emotionally\nmature relationships.",
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: AppColors.textSecondary,
-                            height: 1.5,
+                              // Optional Header
+                              if (showLogo) ...[
+                                Text(
+                                  "Life Partner Again",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  "A trusted platform for emotionally\nmature relationships.",
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: AppColors.textSecondary,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                              ],
+
+                              // Form / Content
+                              child,
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 32),
-                      ],
-
-                      // Content
-                      child,
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          
+          // Back Button if needed (Optional, usually handled by Scaffold)
+          if (Navigator.canPop(context))
+             Positioned(
+               top: MediaQuery.of(context).padding.top + 10,
+               left: 16,
+               child: CircleAvatar(
+                 backgroundColor: Colors.white.withValues(alpha: 0.8),
+                 child: IconButton(
+                   icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
+                   onPressed: () => Navigator.pop(context),
+                 ),
+               ),
+             ),
+        ],
       ),
     );
   }

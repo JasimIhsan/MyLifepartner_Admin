@@ -74,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
-      topImage: 'assets/images/login_young_couple.png',
+      topImage: 'assets/images/landing_couple.png',
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Check screen width for responsive text/style, matching AuthLayout breakpoint logic partially
@@ -90,11 +90,11 @@ class _LoginPageState extends State<LoginPage> {
     return Form(
       key: _formKey,
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Important for the bottom sheet layout
+        mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Continue with Email",
+            "Enter your email",
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -107,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppColors.inputBackground,
               contentPadding: EdgeInsets.symmetric(
                 vertical: isWeb ? 16 : 14,
                 horizontal: isWeb ? 16 : 10,
@@ -116,17 +116,15 @@ class _LoginPageState extends State<LoginPage> {
               hintStyle: const TextStyle(color: Colors.grey),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide.none,
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade300),
+                borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: Color(0xFFA67C68),
-                ), // Brown focus
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -150,8 +148,15 @@ class _LoginPageState extends State<LoginPage> {
               return null;
             },
           ),
-
-          const SizedBox(height: 24),
+          const SizedBox(height: 15),
+          Text(
+            "We’ll send a verification code to your email.",
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: AppColors.textLight,
+            ),
+          ),
+          const SizedBox(height: 32),
           SizedBox(
             width: double.infinity,
             child: CustomButton(
@@ -160,11 +165,11 @@ class _LoginPageState extends State<LoginPage> {
               text: "Continue",
               backgroundColor: AppColors.primary,
               borderRadius: 12,
+              height: 52,
             ),
           ),
-
           const SizedBox(height: 24),
-          _buildFooterText(),
+          Center(child: _buildFooterText()),
         ],
       ),
     );
@@ -174,21 +179,21 @@ class _LoginPageState extends State<LoginPage> {
     return Text.rich(
       TextSpan(
         text: "By continue, you agree to our ",
-        style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[400]),
+        style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
         children: [
           TextSpan(
             text: "Terms of Service",
             style: GoogleFonts.poppins(
               decoration: TextDecoration.underline,
-              color: Colors.grey[400],
+              color: AppColors.textLight,
             ),
           ),
-          const TextSpan(text: " and\n"),
+          const TextSpan(text: " and "),
           TextSpan(
             text: "Privacy Policy",
             style: GoogleFonts.poppins(
               decoration: TextDecoration.underline,
-              color: Colors.grey[400],
+              color: AppColors.textLight,
             ),
           ),
           const TextSpan(text: "."),

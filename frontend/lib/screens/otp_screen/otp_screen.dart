@@ -155,9 +155,8 @@ class _OtpPageState extends State<OtpPage> {
         builder: (context, constraints) {
           final bool isWeb = MediaQuery.of(context).size.width > 900;
           return Column(
-            mainAxisSize: MainAxisSize.max,
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
               OtpHeader(
                 email: widget.email,
