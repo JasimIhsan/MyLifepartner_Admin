@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,31 +14,25 @@ class OnboardingFlowScreen extends StatefulWidget {
 
 class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   final ProfileRepository _profileRepo = ProfileRepository();
-  bool _isLoading = false;
+  final int _totalSteps = 12;
   int _currentStep = 0;
+  bool _isLoading = false;
   bool _goingForward = true;
 
-  // Step 0  : First name + Last name + DOB + Country + City
-  // Step 1  : Gender + Height
-  // Step 2  : Marital status
-  // Step 3  : Children
-  // Step 4  : Emotional readiness
-  // Step 5  : Looking for
-  // Step 6  : Relationship timeline
-  // Step 7  : Education
-  // Step 8  : Profession
-  // Step 9  : Languages spoken
-  // Step 10 : Smoking
-  // Step 11 : Drinking
-  static const int _totalSteps = 12;
+  // Form controllers
+  final TextEditingController _firstNameCtrl = TextEditingController();
+  final TextEditingController _countryCtrl = TextEditingController();
+  final TextEditingController _cityCtrl = TextEditingController();
+  final TextEditingController _heightCtrl = TextEditingController();
+  final TextEditingController _professionCtrl = TextEditingController();
 
-  // Collected data
+  // Selected values
   String? _firstName;
-  String? _lastName;
+  DateTime? _dateOfBirth;
+  String? _gender;
   String? _country;
   String? _city;
-  String? _gender;
-  DateTime? _dateOfBirth;
+  int? _heightCm;
   String? _maritalStatus;
   String? _childrenStatus;
   String? _emotionalReadiness;
@@ -51,23 +44,13 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   String? _smokingHabit;
   String? _drinkingHabit;
 
-  int? _heightCm;
-
-  final TextEditingController _firstNameCtrl = TextEditingController();
-  final TextEditingController _lastNameCtrl = TextEditingController();
-  final TextEditingController _countryCtrl = TextEditingController();
-  final TextEditingController _cityCtrl = TextEditingController();
-  final TextEditingController _professionCtrl = TextEditingController();
-  final TextEditingController _heightCtrl = TextEditingController();
-
   @override
   void dispose() {
     _firstNameCtrl.dispose();
-    _lastNameCtrl.dispose();
     _countryCtrl.dispose();
     _cityCtrl.dispose();
-    _professionCtrl.dispose();
     _heightCtrl.dispose();
+    _professionCtrl.dispose();
     super.dispose();
   }
 
@@ -75,38 +58,32 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     switch (_currentStep) {
       case 0:
         return _firstName != null &&
-            _firstName!.trim().isNotEmpty &&
-            _lastName != null &&
-            _lastName!.trim().isNotEmpty &&
-            _dateOfBirth != null &&
-            _country != null &&
-            _country!.trim().isNotEmpty &&
-            _city != null &&
-            _city!.trim().isNotEmpty;
+            _firstName!.isNotEmpty &&
+            _dateOfBirth != null;
       case 1:
-        return _gender != null && _heightCm != null && _heightCm! > 0;
+        return _gender != null;
       case 2:
         return _maritalStatus != null;
       case 3:
-        return _childrenStatus != null;
+        return _country != null && _city != null && _city!.isNotEmpty;
       case 4:
         return _emotionalReadiness != null;
       case 5:
-        return _lookingFor != null;
-      case 6:
-        return _relationshipTimeline != null;
-      case 7:
-        return _highestEducation != null;
-      case 8:
-        return _profession != null && _profession!.trim().isNotEmpty;
-      case 9:
         return _languages.isNotEmpty;
+      case 6:
+        return _childrenStatus != null;
+      case 7:
+        return _heightCm != null;
+      case 8:
+        return _lookingFor != null;
+      case 9:
+        return _highestEducation != null;
       case 10:
-        return _smokingHabit != null;
+        return _profession != null && _profession!.isNotEmpty;
       case 11:
-        return _drinkingHabit != null;
+        return _smokingHabit != null && _drinkingHabit != null;
       default:
-        return false;
+        return true;
     }
   }
 
@@ -133,14 +110,13 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   Future<void> _submit() async {
     setState(() => _isLoading = true);
     try {
-      final fullName =
-          '${_firstName!.trim()} ${_lastName!.trim()}'.trim();
-
+      final name = _firstName?.trim() ?? "";
       await _profileRepo.updateBasicProfile({
-        'name': fullName,
+        'name': name,
         'gender': _gender,
-        'dateOfBirth':
-            _dateOfBirth != null ? '${_dateOfBirth!.toIso8601String()}Z' : null,
+        'dateOfBirth': _dateOfBirth != null
+            ? '${_dateOfBirth!.toIso8601String()}Z'
+            : null,
         'country': _country,
         'city': _city,
         'heightCm': _heightCm,
@@ -157,7 +133,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       });
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('name', fullName);
+      await prefs.setString('name', name);
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -179,91 +155,93 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     }
   }
 
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-        (route) => false,
-      );
-    }
-  }
+  // ─── Shared UI Components ──────────────────────────────────────────────────
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
-
-  Widget _stepHeader(String title, {String? subtitle}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-            height: 1.3,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.5,
+  Widget _buildTopNavigation() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: _currentStep == 0 ? null : _back,
+            icon: Icon(
+              _currentStep == 0
+                  ? Icons.close
+                  : Icons.arrow_back_ios_new_rounded,
+              size: 20,
             ),
+            color: Colors.black87,
           ),
-        ],
-      ],
-    );
-  }
-
-  Widget _optionCard({
-    required String label,
-    required String value,
-    required String? selectedValue,
-    required VoidCallback onTap,
-  }) {
-    final isSelected = selectedValue == value;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.only(bottom: 12),
-        padding:
-            const EdgeInsets.symmetric(vertical: 17, horizontal: 20),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
-          border: Border.all(
-            color:
-                isSelected ? AppColors.primary : AppColors.borderColor,
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.poppins(
-                  color: isSelected
-                      ? Colors.white
-                      : AppColors.textPrimary,
-                  fontSize: 15,
-                  fontWeight: isSelected
-                      ? FontWeight.w600
-                      : FontWeight.w400,
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: (_currentStep + 1) / _totalSteps,
+                  backgroundColor: AppColors.borderColor,
+                  valueColor: const AlwaysStoppedAnimation<Color>(
+                    AppColors.primary,
+                  ),
+                  minHeight: 6,
                 ),
               ),
             ),
-            if (isSelected)
-              const Icon(Icons.check_circle,
-                  color: Colors.white, size: 20),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _stepTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+      child: Text(
+        title,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.outfit(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary,
+          height: 1.2,
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        text,
+        style: GoogleFonts.outfit(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIllustration(String assetPath, {double height = 160}) {
+    // Special handling for requested images
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Image.asset(
+          assetPath,
+          height: height,
+          fit: BoxFit.contain,
+          errorBuilder: (ctx, _, __) => Container(
+            height: height,
+            width: height * 1.5,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(Icons.image, color: Colors.grey),
+          ),
         ),
       ),
     );
@@ -274,148 +252,351 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     required String hint,
     TextInputType keyboardType = TextInputType.text,
     TextCapitalization capitalization = TextCapitalization.words,
+    bool isReadonly = false,
+    VoidCallback? onTap,
+    Widget? suffixIcon,
     ValueChanged<String>? onChanged,
   }) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      textCapitalization: capitalization,
-      style: GoogleFonts.poppins(fontSize: 15),
-      decoration: InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.poppins(
-            color: AppColors.textSecondary, fontSize: 15),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: AppColors.primary, width: 1.5),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 15),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF0E6E6), width: 1),
       ),
-      onChanged: onChanged,
+      child: TextField(
+        controller: controller,
+        readOnly: isReadonly,
+        onTap: onTap,
+        keyboardType: keyboardType,
+        textCapitalization: capitalization,
+        onChanged: onChanged,
+        style: GoogleFonts.outfit(fontSize: 16, color: AppColors.textPrimary),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: GoogleFonts.outfit(
+            color: AppColors.textSecondary,
+            fontSize: 16,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
+          border: InputBorder.none,
+          suffixIcon: suffixIcon != null
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: suffixIcon,
+                )
+              : null,
+        ),
+      ),
+    );
+  }
+
+  Widget _genderCard({
+    required String label,
+    required String value,
+    required String assetPath,
+  }) {
+    final isSelected = _gender == value;
+    return GestureDetector(
+      onTap: () => setState(() => _gender = value),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(
+                color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Stack(
+              children: [
+                Image.asset(
+                  assetPath,
+                  width: 120,
+                  height: 120,
+                  errorBuilder: (ctx, _, __) => Container(
+                    width: 120,
+                    height: 120,
+                    color: Colors.grey[100],
+                  ),
+                ),
+                if (isSelected)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            label,
+            style: GoogleFonts.outfit(
+              fontSize: 16,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _selectionTile({
+    required String label,
+    required String value,
+    required String? selectedValue,
+    required VoidCallback onTap,
+    String? emoji,
+  }) {
+    final isSelected = selectedValue == value;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
+            width: 1.2,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            // if (emoji != null) ...[
+            //   Text(emoji, style: const TextStyle(fontSize: 22)),
+            //   const SizedBox(width: 12),
+            // ],
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check, color: Colors.white, size: 14),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _languageChip(String label) {
+    final isSelected = _languages.contains(label);
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          if (isSelected) {
+            _languages.remove(label);
+          } else {
+            _languages.add(label);
+          }
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        margin: const EdgeInsets.only(right: 10, bottom: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.primary : const Color(0xFFF5F2F2),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected ? Colors.white : AppColors.textPrimary,
+                fontSize: 15,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              const Icon(Icons.check_circle, color: Colors.white, size: 16),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _continueButton() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+      child: ElevatedButton(
+        onPressed: _canProceed ? _next : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          elevation: 0,
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : Text(
+                _currentStep == _totalSteps - 1 ? 'Finish' : 'Continue',
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+      ),
     );
   }
 
   // ─── Steps ────────────────────────────────────────────────────────────────
 
-  // Step 0 — Name + Location
   Widget _buildBasicInfoStep() {
-    return _StepContainer(
-      key: const ValueKey(0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "Let's get to know you",
-            subtitle: "Tell us a little about yourself to get started.",
+    return Column(
+      children: [
+        _stepTitle("Hey! Let's talk little about you"),
+        const SizedBox(height: 20),
+        _sectionLabel("Name"),
+        _inputField(
+          controller: _firstNameCtrl,
+          hint: 'Your name',
+          onChanged: (v) => setState(() => _firstName = v),
+        ),
+        const SizedBox(height: 10),
+        _sectionLabel("When is your date of birth?"),
+        _inputField(
+          controller: TextEditingController(
+            text: _dateOfBirth == null
+                ? ''
+                : '${_dateOfBirth!.day}/${_dateOfBirth!.month}/${_dateOfBirth!.year}',
           ),
-          const SizedBox(height: 28),
-
-          // Name row
-          _sectionLabel("Your name"),
-          const SizedBox(height: 10),
-          Row(
-            children: [
-              Expanded(
-                child: _inputField(
-                  controller: _firstNameCtrl,
-                  hint: 'First name',
-                  onChanged: (v) =>
-                      setState(() => _firstName = v),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _inputField(
-                  controller: _lastNameCtrl,
-                  hint: 'Last name',
-                  onChanged: (v) =>
-                      setState(() => _lastName = v),
-                ),
-              ),
-            ],
+          hint: 'DD/MM/YYYY',
+          isReadonly: true,
+          suffixIcon: const Icon(
+            Icons.calendar_today_rounded,
+            color: AppColors.primary,
+            size: 20,
           ),
+          onTap: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate:
+                  _dateOfBirth ??
+                  DateTime.now().subtract(const Duration(days: 365 * 25)),
+              firstDate: DateTime(1920),
+              lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
+            );
+            if (picked != null) setState(() => _dateOfBirth = picked);
+          },
+        ),
+      ],
+    );
+  }
 
-          const SizedBox(height: 24),
-
-          // Date of birth
-          _sectionLabel("Date of birth"),
-          const SizedBox(height: 10),
-          GestureDetector(
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: _dateOfBirth ??
-                    DateTime.now().subtract(const Duration(days: 365 * 30)),
-                firstDate: DateTime(1930),
-                lastDate:
-                    DateTime.now().subtract(const Duration(days: 365 * 18)),
-                builder: (ctx, child) => Theme(
-                  data: Theme.of(ctx).copyWith(
-                    colorScheme: const ColorScheme.light(
-                        primary: AppColors.primary),
-                  ),
-                  child: child!,
-                ),
-              );
-              if (picked != null) setState(() => _dateOfBirth = picked);
-            },
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _dateOfBirth != null
-                      ? AppColors.primary
-                      : AppColors.borderColor,
-                  width: _dateOfBirth != null ? 1.5 : 1,
-                ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      size: 18, color: AppColors.textSecondary),
-                  const SizedBox(width: 12),
-                  Text(
-                    _dateOfBirth == null
-                        ? 'Select date of birth'
-                        : '${_dateOfBirth!.day} / ${_dateOfBirth!.month} / ${_dateOfBirth!.year}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      color: _dateOfBirth != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+  Widget _buildGenderStep() {
+    return Column(
+      children: [
+        _stepTitle("What's your gender?"),
+        const SizedBox(height: 40),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _genderCard(
+              label: 'Man',
+              value: 'MALE',
+              assetPath: 'assets/images/onboarding/gender_male.png',
             ),
-          ),
+            _genderCard(
+              label: 'Woman',
+              value: 'FEMALE',
+              assetPath: 'assets/images/onboarding/gender_female.png',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
 
-          const SizedBox(height: 24),
-
-          // Location
-          _sectionLabel("Where do you live?"),
-          const SizedBox(height: 10),
-          _countryPicker(),
-          const SizedBox(height: 12),
-          _inputField(
-            controller: _cityCtrl,
-            hint: 'City',
-            onChanged: (v) => setState(() => _city = v),
+  Widget _buildMaritalStatusStep() {
+    const options = [
+      ('Never Married', 'NEVER_MARRIED'),
+      ('Divorced', 'DIVORCED'),
+      ('Widowed', 'WIDOWED'),
+      ('Legally Separated', 'LEGALLY_SEPARATED'),
+    ];
+    return Column(
+      children: [
+        _stepTitle("What's your marital status?"),
+        _buildIllustration('assets/images/onboarding/marital_status.png'),
+        const SizedBox(height: 10),
+        for (final (label, value) in options)
+          _selectionTile(
+            label: label,
+            value: value,
+            selectedValue: _maritalStatus,
+            onTap: () => setState(() => _maritalStatus = value),
           ),
-        ],
-      ),
+      ],
+    );
+  }
+
+  Widget _buildLocationStep() {
+    return Column(
+      children: [
+        _stepTitle("Where do you live?"),
+        _buildIllustration('assets/images/onboarding/location.png'),
+        const SizedBox(height: 10),
+        _sectionLabel("Country"),
+        _countryPicker(),
+        const SizedBox(height: 10),
+        _sectionLabel("City"),
+        _inputField(
+          controller: _cityCtrl,
+          hint: 'Enter your city',
+          onChanged: (v) => setState(() => _city = v),
+        ),
+      ],
     );
   }
 
@@ -439,479 +620,363 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         }
       },
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+        margin: const EdgeInsets.only(bottom: 24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: _country != null
-                ? AppColors.primary
-                : AppColors.borderColor,
-            width: _country != null ? 1.5 : 1,
-          ),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFF0E6E6), width: 1),
         ),
         child: Row(
           children: [
             Expanded(
               child: Text(
-                _country ?? 'Country',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
+                _country ?? 'Select your country',
+                style: GoogleFonts.outfit(
+                  fontSize: 16,
                   color: _country != null
                       ? AppColors.textPrimary
                       : AppColors.textSecondary,
                 ),
               ),
             ),
-            const Icon(Icons.keyboard_arrow_down_rounded,
-                color: AppColors.textSecondary, size: 22),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: AppColors.textSecondary,
+              size: 24,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _sectionLabel(String text) {
-    return Text(
-      text,
-      style: GoogleFonts.poppins(
-        fontSize: 13,
-        fontWeight: FontWeight.w600,
-        color: AppColors.textSecondary,
-        letterSpacing: 0.3,
-      ),
+  Widget _buildEmotionalReadinessStep() {
+    return Column(
+      children: [
+        _stepTitle("Are you ready for a serious relationship?"),
+        _buildIllustration('assets/images/onboarding/relationship.png'),
+        const SizedBox(height: 20),
+        _selectionTile(
+          label: "Yes, I'm ready",
+          value: 'YES',
+          selectedValue: _emotionalReadiness,
+          emoji: '🥰',
+          onTap: () => setState(() => _emotionalReadiness = 'YES'),
+        ),
+        _selectionTile(
+          label: "I think so",
+          value: 'MOSTLY',
+          selectedValue: _emotionalReadiness,
+          emoji: '😊',
+          onTap: () => setState(() => _emotionalReadiness = 'MOSTLY'),
+        ),
+        _selectionTile(
+          label: "Not sure yet",
+          value: 'NOT_SURE',
+          selectedValue: _emotionalReadiness,
+          emoji: '🤔',
+          onTap: () => setState(() => _emotionalReadiness = 'NOT_SURE'),
+        ),
+      ],
     );
   }
 
-  // Step 1 — Gender + Height
-  Widget _buildGenderStep() {
-    return _StepContainer(
-      key: const ValueKey(1),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader("Tell us about yourself"),
-          const SizedBox(height: 32),
-          _sectionLabel("Your gender"),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _genderOption('Male', 'MALE'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _genderOption('Female', 'FEMALE'),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _genderOption('Other', 'OTHER'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 32),
-          _sectionLabel("Your height (cm)"),
-          const SizedBox(height: 12),
-          _inputField(
-            controller: _heightCtrl,
-            hint: 'e.g. 175',
-            keyboardType: TextInputType.number,
-            onChanged: (v) {
+  Widget _buildLanguagesStep() {
+    const langs = [
+      'English',
+      'Hindi',
+      'Malayalam',
+      'Tamil',
+      'German',
+      'Spanish',
+      'Arabic',
+      'Urdu',
+      'Bengali',
+      'French',
+      'Russian',
+      'Turkish',
+    ];
+    final illustration = _gender == 'FEMALE'
+        ? 'assets/images/onboarding/language_female.png'
+        : 'assets/images/onboarding/language_male.png';
+
+    return Column(
+      children: [
+        _stepTitle("What languages are you comfortable with?"),
+        _buildIllustration(illustration),
+        const SizedBox(height: 20),
+        Wrap(
+          alignment: WrapAlignment.center,
+          children: langs.map((l) => _languageChip(l)).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildChildrenStep() {
+    return Column(
+      children: [
+        _stepTitle("Do you have children?"),
+        _buildIllustration('assets/images/onboarding/children.png'),
+        const SizedBox(height: 32),
+        _selectionTile(
+          label: 'Yes — living with me',
+          value: 'LIVING_WITH_ME',
+          selectedValue: _childrenStatus,
+          onTap: () => setState(() => _childrenStatus = 'LIVING_WITH_ME'),
+        ),
+        _selectionTile(
+          label: 'Yes — not living with me',
+          value: 'NOT_LIVING_WITH_ME',
+          selectedValue: _childrenStatus,
+          onTap: () => setState(() => _childrenStatus = 'NOT_LIVING_WITH_ME'),
+        ),
+        _selectionTile(
+          label: 'No',
+          value: 'NO_CHILDREN',
+          selectedValue: _childrenStatus,
+          onTap: () => setState(() => _childrenStatus = 'NO_CHILDREN'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeightStep() {
+    final illustration = _gender == 'FEMALE'
+        ? 'assets/images/onboarding/height_female.png'
+        : 'assets/images/onboarding/height_male.png';
+
+    // Height range: 140cm to 220cm
+    const minHeight = 140;
+    const maxHeight = 220;
+    final heights = List.generate(
+      maxHeight - minHeight + 1,
+      (i) => minHeight + i,
+    );
+
+    // If _heightCm is null, default to 170
+    if (_heightCm == null) {
+      _heightCm = 170;
+      _heightCtrl.text = "170";
+    }
+
+    String formatImperial(int cm) {
+      double totalInches = cm / 2.54;
+      int feet = (totalInches / 12).floor();
+      int inches = (totalInches % 12).round();
+      if (inches == 12) {
+        feet++;
+        inches = 0;
+      }
+      return "$feet'$inches\"";
+    }
+
+    return Column(
+      children: [
+        _stepTitle("What is your height?"),
+        _buildIllustration(illustration, height: 140),
+        const SizedBox(height: 20),
+
+        // Height Picker
+        SizedBox(
+          height: 220,
+          child: ListWheelScrollView.useDelegate(
+            itemExtent: 55,
+            perspective: 0.005,
+            diameterRatio: 1.5,
+            physics: const FixedExtentScrollPhysics(),
+            controller: FixedExtentScrollController(
+              initialItem: (_heightCm ?? 170) - minHeight,
+            ),
+            onSelectedItemChanged: (index) {
               setState(() {
-                _heightCm = int.tryParse(v);
+                _heightCm = minHeight + index;
+                _heightCtrl.text = _heightCm.toString();
               });
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _genderOption(String label, String value) {
-    final isSelected = _gender == value;
-    return GestureDetector(
-      onTap: () => setState(() => _gender = value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 15),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.borderColor,
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.poppins(
-              color: isSelected ? Colors.white : AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+            childDelegate: ListWheelChildBuilderDelegate(
+              childCount: heights.length,
+              builder: (context, index) {
+                final cm = heights[index];
+                final isSelected = _heightCm == cm;
+                return Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: isSelected ? 220 : 180,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.black : Colors.transparent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      "${formatImperial(cm)} ($cm cm)",
+                      style: GoogleFonts.outfit(
+                        fontSize: isSelected ? 20 : 17,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isSelected ? Colors.white : Colors.grey[400],
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
           ),
         ),
-      ),
+
+        const SizedBox(height: 40),
+        // const Spacer(),
+
+        // Bottom Info Card
+        // Container(
+        //   margin: const EdgeInsets.only(bottom: 20),
+        //   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        //   decoration: BoxDecoration(
+        //     color: const Color(0xFFF7F7F7),
+        //     borderRadius: BorderRadius.circular(12),
+        //   ),
+        //   child: Row(
+        //     children: [
+        //       const Icon(Icons.info_outline, size: 20, color: Colors.grey),
+        //       const SizedBox(width: 12),
+        //       Expanded(
+        //         child: Text(
+        //           "This info helps us find better matches for you.",
+        //           style: GoogleFonts.outfit(
+        //             fontSize: 14,
+        //             color: Colors.grey[600],
+        //           ),
+        //         ),
+        //       ),
+        //     ],
+        //   ),
+        // ),
+      ],
     );
   }
 
-  // Step 2 — Marital status
-  Widget _buildMaritalStatusStep() {
-    const options = [
-      ('Never Married', 'NEVER_MARRIED'),
-      ('Divorced', 'DIVORCED'),
-      ('Widowed', 'WIDOWED'),
-      ('Legally Separated', 'LEGALLY_SEPARATED'),
-    ];
-    return _StepContainer(
-      key: const ValueKey(2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader("What's your marital status?"),
-          const SizedBox(height: 32),
-          for (final (label, value) in options)
-            _optionCard(
-              label: label,
-              value: value,
-              selectedValue: _maritalStatus,
-              onTap: () => setState(() => _maritalStatus = value),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // Step 3 — Children
-  Widget _buildChildrenStep() {
-    return _StepContainer(
-      key: const ValueKey(3),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader("Do you have children?"),
-          const SizedBox(height: 32),
-          _optionCard(
-            label: 'Yes — living with me',
-            value: 'LIVING_WITH_ME',
-            selectedValue: _childrenStatus,
-            onTap: () =>
-                setState(() => _childrenStatus = 'LIVING_WITH_ME'),
-          ),
-          _optionCard(
-            label: 'Yes — not living with me',
-            value: 'NOT_LIVING_WITH_ME',
-            selectedValue: _childrenStatus,
-            onTap: () =>
-                setState(() => _childrenStatus = 'NOT_LIVING_WITH_ME'),
-          ),
-          _optionCard(
-            label: 'No',
-            value: 'NO_CHILDREN',
-            selectedValue: _childrenStatus,
-            onTap: () =>
-                setState(() => _childrenStatus = 'NO_CHILDREN'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Step 5 — Emotional readiness
-  Widget _buildEmotionalReadinessStep() {
-    return _StepContainer(
-      key: const ValueKey(4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-              "Are you emotionally ready for a serious relationship?"),
-          const SizedBox(height: 32),
-          _optionCard(
-            label: 'Yes, absolutely',
-            value: 'YES',
-            selectedValue: _emotionalReadiness,
-            onTap: () =>
-                setState(() => _emotionalReadiness = 'YES'),
-          ),
-          _optionCard(
-            label: 'Mostly ready',
-            value: 'MOSTLY',
-            selectedValue: _emotionalReadiness,
-            onTap: () =>
-                setState(() => _emotionalReadiness = 'MOSTLY'),
-          ),
-          _optionCard(
-            label: "I'm not sure yet",
-            value: 'NOT_SURE',
-            selectedValue: _emotionalReadiness,
-            onTap: () =>
-                setState(() => _emotionalReadiness = 'NOT_SURE'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Step 6 — Looking for
   Widget _buildLookingForStep() {
-    return _StepContainer(
-      key: const ValueKey(5),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "What are you looking for?",
-            subtitle:
-                "Be honest — it helps us find the right person for you.",
-          ),
-          const SizedBox(height: 32),
-          _optionCard(
-            label: 'Marriage',
-            value: 'MARRIAGE',
-            selectedValue: _lookingFor,
-            onTap: () => setState(() => _lookingFor = 'MARRIAGE'),
-          ),
-          _optionCard(
-            label: 'Long-term committed relationship',
-            value: 'LONG_TERM_RELATIONSHIP',
-            selectedValue: _lookingFor,
-            onTap: () => setState(
-                () => _lookingFor = 'LONG_TERM_RELATIONSHIP'),
-          ),
-          _optionCard(
-            label: 'Serious companionship',
-            value: 'SERIOUS_COMPANIONSHIP',
-            selectedValue: _lookingFor,
-            onTap: () => setState(
-                () => _lookingFor = 'SERIOUS_COMPANIONSHIP'),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _stepTitle("What are you looking for?"),
+        _buildIllustration('assets/images/onboarding/relationship.png'),
+        const SizedBox(height: 20),
+        _selectionTile(
+          label: 'Marriage',
+          value: 'MARRIAGE',
+          selectedValue: _lookingFor,
+          onTap: () => setState(() => _lookingFor = 'MARRIAGE'),
+        ),
+        _selectionTile(
+          label: 'Long-term commitment',
+          value: 'LONG_TERM_RELATIONSHIP',
+          selectedValue: _lookingFor,
+          onTap: () => setState(() => _lookingFor = 'LONG_TERM_RELATIONSHIP'),
+        ),
+        _selectionTile(
+          label: 'Serious companionship',
+          value: 'SERIOUS_COMPANIONSHIP',
+          selectedValue: _lookingFor,
+          onTap: () => setState(() => _lookingFor = 'SERIOUS_COMPANIONSHIP'),
+        ),
+      ],
     );
   }
 
-  // Step 7 — Timeline
-  Widget _buildTimelineStep() {
-    return _StepContainer(
-      key: const ValueKey(6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "What's your preferred timeline?",
-            subtitle: "When do you see yourself settling down?",
-          ),
-          const SizedBox(height: 32),
-          _optionCard(
-            label: 'Within 0–6 months',
-            value: 'ZERO_TO_SIX_MONTHS',
-            selectedValue: _relationshipTimeline,
-            onTap: () => setState(
-                () => _relationshipTimeline = 'ZERO_TO_SIX_MONTHS'),
-          ),
-          _optionCard(
-            label: 'Within 6–12 months',
-            value: 'SIX_TO_TWELVE_MONTHS',
-            selectedValue: _relationshipTimeline,
-            onTap: () => setState(
-                () => _relationshipTimeline = 'SIX_TO_TWELVE_MONTHS'),
-          ),
-          _optionCard(
-            label: 'No fixed timeline',
-            value: 'NO_FIXED_TIMELINE',
-            selectedValue: _relationshipTimeline,
-            onTap: () => setState(
-                () => _relationshipTimeline = 'NO_FIXED_TIMELINE'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Step 8 — Education
   Widget _buildEducationStep() {
     const options = [
-      ('High School / Secondary', 'HIGH_SCHOOL'),
-      ('Vocational / Diploma', 'VOCATIONAL'),
+      ('High School', 'HIGH_SCHOOL'),
       ("Bachelor's Degree", 'BACHELORS'),
       ("Master's Degree", 'MASTERS'),
       ('Doctorate / PhD', 'DOCTORATE'),
-      ('Medical Degree', 'MEDICAL'),
-      ('Law Degree', 'LAW'),
       ('Other', 'OTHER'),
     ];
-    return _StepContainer(
-      key: const ValueKey(7),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader("What's your highest education?"),
-          const SizedBox(height: 32),
-          for (final (label, value) in options)
-            _optionCard(
-              label: label,
-              value: value,
-              selectedValue: _highestEducation,
-              onTap: () =>
-                  setState(() => _highestEducation = value),
-            ),
-        ],
-      ),
+    return Column(
+      children: [
+        _stepTitle("What's your highest education?"),
+        _buildIllustration('assets/images/onboarding/education.png'),
+        const SizedBox(height: 20),
+        for (final (label, value) in options)
+          _selectionTile(
+            label: label,
+            value: value,
+            selectedValue: _highestEducation,
+            onTap: () => setState(() => _highestEducation = value),
+          ),
+      ],
     );
   }
 
-  // Step 9 — Profession
   Widget _buildProfessionStep() {
-    return _StepContainer(
-      key: const ValueKey(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "What do you do for work?",
-            subtitle: "Your profession or industry.",
-          ),
-          const SizedBox(height: 32),
-          _inputField(
-            controller: _professionCtrl,
-            hint: 'e.g. Software Engineer, Doctor, Teacher…',
-            capitalization: TextCapitalization.sentences,
-            onChanged: (v) => setState(() => _profession = v),
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        _stepTitle("What do you do for work?"),
+        _buildIllustration('assets/images/onboarding/work.png'),
+        const SizedBox(height: 20),
+        _inputField(
+          controller: _professionCtrl,
+          hint: 'e.g. Software Developer, Doctor…',
+          capitalization: TextCapitalization.sentences,
+          onChanged: (v) => setState(() => _profession = v),
+        ),
+      ],
     );
   }
 
-  // Step 10 — Languages
-  Widget _buildLanguagesStep() {
-    const langs = [
-      'English', 'Arabic', 'Hindi', 'Urdu', 'Bengali',
-      'Mandarin', 'Spanish', 'French', 'Portuguese', 'Russian',
-      'German', 'Japanese', 'Korean', 'Turkish', 'Italian',
-      'Malay', 'Swahili', 'Punjabi', 'Tamil', 'Other',
-    ];
-    return _StepContainer(
-      key: const ValueKey(9),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "What languages do you speak?",
-            subtitle: "Select all that apply.",
-          ),
-          const SizedBox(height: 28),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: langs.map((lang) {
-              final selected = _languages.contains(lang);
-              return GestureDetector(
-                onTap: () => setState(() {
-                  selected
-                      ? _languages.remove(lang)
-                      : _languages.add(lang);
-                }),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 11),
-                  decoration: BoxDecoration(
-                    color: selected ? AppColors.primary : Colors.white,
-                    border: Border.all(
-                      color: selected
-                          ? AppColors.primary
-                          : AppColors.borderColor,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Text(
-                    lang,
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: selected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                      color: selected
-                          ? Colors.white
-                          : AppColors.textPrimary,
-                    ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Step 11 — Smoking
-  Widget _buildSmokingStep() {
-    return _StepContainer(
-      key: const ValueKey(10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader("Do you smoke?"),
-          const SizedBox(height: 32),
-          _optionCard(
-            label: 'No',
-            value: 'NO',
-            selectedValue: _smokingHabit,
-            onTap: () => setState(() => _smokingHabit = 'NO'),
-          ),
-          _optionCard(
-            label: 'Occasionally',
-            value: 'OCCASIONALLY',
-            selectedValue: _smokingHabit,
-            onTap: () =>
-                setState(() => _smokingHabit = 'OCCASIONALLY'),
-          ),
-          _optionCard(
-            label: 'Yes',
-            value: 'YES',
-            selectedValue: _smokingHabit,
-            onTap: () => setState(() => _smokingHabit = 'YES'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Step 12 — Drinking
-  Widget _buildDrinkingStep() {
-    return _StepContainer(
-      key: const ValueKey(11),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader("Do you drink alcohol?"),
-          const SizedBox(height: 32),
-          _optionCard(
-            label: 'No',
-            value: 'NO',
-            selectedValue: _drinkingHabit,
-            onTap: () => setState(() => _drinkingHabit = 'NO'),
-          ),
-          _optionCard(
-            label: 'Socially',
-            value: 'SOCIALLY',
-            selectedValue: _drinkingHabit,
-            onTap: () =>
-                setState(() => _drinkingHabit = 'SOCIALLY'),
-          ),
-          _optionCard(
-            label: 'Yes',
-            value: 'YES',
-            selectedValue: _drinkingHabit,
-            onTap: () => setState(() => _drinkingHabit = 'YES'),
-          ),
-        ],
-      ),
+  Widget _buildHabitsStep() {
+    return Column(
+      children: [
+        _stepTitle("A few more details"),
+        const SizedBox(height: 30),
+        _sectionLabel("Drinking"),
+        Row(
+          children: [
+            Expanded(
+              child: _selectionTile(
+                label: 'Yes',
+                value: 'YES',
+                selectedValue: _drinkingHabit,
+                onTap: () => setState(() => _drinkingHabit = 'YES'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _selectionTile(
+                label: 'No',
+                value: 'NO',
+                selectedValue: _drinkingHabit,
+                onTap: () => setState(() => _drinkingHabit = 'NO'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        _sectionLabel("Smoking"),
+        Row(
+          children: [
+            Expanded(
+              child: _selectionTile(
+                label: 'Yes',
+                value: 'YES',
+                selectedValue: _smokingHabit,
+                onTap: () => setState(() => _smokingHabit = 'YES'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _selectionTile(
+                label: 'No',
+                value: 'NO',
+                selectedValue: _smokingHabit,
+                onTap: () => setState(() => _smokingHabit = 'NO'),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -924,25 +989,25 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       case 2:
         return _buildMaritalStatusStep();
       case 3:
-        return _buildChildrenStep();
+        return _buildLocationStep();
       case 4:
         return _buildEmotionalReadinessStep();
       case 5:
-        return _buildLookingForStep();
-      case 6:
-        return _buildTimelineStep();
-      case 7:
-        return _buildEducationStep();
-      case 8:
-        return _buildProfessionStep();
-      case 9:
         return _buildLanguagesStep();
+      case 6:
+        return _buildChildrenStep();
+      case 7:
+        return _buildHeightStep();
+      case 8:
+        return _buildLookingForStep();
+      case 9:
+        return _buildEducationStep();
       case 10:
-        return _buildSmokingStep();
+        return _buildProfessionStep();
       case 11:
-        return _buildDrinkingStep();
+        return _buildHabitsStep();
       default:
-        return const SizedBox();
+        return const SizedBox.shrink();
     }
   }
 
@@ -950,108 +1015,45 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: _currentStep > 0
-            ? IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new,
-                    color: AppColors.textPrimary, size: 20),
-                onPressed: _back,
-              )
-            : const SizedBox.shrink(),
-        actions: [
-          TextButton(
-            onPressed: _logout,
-            child: const Icon(Icons.logout,
-                color: AppColors.textSecondary, size: 20),
-          ),
-        ],
-      ),
       body: SafeArea(
-        top: false,
         child: Column(
           children: [
-            // Progress bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 4, 24, 0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: (_currentStep + 1) / _totalSteps,
-                  backgroundColor: AppColors.borderColor,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary),
-                  minHeight: 4,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-
-            // Step content
+            _buildTopNavigation(),
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) {
-                  final slide = Tween<Offset>(
-                    begin: _goingForward
-                        ? const Offset(0.06, 0)
-                        : const Offset(-0.06, 0),
-                    end: Offset.zero,
-                  ).animate(animation);
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(
-                        position: slide, child: child),
-                  );
-                },
-                child: _buildCurrentStep(),
-              ),
-            ),
-
-            // Continue / Finish button
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed:
-                      (_canProceed && !_isLoading) ? _next : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: AppColors.borderColor,
-                    disabledForegroundColor: AppColors.textSecondary,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 350),
+                  transitionBuilder: (child, animation) {
+                    final offsetBegin = _goingForward
+                        ? const Offset(0.1, 0)
+                        : const Offset(-0.1, 0);
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: offsetBegin,
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Container(
+                    key: ValueKey(_currentStep),
+                    child: _buildCurrentStep(),
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          _currentStep == _totalSteps - 1
-                          ? 'Finish'
-                          : 'Continue',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
                 ),
               ),
             ),
+            _continueButton(),
           ],
         ),
       ),
@@ -1083,8 +1085,8 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       _filtered = q.isEmpty
           ? _kCountries
           : _kCountries
-              .where((c) => c.toLowerCase().contains(q.toLowerCase()))
-              .toList();
+                .where((c) => c.toLowerCase().contains(q.toLowerCase()))
+                .toList();
     });
   }
 
@@ -1100,7 +1102,6 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
           child: Column(
             children: [
-              // Handle bar
               Container(
                 width: 40,
                 height: 4,
@@ -1112,45 +1113,43 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               const SizedBox(height: 16),
               Text(
                 'Select Country',
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
+                style: GoogleFonts.outfit(
+                  fontSize: 18,
                   fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 14),
-              // Search
-              TextField(
-                controller: _search,
-                onChanged: _onSearch,
-                autofocus: true,
-                style: GoogleFonts.poppins(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Search…',
-                  hintStyle: GoogleFonts.poppins(
-                      color: AppColors.textSecondary, fontSize: 14),
-                  prefixIcon: const Icon(Icons.search,
-                      color: AppColors.textSecondary, size: 20),
-                  contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: AppColors.borderColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        const BorderSide(color: AppColors.borderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                        color: AppColors.primary, width: 1.5),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F2F2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TextField(
+                  controller: _search,
+                  onChanged: _onSearch,
+                  autofocus: true,
+                  style: GoogleFonts.outfit(fontSize: 15),
+                  decoration: InputDecoration(
+                    hintText: 'Search your country…',
+                    hintStyle: GoogleFonts.outfit(
+                      color: AppColors.textSecondary,
+                      fontSize: 15,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search,
+                      color: AppColors.textSecondary,
+                      size: 20,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ),
               const SizedBox(height: 10),
-              // List
               Expanded(
                 child: ListView.builder(
                   controller: scrollCtrl,
@@ -1159,13 +1158,11 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     final country = _filtered[i];
                     final isSelected = country == widget.selected;
                     return ListTile(
-                      dense: true,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 4),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                       title: Text(
                         country,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
+                        style: GoogleFonts.outfit(
+                          fontSize: 16,
                           fontWeight: isSelected
                               ? FontWeight.w600
                               : FontWeight.w400,
@@ -1175,8 +1172,11 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                         ),
                       ),
                       trailing: isSelected
-                          ? const Icon(Icons.check,
-                              color: AppColors.primary, size: 18)
+                          ? const Icon(
+                              Icons.check,
+                              color: AppColors.primary,
+                              size: 20,
+                            )
                           : null,
                       onTap: () => Navigator.pop(context, country),
                     );
@@ -1192,59 +1192,198 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
 }
 
 const List<String> _kCountries = [
-  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola',
-  'Antigua and Barbuda', 'Argentina', 'Armenia', 'Australia', 'Austria',
-  'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados',
-  'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan',
-  'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Brunei',
-  'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia',
-  'Cameroon', 'Canada', 'Central African Republic', 'Chad', 'Chile',
-  'China', 'Colombia', 'Comoros', 'Congo', 'Costa Rica',
-  'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark',
-  'Djibouti', 'Dominica', 'Dominican Republic', 'Ecuador', 'Egypt',
-  'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini',
-  'Ethiopia', 'Fiji', 'Finland', 'France', 'Gabon',
-  'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece',
-  'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana',
-  'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India',
-  'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel',
-  'Italy', 'Jamaica', 'Japan', 'Jordan', 'Kazakhstan',
-  'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan', 'Laos',
-  'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya',
-  'Liechtenstein', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi',
-  'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands',
-  'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova',
-  'Monaco', 'Mongolia', 'Montenegro', 'Morocco', 'Mozambique',
-  'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands',
-  'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'North Korea',
-  'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Palau',
-  'Palestine', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru',
-  'Philippines', 'Poland', 'Portugal', 'Qatar', 'Romania',
-  'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia',
-  'Saint Vincent and the Grenadines', 'Samoa', 'San Marino',
-  'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia',
-  'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia',
-  'Solomon Islands', 'Somalia', 'South Africa', 'South Korea',
-  'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname',
-  'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan',
-  'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga',
-  'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Tuvalu',
-  'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom',
-  'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City',
-  'Venezuela', 'Vietnam', 'Yemen', 'Zambia', 'Zimbabwe',
+  'Afghanistan',
+  'Albania',
+  'Algeria',
+  'Andorra',
+  'Angola',
+  'Antigua and Barbuda',
+  'Argentina',
+  'Armenia',
+  'Australia',
+  'Austria',
+  'Azerbaijan',
+  'Bahamas',
+  'Bahrain',
+  'Bangladesh',
+  'Barbados',
+  'Belarus',
+  'Belgium',
+  'Belize',
+  'Benin',
+  'Bhutan',
+  'Bolivia',
+  'Bosnia and Herzegovina',
+  'Botswana',
+  'Brazil',
+  'Brunei',
+  'Bulgaria',
+  'Burkina Faso',
+  'Burundi',
+  'Cabo Verde',
+  'Cambodia',
+  'Cameroon',
+  'Canada',
+  'Central African Republic',
+  'Chad',
+  'Chile',
+  'China',
+  'Colombia',
+  'Comoros',
+  'Congo',
+  'Costa Rica',
+  'Croatia',
+  'Cuba',
+  'Cyprus',
+  'Czech Republic',
+  'Denmark',
+  'Djibouti',
+  'Dominica',
+  'Dominican Republic',
+  'Ecuador',
+  'Egypt',
+  'El Salvador',
+  'Equatorial Guinea',
+  'Eritrea',
+  'Estonia',
+  'Eswatini',
+  'Ethiopia',
+  'Fiji',
+  'Finland',
+  'France',
+  'Gabon',
+  'Gambia',
+  'Georgia',
+  'Germany',
+  'Ghana',
+  'Greece',
+  'Grenada',
+  'Guatemala',
+  'Guinea',
+  'Guinea-Bissau',
+  'Guyana',
+  'Haiti',
+  'Honduras',
+  'Hungary',
+  'Iceland',
+  'India',
+  'Indonesia',
+  'Iran',
+  'Iraq',
+  'Ireland',
+  'Israel',
+  'Italy',
+  'Jamaica',
+  'Japan',
+  'Jordan',
+  'Kazakhstan',
+  'Kenya',
+  'Kiribati',
+  'Kuwait',
+  'Kyrgyzstan',
+  'Laos',
+  'Latvia',
+  'Lebanon',
+  'Lesotho',
+  'Liberia',
+  'Libya',
+  'Liechtenstein',
+  'Lithuania',
+  'Luxembourg',
+  'Madagascar',
+  'Malawi',
+  'Malaysia',
+  'Maldives',
+  'Mali',
+  'Malta',
+  'Marshall Islands',
+  'Mauritania',
+  'Mauritius',
+  'Mexico',
+  'Micronesia',
+  'Moldova',
+  'Monaco',
+  'Mongolia',
+  'Montenegro',
+  'Morocco',
+  'Mozambique',
+  'Myanmar',
+  'Namibia',
+  'Nauru',
+  'Nepal',
+  'Netherlands',
+  'New Zealand',
+  'Nicaragua',
+  'Niger',
+  'Nigeria',
+  'North Korea',
+  'North Macedonia',
+  'Norway',
+  'Oman',
+  'Pakistan',
+  'Palau',
+  'Palestine',
+  'Panama',
+  'Papua New Guinea',
+  'Paraguay',
+  'Peru',
+  'Philippines',
+  'Poland',
+  'Portugal',
+  'Qatar',
+  'Romania',
+  'Russia',
+  'Rwanda',
+  'Saint Kitts and Nevis',
+  'Saint Lucia',
+  'Saint Vincent and the Grenadines',
+  'Samoa',
+  'San Marino',
+  'Sao Tome and Principe',
+  'Saudi Arabia',
+  'Senegal',
+  'Serbia',
+  'Seychelles',
+  'Sierra Leone',
+  'Singapore',
+  'Slovakia',
+  'Slovenia',
+  'Solomon Islands',
+  'Somalia',
+  'South Africa',
+  'South Korea',
+  'South Sudan',
+  'Spain',
+  'Sri Lanka',
+  'Sudan',
+  'Suriname',
+  'Sweden',
+  'Switzerland',
+  'Syria',
+  'Taiwan',
+  'Tajikistan',
+  'Tanzania',
+  'Thailand',
+  'Timor-Leste',
+  'Togo',
+  'Tonga',
+  'Trinidad and Tobago',
+  'Tunisia',
+  'Turkey',
+  'Turkmenistan',
+  'Tuvalu',
+  'Uganda',
+  'Ukraine',
+  'United Arab Emirates',
+  'United Kingdom',
+  'United States',
+  'Uruguay',
+  'Uzbekistan',
+  'Vanuatu',
+  'Vatican City',
+  'Venezuela',
+  'Vietnam',
+  'Yemen',
+  'Zambia',
+  'Zimbabwe',
 ];
-
-// ── Step container ────────────────────────────────────────────────────────────
-class _StepContainer extends StatelessWidget {
-  final Widget child;
-
-  const _StepContainer({required super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-      child: child,
-    );
-  }
-}
