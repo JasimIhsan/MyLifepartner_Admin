@@ -32,6 +32,11 @@ const data = {
          icon: UserCheck2Icon,
       },
       {
+         title: "Image Assets",
+         url: "/image-assets",
+         icon: Command,
+      },
+      {
          title: "Subscriptions",
          url: "#",
          icon: CreditCard,

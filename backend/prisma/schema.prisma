@@ -261,6 +261,22 @@ model UserFeature {
   @@map("user_features")
 }
 
+model ImageAssets {
+  id           Int                @id @default(autoincrement())
+  section      ImageAssetsSection
+  title        String
+  imageUrl     String
+  altText      String?
+  redirectUrl  String?
+  displayOrder Int                @default(0)
+  isActive     Boolean            @default(true)
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  @@index([section, isActive, displayOrder])
+  @@map("image_assets")
+}
+
 // ─── Enums ───────────────────────────────────────────────────────────────────
 
 enum Role {
@@ -358,4 +374,12 @@ enum InteractionState {
   INTEREST_SENT
   INTEREST_RECEIVED
   MATCHED
+}
+
+enum ImageAssetsSection {
+  LANDING_PAGE
+  BANNERS
+  ADS
+  ONBOARDING
+  ICON
 }

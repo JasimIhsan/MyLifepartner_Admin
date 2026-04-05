@@ -15,6 +15,7 @@ import UsersPage from "./pages/users-page/UsersPage";
 import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 
 import { FeaturesPage } from "./pages/features-page/FeaturesPage"; // New
+import ImageAssetsPage from "./pages/image-assets-page/ImageAssetsPage";
 
 function App() {
    const dispatch = useDispatch();
@@ -52,6 +53,7 @@ function App() {
                   <Route path="/users" element={<UsersPage />} />
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
+                  <Route path="/image-assets" element={<ImageAssetsPage />} />
                   <Route path="/subscriptions/plans" element={<SubscriptionPage />} />
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />
                   <Route path="*" element={<NotFoundPage />} />

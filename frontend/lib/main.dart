@@ -8,6 +8,7 @@ import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/providers/subscription_provider.dart';
+import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:provider/provider.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -96,6 +97,7 @@ class _MyAppState extends State<MyApp> {
       providers: [
         ChangeNotifierProvider(create: (_) => MatchProvider()),
         ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
+        ChangeNotifierProvider(create: (_) => ImageAssetProvider()),
       ],
       child: MaterialApp(
         title: 'Life Partner Again',

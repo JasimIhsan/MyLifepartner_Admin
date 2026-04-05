@@ -10,7 +10,7 @@ import adminManagementRoute from "./admin/admin.management.route";
 import adminQuestionnaireRoute from "./admin/admin.questionnaire.route";
 import adminSubscriptionRoute from "./admin/admin.subscription.route";
 import adminUsersRoute from "./admin/admin.users.route";
-import { adminSubscriptionController } from "@/composer/composer";
+import { adminSubscriptionController, imageAssetController } from "@/composer/composer";
 
 const router = Router();
 
@@ -35,6 +35,13 @@ router.use("/admin/plans", authenticateAdmin, adminSubscriptionRoute);
 // Feature mapping mutations on plans
 router.patch("/admin/plans/:planId/features/:featureId", authenticateAdmin, adminSubscriptionController.updatePlanFeature);
 router.delete("/admin/plans/:planId/features/:featureId", authenticateAdmin, adminSubscriptionController.deletePlanFeature);
+
+// ── Image Assets Management ────────────────────────────────────────────────
+import imageAssetRoute from "./admin/image-asset.route";
+router.use("/admin/image-assets", authenticateAdmin, imageAssetRoute);
+
+// Public Image Assets
+router.get("/user/image-assets/:section", imageAssetController.getAssetsBySection);
 
 export default router;
 

@@ -17,6 +17,7 @@
 
 // ─── 1. Repositories ────────────────────────────────────────────────────────
 import { AdminRepository } from "@/repositories/admin.repository";
+import { ImageAssetRepository } from "@/repositories/image-asset.repository";
 import { MatchRepository } from "@/repositories/match.repository";
 import { ProfileRepository } from "@/repositories/profile.repository";
 import { QuestionnaireRepository } from "@/repositories/questionnaire.repository";
@@ -25,6 +26,7 @@ import { UserRepository } from "@/repositories/user.repository";
 import { UserFeatureRepository } from "@/repositories/user.feature.repository";
 
 export const adminRepository = new AdminRepository();
+export const imageAssetRepository = new ImageAssetRepository();
 export const userRepository = new UserRepository();
 export const userFeatureRepository = new UserFeatureRepository();
 export const profileRepository = new ProfileRepository();
@@ -32,7 +34,7 @@ export const questionnaireRepository = new QuestionnaireRepository();
 export const subscriptionRepository = new SubscriptionRepository();
 export const matchRepository = new MatchRepository();
 
-// ─── 2. Infrastructure / Utility Services ────────────────────────────────────
+// ... (Infrastucture Svcs)
 import { CacheService } from "@/services/cache.service";
 import { EmailService } from "@/services/email.service";
 import { JwtService } from "@/services/jwt.service";
@@ -49,6 +51,7 @@ export const s3Service = new S3Service();
 import { AdminAuthService } from "@/services/admin/admin.auth.service";
 import { AdminManagementService } from "@/services/admin/admin.management.service";
 import { AdminQuestionnaireService } from "@/services/admin/admin.questionnaire.service";
+import { ImageAssetService } from "@/services/admin/image-asset.service";
 import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/user/user.auth.service";
 import { ProfileService } from "@/services/user/user.profile.service";
@@ -58,6 +61,7 @@ import { UserFeatureService } from "@/services/user/user.feature.service";
 export const adminAuthService = new AdminAuthService(adminRepository, jwtService);
 export const adminManagementService = new AdminManagementService(adminRepository);
 export const adminQuestionnaireService = new AdminQuestionnaireService(questionnaireRepository);
+export const imageAssetService = new ImageAssetService(imageAssetRepository, s3Service);
 
 import { AdminSubscriptionService } from "@/services/admin/admin.subscription.service";
 export const adminSubscriptionService = new AdminSubscriptionService(subscriptionRepository);
@@ -65,6 +69,7 @@ export const adminSubscriptionService = new AdminSubscriptionService(subscriptio
 import { AdminFeatureService } from "@/services/admin/admin.feature.service";
 export const adminFeatureService = new AdminFeatureService();
 
+// ... (Other services remain the same)
 // User services
 export const userService = new UserService(userRepository);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
@@ -81,6 +86,7 @@ export const userSubscriptionService = new UserSubscriptionService(subscriptionR
 import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";
 import { AdminManagementController } from "@/controllers/admin/admin.management.controller";
 import { AdminQuestionnaireController } from "@/controllers/admin/admin.questionnaire.controller";
+import { ImageAssetController } from "@/controllers/admin/image-asset.controller";
 import { AdminUsersController } from "@/controllers/admin/admin.users.controller";
 import { AuthController } from "@/controllers/user/auth.controller";
 import { ProfileController } from "@/controllers/user/profile.controller";
@@ -91,6 +97,7 @@ import { UserController } from "@/controllers/user/user.controller";
 export const adminAuthController = new AdminAuthController(adminAuthService);
 export const adminManagementController = new AdminManagementController(adminManagementService);
 export const adminQuestionnaireController = new AdminQuestionnaireController(adminQuestionnaireService);
+export const imageAssetController = new ImageAssetController(imageAssetService);
 export const adminUsersController = new AdminUsersController(userService);
 
 import { AdminSubscriptionController } from "@/controllers/admin/admin.subscription.controller";
