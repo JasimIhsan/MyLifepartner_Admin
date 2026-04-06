@@ -129,12 +129,12 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
       height: 52,
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5F7),
+        color: AppColors.inputBackground,
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
+        border: Border.all(color: AppColors.black.withValues(alpha: 0.04)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: AppColors.black.withValues(alpha: 0.04),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -144,18 +144,18 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
         controller: _tabController,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: BoxDecoration(
-          color: Colors.black,
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.12),
+              color: AppColors.black.withValues(alpha: 0.12),
               blurRadius: 10,
               offset: const Offset(0, 3),
             ),
           ],
         ),
-        labelColor: Colors.white,
-        unselectedLabelColor: const Color(0xFF6B7280),
+        labelColor: AppColors.textWhite,
+        unselectedLabelColor: AppColors.textSecondary,
         splashBorderRadius: BorderRadius.circular(24),
         overlayColor: WidgetStateProperty.all(Colors.transparent),
         dividerColor: Colors.transparent,
@@ -290,7 +290,7 @@ class _MatchesListState extends State<_MatchesList> {
           return const Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: Colors.black,
+              color: AppColors.primary,
             ),
           );
         }
@@ -299,7 +299,7 @@ class _MatchesListState extends State<_MatchesList> {
           return Center(
             child: Text(
               provider.error ?? 'Error loading profiles',
-              style: GoogleFonts.lato(color: Colors.red),
+              style: GoogleFonts.lato(color: AppColors.error),
             ),
           );
         }
@@ -340,7 +340,7 @@ class _MatchesListState extends State<_MatchesList> {
           child: RefreshIndicator(
             onRefresh: () => _refresh(context),
             edgeOffset: 20,
-            color: Colors.black,
+            color: AppColors.black,
             child: GridView.builder(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
               physics: const BouncingScrollPhysics(
@@ -396,10 +396,10 @@ class _ConnectionCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: Colors.white,
+              color: AppColors.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: AppColors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -426,7 +426,7 @@ class _ConnectionCard extends StatelessWidget {
                           stops: const [0.4, 1.0],
                           colors: [
                             Colors.transparent,
-                            Colors.black.withValues(alpha: 0.8),
+                            AppColors.black.withValues(alpha: 0.8),
                           ],
                         ),
                       ),
@@ -445,7 +445,7 @@ class _ConnectionCard extends StatelessWidget {
                           style: GoogleFonts.cormorantGaramond(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.textWhite,
                             height: 1.1,
                           ),
                           maxLines: 1,
@@ -487,7 +487,7 @@ class _ConnectionCard extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
@@ -495,7 +495,7 @@ class _ConnectionCard extends StatelessWidget {
                         style: GoogleFonts.lato(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black,
+                          color: AppColors.black,
                         ),
                       ),
                     ),
@@ -510,5 +510,5 @@ class _ConnectionCard extends StatelessWidget {
         .slideY(begin: 0.1, curve: Curves.easeOutCubic);
   }
 
-  Widget _placeholder() => Container(color: const Color(0xFFF0F0F0));
+  Widget _placeholder() => Container(color: AppColors.divider);
 }
