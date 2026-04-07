@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/onboarding/onboarding_flow_screen.dart';
 import 'package:mylifepartner/screens/otp_screen/otp_screen.dart';
@@ -12,6 +13,7 @@ import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/shared/widgets/auth_layout.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PasswordScreen extends StatefulWidget {
@@ -39,6 +41,14 @@ class _PasswordScreenState extends State<PasswordScreen> {
   bool _isLoading = false;
   bool _obscureText = true;
   bool _obscureConfirmText = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ImageAssetProvider>().loadAssets('ONBOARDING_SCREEN');
+    });
+  }
 
   @override
   void dispose() {
@@ -259,6 +269,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
     final bool isWeb = MediaQuery.of(context).size.width > 900;
     return AuthLayout(
       topImage: 'assets/images/landing_couple.png',
+      dynamicSection: 'ONBOARDING_SCREEN',
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Form(

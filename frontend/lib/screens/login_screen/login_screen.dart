@@ -2,8 +2,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:provider/provider.dart';
 
 import '../../shared/widgets/auth_layout.dart';
 import '../../shared/widgets/custom_button.dart';
@@ -21,6 +23,14 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final AuthRepository _authRepository = AuthRepository();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ImageAssetProvider>().loadAssets('ONBOARDING_SCREEN');
+    });
+  }
 
   @override
   void dispose() {
@@ -75,6 +85,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return AuthLayout(
       topImage: 'assets/images/landing_couple.png',
+      dynamicSection: 'ONBOARDING_SCREEN',
       child: LayoutBuilder(
         builder: (context, constraints) {
           // Check screen width for responsive text/style, matching AuthLayout breakpoint logic partially

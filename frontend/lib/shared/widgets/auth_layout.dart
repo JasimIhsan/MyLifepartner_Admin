@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/providers/image_asset_provider.dart';
+import 'package:provider/provider.dart';
 
 class AuthLayout extends StatelessWidget {
   final Widget child;
   final bool showLogo;
   final String? title;
   final String? topImage;
+  final String? dynamicSection;
 
   const AuthLayout({
     super.key,
@@ -14,6 +17,7 @@ class AuthLayout extends StatelessWidget {
     this.showLogo = true,
     this.title,
     this.topImage,
+    this.dynamicSection,
   });
 
   @override
@@ -113,7 +117,51 @@ class AuthLayout extends StatelessWidget {
       child: Stack(
         children: [
           // Background Image
-          if (topImage != null)
+          if (dynamicSection != null)
+             Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: size.height * 0.55,
+              child: Consumer<ImageAssetProvider>(
+                builder: (context, provider, _) {
+                  final state = provider.getState(dynamicSection!);
+                  final asset = provider.getFeaturedAsset(dynamicSection!);
+
+                  if (state == ImageAssetLoadState.loading) {
+                    return Container(
+                      color: Colors.grey[200],
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    );
+                  }
+
+                  if (asset != null) {
+                    return Image.network(
+                      asset.imageUrl,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    );
+                  }
+
+                  // Default Fallback
+                  if (topImage != null) {
+                    return Image.asset(
+                      topImage!,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    );
+                  }
+                  
+                  return Container(color: Colors.grey[100]);
+                },
+              ),
+            )
+          else if (topImage != null)
             Positioned(
               top: 0,
               left: 0,
@@ -137,7 +185,7 @@ class AuthLayout extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     // Gap to show the image
-                    if (topImage != null) SizedBox(height: size.height * 0.45),
+                    if (topImage != null || dynamicSection != null) SizedBox(height: size.height * 0.45),
 
                     // Main Sheet
                     Container(

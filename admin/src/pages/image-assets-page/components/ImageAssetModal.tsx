@@ -14,11 +14,11 @@ interface ImageAssetModalProps {
    asset: ImageAsset | null;
 }
 
-const SECTIONS = ["LANDING_PAGE", "BANNERS", "ADS", "ONBOARDING", "ICON"];
+const SECTIONS = ["BANNERS", "ADS", "ONBOARDING_SCREEN", "ICON"];
 
 export function ImageAssetModal({ isOpen, onClose, onSave, asset }: ImageAssetModalProps) {
    const [title, setTitle] = useState("");
-   const [section, setSection] = useState("LANDING_PAGE");
+   const [section, setSection] = useState("ONBOARDING_SCREEN");
    const [altText, setAltText] = useState("");
    const [redirectUrl, setRedirectUrl] = useState("");
    const [displayOrder, setDisplayOrder] = useState(0);
@@ -37,7 +37,7 @@ export function ImageAssetModal({ isOpen, onClose, onSave, asset }: ImageAssetMo
          setPreview(asset.imageUrl);
       } else {
          setTitle("");
-         setSection("LANDING_PAGE");
+         setSection("ONBOARDING_SCREEN");
          setAltText("");
          setRedirectUrl("");
          setDisplayOrder(0);

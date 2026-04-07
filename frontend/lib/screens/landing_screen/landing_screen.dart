@@ -21,7 +21,7 @@ class _LandingScreenState extends State<LandingScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ImageAssetProvider>().loadAssets('LANDING_PAGE');
+      context.read<ImageAssetProvider>().loadAssets('ONBOARDING_SCREEN');
     });
   }
 
@@ -37,20 +37,31 @@ class _LandingScreenState extends State<LandingScreen> {
       child: Scaffold(
         body: Consumer<ImageAssetProvider>(
           builder: (context, provider, child) {
-            final landingAsset = provider.getFeaturedAsset('LANDING_PAGE');
+            final state = provider.getState('ONBOARDING_SCREEN');
+            final landingAsset = provider.getFeaturedAsset('ONBOARDING_SCREEN');
 
             return Stack(
               children: [
-                // ─── Background Image ──────────────────────────────────────────
+                // ─── Background Image or Loader ──────────────────────────────────
                 Positioned.fill(
-                  child: landingAsset != null
-                      ? Image.network(
-                          landingAsset.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              _buildDefaultBackground(),
+                  child: state == ImageAssetLoadState.loading
+                      ? Container(
+                          color: Colors.white,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
+                          ),
                         )
-                      : _buildDefaultBackground(),
+                      : (landingAsset != null
+                            ? Image.network(
+                                landingAsset.imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    _buildDefaultBackground(),
+                              )
+                            : _buildDefaultBackground()),
                 ),
 
                 // ─── Gradient Overlay ──────────────────────────────────────────
@@ -77,7 +88,7 @@ class _LandingScreenState extends State<LandingScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Column(
                       children: [
-                        const SizedBox(height: 40),
+                        const SizedBox(height: 5),
                         // Logo Placeholder
                         _buildLogo(),
                         const Spacer(),
@@ -121,41 +132,35 @@ class _LandingScreenState extends State<LandingScreen> {
 
   Widget _buildLogo() {
     return Center(
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white10,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Image.asset(
-          'assets/icons/app_logo.png',
-          height: 60,
-          width: 60,
-          errorBuilder: (context, error, stackTrace) => const Icon(
-            Icons.favorite_rounded,
-            color: AppColors.primary,
-            size: 60,
-          ),
-        ),
-      )
-          .animate()
-          .fadeIn(duration: 800.ms)
-          .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack),
+      child:
+          Image.asset(
+                'assets/icons/app_logo.png',
+                height: 200,
+                width: 200,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.favorite_rounded,
+                  color: AppColors.primary,
+                  size: 100,
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 800.ms)
+              .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack),
     );
   }
 
   Widget _buildFeaturesRow() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildFeatureItem(
-          Icons.verified_user_outlined,
-          'Verified Profiles',
-        ),
-        _buildFeatureItem(Icons.favorite_outline_rounded, 'Real Love'),
-        _buildFeatureItem(Icons.lock_outline_rounded, 'Safe & Secure'),
-      ],
-    )
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildFeatureItem(
+              Icons.verified_user_outlined,
+              'Verified Profiles',
+            ),
+            _buildFeatureItem(Icons.favorite_outline_rounded, 'Real Love'),
+            _buildFeatureItem(Icons.lock_outline_rounded, 'Safe & Secure'),
+          ],
+        )
         .animate()
         .fadeIn(duration: 800.ms, delay: 400.ms)
         .slideY(begin: 0.2, end: 0);
@@ -183,28 +188,28 @@ class _LandingScreenState extends State<LandingScreen> {
     return Column(
       children: [
         Text(
-          'Life Partner Again',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontSize: 34,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-          ),
-        )
+              'Life Partner Again',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 34,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+              ),
+            )
             .animate()
             .fadeIn(duration: 800.ms, delay: 600.ms)
             .slideY(begin: 0.2, end: 0),
         const SizedBox(height: 12),
         Text(
-          'Start your next chapter together',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 18,
-            fontWeight: FontWeight.w300,
-          ),
-        )
+              'Start your next chapter together',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 18,
+                fontWeight: FontWeight.w300,
+              ),
+            )
             .animate()
             .fadeIn(duration: 800.ms, delay: 800.ms)
             .slideY(begin: 0.2, end: 0),
@@ -214,21 +219,21 @@ class _LandingScreenState extends State<LandingScreen> {
 
   Widget _buildCtaButton() {
     return CustomButton(
-      text: 'Get Started',
-      type: CustomButtonType.primary,
-      borderRadius: 50,
-      onPressed: () {
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (_, animation, __) => const SplashScreen(),
-            transitionsBuilder: (_, animation, __, child) =>
-                FadeTransition(opacity: animation, child: child),
-            transitionDuration: const Duration(milliseconds: 500),
-          ),
-        );
-      },
-    )
+          text: 'Get Started',
+          type: CustomButtonType.primary,
+          borderRadius: 50,
+          onPressed: () {
+            Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (_, animation, __) => const SplashScreen(),
+                transitionsBuilder: (_, animation, __, child) =>
+                    FadeTransition(opacity: animation, child: child),
+                transitionDuration: const Duration(milliseconds: 500),
+              ),
+            );
+          },
+        )
         .animate()
         .fadeIn(duration: 800.ms, delay: 1000.ms)
         .slideY(begin: 0.2, end: 0);

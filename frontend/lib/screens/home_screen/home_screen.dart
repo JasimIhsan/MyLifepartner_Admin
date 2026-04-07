@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
 
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
-      title: 'Life Partner Again',
+      // title: 'Life Partner Again',
       showLeading: false,
       actions: [
         IconButton(

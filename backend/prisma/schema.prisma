@@ -377,7 +377,7 @@ enum InteractionState {
 }
 
 enum ImageAssetsSection {
-  LANDING_PAGE
+  ONBOARDING_SCREEN
   BANNERS
   ADS
   ONBOARDING

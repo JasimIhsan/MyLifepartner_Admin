@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
 import 'package:mylifepartner/screens/password_screen/password_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/shared/widgets/auth_layout.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:provider/provider.dart';
 
 import 'widgets/otp_form.dart';
 
@@ -41,6 +43,9 @@ class _OtpPageState extends State<OtpPage> {
   void initState() {
     super.initState();
     _startTimer();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ImageAssetProvider>().loadAssets('ONBOARDING_SCREEN');
+    });
   }
 
   void _startTimer() {
@@ -151,6 +156,7 @@ class _OtpPageState extends State<OtpPage> {
   Widget build(BuildContext context) {
     return AuthLayout(
       topImage: 'assets/images/landing_couple.png',
+      dynamicSection: 'ONBOARDING_SCREEN',
       child: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWeb = MediaQuery.of(context).size.width > 900;

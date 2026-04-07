@@ -16,7 +16,7 @@ interface ImageAssetsTableProps {
    onSectionFilterChange: (value: string) => void;
 }
 
-const SECTIONS = ["LANDING_PAGE", "BANNERS", "ADS", "ONBOARDING", "ICON"];
+const SECTIONS = ["BANNERS", "ADS", "ONBOARDING_SCREEN", "ICON"];
 
 export function ImageAssetsTable({ data, isFetching, onAdd, onEdit, onDelete, sectionFilter, onSectionFilterChange }: ImageAssetsTableProps) {
    return (
