@@ -273,7 +273,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   // Step 1 — Marital status
   Widget _buildMaritalStep() {
     const options = [
-      ('Never Married', 'NEVER_MARRIED'),
       ('Divorced', 'DIVORCED'),
       ('Widowed', 'WIDOWED'),
       ('Legally Separated', 'LEGALLY_SEPARATED'),

@@ -560,7 +560,6 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
   Widget _buildMaritalStatusStep() {
     const options = [
-      ('Never Married', 'NEVER_MARRIED'),
       ('Divorced', 'DIVORCED'),
       ('Widowed', 'WIDOWED'),
       ('Legally Separated', 'LEGALLY_SEPARATED'),
@@ -685,17 +684,25 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   Widget _buildLanguagesStep() {
     const langs = [
       'English',
-      'Hindi',
-      'Malayalam',
-      'Tamil',
-      'German',
-      'Spanish',
-      'Arabic',
-      'Urdu',
-      'Bengali',
       'French',
+      'Spanish',
+      'German',
+      'Italian',
+      'Portuguese',
+      'Dutch',
       'Russian',
+      'Polish',
+      'Ukrainian',
+      'Romanian',
+      'Greek',
       'Turkish',
+      'Arabic',
+      'Punjabi',
+      'Mandarin Chinese',
+      'Cantonese',
+      'Tagalog',
+      'Persian',
+      'Urdu',
     ];
     final illustration = _gender == 'FEMALE'
         ? 'assets/images/onboarding/language_female.png'

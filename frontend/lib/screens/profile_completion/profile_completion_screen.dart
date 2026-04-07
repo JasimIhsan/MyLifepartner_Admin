@@ -289,10 +289,6 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   ),
                   items: const [
                     DropdownMenuItem(
-                      value: 'NEVER_MARRIED',
-                      child: Text('Never Married'),
-                    ),
-                    DropdownMenuItem(
                       value: 'AWATING_DIVORCE',
                       child: Text('Awaiting Divorce'),
                     ),
