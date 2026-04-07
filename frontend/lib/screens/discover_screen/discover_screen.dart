@@ -1,5 +1,5 @@
 import 'dart:ui';
-
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +7,7 @@ import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
+import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
 import 'package:mylifepartner/services/match_service.dart';
 import 'package:provider/provider.dart';
 
@@ -93,6 +94,17 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       await MatchService.swipe(targetProfileId: profile.id, action: action);
     } catch (e) {
       debugPrint("Action Failed: $e");
+      if (mounted && e is DioException && e.response?.statusCode == 402) {
+        showModalBottomSheet(
+          context: context,
+          backgroundColor: Colors.transparent,
+          isScrollControlled: true,
+          builder: (_) => InterestLimitBottomSheet(
+            message: e.response?.data?['message'] ??
+                'You have reached your interest limit. Upgrade your plan to send more interests!',
+          ),
+        );
+      }
     }
   }
 

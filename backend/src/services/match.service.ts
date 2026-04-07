@@ -75,7 +75,7 @@ export class MatchService implements IMatchService {
       const isAllowed = await this.userFeatureService.checkSwipeAccess(input.userId, input.action);
       console.log(`isAllowed : `, isAllowed);
       if (!isAllowed) {
-         throw new ApiError(403, "You have reached your interest limit. Upgrade your plan to send more interests!");
+         throw new ApiError(402, "You have reached your interest limit. Upgrade your plan to send more interests!");
       }
 
       await this.matchRepository.recordSwipe(input.userId, input.targetProfileId, input.action);

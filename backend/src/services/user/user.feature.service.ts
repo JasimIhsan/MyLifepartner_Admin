@@ -75,7 +75,7 @@ export class UserFeatureService implements IUserFeatureService {
       }
 
       if (features.interests >= features.maxInterests) {
-         throw new ApiError(403, "You have reached your interest limit. Upgrade your plan to send more interests!");
+         throw new ApiError(402, "You have reached your interest limit. Upgrade your plan to send more interests!");
       }
 
       await this.updateInterests(userId, 1);

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -418,15 +419,21 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       if (mounted) Navigator.pop(context);
                     } catch (e) {
                       if (mounted) {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          builder: (_) => InterestLimitBottomSheet(
-                            message: context.read<MatchProvider>().error ??
-                                'Unable to process skip at this moment.',
-                          ),
-                        );
+                        if (e is DioException && e.response?.statusCode == 402) {
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
+                            builder: (_) => InterestLimitBottomSheet(
+                              message: e.response?.data?['message'] ??
+                                  'Unable to process skip at this moment.',
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(context.read<MatchProvider>().error ?? 'Failed to skip')),
+                          );
+                        }
                       }
                     } finally {
                       if (mounted) setState(() => _isPassing = false);
@@ -460,15 +467,21 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       if (mounted) Navigator.pop(context);
                     } catch (e) {
                       if (mounted) {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          builder: (_) => InterestLimitBottomSheet(
-                            message: context.read<MatchProvider>().error ??
-                                'Unable to send interest at this moment.',
-                          ),
-                        );
+                        if (e is DioException && e.response?.statusCode == 402) {
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            isScrollControlled: true,
+                            builder: (_) => InterestLimitBottomSheet(
+                              message: e.response?.data?['message'] ??
+                                  'Unable to send interest at this moment.',
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(context.read<MatchProvider>().error ?? 'Failed to send interest')),
+                          );
+                        }
                       }
                     } finally {
                       if (mounted) setState(() => _isInterested = false);
