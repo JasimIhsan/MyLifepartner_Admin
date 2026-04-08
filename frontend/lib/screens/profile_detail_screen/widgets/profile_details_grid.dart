@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 
 class DetailItem {
@@ -62,7 +61,7 @@ class ProfileDetailsGrid extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: AppColors.inputBackground,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -112,37 +111,61 @@ class ProfileDetailsGrid extends StatelessWidget {
     final p = profile;
     final items = <DetailItem>[];
 
-    if (p['religion'] != null) {
-      items.add(DetailItem(Icons.auto_awesome_outlined, 'Religion',
-          p['religion']));
-    }
+    // if (p['religion'] != null) {
+    //   items.add(
+    //     DetailItem(Icons.auto_awesome_outlined, 'Religion', p['religion']),
+    //   );
+    // }
     if (p['motherTongue'] != null) {
-      items.add(DetailItem(Icons.translate_rounded, 'Mother Tongue',
-          p['motherTongue']));
+      items.add(
+        DetailItem(Icons.translate_rounded, 'Language', p['motherTongue']),
+      );
     }
     if (p['heightCm'] != null) {
-      items.add(DetailItem(Icons.straighten_rounded, 'Height',
-          _formatHeight(p['heightCm'])));
+      items.add(
+        DetailItem(
+          Icons.straighten_rounded,
+          'Height',
+          _formatHeight(p['heightCm']),
+        ),
+      );
     }
     if (p['maritalStatus'] != null) {
-      items.add(DetailItem(Icons.favorite_border, 'Marital Status',
-          _formatEnum(p['maritalStatus'])));
+      items.add(
+        DetailItem(
+          Icons.favorite_border,
+          'Marital Status',
+          _formatEnum(p['maritalStatus']),
+        ),
+      );
     }
     if (p['highestEducation'] != null) {
-      items.add(DetailItem(Icons.school_outlined, 'Education',
-          p['highestEducation']));
+      items.add(
+        DetailItem(Icons.school_outlined, 'Education', p['highestEducation']),
+      );
     }
     if (p['occupation'] != null) {
-      items.add(DetailItem(Icons.work_outline_rounded, 'Occupation',
-          p['occupation']));
+      items.add(
+        DetailItem(Icons.work_outline_rounded, 'Occupation', p['occupation']),
+      );
     }
-    if (p['annualIncome'] != null) {
-      items.add(DetailItem(Icons.account_balance_wallet_outlined,
-          'Annual Income', '₹${_formatIncome(p['annualIncome'])}'));
-    }
+    // if (p['annualIncome'] != null) {
+    //   items.add(
+    //     DetailItem(
+    //       Icons.account_balance_wallet_outlined,
+    //       'Annual Income',
+    //       '₹${_formatIncome(p['annualIncome'])}',
+    //     ),
+    //   );
+    // }
     if (p['gender'] != null) {
-      items.add(DetailItem(Icons.person_outline_rounded, 'Gender',
-          _formatEnum(p['gender'])));
+      items.add(
+        DetailItem(
+          Icons.person_outline_rounded,
+          'Gender',
+          _formatEnum(p['gender']),
+        ),
+      );
     }
     if (p['country'] != null) {
       items.add(DetailItem(Icons.public_rounded, 'Country', p['country']));
@@ -162,19 +185,20 @@ class ProfileDetailsGrid extends StatelessWidget {
         .replaceAll('_', ' ')
         .toLowerCase()
         .split(' ')
-        .map((w) =>
-            w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
         .join(' ');
   }
 
-  String _formatIncome(int amount) {
-    if (amount >= 10000000) {
-      return '${(amount / 10000000).toStringAsFixed(1)} Cr';
-    }
-    if (amount >= 100000) {
-      return '${(amount / 100000).toStringAsFixed(1)} L';
-    }
-    if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)} K';
-    return amount.toString();
-  }
+  // String _formatIncome(int amount) {
+  //   if (amount >= 10000000) {
+  //     return '${(amount / 10000000).toStringAsFixed(1)} Cr';
+  //   }
+  //   if (amount >= 100000) {
+  //     return '${(amount / 100000).toStringAsFixed(1)} L';
+  //   }
+  //   if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)} K';
+  //   return amount.toString();
+  // }
 }

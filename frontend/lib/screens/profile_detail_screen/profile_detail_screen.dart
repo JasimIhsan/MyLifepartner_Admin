@@ -172,15 +172,17 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           height: 300,
           color: AppColors.primaryLight,
           child: const Center(
-            child: Icon(Icons.person_rounded, size: 80, color: Color(0xFFCCCCCC)),
+            child: Icon(
+              Icons.person_rounded,
+              size: 80,
+              color: Color(0xFFCCCCCC),
+            ),
           ),
         ),
       );
     }
 
-    return SliverToBoxAdapter(
-      child: _HeaderCarousel(images: images),
-    );
+    return SliverToBoxAdapter(child: _HeaderCarousel(images: images));
   }
 
   Widget _buildBackButton() {
@@ -325,7 +327,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: AppColors.inputBackground,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Text(
@@ -737,15 +739,17 @@ class _HeaderCarouselState extends State<_HeaderCarousel> {
     if (url == null) return;
 
     final image = NetworkImage(url);
-    image.resolve(const ImageConfiguration()).addListener(
-      ImageStreamListener((ImageInfo info, bool _) {
-        if (mounted) {
-          setState(() {
-            _aspectRatio = info.image.width / info.image.height;
-          });
-        }
-      }),
-    );
+    image
+        .resolve(const ImageConfiguration())
+        .addListener(
+          ImageStreamListener((ImageInfo info, bool _) {
+            if (mounted) {
+              setState(() {
+                _aspectRatio = info.image.width / info.image.height;
+              });
+            }
+          }),
+        );
   }
 
   @override
@@ -770,7 +774,8 @@ class _HeaderCarouselState extends State<_HeaderCarousel> {
                 itemBuilder: (_, i) {
                   final img = images[i] as Map<String, dynamic>;
                   final url = img['imageUrl'] as String?;
-                  if (url == null) return Container(color: AppColors.primaryLight);
+                  if (url == null)
+                    return Container(color: AppColors.primaryLight);
 
                   return Image.network(
                     url,
