@@ -728,13 +728,13 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         _buildIllustration('assets/images/onboarding/children.png'),
         const SizedBox(height: 32),
         _selectionTile(
-          label: 'Yes — living with me',
+          label: 'Yes, living with me',
           value: 'LIVING_WITH_ME',
           selectedValue: _childrenStatus,
           onTap: () => setState(() => _childrenStatus = 'LIVING_WITH_ME'),
         ),
         _selectionTile(
-          label: 'Yes — not living with me',
+          label: 'Yes, not living with me',
           value: 'NOT_LIVING_WITH_ME',
           selectedValue: _childrenStatus,
           onTap: () => setState(() => _childrenStatus = 'NOT_LIVING_WITH_ME'),
