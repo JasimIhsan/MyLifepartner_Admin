@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color black = Colors.black;
+  static const Color black = Color(0xFF000000);
 
-  // Primary Brand Colors - Reddish-Pink
-  static const Color primary = Color(0xFFE91E63);
-  static const Color primaryDark = Color(0xFFC2185B);
-  static const Color primaryLight = Color(0xFFF8BBD0);
+  // Primary Brand Colors - Solid Red
+  static const Color primary = Color(0xFFFF3F3F);
+  static const Color primaryDark = Color(0xFFD63434); // Adjusted for contrast if needed
+  static const Color primaryLight = Color(0xFFFF7A7A);
 
   // Accent Colors
-  static const Color accent = Color(0xFFFF4081);
+  static const Color accent = Color(0xFFFF3F3F);
 
   // Background Colors
-  static const Color background = Colors.white;
+  static const Color background = Color(0xFFF2F2F2);
   static const Color surface = Colors.white;
-  static const Color inputBackground = Color(0xFFF8F8F8);
+  static const Color inputBackground = Color(0xFFEAEAEA);
 
   // Text Colors
-  static const Color textPrimary = Color(0xFF212121);
-  static const Color textSecondary = Color(0xFF757575);
-  static const Color textLight = Color(0xFF9E9E9E);
+  static const Color textPrimary = Color(0xFF000000);
+  static const Color textSecondary = Color(0xFF555555);
+  static const Color textLight = Color(0xFF777777);
   static const Color textWhite = Colors.white;
   static const Color onPrimary = Colors.white;
 
@@ -28,8 +28,8 @@ class AppColors {
   static const Color success = Color(0xFF388E3C);
 
   // UI Elements
-  static const Color divider = Color(0xFFEEEEEE);
-  static const Color unselectedIcon = Color(0xFFBDBDBD);
+  static const Color divider = Color(0xFFEAEAEA);
+  static const Color unselectedIcon = Color(0xFF777777);
   static const Color shadowColor = Color(0x1F000000);
-  static const Color borderColor = Color(0xFFE0E0E0);
+  static const Color borderColor = Color(0xFFEAEAEA);
 }
