@@ -20,19 +20,26 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   int _currentStep = 0;
   bool _goingForward = true;
 
-  // Step 0 : Age range
-  // Step 1 : Marital status open to
-  // Step 2 : Education preference
-  // Step 3 : Occupation / industry preference
-  // Step 4 : Languages preference
-  static const int _totalSteps = 5;
+  // Total steps updated to 6 to match the active steps
+  static const int _totalSteps = 6;
 
   // Data
   RangeValues _ageRange = const RangeValues(25, 45);
+  RangeValues _heightRange = const RangeValues(150, 185);
   final List<String> _maritalStatus = [];
   final List<String> _education = [];
   final List<String> _occupation = [];
   final List<String> _languages = [];
+
+  bool get _isCurrentStepValid {
+    switch (_currentStep) {
+      case 1: return _maritalStatus.isNotEmpty;
+      case 2: return _education.isNotEmpty;
+      case 3: return _occupation.isNotEmpty;
+      case 4: return _languages.isNotEmpty;
+      default: return true;
+    }
+  }
 
   void _next() {
     if (_currentStep < _totalSteps - 1) {
@@ -60,14 +67,16 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
       await _profileRepo.updatePartnerPreference({
         'ageFrom': _ageRange.start.round(),
         'ageTo': _ageRange.end.round(),
+        'heightFrom': _heightRange.start.round(),
+        'heightTo': _heightRange.end.round(),
+        // 'annualIncomeFrom': _incomeRange.start.round(),
+        // 'annualIncomeTo': _incomeRange.end.round(),
         'maritalStatus': _maritalStatus,
         'highestEducation': _education,
         'occupation': _occupation,
-        'motherTongue': _languages, // reused as languages
+        // 'religion': _religion,
+        'motherTongue': _languages,
       });
-
-      // final sharedPrefs = await SharedPreferences.getInstance();
-      // await sharedPrefs.setBool("hasCompletedPartnerPreference", true);
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -133,7 +142,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     );
   }
 
-  // Pill chip — used for multi-select lists
   Widget _chip(
     String label,
     String value,
@@ -174,7 +182,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
 
   // ─── Steps ────────────────────────────────────────────────────────────────
 
-  // Step 0 — Age range
   Widget _buildAgeStep() {
     return _PrefStepContainer(
       key: const ValueKey(0),
@@ -186,96 +193,37 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             subtitle: "Drag the slider to set your preference.",
           ),
           const SizedBox(height: 48),
-
-          // Age labels
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _ageLabel('From', _ageRange.start.round()),
-                _ageLabel('To', _ageRange.end.round()),
+                _labelWithSuffix('From', _ageRange.start.round(), 'yrs'),
+                _labelWithSuffix('To', _ageRange.end.round(), 'yrs'),
               ],
             ),
           ),
           const SizedBox(height: 20),
-
-          SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 4,
-              activeTrackColor: AppColors.primary,
-              inactiveTrackColor: AppColors.borderColor,
-              thumbColor: AppColors.primary,
-              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 12),
-              overlayShape: const RoundSliderOverlayShape(overlayRadius: 22),
-              rangeThumbShape: const RoundRangeSliderThumbShape(
-                enabledThumbRadius: 12,
-              ),
-            ),
-            child: RangeSlider(
-              values: _ageRange,
-              min: 18,
-              max: 80,
-              divisions: 62,
-              onChanged: (v) => setState(() => _ageRange = v),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '18',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              Text(
-                '80',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ],
+          _customRangeSlider(
+            values: _ageRange,
+            min: 18,
+            max: 80,
+            divisions: 62,
+            onChanged: (v) => setState(() => _ageRange = v),
           ),
         ],
       ),
     );
   }
 
-  Widget _ageLabel(String label, int value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          '$value yrs',
-          style: GoogleFonts.poppins(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Step 1 — Marital status
   Widget _buildMaritalStep() {
     const options = [
+      ('Never Married', 'NEVER_MARRIED'),
       ('Divorced', 'DIVORCED'),
       ('Widowed', 'WIDOWED'),
+      ('Annulled', 'ANNULLED'),
       ('Legally Separated', 'LEGALLY_SEPARATED'),
+      ('Awaiting Divorce', 'AWATING_DIVORCE'),
     ];
     return _PrefStepContainer(
       key: const ValueKey(1),
@@ -284,7 +232,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         children: [
           _stepHeader(
             "Which background are you open to?",
-            subtitle: "Select all that apply. Leave blank for any.",
+            subtitle: "Select at least one option.",
           ),
           const SizedBox(height: 32),
           Wrap(
@@ -306,7 +254,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     );
   }
 
-  // Step 2 — Education
   Widget _buildEducationStep() {
     const options = [
       ('High School', 'HIGH_SCHOOL'),
@@ -325,7 +272,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         children: [
           _stepHeader(
             "What education level do you prefer?",
-            subtitle: "Leave blank to be open to all.",
+            subtitle: "Select at least one option.",
           ),
           const SizedBox(height: 32),
           Wrap(
@@ -347,7 +294,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     );
   }
 
-  // Step 3 — Occupation
   Widget _buildOccupationStep() {
     const options = [
       ('Technology / IT', 'Technology / IT'),
@@ -370,7 +316,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         children: [
           _stepHeader(
             "Any industry preference?",
-            subtitle: "Leave blank to be open to all.",
+            subtitle: "Select at least one option.",
           ),
           const SizedBox(height: 32),
           Wrap(
@@ -392,29 +338,28 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     );
   }
 
-  // Step 4 — Languages
   Widget _buildLanguagesStep() {
     const langs = [
       'English',
-      'Arabic',
-      'Hindi',
-      'Urdu',
-      'Bengali',
-      'Mandarin',
-      'Spanish',
       'French',
-      'Portuguese',
-      'Russian',
+      'Spanish',
       'German',
-      'Japanese',
-      'Korean',
-      'Turkish',
       'Italian',
-      'Malay',
-      'Swahili',
+      'Portuguese',
+      'Dutch',
+      'Russian',
+      'Polish',
+      'Ukrainian',
+      'Romanian',
+      'Greek',
+      'Turkish',
+      'Arabic',
       'Punjabi',
-      'Tamil',
-      'Other',
+      'Mandarin Chinese',
+      'Cantonese',
+      'Tagalog',
+      'Persian',
+      'Urdu',
     ];
     return _PrefStepContainer(
       key: const ValueKey(4),
@@ -423,7 +368,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         children: [
           _stepHeader(
             "Any language preference?",
-            subtitle: "Leave blank to be open to all.",
+            subtitle: "Select at least one option.",
           ),
           const SizedBox(height: 32),
           Wrap(
@@ -440,6 +385,155 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     );
   }
 
+  // Widget _buildReligionStep() {
+  //   const options = [
+  //     'Islam',
+  //     'Hinduism',
+  //     'Christianity',
+  //     'Sikhism',
+  //     'Buddhism',
+  //     'Jainism',
+  //     'Other',
+  //   ];
+  //   return _PrefStepContainer(
+  //     key: const ValueKey(5),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         _stepHeader(
+  //           "What is your religious preference?",
+  //           subtitle: "Select at least one option.",
+  //         ),
+  //         const SizedBox(height: 32),
+  //         Wrap(
+  //           spacing: 10,
+  //           runSpacing: 10,
+  //           children: options
+  //               .map((r) => _chip(r, r, _religion, () => _toggle(_religion, r)))
+  //               .toList(),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  Widget _buildHeightStep() {
+    return _PrefStepContainer(
+      key: const ValueKey(6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _stepHeader(
+            "What height range do you prefer?",
+            subtitle: "Drag the slider to set your preference.",
+          ),
+          const SizedBox(height: 48),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _labelWithSuffix('Min', _heightRange.start.round(), 'cm'),
+                _labelWithSuffix('Max', _heightRange.end.round(), 'cm'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          _customRangeSlider(
+            values: _heightRange,
+            min: 120,
+            max: 220,
+            divisions: 100,
+            onChanged: (v) => setState(() => _heightRange = v),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Widget _buildIncomeStep() {
+  //   return _PrefStepContainer(
+  //     key: const ValueKey(7),
+  //     child: Column(
+  //       crossAxisAlignment: CrossAxisAlignment.start,
+  //       children: [
+  //         _stepHeader(
+  //           "Any annual income preference?",
+  //           subtitle: "Values are in Lakhs per annum.",
+  //         ),
+  //         const SizedBox(height: 48),
+  //         Padding(
+  //           padding: const EdgeInsets.symmetric(horizontal: 4),
+  //           child: Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               _labelWithSuffix('Min', _incomeRange.start.round(), 'L'),
+  //               _labelWithSuffix('Max', _incomeRange.end.round(), 'L'),
+  //             ],
+  //           ),
+  //         ),
+  //         const SizedBox(height: 20),
+  //         _customRangeSlider(
+  //           values: _incomeRange,
+  //           min: 0,
+  //           max: 200,
+  //           divisions: 40,
+  //           onChanged: (v) => setState(() => _incomeRange = v),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+  Widget _labelWithSuffix(String label, int value, String suffix) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$value $suffix',
+          style: GoogleFonts.poppins(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _customRangeSlider({
+    required RangeValues values,
+    required double min,
+    required double max,
+    required int divisions,
+    required ValueChanged<RangeValues> onChanged,
+  }) {
+    return SliderTheme(
+      data: SliderTheme.of(context).copyWith(
+        trackHeight: 4,
+        activeTrackColor: AppColors.primary,
+        inactiveTrackColor: AppColors.borderColor,
+        thumbColor: AppColors.primary,
+        rangeThumbShape: const RoundRangeSliderThumbShape(
+          enabledThumbRadius: 10,
+        ),
+        overlayColor: AppColors.primary,
+      ),
+      child: RangeSlider(
+        values: values,
+        min: min,
+        max: max,
+        divisions: divisions,
+        onChanged: onChanged,
+      ),
+    );
+  }
+
   Widget _buildCurrentStep() {
     switch (_currentStep) {
       case 0:
@@ -452,6 +546,12 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         return _buildOccupationStep();
       case 4:
         return _buildLanguagesStep();
+      // case 5:
+      //   return _buildReligionStep();
+      case 5:
+        return _buildHeightStep();
+      // case 6:
+      //   return _buildIncomeStep();
       default:
         return const SizedBox();
     }
@@ -464,7 +564,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        scrolledUnderElevation: 0,
         leading: _currentStep > 0
             ? IconButton(
                 icon: const Icon(
@@ -476,9 +575,9 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
               )
             : const SizedBox.shrink(),
         actions: [
-          TextButton(
+          IconButton(
             onPressed: _logout,
-            child: const Icon(
+            icon: const Icon(
               Icons.logout,
               color: AppColors.textSecondary,
               size: 20,
@@ -487,30 +586,22 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         ],
       ),
       body: SafeArea(
-        top: false,
         child: Column(
           children: [
-            // Progress bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 4, 24, 0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: (_currentStep + 1) / _totalSteps,
-                  backgroundColor: AppColors.borderColor,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.primary,
-                  ),
-                  minHeight: 4,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: LinearProgressIndicator(
+                value: (_currentStep + 1) / _totalSteps,
+                backgroundColor: AppColors.borderColor,
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.primary,
                 ),
+                minHeight: 4,
               ),
             ),
-            const SizedBox(height: 4),
-
-            // Step content
             Expanded(
               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
+                duration: const Duration(milliseconds: 300),
                 switchInCurve: Curves.easeOut,
                 switchOutCurve: Curves.easeIn,
                 transitionBuilder: (child, animation) {
@@ -528,33 +619,24 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
                 child: _buildCurrentStep(),
               ),
             ),
-
-            // Button
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+              padding: const EdgeInsets.all(24),
               child: SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: _isLoading ? null : _next,
+                  onPressed: (_isLoading || !_isCurrentStepValid)
+                      ? null
+                      : _next,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
                     disabledBackgroundColor: AppColors.borderColor,
-                    elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
                           _currentStep == _totalSteps - 1
                               ? 'Finish'
@@ -562,6 +644,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
+                            color: Colors.white,
                           ),
                         ),
                 ),
@@ -574,7 +657,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   }
 }
 
-// ── Step container ────────────────────────────────────────────────────────────
 class _PrefStepContainer extends StatelessWidget {
   final Widget child;
   const _PrefStepContainer({required super.key, required this.child});
