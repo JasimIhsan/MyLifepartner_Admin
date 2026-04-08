@@ -1,8 +1,8 @@
 import 'dart:ui';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -100,7 +100,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           backgroundColor: Colors.transparent,
           isScrollControlled: true,
           builder: (_) => InterestLimitBottomSheet(
-            message: e.response?.data?['message'] ??
+            message:
+                e.response?.data?['message'] ??
                 'You have reached your interest limit. Upgrade your plan to send more interests!',
           ),
         );
@@ -449,8 +450,8 @@ class _ProfileBrowserCard extends StatelessWidget {
           _buildInfoRow(Icons.work_outline_rounded, profile.occupation!),
         if (profile.city != null)
           _buildInfoRow(Icons.location_on_outlined, profile.city!),
-        if (profile.religion != null)
-          _buildInfoRow(Icons.star_border_rounded, profile.religion!),
+        // if (profile.religion != null)
+        //   _buildInfoRow(Icons.star_border_rounded, profile.religion!),
       ],
     );
   }
@@ -476,16 +477,16 @@ class _ProfileBrowserCard extends StatelessWidget {
   }
 
   Widget _placeholder({bool showLoading = false}) => Container(
-        color: const Color(0xFFF2F2F2),
-        child: showLoading
-            ? const Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: AppColors.primary,
-                ),
-              )
-            : null,
-      );
+    color: const Color(0xFFF2F2F2),
+    child: showLoading
+        ? const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          )
+        : null,
+  );
 }
 
 class _SideNavigationButton extends StatelessWidget {
@@ -503,62 +504,69 @@ class _SideNavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.only(left: isLeft ? 10 : 0, right: !isLeft ? 10 : 0),
-        width: 54,
-        height: 54,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withValues(alpha: 0.35),
-              Colors.white.withValues(alpha: 0.1),
-            ],
-          ),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.45),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 25,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: ClipOval(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
-              ),
-              child: Center(
-                child: Icon(
-                  icon,
-                  color: Colors.white,
-                  size: 30,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 10,
+      child:
+          Container(
+                margin: EdgeInsets.only(
+                  left: isLeft ? 10 : 0,
+                  right: !isLeft ? 10 : 0,
+                ),
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.white.withValues(alpha: 0.35),
+                      Colors.white.withValues(alpha: 0.1),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.45),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.15),
+                      blurRadius: 25,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
+                child: ClipOval(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          icon,
+                          color: Colors.white,
+                          size: 30,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 800.ms)
+              .scale(
+                begin: const Offset(0.8, 0.8),
+                end: const Offset(1.0, 1.0),
+                curve: Curves.elasticOut,
+                duration: 1000.ms,
               ),
-            ),
-          ),
-        ),
-      ).animate().fadeIn(duration: 800.ms).scale(
-            begin: const Offset(0.8, 0.8),
-            end: const Offset(1.0, 1.0),
-            curve: Curves.elasticOut,
-            duration: 1000.ms,
-          ),
     );
   }
 }
