@@ -131,7 +131,11 @@ class _HomePageState extends State<HomePage> {
 
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
-      // title: 'Life Partner Again',
+      titleWidget: Image.asset(
+        'assets/icons/app_logo.png',
+        height: 40,
+        fit: BoxFit.contain,
+      ),
       showLeading: false,
       actions: [
         IconButton(
@@ -141,13 +145,13 @@ class _HomePageState extends State<HomePage> {
           ),
           onPressed: () {},
         ),
-        IconButton(
-          icon: const Icon(
-            Icons.exit_to_app_outlined,
-            color: AppColors.textPrimary,
-          ),
-          onPressed: _logout,
-        ),
+        // IconButton(
+        //   icon: const Icon(
+        //     Icons.exit_to_app_outlined,
+        //     color: AppColors.textPrimary,
+        //   ),
+        //   onPressed: _logout,
+        // ),
       ],
     );
   }
