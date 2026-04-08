@@ -361,6 +361,10 @@ class _ProfileBrowserCard extends StatelessWidget {
               ? Image.network(
                   _imageUrl!,
                   fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return _placeholder(showLoading: true);
+                  },
                   errorBuilder: (_, __, ___) => _placeholder(),
                 )
               : _placeholder(),
@@ -471,7 +475,17 @@ class _ProfileBrowserCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(color: const Color(0xFFF2F2F2));
+  Widget _placeholder({bool showLoading = false}) => Container(
+        color: const Color(0xFFF2F2F2),
+        child: showLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              )
+            : null,
+      );
 }
 
 class _SideNavigationButton extends StatelessWidget {
