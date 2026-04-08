@@ -50,6 +50,7 @@ export class MatchRepository implements IMatchRepository {
             user: {
                isBlocked: false,
                isDeleted: false,
+               isVerified: true,
                id: { not: currentUserId },
             },
             ...(targetGender && { gender: { in: targetGender.in as ("MALE" | "FEMALE" | "OTHER")[] } }),
@@ -64,6 +65,7 @@ export class MatchRepository implements IMatchRepository {
                   profileSwipes: {
                      where: currentUser?.profile?.id ? { targetProfileId: currentUser.profile.id } : { id: -1 },
                   },
+                  isVerified: true,
                },
             },
          },
@@ -73,6 +75,7 @@ export class MatchRepository implements IMatchRepository {
          id: p.id,
          userId: p.userId,
          name: p.name,
+         isVerified: p.user.isVerified,
          dateOfBirth: p.dateOfBirth,
          heightCm: p.heightCm,
          maritalStatus: p.maritalStatus,
@@ -116,6 +119,7 @@ export class MatchRepository implements IMatchRepository {
          include: {
             targetProfile: {
                include: {
+                  user: { select: { isVerified: true } },
                   images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
                   answers: { select: { questionId: true, answer: true, score: true } },
                },
@@ -127,6 +131,7 @@ export class MatchRepository implements IMatchRepository {
          id: s.targetProfile.id,
          userId: s.targetProfile.userId,
          name: s.targetProfile.name,
+         isVerified: s.targetProfile.user.isVerified,
          dateOfBirth: s.targetProfile.dateOfBirth,
          heightCm: s.targetProfile.heightCm,
          maritalStatus: s.targetProfile.maritalStatus,
@@ -269,6 +274,7 @@ export class MatchRepository implements IMatchRepository {
          id: p.id,
          userId: p.userId,
          name: p.name,
+         isVerified: p.user.isVerified,
          dateOfBirth: p.dateOfBirth,
          heightCm: p.heightCm,
          maritalStatus: p.maritalStatus,

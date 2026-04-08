@@ -68,6 +68,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       'religion': s.religion,
       'occupation': s.occupation,
       'heightCm': s.heightCm,
+      'isVerified': s.isVerified,
       'matchPercentage': s.matchPercentage,
       'compatibilityHighlights': s.compatibilityHighlights,
       'interactionState': s.interactionState,
@@ -221,14 +222,26 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                '${p['name'] ?? 'Unknown'}, ${p['age'] ?? ''}',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.5,
-                ),
+              Row(
+                children: [
+                  Text(
+                    '${p['name'] ?? 'Unknown'}, ${p['age'] ?? ''}',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  if (p['isVerified'] == true) ...[
+                    const SizedBox(width: 8),
+                    Image.asset(
+                      'assets/icons/verified_icon.png',
+                      width: 22,
+                      height: 22,
+                    ),
+                  ],
+                ],
               ),
               if (p['city'] != null || p['state'] != null)
                 Padding(

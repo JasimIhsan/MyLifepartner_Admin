@@ -1,16 +1,17 @@
 import { SwipeAction } from "@prisma/client";
 
 export enum InteractionState {
-  NONE = "NONE",
-  INTEREST_SENT = "INTEREST_SENT",
-  INTEREST_RECEIVED = "INTEREST_RECEIVED",
-  MATCHED = "MATCHED",
+   NONE = "NONE",
+   INTEREST_SENT = "INTEREST_SENT",
+   INTEREST_RECEIVED = "INTEREST_RECEIVED",
+   MATCHED = "MATCHED",
 }
 
 export interface MatchRecommendationItem {
    id: number;
    name: string;
    age: number;
+   isVerified: boolean;
    heightCm: number | null;
    city: string | null;
    religion: string | null;

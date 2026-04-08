@@ -33,6 +33,7 @@ class MatchRecommendation {
   final int id;
   final String name;
   final int age;
+  final bool isVerified;
   final int? heightCm;
   final String? city;
   final String? religion;
@@ -46,6 +47,7 @@ class MatchRecommendation {
     required this.id,
     required this.name,
     required this.age,
+    required this.isVerified,
     this.heightCm,
     this.city,
     this.religion,
@@ -60,6 +62,7 @@ class MatchRecommendation {
     return MatchRecommendation(
       id: json['id'] as int,
       name: json['name'] as String,
+      isVerified: json['isVerified'] as bool,
       age: json['age'] as int,
       heightCm: json['heightCm'] as int?,
       city: json['city'] as String?,

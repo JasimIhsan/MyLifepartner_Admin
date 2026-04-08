@@ -440,16 +440,30 @@ class _ConnectionCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          '${profile.name}, ${profile.age}',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textWhite,
-                            height: 1.1,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${profile.name}, ${profile.age}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textWhite,
+                                  height: 1.1,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (profile.isVerified) ...[
+                              const SizedBox(width: 4),
+                              Image.asset(
+                                'assets/icons/verified_icon.png',
+                                width: 14,
+                                height: 14,
+                              ),
+                            ],
+                          ],
                         ),
                         if (profile.city != null) ...[
                           const SizedBox(height: 2),

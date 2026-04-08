@@ -436,14 +436,26 @@ class _ProfileBrowserCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '${profile.name}, ${profile.age}',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: -0.5,
-          ),
+        Row(
+          children: [
+            Text(
+              '${profile.name}, ${profile.age}',
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
+            ),
+            if (profile.isVerified) ...[
+              const SizedBox(width: 8),
+              Image.asset(
+                'assets/icons/verified_icon.png',
+                width: 24,
+                height: 24,
+              ),
+            ],
+          ],
         ),
         const SizedBox(height: 4),
         if (profile.occupation != null)

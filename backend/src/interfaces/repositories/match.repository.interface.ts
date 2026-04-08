@@ -19,6 +19,7 @@ export interface CandidateProfile {
    interactionState?: InteractionState;
    userId: number;
    name: string | null;
+   isVerified: boolean;
    dateOfBirth: Date | null;
    heightCm: number | null;
    maritalStatus: string | null;
