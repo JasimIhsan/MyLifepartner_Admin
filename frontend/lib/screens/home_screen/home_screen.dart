@@ -4,7 +4,6 @@ import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
 import 'package:mylifepartner/screens/discover_screen/discover_screen.dart';
 import 'package:mylifepartner/screens/likes_screen/likes_screen.dart';
-import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
@@ -12,7 +11,6 @@ import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -94,17 +92,17 @@ class _HomePageState extends State<HomePage> {
 
   // ─── Navigation helpers ────────────────────────────────────────────────────
 
-  Future<void> _logout() async {
-    final sharedPrefs = await SharedPreferences.getInstance();
-    sharedPrefs.clear();
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginPage()),
-        ModalRoute.withName('/'),
-      );
-    }
-  }
+  // Future<void> _logout() async {
+  //   final sharedPrefs = await SharedPreferences.getInstance();
+  //   sharedPrefs.clear();
+  //   if (mounted) {
+  //     Navigator.pushAndRemoveUntil(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => const LoginPage()),
+  //       ModalRoute.withName('/'),
+  //     );
+  //   }
+  // }
 
   void _onTabTapped(int index) {
     setState(() => _selectedIndex = index);

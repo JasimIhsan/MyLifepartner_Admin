@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -73,16 +72,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       'compatibilityHighlights': s.compatibilityHighlights,
       'interactionState': s.interactionState,
       'images': s.images
-          .map((img) => {
-                'imageUrl': img.imageUrl,
-                'isPrimary': img.isPrimary,
-              })
+          .map((img) => {'imageUrl': img.imageUrl, 'isPrimary': img.isPrimary})
           .toList(),
     };
   }
 
-  bool get _hasSeedOrApi =>
-      widget.seedProfile != null || _apiProfile != null;
+  bool get _hasSeedOrApi => widget.seedProfile != null || _apiProfile != null;
 
   // ─── Build ─────────────────────────────────────────────────────────────────
 
@@ -100,19 +95,15 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: _buildBody(),
-    );
+    return Scaffold(backgroundColor: AppColors.background, body: _buildBody());
   }
 
   Widget _buildBody() {
     final p = _resolvedProfile;
     final images = (p['images'] as List<dynamic>? ?? []);
-    final highlights =
-        (p['compatibilityHighlights'] as List<dynamic>? ?? [])
-            .map((e) => e.toString())
-            .toList();
+    final highlights = (p['compatibilityHighlights'] as List<dynamic>? ?? [])
+        .map((e) => e.toString())
+        .toList();
 
     return Stack(
       children: [
@@ -145,8 +136,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     ProfileDetailsGrid(profile: p),
                     const SizedBox(height: 20),
                     if (images.isNotEmpty) ...[
-                      _buildSectionLabel(
-                          'Photos (${images.length})'),
+                      _buildSectionLabel('Photos (${images.length})'),
                       const SizedBox(height: 12),
                       _BodyPhotoCarousel(images: images),
                       const SizedBox(height: 20),
@@ -168,12 +158,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         ),
 
         // Fixed bottom action bar
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: _buildActionBar(p),
-        ),
+        Positioned(bottom: 0, left: 0, right: 0, child: _buildActionBar(p)),
       ],
     );
   }
@@ -181,27 +166,20 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   // ─── Header (image carousel as sliver) ────────────────────────────────────
 
   Widget _buildSliverHeader(List<dynamic> images) {
-    return SliverAppBar(
-      expandedHeight: 420,
-      pinned: false,
-      snap: false,
-      floating: false,
-      automaticallyImplyLeading: false,
-      backgroundColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
-        background: images.isNotEmpty
-            ? _HeaderCarousel(images: images)
-            : Container(
-                color: AppColors.primaryLight,
-                child: const Center(
-                  child: Icon(
-                    Icons.person_rounded,
-                    size: 80,
-                    color: Color(0xFFCCCCCC),
-                  ),
-                ),
-              ),
-      ),
+    if (images.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Container(
+          height: 300,
+          color: AppColors.primaryLight,
+          child: const Center(
+            child: Icon(Icons.person_rounded, size: 80, color: Color(0xFFCCCCCC)),
+          ),
+        ),
+      );
+    }
+
+    return SliverToBoxAdapter(
+      child: _HeaderCarousel(images: images),
     );
   }
 
@@ -262,9 +240,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       ),
                       const SizedBox(width: 3),
                       Text(
-                        [p['city'], p['state']]
-                            .where((e) => e != null)
-                            .join(', '),
+                        [
+                          p['city'],
+                          p['state'],
+                        ].where((e) => e != null).join(', '),
                         style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
@@ -298,13 +277,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
               color: Colors.white,
             ),
           ),
-          Text(
-            'match',
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.white70,
-            ),
-          ),
+          Text('match', style: TextStyle(fontSize: 10, color: Colors.white70)),
         ],
       ),
     );
@@ -366,8 +339,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     ).animate().fadeIn(duration: 300.ms, delay: 100.ms);
   }
 
-
-
   // ─── Bottom action bar ─────────────────────────────────────────────────────
 
   Widget _buildActionBar(Map<String, dynamic> p) {
@@ -415,23 +386,32 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     if (_isPassing || _isInterested) return;
                     setState(() => _isPassing = true);
                     try {
-                      await context.read<MatchProvider>().swipeLeft(targetProfileId: p['id']);
+                      await context.read<MatchProvider>().swipeLeft(
+                        targetProfileId: p['id'],
+                      );
                       if (mounted) Navigator.pop(context);
                     } catch (e) {
                       if (mounted) {
-                        if (e is DioException && e.response?.statusCode == 402) {
+                        if (e is DioException &&
+                            e.response?.statusCode == 402) {
                           showModalBottomSheet(
                             context: context,
                             backgroundColor: Colors.transparent,
                             isScrollControlled: true,
                             builder: (_) => InterestLimitBottomSheet(
-                              message: e.response?.data?['message'] ??
+                              message:
+                                  e.response?.data?['message'] ??
                                   'Unable to process skip at this moment.',
                             ),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(context.read<MatchProvider>().error ?? 'Failed to skip')),
+                            SnackBar(
+                              content: Text(
+                                context.read<MatchProvider>().error ??
+                                    'Failed to skip',
+                              ),
+                            ),
                           );
                         }
                       }
@@ -456,30 +436,41 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     if (isMatched) {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const ChatPlaceholderScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const ChatPlaceholderScreen(),
+                        ),
                       );
                       return;
                     }
 
                     setState(() => _isInterested = true);
                     try {
-                      await context.read<MatchProvider>().swipeRight(targetProfileId: p['id']);
+                      await context.read<MatchProvider>().swipeRight(
+                        targetProfileId: p['id'],
+                      );
                       if (mounted) Navigator.pop(context);
                     } catch (e) {
                       if (mounted) {
-                        if (e is DioException && e.response?.statusCode == 402) {
+                        if (e is DioException &&
+                            e.response?.statusCode == 402) {
                           showModalBottomSheet(
                             context: context,
                             backgroundColor: Colors.transparent,
                             isScrollControlled: true,
                             builder: (_) => InterestLimitBottomSheet(
-                              message: e.response?.data?['message'] ??
+                              message:
+                                  e.response?.data?['message'] ??
                                   'Unable to send interest at this moment.',
                             ),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(context.read<MatchProvider>().error ?? 'Failed to send interest')),
+                            SnackBar(
+                              content: Text(
+                                context.read<MatchProvider>().error ??
+                                    'Failed to send interest',
+                              ),
+                            ),
                           );
                         }
                       }
@@ -538,15 +529,16 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             color: isOutlined
                 ? Colors.white
                 : effectivelyDisabled
-                    ? AppColors.primary.withValues(alpha: 0.5)
-                    : AppColors.primary,
+                ? AppColors.primary.withValues(alpha: 0.5)
+                : AppColors.primary,
             borderRadius: BorderRadius.circular(14),
             border: isOutlined
                 ? Border.all(
                     color: effectivelyDisabled
                         ? const Color(0xFFEEEEEE)
                         : const Color(0xFFDDDDDD),
-                    width: 1.5)
+                    width: 1.5,
+                  )
                 : null,
           ),
           child: Row(
@@ -567,8 +559,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   size: 18,
                   color: isOutlined
                       ? (effectivelyDisabled
-                          ? AppColors.textSecondary.withValues(alpha: 0.5)
-                          : AppColors.textPrimary)
+                            ? AppColors.textSecondary.withValues(alpha: 0.5)
+                            : AppColors.textPrimary)
                       : Colors.white,
                 ),
                 const SizedBox(width: 8),
@@ -579,8 +571,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                     fontWeight: FontWeight.w600,
                     color: isOutlined
                         ? (effectivelyDisabled
-                            ? AppColors.textSecondary.withValues(alpha: 0.5)
-                            : AppColors.textPrimary)
+                              ? AppColors.textSecondary.withValues(alpha: 0.5)
+                              : AppColors.textPrimary)
                         : Colors.white,
                   ),
                 ),
@@ -730,73 +722,112 @@ class _HeaderCarousel extends StatefulWidget {
 
 class _HeaderCarouselState extends State<_HeaderCarousel> {
   int _page = 0;
+  double? _aspectRatio;
+
+  @override
+  void initState() {
+    super.initState();
+    _calculateFirstImageAspectRatio();
+  }
+
+  void _calculateFirstImageAspectRatio() {
+    if (widget.images.isEmpty) return;
+    final img = widget.images[0] as Map<String, dynamic>;
+    final url = img['imageUrl'] as String?;
+    if (url == null) return;
+
+    final image = NetworkImage(url);
+    image.resolve(const ImageConfiguration()).addListener(
+      ImageStreamListener((ImageInfo info, bool _) {
+        if (mounted) {
+          setState(() {
+            _aspectRatio = info.image.width / info.image.height;
+          });
+        }
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        PageView.builder(
-          itemCount: widget.images.length,
-          onPageChanged: (i) => setState(() => _page = i),
-          itemBuilder: (_, i) {
-            final img = widget.images[i] as Map<String, dynamic>;
-            final url = img['imageUrl'] as String?;
-            return url != null
-                ? Image.network(
+    final images = widget.images;
+    if (images.isEmpty) return const SizedBox.shrink();
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Fallback to a reasonable default while loading aspect ratio
+        final height = _aspectRatio != null
+            ? constraints.maxWidth / _aspectRatio!
+            : 420.0;
+
+        return Stack(
+          children: [
+            SizedBox(
+              height: height,
+              child: PageView.builder(
+                itemCount: images.length,
+                onPageChanged: (i) => setState(() => _page = i),
+                itemBuilder: (_, i) {
+                  final img = images[i] as Map<String, dynamic>;
+                  final url = img['imageUrl'] as String?;
+                  if (url == null) return Container(color: AppColors.primaryLight);
+
+                  return Image.network(
                     url,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      color: AppColors.primaryLight,
-                    ),
-                  )
-                : Container(color: AppColors.primaryLight);
-          },
-        ),
-        // Gradient overlay at bottom for readability
-        Positioned(
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 80,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.35),
-                  Colors.transparent,
-                ],
+                    fit: BoxFit.fitWidth,
+                    width: constraints.maxWidth,
+                    errorBuilder: (_, __, ___) =>
+                        Container(color: AppColors.primaryLight),
+                  );
+                },
               ),
             ),
-          ),
-        ),
-        // Dot indicators
-        if (widget.images.length > 1)
-          Positioned(
-            bottom: 14,
-            left: 0,
-            right: 0,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(widget.images.length, (i) {
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  width: _page == i ? 22 : 7,
-                  height: 7,
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  decoration: BoxDecoration(
-                    color: _page == i
-                        ? Colors.white
-                        : Colors.white.withValues(alpha: 0.45),
-                    borderRadius: BorderRadius.circular(4),
+            // Gradient overlay
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: 80,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.transparent,
+                    ],
                   ),
-                );
-              }),
+                ),
+              ),
             ),
-          ),
-      ],
+            // Indicators
+            if (images.length > 1)
+              Positioned(
+                bottom: 16,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(images.length, (i) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: _page == i ? 20 : 6,
+                      height: 6,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        color: _page == i
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    );
+                  }),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }
