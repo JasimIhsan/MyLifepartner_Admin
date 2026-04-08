@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -184,7 +184,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
             const SizedBox(height: 24),
             Text(
               'Oops! Something went wrong',
-              style: GoogleFonts.cormorantGaramond(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -194,7 +194,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
             Text(
               provider.error ?? 'Check your network and try again',
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 32),
             _buildRetryButton(provider),
@@ -215,7 +215,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
             const SizedBox(height: 24),
             Text(
               'No profiles found',
-              style: GoogleFonts.cormorantGaramond(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -225,7 +225,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
             Text(
               'We are searching for more matches. Check back later!',
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 32),
             _buildRetryButton(provider),
@@ -248,7 +248,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
           const SizedBox(height: 24),
           Text(
             "You're all caught up!",
-            style: GoogleFonts.cormorantGaramond(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w600,
               color: AppColors.textPrimary,
@@ -258,7 +258,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
           Text(
             "You've seen all recommendations for now.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.lato(
+            style: TextStyle(
               fontSize: 16,
               color: AppColors.textSecondary,
             ),
@@ -290,7 +290,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
       ),
       child: Text(
         'Refresh',
-        style: GoogleFonts.lato(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
           color: Colors.white,

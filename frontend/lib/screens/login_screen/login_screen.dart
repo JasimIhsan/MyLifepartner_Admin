@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
@@ -106,7 +106,7 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           Text(
             "Enter your email",
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -162,7 +162,7 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 15),
           Text(
             "We’ll send a verification code to your email.",
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               color: AppColors.textLight,
             ),
@@ -190,11 +190,11 @@ class _LoginPageState extends State<LoginPage> {
     return Text.rich(
       TextSpan(
         text: "By continue, you agree to our ",
-        style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
+        style: TextStyle(fontSize: 12, color: AppColors.textLight),
         children: [
           TextSpan(
             text: "Terms of Service",
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               decoration: TextDecoration.underline,
               color: AppColors.textLight,
             ),
@@ -202,7 +202,7 @@ class _LoginPageState extends State<LoginPage> {
           const TextSpan(text: " and "),
           TextSpan(
             text: "Privacy Policy",
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               decoration: TextDecoration.underline,
               color: AppColors.textLight,
             ),

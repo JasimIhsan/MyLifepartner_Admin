@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/subscription_screen/subscription_screen.dart';
 
@@ -46,7 +46,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             'Interest Limit Reached',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
               color: AppColors.textPrimary,
@@ -57,7 +57,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 15,
               color: AppColors.textSecondary,
               height: 1.5,
@@ -85,7 +85,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
               ),
               child: Text(
                 'View Subscription Plans',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,
@@ -103,7 +103,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
               ),
               child: Text(
                 'Maybe Later',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textSecondary,

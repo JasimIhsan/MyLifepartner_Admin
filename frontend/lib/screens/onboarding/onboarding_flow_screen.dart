@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
@@ -199,7 +199,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       child: Text(
         title,
         textAlign: TextAlign.center,
-        style: GoogleFonts.outfit(
+        style: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimary,
@@ -215,7 +215,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Text(
         text,
-        style: GoogleFonts.outfit(
+        style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimary,
@@ -271,10 +271,10 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         keyboardType: keyboardType,
         textCapitalization: capitalization,
         onChanged: onChanged,
-        style: GoogleFonts.outfit(fontSize: 16, color: AppColors.textPrimary),
+        style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: GoogleFonts.outfit(
+          hintStyle: TextStyle(
             color: AppColors.textSecondary,
             fontSize: 16,
           ),
@@ -349,7 +349,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           const SizedBox(height: 12),
           Text(
             label,
-            style: GoogleFonts.outfit(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               color: AppColors.textPrimary,
@@ -391,7 +391,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             Expanded(
               child: Text(
                 label,
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   color: AppColors.textPrimary,
@@ -438,7 +438,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           children: [
             Text(
               label,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: isSelected ? Colors.white : AppColors.textPrimary,
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -481,7 +481,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
               )
             : Text(
                 _currentStep == _totalSteps - 1 ? 'Finish' : 'Continue',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -631,7 +631,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             Expanded(
               child: Text(
                 _country ?? 'Select your country',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: 16,
                   color: _country != null
                       ? AppColors.textPrimary
@@ -819,7 +819,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
                     alignment: Alignment.center,
                     child: Text(
                       "${formatImperial(cm)} ($cm cm)",
-                      style: GoogleFonts.outfit(
+                      style: TextStyle(
                         fontSize: isSelected ? 20 : 17,
                         fontWeight: isSelected
                             ? FontWeight.w700
@@ -852,7 +852,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         //       Expanded(
         //         child: Text(
         //           "This info helps us find better matches for you.",
-        //           style: GoogleFonts.outfit(
+        //           style: TextStyle(
         //             fontSize: 14,
         //             color: Colors.grey[600],
         //           ),
@@ -1120,7 +1120,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               const SizedBox(height: 16),
               Text(
                 'Select Country',
-                style: GoogleFonts.outfit(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textPrimary,
@@ -1136,10 +1136,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   controller: _search,
                   onChanged: _onSearch,
                   autofocus: true,
-                  style: GoogleFonts.outfit(fontSize: 15),
+                  style: TextStyle(fontSize: 15),
                   decoration: InputDecoration(
                     hintText: 'Search your country…',
-                    hintStyle: GoogleFonts.outfit(
+                    hintStyle: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 15,
                     ),
@@ -1168,7 +1168,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                       title: Text(
                         country,
-                        style: GoogleFonts.outfit(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: isSelected
                               ? FontWeight.w600

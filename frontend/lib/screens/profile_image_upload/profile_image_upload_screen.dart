@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/user_image.dart';
@@ -179,12 +179,12 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                   ),
                   title: Text(
                     'Set as Main Photo',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                         fontSize: 15, fontWeight: FontWeight.w500),
                   ),
                   subtitle: Text(
                     'This will be the first photo people see',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                         fontSize: 12, color: AppColors.textSecondary),
                   ),
                   onTap: () {
@@ -205,7 +205,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                 ),
                 title: Text(
                   'Remove Photo',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
                     color: const Color(0xFFE53935),
@@ -298,7 +298,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                           // ── Header ───────────────────────────────────────
                           Text(
                             'Add your photos',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
                               color: AppColors.textPrimary,
@@ -307,7 +307,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                           const SizedBox(height: 6),
                           Text(
                             'Upload 4 clear photos of yourself. Tap any photo to manage it.',
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 14,
                               color: AppColors.textSecondary,
                               height: 1.5,
@@ -386,7 +386,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                               )
                             : Text(
                                 'Continue',
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -488,7 +488,7 @@ class _FilledSlot extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         'Main Photo',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
@@ -531,7 +531,7 @@ class _FilledSlot extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '${slotIndex + 1}',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -610,7 +610,7 @@ class _EmptySlot extends StatelessWidget {
                     const SizedBox(height: 10),
                     Text(
                       label,
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: isMain ? FontWeight.w600 : FontWeight.w500,
                         color: isMain
@@ -622,7 +622,7 @@ class _EmptySlot extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         'First impression',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppColors.textSecondary,
                         ),
@@ -774,7 +774,7 @@ class _PhotoTipsSheet extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'How to pick great photos',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -783,7 +783,7 @@ class _PhotoTipsSheet extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Follow these tips for the best first impression.',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                     fontSize: 13, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
@@ -815,7 +815,7 @@ class _PhotoTipsSheet extends StatelessWidget {
                             children: [
                               Text(
                                 title,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
@@ -824,7 +824,7 @@ class _PhotoTipsSheet extends StatelessWidget {
                               const SizedBox(height: 3),
                               Text(
                                 desc,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
                                   height: 1.5,
@@ -854,7 +854,7 @@ class _PhotoTipsSheet extends StatelessWidget {
                   ),
                   child: Text(
                     'Got it',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),

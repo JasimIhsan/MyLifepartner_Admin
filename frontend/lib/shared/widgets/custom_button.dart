@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 
 enum CustomButtonType { primary, secondary, outline }
@@ -51,7 +51,7 @@ class CustomButton extends StatelessWidget {
               )
             : Text(
                 text,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: fontSize ?? 18,
                   fontWeight: fontWeight ?? FontWeight.w600,
                   color: _getTextColor(),

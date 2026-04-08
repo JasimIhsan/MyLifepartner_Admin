@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 
 class ChatPlaceholderScreen extends StatelessWidget {
@@ -18,7 +18,7 @@ class ChatPlaceholderScreen extends StatelessWidget {
         ),
         title: Text(
           'Messages',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -41,7 +41,7 @@ class ChatPlaceholderScreen extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'Messages coming soon!',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -52,7 +52,7 @@ class ChatPlaceholderScreen extends StatelessWidget {
             Text(
               'Start a conversation with your matches.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
                 height: 1.6,

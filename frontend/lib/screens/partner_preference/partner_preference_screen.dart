@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
@@ -120,7 +120,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
       children: [
         Text(
           title,
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
@@ -131,7 +131,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 14,
               color: AppColors.textSecondary,
               height: 1.5,
@@ -164,7 +164,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         ),
         child: Text(
           label,
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
             color: isSelected ? Colors.white : AppColors.textPrimary,
@@ -491,12 +491,12 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.poppins(fontSize: 12, color: AppColors.textLight),
+          style: TextStyle(fontSize: 12, color: AppColors.textLight),
         ),
         const SizedBox(height: 2),
         Text(
           '$value $suffix',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
             color: AppColors.textPrimary,
@@ -641,7 +641,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
                           _currentStep == _totalSteps - 1
                               ? 'Finish'
                               : 'Continue',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,

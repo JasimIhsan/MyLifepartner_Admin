@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:pinput/pinput.dart';
@@ -35,7 +35,7 @@ class OtpForm extends StatelessWidget {
     final defaultPinTheme = PinTheme(
       width: 50,
       height: 50,
-      textStyle: GoogleFonts.poppins(
+      textStyle: TextStyle(
         fontSize: 22,
         color: Colors.black,
         fontWeight: FontWeight.w600,
@@ -90,7 +90,7 @@ class OtpForm extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 text: "Didn't receive a code? ",
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
                 ),
@@ -101,7 +101,7 @@ class OtpForm extends StatelessWidget {
                         onTap: onResend,
                         child: Text(
                           "Resend",
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: AppColors.primary,
@@ -114,7 +114,7 @@ class OtpForm extends StatelessWidget {
                     TextSpan(
                       text:
                           "Resent in 00.${timerValue.toString().padLeft(2, '0')}",
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 
 class DetailItem {
@@ -27,7 +27,7 @@ class ProfileDetailsGrid extends StatelessWidget {
       children: [
         Text(
           'Details',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
@@ -78,14 +78,14 @@ class ProfileDetailsGrid extends StatelessWidget {
                             children: [
                               Text(
                                 item.label,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 11,
                                   color: AppColors.textSecondary,
                                 ),
                               ),
                               Text(
                                 item.value,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w500,
                                   color: AppColors.textPrimary,

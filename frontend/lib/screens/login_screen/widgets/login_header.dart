@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 
 class LoginHeader extends StatelessWidget {
@@ -12,7 +12,7 @@ class LoginHeader extends StatelessWidget {
       children: [
         Text(
           "Welcome Back",
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.bold,
             color: AppColors.textPrimary,
@@ -21,7 +21,7 @@ class LoginHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           "Enter your mobile number to continue.",
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 16,
             color: AppColors.textSecondary,
           ),
@@ -53,7 +53,7 @@ class LoginWebBanner extends StatelessWidget {
           const SizedBox(height: 32),
           Text(
             "Secure Login",
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
@@ -63,7 +63,7 @@ class LoginWebBanner extends StatelessWidget {
           Text(
             "Your privacy is our priority. Login safely to find your perfect match.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
         ],
       ),

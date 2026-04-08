@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
@@ -94,7 +94,7 @@ class DatingProfileCard extends StatelessWidget {
                       ),
                       child: Text(
                         "Action Recorded",
-                        style: GoogleFonts.lato(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -186,7 +186,7 @@ class DatingProfileCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           '${profile.name}, ${profile.age}',
-                          style: GoogleFonts.cormorantGaramond(
+                          style: TextStyle(
                             fontSize: 34,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -213,7 +213,7 @@ class DatingProfileCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text(
                           profile.occupation ?? 'Not working',
-                          style: GoogleFonts.lato(
+                          style: TextStyle(
                             fontSize: 14,
                             color: Colors.white70,
                           ),
@@ -230,7 +230,7 @@ class DatingProfileCard extends StatelessWidget {
                             profile.city!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.lato(
+                            style: TextStyle(
                               fontSize: 14,
                               color: Colors.white70,
                             ),
@@ -252,7 +252,7 @@ class DatingProfileCard extends StatelessWidget {
                             profile.religion!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.lato(
+                            style: TextStyle(
                               fontSize: 14,
                               color: Colors.white70,
                             ),
@@ -356,7 +356,7 @@ class _ActionButton extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 12,
               fontWeight: FontWeight.w600,

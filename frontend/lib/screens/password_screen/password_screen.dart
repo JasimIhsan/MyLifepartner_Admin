@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
@@ -284,7 +284,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                       : (widget.isExistingUser
                             ? "Enter Password"
                             : "Create Password"),
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
@@ -293,7 +293,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 const SizedBox(height: 12),
                 Text(
                   "For ${widget.email}",
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey[600],
                   ),

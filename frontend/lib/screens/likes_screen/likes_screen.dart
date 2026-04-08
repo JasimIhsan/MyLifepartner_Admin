@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -94,7 +94,7 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
                     child: Text(
                       'Connections',
-                      style: GoogleFonts.cormorantGaramond(
+                      style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
@@ -178,7 +178,7 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
           const SizedBox(width: 6),
           Text(
             text,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -299,7 +299,7 @@ class _MatchesListState extends State<_MatchesList> {
           return Center(
             child: Text(
               provider.error ?? 'Error loading profiles',
-              style: GoogleFonts.lato(color: AppColors.error),
+              style: TextStyle(color: AppColors.error),
             ),
           );
         }
@@ -321,7 +321,7 @@ class _MatchesListState extends State<_MatchesList> {
                 const SizedBox(height: 16),
                 Text(
                   'No profiles found',
-                  style: GoogleFonts.cormorantGaramond(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textSecondary,
@@ -442,7 +442,7 @@ class _ConnectionCard extends StatelessWidget {
                       children: [
                         Text(
                           '${profile.name}, ${profile.age}',
-                          style: GoogleFonts.cormorantGaramond(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textWhite,
@@ -464,7 +464,7 @@ class _ConnectionCard extends StatelessWidget {
                               Expanded(
                                 child: Text(
                                   profile.city!,
-                                  style: GoogleFonts.lato(
+                                  style: TextStyle(
                                     fontSize: 10,
                                     color: Colors.white70,
                                   ),
@@ -492,7 +492,7 @@ class _ConnectionCard extends StatelessWidget {
                       ),
                       child: Text(
                         '${profile.matchPercentage}%',
-                        style: GoogleFonts.lato(
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           color: AppColors.black,

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
@@ -124,7 +123,7 @@ class _MyAppState extends State<MyApp> {
           cardColor: Colors.white,
           dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
 
-          textTheme: GoogleFonts.poppinsTextTheme(),
+          fontFamily: 'Qurova',
 
           appBarTheme: const AppBarTheme(
             elevation: 0,

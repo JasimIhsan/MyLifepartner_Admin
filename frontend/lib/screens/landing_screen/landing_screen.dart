@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
@@ -174,7 +174,7 @@ class _LandingScreenState extends State<LandingScreen> {
         const SizedBox(height: 8),
         Text(
           label,
-          style: GoogleFonts.outfit(
+          style: TextStyle(
             color: Colors.white.withValues(alpha: 0.8),
             fontSize: 12,
             fontWeight: FontWeight.w400,
@@ -190,7 +190,7 @@ class _LandingScreenState extends State<LandingScreen> {
         Text(
               'Life Partner Again',
               textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: Colors.white,
                 fontSize: 34,
                 fontWeight: FontWeight.w700,
@@ -204,7 +204,7 @@ class _LandingScreenState extends State<LandingScreen> {
         Text(
               'Start your next chapter together',
               textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(
+              style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.7),
                 fontSize: 18,
                 fontWeight: FontWeight.w300,

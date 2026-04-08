@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 
 class OtpHeader extends StatelessWidget {
@@ -28,7 +28,7 @@ class OtpHeader extends StatelessWidget {
       children: [
         Text(
           isPasswordReset ? "Reset Password" : "Enter Verification Code",
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -40,11 +40,11 @@ class OtpHeader extends StatelessWidget {
             text: isPasswordReset
                 ? "We’ve sent a 6-digit password reset code to "
                 : "We’ve sent a 6-digit verification code to ",
-            style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 15, color: Colors.grey[600]),
             children: [
               TextSpan(
                 text: "$_maskedEmail.",
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
                   color: Colors.black87,
                 ),
@@ -75,7 +75,7 @@ class OtpWebBanner extends StatelessWidget {
           const SizedBox(height: 32),
           Text(
             "Account Verification",
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
               color: AppColors.textPrimary,
@@ -85,7 +85,7 @@ class OtpWebBanner extends StatelessWidget {
           Text(
             "We've sent a 6-digit code to your email. Please enter it to verify your identity.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 16,
               color: AppColors.textSecondary,
             ),

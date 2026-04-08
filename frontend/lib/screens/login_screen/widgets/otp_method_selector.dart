@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 
@@ -26,7 +26,7 @@ class OtpMethodSelector {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Text(
           "Verify Your Number",
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         content: SizedBox(
           width: 400,
@@ -100,7 +100,7 @@ class _OtpMethodSelectionContentState
       children: [
         Text(
           "Verify Your Number",
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -109,7 +109,7 @@ class _OtpMethodSelectionContentState
         const SizedBox(height: 8),
         Text(
           "Select how you'd like to receive the code.",
-          style: GoogleFonts.poppins(fontSize: 15, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 15, color: Colors.grey[600]),
         ),
         const SizedBox(height: 32),
         _buildOption(method: "SMS", icon: Icons.sms_outlined, label: "SMS"),
@@ -139,7 +139,7 @@ class _OtpMethodSelectionContentState
             ),
             child: Text(
               "Continue",
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -196,7 +196,7 @@ class _OtpMethodSelectionContentState
             const SizedBox(width: 16),
             Text(
               label,
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
                 color: Colors.black87,

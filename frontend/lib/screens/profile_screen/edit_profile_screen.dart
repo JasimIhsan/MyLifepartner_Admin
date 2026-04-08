@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/auth_response.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
@@ -154,7 +154,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       appBar: AppBar(
         title: Text(
           'Edit Profile Info',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w600,
           ),
@@ -277,7 +277,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: AppColors.textPrimary,
@@ -301,12 +301,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       enabled: enabled,
       readOnly: readOnly,
       onTap: onTap,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
         color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
       ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: GoogleFonts.poppins(color: AppColors.textSecondary),
+        hintStyle: TextStyle(color: AppColors.textSecondary),
         filled: true,
         fillColor: enabled
             ? AppColors.surface
@@ -356,7 +356,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
             Expanded(
               child: Text(
                 hasCountry ? _country! : 'Select your country',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 15,
                   color: hasCountry
                       ? AppColors.textPrimary
@@ -431,7 +431,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
               const SizedBox(height: 16),
               Text(
                 'Select Country',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -441,10 +441,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 controller: _searchController,
                 onChanged: _onSearch,
                 autofocus: true,
-                style: GoogleFonts.poppins(fontSize: 14),
+                style: TextStyle(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Search...',
-                  hintStyle: GoogleFonts.poppins(
+                  hintStyle: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 14,
                   ),
@@ -487,7 +487,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
                       title: Text(
                         country,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: isSelected
                               ? FontWeight.w600

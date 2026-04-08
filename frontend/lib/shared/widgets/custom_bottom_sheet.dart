@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 
@@ -128,7 +128,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               // Title
               Text(
                 widget.title,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -145,7 +145,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               // Message
               Text(
                 widget.message,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   height: 1.55,
@@ -208,7 +208,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               ),
               child: Text(
                 widget.secondaryButtonText!,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -259,7 +259,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               Text(
                 widget.title,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -275,7 +275,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               Text(
                 widget.message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   height: 1.55,
@@ -534,7 +534,7 @@ class _MiniStatCard extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
@@ -604,7 +604,7 @@ class _StepChips extends StatelessWidget {
       children: [
         Text(
           'Remaining steps',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w600,
             color: AppColors.textSecondary,
@@ -649,7 +649,7 @@ class _StepChip extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,

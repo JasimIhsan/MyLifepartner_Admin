@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 
 class CustomBottomBar extends StatelessWidget {
@@ -80,7 +80,7 @@ class CustomBottomBar extends StatelessWidget {
                       if (item.label != null)
                         Text(
                           item.label!,
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             color: isSelected
                                 ? selectedItemColor
                                 : unselectedItemColor,

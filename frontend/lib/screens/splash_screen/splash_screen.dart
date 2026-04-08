@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
@@ -87,7 +87,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     children: [
                       Text(
                         'Life Partner Again',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
@@ -97,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen> {
                       const SizedBox(height: 8),
                       Text(
                         'Find your perfect match',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 16,
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,

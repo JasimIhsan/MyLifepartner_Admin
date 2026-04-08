@@ -4,7 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
@@ -290,7 +290,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               const SizedBox(height: 8),
               Text(
                 'Verify your identity',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -301,7 +301,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               Text(
                 'Take a clear selfie to help us keep\n'
                 'the community safe and authentic.',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   height: 1.5,
@@ -331,7 +331,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                     Expanded(
                       child: Text(
                         'Your selfies are only used for verification and will remain secure. We also request location service access when submitting the selfies.',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
                           height: 1.4,
@@ -402,7 +402,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                                     padding: const EdgeInsets.all(24),
                                     child: Text(
                                       _errorMessage!,
-                                      style: GoogleFonts.poppins(
+                                      style: TextStyle(
                                         fontSize: 13,
                                         color: AppColors.textSecondary,
                                       ),
@@ -453,7 +453,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                   onPressed: _retakeAll,
                   child: Text(
                     'Retake All',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textSecondary,
@@ -507,7 +507,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
           const SizedBox(height: 8),
           Text(
             label,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               color: isSelected ? AppColors.primary : AppColors.textSecondary,
@@ -582,7 +582,7 @@ class _SelfieTipsSheet extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 'How to take a great selfie',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -591,7 +591,7 @@ class _SelfieTipsSheet extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Follow these tips for a quick approval.',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 13,
                   color: AppColors.textSecondary,
                 ),
@@ -624,7 +624,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                             children: [
                               Text(
                                 title,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
                                   color: AppColors.textPrimary,
@@ -633,7 +633,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                               const SizedBox(height: 3),
                               Text(
                                 desc,
-                                style: GoogleFonts.poppins(
+                                style: TextStyle(
                                   fontSize: 13,
                                   color: AppColors.textSecondary,
                                   height: 1.5,
@@ -663,7 +663,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                   ),
                   child: Text(
                     'Got it',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -717,7 +717,7 @@ class _PrimaryButton extends StatelessWidget {
               )
             : Text(
                 label,
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),

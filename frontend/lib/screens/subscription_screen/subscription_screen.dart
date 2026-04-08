@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/subscription_plan.dart' as model;
 import 'package:mylifepartner/providers/subscription_provider.dart';
@@ -60,7 +60,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         ),
         title: Text(
           'Choose Your Plan',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w700,
           ),
@@ -94,7 +94,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       const SizedBox(height: 16),
                       Text(
                         provider.error!,
-                        style: GoogleFonts.poppins(color: Colors.red),
+                        style: TextStyle(color: Colors.red),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
@@ -118,7 +118,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 children: [
                   Text(
                         'Unlock Premium Features',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textPrimary,
@@ -130,7 +130,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   const SizedBox(height: 8),
                   Text(
                         'Choose a plan that fits your needs and start your journey towards finding your life partner.',
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),
@@ -164,7 +164,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               children: [
                                 Text(
                                   'Current Active Plan',
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                     color: AppColors.primary,
@@ -172,7 +172,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                 ),
                                 Text(
                                   currentSub!.plan?.name ?? 'Unknown',
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                     color: AppColors.textPrimary,
@@ -259,7 +259,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 ),
                 child: Text(
                   'MOST POPULAR',
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary,
@@ -291,7 +291,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     const SizedBox(width: 4),
                     Text(
                       'ACTIVE',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,
@@ -308,7 +308,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               children: [
                 Text(
                   plan.name,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                     color: isPopular
@@ -323,7 +323,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     children: [
                       Text(
                         plan.displayPrice,
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
                           color: isPopular
@@ -335,7 +335,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         padding: const EdgeInsets.only(bottom: 5, left: 4),
                         child: Text(
                           ' / ${plan.durationDays} days',
-                          style: GoogleFonts.poppins(
+                          style: TextStyle(
                             fontSize: 14,
                             color: isPopular
                                 ? AppColors.onPrimary.withValues(alpha: 0.7)
@@ -348,7 +348,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 else
                   Text(
                     'Get Started Free',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                       color: isPopular
@@ -375,7 +375,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         Expanded(
                           child: Text(
                             feature,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 14,
                               color: isPopular
                                   ? AppColors.onPrimary

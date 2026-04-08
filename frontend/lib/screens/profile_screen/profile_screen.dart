@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/auth_response.dart';
 import 'package:mylifepartner/models/user_image.dart';
@@ -133,7 +133,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             Text(
               _user!.name ?? "Your Name",
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
@@ -143,7 +143,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 4),
             Text(
               _user!.email ?? "your.email@example.com",
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
                 color: AppColors.textSecondary,
@@ -279,7 +279,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         alignment: Alignment.centerLeft,
         child: Text(
           title.toUpperCase(),
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.0,
@@ -324,7 +324,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Expanded(
                   child: Text(
                     title,
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                       color: AppColors.textPrimary,

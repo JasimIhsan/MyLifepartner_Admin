@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
@@ -33,7 +33,7 @@ class LoginForm extends StatelessWidget {
           if (isWeb) ...[
             Text(
               "Welcome Back",
-              style: GoogleFonts.poppins(
+              style: TextStyle(
                 fontSize: 40,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -42,7 +42,7 @@ class LoginForm extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               "Enter your mobile number to continue.",
-              style: GoogleFonts.poppins(fontSize: 18, color: Colors.grey[600]),
+              style: TextStyle(fontSize: 18, color: Colors.grey[600]),
             ),
             const SizedBox(height: 48),
           ],
@@ -93,7 +93,7 @@ class LoginForm extends StatelessWidget {
                     )
                   : Text(
                       "Send OTP",
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -107,7 +107,7 @@ class LoginForm extends StatelessWidget {
             children: [
               Text(
                 "Don't have an account? ",
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   color: Colors.grey[600],
                   fontSize: 14,
                 ),
@@ -116,7 +116,7 @@ class LoginForm extends StatelessWidget {
                 onPressed: () {},
                 child: Text(
                   "Sign Up",
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     color: AppColors.primary,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,

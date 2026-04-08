@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -243,7 +243,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             children: [
               Text(
                 '${p['name'] ?? 'Unknown'}, ${p['age'] ?? ''}',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textPrimary,
@@ -265,7 +265,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                         [p['city'], p['state']]
                             .where((e) => e != null)
                             .join(', '),
-                        style: GoogleFonts.poppins(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textSecondary,
                         ),
@@ -292,7 +292,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         children: [
           Text(
             '$pct%',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.white,
@@ -300,7 +300,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           ),
           Text(
             'match',
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 10,
               color: Colors.white70,
             ),
@@ -315,7 +315,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   Widget _buildSectionLabel(String label) {
     return Text(
       label,
-      style: GoogleFonts.poppins(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
@@ -336,7 +336,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           ),
           child: Text(
             h,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: AppColors.textPrimary,
@@ -357,7 +357,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       ),
       child: Text(
         bio,
-        style: GoogleFonts.poppins(
+        style: TextStyle(
           fontSize: 14,
           color: AppColors.textPrimary,
           height: 1.6,
@@ -574,7 +574,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 const SizedBox(width: 8),
                 Text(
                   label,
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: isOutlined
@@ -703,7 +703,7 @@ class _BodyPhotoCarouselState extends State<_BodyPhotoCarousel> {
               const SizedBox(width: 10),
               Text(
                 '${_page + 1} / ${widget.images.length}',
-                style: GoogleFonts.poppins(
+                style: TextStyle(
                   fontSize: 11,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,

@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -148,7 +148,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 24),
             Text(
               'Oops! Something went wrong',
-              style: GoogleFonts.cormorantGaramond(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -159,7 +159,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             Text(
               provider.error ?? 'Check your network and try again',
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
                 height: 1.5,
@@ -192,7 +192,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 24),
             Text(
               'No profiles yet',
-              style: GoogleFonts.cormorantGaramond(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -203,7 +203,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             Text(
               'New profiles are added daily.\nCheck back soon.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(
+              style: TextStyle(
                 fontSize: 14,
                 color: AppColors.textSecondary,
                 height: 1.6,
@@ -232,7 +232,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
         ),
         child: Text(
           'Refresh',
-          style: GoogleFonts.lato(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: Colors.white,
@@ -310,7 +310,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 12),
             Text(
               'Loading more…',
-              style: GoogleFonts.lato(
+              style: TextStyle(
                 fontSize: 12,
                 color: AppColors.textSecondary,
               ),
@@ -396,7 +396,7 @@ class _HeroCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             '${profile.name}, ${profile.age}',
-                            style: GoogleFonts.cormorantGaramond(
+                            style: TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
@@ -423,7 +423,7 @@ class _HeroCard extends StatelessWidget {
                           const SizedBox(width: 3),
                           Text(
                             profile.city!,
-                            style: GoogleFonts.poppins(
+                            style: TextStyle(
                               fontSize: 13,
                               color: Colors.white70,
                               letterSpacing: 0.1,
@@ -469,7 +469,7 @@ class _HeroCard extends StatelessWidget {
               ),
               child: Text(
                 label,
-                style: GoogleFonts.lato(
+                style: TextStyle(
                   fontSize: 11,
                   color: Colors.white.withValues(alpha: 0.9),
                   fontWeight: FontWeight.w600,
@@ -557,7 +557,7 @@ class _PortraitCard extends StatelessWidget {
                       children: [
                         Text(
                           '${profile.name}, ${profile.age}',
-                          style: GoogleFonts.cormorantGaramond(
+                          style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
                             color: AppColors.textPrimary,
@@ -582,7 +582,7 @@ class _PortraitCard extends StatelessWidget {
                                   profile.city!,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.lato(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textSecondary,
                                   ),
@@ -642,7 +642,7 @@ class _PortraitCard extends StatelessWidget {
               ),
               child: Text(
                 label,
-                style: GoogleFonts.lato(
+                style: TextStyle(
                   fontSize: 10,
                   color: AppColors.textSecondary,
                   fontWeight: FontWeight.w600,
@@ -707,7 +707,7 @@ class _InteractionBadge extends StatelessWidget {
           const SizedBox(width: 4),
           Text(
             label,
-            style: GoogleFonts.lato(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w800,
               color: Colors.white,
@@ -737,7 +737,7 @@ class _MatchArc extends StatelessWidget {
         child: Center(
           child: Text(
             '$percentage%',
-            style: GoogleFonts.lato(
+            style: TextStyle(
               fontSize: size < 48 ? 9.5 : 11,
               fontWeight: FontWeight.w800,
               color: AppColors.textPrimary,

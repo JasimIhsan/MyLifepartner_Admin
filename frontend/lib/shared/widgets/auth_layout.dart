@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:provider/provider.dart';
@@ -62,7 +62,7 @@ class AuthLayout extends StatelessWidget {
                     const SizedBox(width: 8),
                     Text(
                       "lifepartneragain",
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
@@ -73,7 +73,7 @@ class AuthLayout extends StatelessWidget {
                 const SizedBox(height: 24),
                 Text(
                   "A trusted platform for emotionally\nmature relationships.",
-                  style: GoogleFonts.poppins(
+                  style: TextStyle(
                     fontSize: 16,
                     color: AppColors.textSecondary,
                     height: 1.5,
@@ -226,7 +226,7 @@ class AuthLayout extends StatelessWidget {
                               if (showLogo) ...[
                                 Text(
                                   "Life Partner Again",
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.textPrimary,
@@ -236,7 +236,7 @@ class AuthLayout extends StatelessWidget {
                                 Text(
                                   "A trusted platform for emotionally\nmature relationships.",
                                   textAlign: TextAlign.center,
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     color: AppColors.textSecondary,
                                     height: 1.5,
@@ -282,7 +282,7 @@ class AuthLayout extends StatelessWidget {
       children: [
         Text(
           "Life Partner Again",
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
             color: Colors.black87,
@@ -293,7 +293,7 @@ class AuthLayout extends StatelessWidget {
           child: Text(
             "A trusted platform for emotionally\nmature relationships.",
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
               height: 1.5,

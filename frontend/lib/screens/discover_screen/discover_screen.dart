@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -218,7 +218,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             const SizedBox(height: 24),
             Text(
               'Oops! Connection Error',
-              style: GoogleFonts.cormorantGaramond(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -228,7 +228,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Text(
               provider.error ?? 'Something went wrong',
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 32),
             _ActionButton(
@@ -260,7 +260,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             const SizedBox(height: 24),
             Text(
               'No profiles available right now',
-              style: GoogleFonts.cormorantGaramond(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textPrimary,
@@ -270,7 +270,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Text(
               'Check back later for fresh recommendations.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.lato(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -308,7 +308,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 //       ),
 //       child: Text(
 //         label,
-//         style: GoogleFonts.lato(
+//         style: TextStyle(
 //           fontSize: 13,
 //           fontWeight: FontWeight.bold,
 //           color: isSelected ? Colors.white : Colors.grey.shade600,
@@ -433,7 +433,7 @@ class _ProfileBrowserCard extends StatelessWidget {
       children: [
         Text(
           '${profile.name}, ${profile.age}',
-          style: GoogleFonts.poppins(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -460,7 +460,7 @@ class _ProfileBrowserCard extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             text,
-            style: GoogleFonts.lato(
+            style: TextStyle(
               fontSize: 14,
               color: Colors.white.withValues(alpha: 0.8),
               fontWeight: FontWeight.w500,
@@ -626,7 +626,7 @@ class _ActionButton extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               label,
-              style: GoogleFonts.lato(
+              style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
                 fontSize: 14,
