@@ -36,7 +36,7 @@ export class EmailService implements IEmailService {
    }
 
    private getOtpEmailHtml(otp: string): string {
-      const templatePath = path.join(__dirname, "../../src/templates/emails/otp.html");
+      const templatePath = path.join(process.cwd(), "src/templates/emails/otp.html");
       let html = fs.readFileSync(templatePath, "utf-8");
       
       const year = new Date().getFullYear().toString();

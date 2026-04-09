@@ -1,6 +1,6 @@
 class Env {
   static const String baseUrl = Env.isProduction
-      ? 'https://mudfish-welcomed-guinea.ngrok-free.app/api'
+      ? 'https://backend.lifepartneragain.ciltriq.com/api'
       : 'https://nonindividualistic-dilutely-glory.ngrok-free.dev/api';
 
   // Environment flags
