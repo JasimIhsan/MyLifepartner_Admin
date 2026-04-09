@@ -22,7 +22,8 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   final ProfileRepository _profileRepo = ProfileRepository();
   bool _isLoading = false;
 
-  String? _name;
+  String? _firstName;
+  String? _lastName;
   String? _gender;
   DateTime? _dob;
   int? _heightCm;
@@ -115,8 +116,9 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final userName = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'.trim();
       await _profileRepo.updateBasicProfile({
-        'name': _name,
+        'name': userName.isEmpty ? null : userName,
         'gender': _gender,
         'dateOfBirth': _dob != null ? '${_dob!.toIso8601String()}Z' : null,
         'heightCm': _heightCm,
@@ -135,8 +137,8 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
       });
 
       final sharedPrefs = await SharedPreferences.getInstance();
-      if (_name != null) {
-        await sharedPrefs.setString('name', _name!);
+      if (userName.isNotEmpty) {
+        await sharedPrefs.setString('name', userName);
       }
 
       if (mounted) {
@@ -212,15 +214,27 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Name
+                // First Name
                 TextFormField(
                   decoration: const InputDecoration(
-                    labelText: 'Full Name *',
+                    labelText: 'First Name *',
                     border: OutlineInputBorder(),
                   ),
                   validator: (val) =>
-                      val == null || val.isEmpty ? 'Required' : null,
-                  onSaved: (val) => _name = val,
+                      val == null || val.trim().isEmpty ? 'Required' : null,
+                  onSaved: (val) => _firstName = val,
+                ),
+                const SizedBox(height: 16),
+
+                // Last Name
+                TextFormField(
+                  decoration: const InputDecoration(
+                    labelText: 'Last Name *',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (val) =>
+                      val == null || val.trim().isEmpty ? 'Required' : null,
+                  onSaved: (val) => _lastName = val,
                 ),
                 const SizedBox(height: 16),
 

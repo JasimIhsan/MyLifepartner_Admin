@@ -159,6 +159,7 @@ export class MatchRepository implements IMatchRepository {
          include: {
             targetProfile: {
                include: {
+                  user: { select: { isVerified: true } },
                   images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
                   answers: { select: { questionId: true, answer: true, score: true } },
                },
@@ -274,7 +275,7 @@ export class MatchRepository implements IMatchRepository {
          id: p.id,
          userId: p.userId,
          name: p.name,
-         isVerified: p.user.isVerified,
+         isVerified: p.user?.isVerified ?? false,
          dateOfBirth: p.dateOfBirth,
          heightCm: p.heightCm,
          maritalStatus: p.maritalStatus,
@@ -299,7 +300,10 @@ export class MatchRepository implements IMatchRepository {
 function sweepsToProfiles(swipes: any[]) {
    return swipes.reduce((acc, current) => {
       if (current.user?.profile) {
-         acc.push(current.user.profile);
+         acc.push({
+            ...current.user.profile,
+            user: { isVerified: current.user.isVerified },
+         });
       }
       return acc;
    }, [] as any[]);

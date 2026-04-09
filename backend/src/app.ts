@@ -11,7 +11,7 @@ import morgan from "morgan";
 const app = express();
 
 // Trust proxy for IP detection behind Vercel/Cloudflare
-app.set("trust proxy", true);
+app.set("trust proxy", 1);
 
 // Middlewares
 app.use(express.json());

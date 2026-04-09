@@ -315,7 +315,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                   vertical: 12,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
+                  color: AppColors.textWhite,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.borderColor),
                 ),
@@ -333,7 +333,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                         'Your selfies are only used for verification and will remain secure. We also request location service access when submitting the selfies.',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: Colors.grey.shade600,
                           height: 1.4,
                         ),
                       ),
@@ -358,7 +358,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                           border: Border.all(
                             color:
                                 (_currentImage != null || _isCameraInitialized)
-                                ? AppColors.primary.withValues(alpha: 0.2)
+                                ? AppColors.textPrimary.withValues(alpha: 0.2)
                                 : AppColors.borderColor,
                             width: 5,
                           ),
@@ -373,11 +373,11 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                           border: Border.all(
                             color:
                                 (_currentImage != null || _isCameraInitialized)
-                                ? AppColors.primary
+                                ? AppColors.textPrimary
                                 : AppColors.borderColor,
                             width: 2,
                           ),
-                          color: AppColors.primaryLight,
+                          color: AppColors.textWhite,
                         ),
                         child: ClipOval(
                           child: _currentImage != null
@@ -413,7 +413,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                               : const Center(
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: AppColors.primary,
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                         ),
@@ -591,10 +591,7 @@ class _SelfieTipsSheet extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 'Follow these tips for a quick approval.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textSecondary,
-                ),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
               Expanded(
@@ -612,10 +609,14 @@ class _SelfieTipsSheet extends StatelessWidget {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: AppColors.textWhite,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, size: 20, color: AppColors.primary),
+                          child: Icon(
+                            icon,
+                            size: 20,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -663,10 +664,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                   ),
                   child: Text(
                     'Got it',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -717,10 +715,7 @@ class _PrimaryButton extends StatelessWidget {
               )
             : Text(
                 label,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
       ),
     );

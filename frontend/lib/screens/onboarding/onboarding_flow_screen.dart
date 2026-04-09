@@ -21,6 +21,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
   // Form controllers
   final TextEditingController _firstNameCtrl = TextEditingController();
+  final TextEditingController _lastNameCtrl = TextEditingController();
   final TextEditingController _countryCtrl = TextEditingController();
   final TextEditingController _cityCtrl = TextEditingController();
   final TextEditingController _heightCtrl = TextEditingController();
@@ -28,6 +29,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
   // Selected values
   String? _firstName;
+  String? _lastName;
   DateTime? _dateOfBirth;
   String? _gender;
   String? _country;
@@ -47,6 +49,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   @override
   void dispose() {
     _firstNameCtrl.dispose();
+    _lastNameCtrl.dispose();
     _countryCtrl.dispose();
     _cityCtrl.dispose();
     _heightCtrl.dispose();
@@ -59,6 +62,8 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       case 0:
         return _firstName != null &&
             _firstName!.isNotEmpty &&
+            _lastName != null &&
+            _lastName!.isNotEmpty &&
             _dateOfBirth != null;
       case 1:
         return _gender != null;
@@ -110,7 +115,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   Future<void> _submit() async {
     setState(() => _isLoading = true);
     try {
-      final name = _firstName?.trim() ?? "";
+      final name = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'.trim();
       await _profileRepo.updateBasicProfile({
         'name': name,
         'gender': _gender,
@@ -497,11 +502,18 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       children: [
         _stepTitle("Hey! Let's talk little about you"),
         const SizedBox(height: 20),
-        _sectionLabel("Name"),
+        _sectionLabel("First Name"),
         _inputField(
           controller: _firstNameCtrl,
-          hint: 'Your name',
+          hint: 'First Name',
           onChanged: (v) => setState(() => _firstName = v),
+        ),
+        const SizedBox(height: 10),
+        _sectionLabel("Last Name"),
+        _inputField(
+          controller: _lastNameCtrl,
+          hint: 'Last Name',
+          onChanged: (v) => setState(() => _lastName = v),
         ),
         const SizedBox(height: 10),
         _sectionLabel("When is your date of birth?"),

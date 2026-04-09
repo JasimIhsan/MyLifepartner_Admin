@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import 'package:mylifepartner/core/app_colors.dart';
@@ -54,10 +55,19 @@ class AuthLayout extends StatelessWidget {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.favorite,
-                      color: AppColors.primary,
-                      size: 24,
+                    Transform.scale(
+                      scale: 2,
+                      child: Image.asset(
+                        'assets/icons/app_logo.png',
+                        height: 32,
+                        width: 32,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                              Icons.favorite,
+                              color: AppColors.primary,
+                              size: 24,
+                            ),
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -118,11 +128,11 @@ class AuthLayout extends StatelessWidget {
         children: [
           // Background Image
           if (dynamicSection != null)
-             Positioned(
+            Positioned(
               top: 0,
               left: 0,
               right: 0,
-              height: size.height * 0.55,
+              height: size.height * 0.60,
               child: Consumer<ImageAssetProvider>(
                 builder: (context, provider, _) {
                   final state = provider.getState(dynamicSection!);
@@ -141,8 +151,8 @@ class AuthLayout extends StatelessWidget {
                   }
 
                   if (asset != null) {
-                    return Image.network(
-                      asset.imageUrl,
+                    return CachedNetworkImage(
+                      imageUrl: asset.imageUrl,
                       fit: BoxFit.cover,
                       alignment: Alignment.topCenter,
                     );
@@ -156,7 +166,7 @@ class AuthLayout extends StatelessWidget {
                       alignment: Alignment.topCenter,
                     );
                   }
-                  
+
                   return Container(color: Colors.grey[100]);
                 },
               ),
@@ -166,7 +176,7 @@ class AuthLayout extends StatelessWidget {
               top: 0,
               left: 0,
               right: 0,
-              height: size.height * 0.55,
+              height: size.height * 0.60,
               child: Image.asset(
                 topImage!,
                 fit: BoxFit.cover,
@@ -185,7 +195,8 @@ class AuthLayout extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     // Gap to show the image
-                    if (topImage != null || dynamicSection != null) SizedBox(height: size.height * 0.45),
+                    if (topImage != null || dynamicSection != null)
+                      SizedBox(height: size.height * 0.15),
 
                     // Main Sheet
                     Container(
@@ -207,7 +218,12 @@ class AuthLayout extends StatelessWidget {
                       child: SafeArea(
                         top: false,
                         child: Padding(
-                          padding: const EdgeInsets.fromLTRB(28.0, 12.0, 28.0, 32.0),
+                          padding: const EdgeInsets.fromLTRB(
+                            28.0,
+                            12.0,
+                            28.0,
+                            32.0,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -224,14 +240,23 @@ class AuthLayout extends StatelessWidget {
 
                               // Optional Header
                               if (showLogo) ...[
-                                Text(
-                                  "Life Partner Again",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
+                                Transform.scale(
+                                  scale: 1.5,
+                                  child: Image.asset(
+                                    'assets/icons/app_logo.png',
+                                    height: 80,
+                                    width: 80,
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Icon(
+                                              Icons.favorite_rounded,
+                                              color: AppColors.primary,
+                                              size: 64,
+                                            ),
                                   ),
                                 ),
+                                const SizedBox(height: 16),
+
                                 const SizedBox(height: 8),
                                 Text(
                                   "A trusted platform for emotionally\nmature relationships.",
@@ -257,20 +282,24 @@ class AuthLayout extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Back Button if needed (Optional, usually handled by Scaffold)
           if (Navigator.canPop(context))
-             Positioned(
-               top: MediaQuery.of(context).padding.top + 10,
-               left: 16,
-               child: CircleAvatar(
-                 backgroundColor: Colors.white.withValues(alpha: 0.8),
-                 child: IconButton(
-                   icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.black),
-                   onPressed: () => Navigator.pop(context),
-                 ),
-               ),
-             ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 16,
+              child: CircleAvatar(
+                backgroundColor: Colors.white.withValues(alpha: 0.8),
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_ios_new,
+                    size: 18,
+                    color: Colors.black,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -280,6 +309,20 @@ class AuthLayout extends StatelessWidget {
     if (!isWeb) return const SizedBox.shrink(); // Only for Web now
     return Column(
       children: [
+        Transform.scale(
+          scale: 1.5,
+          child: Image.asset(
+            'assets/icons/app_logo.png',
+            height: 64,
+            width: 64,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.favorite_rounded,
+              color: AppColors.primary,
+              size: 48,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
         Text(
           "Life Partner Again",
           style: TextStyle(

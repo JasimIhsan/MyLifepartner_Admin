@@ -71,7 +71,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _user == null) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
     }
 
     return SingleChildScrollView(
@@ -100,7 +102,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               imageUrl: _primaryImage!.imageUrl,
                               fit: BoxFit.cover,
                               placeholder: (context, url) =>
-                                  const CircularProgressIndicator(color: AppColors.primary),
+                                  const CircularProgressIndicator(
+                                    color: AppColors.primary,
+                                  ),
                               errorWidget: (context, url, error) => const Icon(
                                 Icons.person,
                                 size: 50,
@@ -121,9 +125,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           shape: BoxShape.circle,
-                          border: Border.all(color: AppColors.surface, width: 3),
+                          border: Border.all(
+                            color: AppColors.surface,
+                            width: 3,
+                          ),
                         ),
-                        child: const Icon(Icons.edit, color: AppColors.onPrimary, size: 18),
+                        child: const Icon(
+                          Icons.edit,
+                          color: AppColors.onPrimary,
+                          size: 18,
+                        ),
                       ),
                     ),
                   ],
@@ -298,9 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.borderColor, width: 1.2),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 

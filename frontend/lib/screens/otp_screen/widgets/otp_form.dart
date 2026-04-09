@@ -34,16 +34,16 @@ class OtpForm extends StatelessWidget {
   Widget build(BuildContext context) {
     final defaultPinTheme = PinTheme(
       width: 50,
-      height: 50,
-      textStyle: TextStyle(
-        fontSize: 22,
-        color: Colors.black,
-        fontWeight: FontWeight.w600,
+      height: 60,
+      textStyle: const TextStyle(
+        fontSize: 26,
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.bold,
       ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE0E0E0), width: 3),
+        ),
       ),
     );
 
@@ -68,18 +68,35 @@ class OtpForm extends StatelessWidget {
               hapticFeedbackType: HapticFeedbackType.lightImpact,
               onCompleted: onVerify,
               focusedPinTheme: defaultPinTheme.copyWith(
-                decoration: defaultPinTheme.decoration!.copyWith(
-                  border: Border.all(color: Colors.black),
+                textStyle: const TextStyle(
+                  fontSize: 26,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.primary, width: 4),
+                  ),
                 ),
               ),
               submittedPinTheme: defaultPinTheme.copyWith(
-                decoration: defaultPinTheme.decoration!.copyWith(
-                  color: Colors.black.withValues(alpha: 0.1),
-                  border: Border.all(color: Colors.black),
+                textStyle: const TextStyle(
+                  fontSize: 26,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.primary, width: 4),
+                  ),
                 ),
               ),
-              errorPinTheme: defaultPinTheme.copyBorderWith(
-                border: Border.all(color: Colors.black),
+              errorPinTheme: defaultPinTheme.copyWith(
+                decoration: const BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: AppColors.error, width: 4),
+                  ),
+                ),
               ),
             ),
           ),

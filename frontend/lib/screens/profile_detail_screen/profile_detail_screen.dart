@@ -8,6 +8,7 @@ import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_details_grid.dart';
 import 'package:mylifepartner/services/match_service.dart';
+import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
@@ -86,7 +87,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   Widget build(BuildContext context) {
     if (!_hasSeedOrApi) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: AppColors.textWhite,
         body: const Center(
           child: CircularProgressIndicator(
             color: AppColors.primary,
@@ -96,7 +97,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       );
     }
 
-    return Scaffold(backgroundColor: AppColors.background, body: _buildBody());
+    return Scaffold(backgroundColor: AppColors.textWhite, body: _buildBody());
   }
 
   Widget _buildBody() {
@@ -106,21 +107,44 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         .map((e) => e.toString())
         .toList();
 
+    // The action bar is roughly 90px + safe area bottom.
+    // Making the top section take (ScreenHeight - 90 - safeArea) guarantees
+    // the name row sits perfectly above the action bar, and the image fills the rest (up to ~80% of screen).
+    final double actionBarAndGapHeight =
+        90 + MediaQuery.of(context).padding.bottom;
+    final double topSectionHeight =
+        MediaQuery.of(context).size.height - actionBarAndGapHeight;
+
     return Stack(
       children: [
         // Scrollable content
         CustomScrollView(
           slivers: [
-            _buildSliverHeader(images),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: topSectionHeight,
+                child: Stack(
+                  children: [
+                    Positioned.fill(child: _buildHeaderCarousel(images)),
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+                        child: _buildNameRow(p, isOverlay: true),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 22),
-                    _buildNameRow(p),
-                    const SizedBox(height: 18),
                     if (highlights.isNotEmpty) ...[
                       _buildSectionLabel('Compatibility'),
                       const SizedBox(height: 10),
@@ -166,40 +190,34 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
   // ─── Header (image carousel as sliver) ────────────────────────────────────
 
-  Widget _buildSliverHeader(List<dynamic> images) {
+  Widget _buildHeaderCarousel(List<dynamic> images) {
     if (images.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Container(
-          height: 300,
-          color: AppColors.primaryLight,
-          child: const Center(
-            child: Icon(
-              Icons.person_rounded,
-              size: 80,
-              color: Color(0xFFCCCCCC),
-            ),
-          ),
+      return Container(
+        color: AppColors.primaryLight,
+        child: const Center(
+          child: Icon(Icons.person_rounded, size: 80, color: Color(0xFFCCCCCC)),
         ),
       );
     }
 
-    return SliverToBoxAdapter(child: _HeaderCarousel(images: images));
+    return _HeaderCarousel(images: images);
   }
 
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: () => Navigator.pop(context),
       child: Container(
-        width: 40,
-        height: 40,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withValues(alpha: 0.95),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.15),
-              blurRadius: 10,
-              offset: const Offset(0, 3),
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 15,
+              offset: const Offset(0, 5),
+              spreadRadius: 1,
             ),
           ],
         ),
@@ -214,9 +232,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
   // ─── Name / match row ──────────────────────────────────────────────────────
 
-  Widget _buildNameRow(Map<String, dynamic> p) {
+  Widget _buildNameRow(Map<String, dynamic> p, {bool isOverlay = false}) {
+    final textColor = isOverlay ? Colors.white : AppColors.textPrimary;
+    final subTextColor = isOverlay ? Colors.white.withValues(alpha: 0.9) : AppColors.textSecondary;
+
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
           child: Column(
@@ -224,44 +245,63 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             children: [
               Row(
                 children: [
-                  Text(
-                    '${p['name'] ?? 'Unknown'}, ${p['age'] ?? ''}',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.5,
+                  Flexible(
+                    child: Text(
+                      '${p['name'] ?? 'Unknown'}, ${p['age'] ?? ''}',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                        letterSpacing: -0.5,
+                        shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 10)] : null,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (p['isVerified'] == true) ...[
                     const SizedBox(width: 8),
-                    Image.asset(
-                      'assets/icons/verified_icon.png',
-                      width: 22,
-                      height: 22,
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => VerifiedProfileBottomSheet(
+                            profileName: p['name'] ?? 'Unknown',
+                          ),
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/icons/verified_icon.png',
+                        width: 26,
+                        height: 26,
+                      ),
                     ),
                   ],
                 ],
               ),
               if (p['city'] != null || p['state'] != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.only(top: 6),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 14,
-                        color: AppColors.textSecondary,
+                      Icon(
+                        Icons.location_on_rounded,
+                        size: 16,
+                        color: subTextColor,
+                        shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
                       ),
-                      const SizedBox(width: 3),
+                      const SizedBox(width: 4),
                       Text(
                         [
                           p['city'],
                           p['state'],
                         ].where((e) => e != null).join(', '),
                         style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: subTextColor,
+                          shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
                         ),
                       ),
                     ],
@@ -272,7 +312,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         ),
         _buildMatchBadge(p['matchPercentage'] ?? 0),
       ],
-    ).animate().fadeIn(duration: 300.ms);
+    ).animate().fadeIn(duration: 400.ms);
   }
 
   Widget _buildMatchBadge(int pct) {
@@ -539,21 +579,31 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
       child: GestureDetector(
         onTap: isLoading || effectivelyDisabled ? null : onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             color: isOutlined
                 ? Colors.white
                 : effectivelyDisabled
                 ? AppColors.primary.withValues(alpha: 0.5)
                 : AppColors.primary,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             border: isOutlined
                 ? Border.all(
                     color: effectivelyDisabled
-                        ? const Color(0xFFEEEEEE)
-                        : const Color(0xFFDDDDDD),
+                        ? Colors.grey.shade200
+                        : Colors.grey.shade300,
                     width: 1.5,
                   )
+                : null,
+            boxShadow: !isOutlined && !effectivelyDisabled
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                      spreadRadius: 2,
+                    )
+                  ]
                 : null,
           ),
           child: Row(
@@ -737,115 +787,76 @@ class _HeaderCarousel extends StatefulWidget {
 
 class _HeaderCarouselState extends State<_HeaderCarousel> {
   int _page = 0;
-  double? _aspectRatio;
-
-  @override
-  void initState() {
-    super.initState();
-    _calculateFirstImageAspectRatio();
-  }
-
-  void _calculateFirstImageAspectRatio() {
-    if (widget.images.isEmpty) return;
-    final img = widget.images[0] as Map<String, dynamic>;
-    final url = img['imageUrl'] as String?;
-    if (url == null) return;
-
-    final image = NetworkImage(url);
-    image
-        .resolve(const ImageConfiguration())
-        .addListener(
-          ImageStreamListener((ImageInfo info, bool _) {
-            if (mounted) {
-              setState(() {
-                _aspectRatio = info.image.width / info.image.height;
-              });
-            }
-          }),
-        );
-  }
 
   @override
   Widget build(BuildContext context) {
     final images = widget.images;
     if (images.isEmpty) return const SizedBox.shrink();
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Fallback to a reasonable default while loading aspect ratio
-        final height = _aspectRatio != null
-            ? constraints.maxWidth / _aspectRatio!
-            : 420.0;
+    return Stack(
+      children: [
+        PageView.builder(
+          itemCount: images.length,
+          onPageChanged: (i) => setState(() => _page = i),
+          itemBuilder: (_, i) {
+            final img = images[i] as Map<String, dynamic>;
+            final url = img['imageUrl'] as String?;
+            if (url == null) return Container(color: AppColors.primaryLight);
 
-        return Stack(
-          children: [
-            SizedBox(
-              height: height,
-              child: PageView.builder(
-                itemCount: images.length,
-                onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (_, i) {
-                  final img = images[i] as Map<String, dynamic>;
-                  final url = img['imageUrl'] as String?;
-                  if (url == null)
-                    return Container(color: AppColors.primaryLight);
-
-                  return Image.network(
-                    url,
-                    fit: BoxFit.fitWidth,
-                    width: constraints.maxWidth,
-                    errorBuilder: (_, __, ___) =>
-                        Container(color: AppColors.primaryLight),
-                  );
-                },
+            return Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) =>
+                  Container(color: AppColors.primaryLight),
+            );
+          },
+        ),
+        // Gradient overlay
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 250,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.9),
+                  Colors.black.withValues(alpha: 0.4),
+                  Colors.transparent,
+                ],
+                stops: const [0.0, 0.6, 1.0],
               ),
             ),
-            // Gradient overlay
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 80,
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.3),
-                      Colors.transparent,
-                    ],
+          ),
+        ),
+        // Indicators
+        if (images.length > 1)
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(images.length, (i) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  width: _page == i ? 20 : 6,
+                  height: 6,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: _page == i
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(3),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
-            // Indicators
-            if (images.length > 1)
-              Positioned(
-                bottom: 16,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(images.length, (i) {
-                    return AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      width: _page == i ? 20 : 6,
-                      height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        color: _page == i
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-          ],
-        );
-      },
+          ),
+      ],
     );
   }
 }

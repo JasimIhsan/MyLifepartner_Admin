@@ -118,7 +118,7 @@ class _LoginPageState extends State<LoginPage> {
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.inputBackground,
+              fillColor: AppColors.textWhite,
               contentPadding: EdgeInsets.symmetric(
                 vertical: isWeb ? 16 : 14,
                 horizontal: isWeb ? 16 : 10,
@@ -135,7 +135,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                borderSide: const BorderSide(
+                  color: AppColors.primary,
+                  width: 1.5,
+                ),
               ),
               errorBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -162,10 +165,7 @@ class _LoginPageState extends State<LoginPage> {
           const SizedBox(height: 15),
           Text(
             "We’ll send a verification code to your email.",
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textLight,
-            ),
+            style: TextStyle(fontSize: 12, color: AppColors.textLight),
           ),
           const SizedBox(height: 32),
           SizedBox(

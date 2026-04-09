@@ -33,11 +33,16 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
 
   bool get _isCurrentStepValid {
     switch (_currentStep) {
-      case 1: return _maritalStatus.isNotEmpty;
-      case 2: return _education.isNotEmpty;
-      case 3: return _occupation.isNotEmpty;
-      case 4: return _languages.isNotEmpty;
-      default: return true;
+      case 1:
+        return _maritalStatus.isNotEmpty;
+      case 2:
+        return _education.isNotEmpty;
+      case 3:
+        return _occupation.isNotEmpty;
+      case 4:
+        return _languages.isNotEmpty;
+      default:
+        return true;
     }
   }
 
@@ -113,6 +118,28 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   }
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  Widget _buildIllustration(String assetPath, {double height = 160}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      child: Center(
+        child: Image.asset(
+          assetPath,
+          height: height,
+          fit: BoxFit.contain,
+          errorBuilder: (ctx, _, __) => Container(
+            height: height,
+            width: height * 1.5,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(Icons.image, color: Colors.grey),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _stepHeader(String title, {String? subtitle}) {
     return Column(
@@ -192,7 +219,8 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "What age range are you looking for?",
             subtitle: "Drag the slider to set your preference.",
           ),
-          const SizedBox(height: 48),
+          _buildIllustration('assets/images/onboarding/relationship.png'),
+          const SizedBox(height: 28),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
@@ -218,7 +246,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
 
   Widget _buildMaritalStep() {
     const options = [
-      ('Never Married', 'NEVER_MARRIED'),
       ('Divorced', 'DIVORCED'),
       ('Widowed', 'WIDOWED'),
       ('Annulled', 'ANNULLED'),
@@ -234,7 +261,8 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "Which background are you open to?",
             subtitle: "Select at least one option.",
           ),
-          const SizedBox(height: 32),
+          _buildIllustration('assets/images/onboarding/marital_status.png'),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -274,7 +302,8 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "What education level do you prefer?",
             subtitle: "Select at least one option.",
           ),
-          const SizedBox(height: 32),
+          _buildIllustration('assets/images/onboarding/education.png'),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -318,7 +347,8 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "Any industry preference?",
             subtitle: "Select at least one option.",
           ),
-          const SizedBox(height: 32),
+          _buildIllustration('assets/images/onboarding/work.png'),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -370,7 +400,8 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "Any language preference?",
             subtitle: "Select at least one option.",
           ),
-          const SizedBox(height: 32),
+          _buildIllustration('assets/images/onboarding/language_female.png'),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -427,7 +458,11 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "What height range do you prefer?",
             subtitle: "Drag the slider to set your preference.",
           ),
-          const SizedBox(height: 48),
+          _buildIllustration(
+            'assets/images/onboarding/height_female.png',
+            height: 140,
+          ),
+          const SizedBox(height: 28),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Row(
@@ -489,10 +524,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: AppColors.textLight),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textLight)),
         const SizedBox(height: 2),
         Text(
           '$value $suffix',

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -45,24 +46,36 @@ class _LandingScreenState extends State<LandingScreen> {
               children: [
                 // ─── Background Image or Loader ──────────────────────────────────
                 Positioned.fill(
-                  child: state == ImageAssetLoadState.loading
-                      ? Container(
-                          color: Colors.white,
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
+                  child: ShaderMask(
+                    shaderCallback: (rect) {
+                      return const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.transparent, Colors.black],
+                        stops: [0.15, 0.45],
+                      ).createShader(rect);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: state == ImageAssetLoadState.loading
+                        ? Container(
+                            color: Colors.white,
+                            child: const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 2,
+                              ),
                             ),
-                          ),
-                        )
-                      : (landingAsset != null
-                            ? Image.network(
-                                landingAsset.imageUrl,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
+                          )
+                        : (landingAsset != null
+                            ? CachedNetworkImage(
+                                imageUrl: landingAsset.imageUrl,
+                                fit: BoxFit.contain,
+                                alignment: Alignment.bottomCenter,
+                                errorWidget: (context, url, error) =>
                                     _buildDefaultBackground(),
                               )
                             : _buildDefaultBackground()),
+                  ),
                 ),
 
                 // ─── Gradient Overlay ──────────────────────────────────────────
@@ -89,7 +102,7 @@ class _LandingScreenState extends State<LandingScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Column(
                       children: [
-                        const SizedBox(height: 5),
+                        const SizedBox(height: 20),
                         // Logo Placeholder
                         _buildLogo(),
                         const Spacer(),
@@ -118,6 +131,7 @@ class _LandingScreenState extends State<LandingScreen> {
     return Image.asset(
       'assets/images/landing_couple.png',
       fit: BoxFit.cover,
+      alignment: Alignment.topCenter,
       errorBuilder: (context, error, stackTrace) => Container(
         color: Colors.grey[900],
         child: const Center(

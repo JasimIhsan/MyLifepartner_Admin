@@ -76,7 +76,7 @@ class _FrontFaceIndicator extends StatelessWidget {
             height: 12,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.8),
+              color: AppColors.textPrimary.withValues(alpha: 0.8),
             ),
           )
               .animate(onPlay: (c) => c.repeat(reverse: true))
@@ -197,7 +197,7 @@ class _SideIndicator extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (i) {
-        return Icon(icon, size: 28, color: AppColors.primary.withValues(alpha: 0.7))
+        return Icon(icon, size: 28, color: AppColors.textPrimary.withValues(alpha: 0.7))
             .animate(
               onPlay: (c) => c.repeat(),
               delay: Duration(milliseconds: i * 200),
@@ -221,7 +221,7 @@ class _PulseRingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.5)
+      ..color = AppColors.textPrimary.withValues(alpha: 0.5)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0;
 
@@ -232,7 +232,7 @@ class _PulseRingPainter extends CustomPainter {
     // Inner dashed ring
     paint
       ..strokeWidth = 1.0
-      ..color = AppColors.primary.withValues(alpha: 0.3);
+      ..color = AppColors.textPrimary.withValues(alpha: 0.3);
     canvas.drawCircle(center, radius * 0.7, paint);
   }
 
@@ -244,7 +244,7 @@ class _CrosshairPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.45)
+      ..color = AppColors.textPrimary.withValues(alpha: 0.45)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
 
@@ -271,7 +271,7 @@ class _CurvedArrowPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.primary.withValues(alpha: 0.55)
+      ..color = AppColors.textPrimary.withValues(alpha: 0.55)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0
       ..strokeCap = StrokeCap.round;

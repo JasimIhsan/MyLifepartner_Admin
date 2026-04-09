@@ -6,5 +6,5 @@ class Env {
   // Environment flags
   // isProduction => Siraj
   // !isProduction => Jasim
-  static const bool isProduction = false;
+  static const bool isProduction = true;
 }

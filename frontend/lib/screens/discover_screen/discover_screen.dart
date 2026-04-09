@@ -8,6 +8,7 @@ import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
+import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
 import 'package:mylifepartner/services/match_service.dart';
 import 'package:provider/provider.dart';
 
@@ -397,7 +398,7 @@ class _ProfileBrowserCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _buildProfileInfo(),
+                        _buildProfileInfo(context),
                         const SizedBox(height: 32),
                         _ActionButtonsRow(
                           onInterest: onInterest,
@@ -432,7 +433,7 @@ class _ProfileBrowserCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileInfo() {
+  Widget _buildProfileInfo(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -449,10 +450,21 @@ class _ProfileBrowserCard extends StatelessWidget {
             ),
             if (profile.isVerified) ...[
               const SizedBox(width: 8),
-              Image.asset(
-                'assets/icons/verified_icon.png',
-                width: 24,
-                height: 24,
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) => VerifiedProfileBottomSheet(
+                      profileName: profile.name,
+                    ),
+                  );
+                },
+                child: Image.asset(
+                  'assets/icons/verified_icon.png',
+                  width: 24,
+                  height: 24,
+                ),
               ),
             ],
           ],
@@ -516,69 +528,41 @@ class _SideNavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child:
-          Container(
-                margin: EdgeInsets.only(
-                  left: isLeft ? 10 : 0,
-                  right: !isLeft ? 10 : 0,
-                ),
-                width: 54,
-                height: 54,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.white.withValues(alpha: 0.35),
-                      Colors.white.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.45),
-                    width: 1.5,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.15),
-                      blurRadius: 25,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: ClipOval(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white.withValues(alpha: 0.05),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          icon,
-                          color: Colors.white,
-                          size: 30,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              blurRadius: 10,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-              .animate()
-              .fadeIn(duration: 800.ms)
-              .scale(
-                begin: const Offset(0.8, 0.8),
-                end: const Offset(1.0, 1.0),
-                curve: Curves.elasticOut,
-                duration: 1000.ms,
-              ),
+      child: Container(
+        margin: EdgeInsets.only(
+          left: isLeft ? 16 : 0,
+          right: !isLeft ? 16 : 0,
+        ),
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white.withValues(alpha: 0.95),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            color: AppColors.textPrimary,
+            size: 28,
+          ),
+        ),
+      )
+      .animate()
+      .fadeIn(duration: 400.ms)
+      .scale(
+        begin: const Offset(0.8, 0.8),
+        end: const Offset(1.0, 1.0),
+        curve: Curves.easeOutBack,
+        duration: 500.ms,
+      ),
     );
   }
 }
@@ -599,7 +583,7 @@ class _ActionButtonsRow extends StatelessWidget {
         Expanded(
           child: _ActionButton(
             label: 'Not Interested',
-            icon: Icons.close_rounded,
+            icon: Icons.hourglass_empty,
             onTap: onNotInterested,
             primary: false,
           ),
