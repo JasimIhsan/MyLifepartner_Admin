@@ -5,7 +5,7 @@ const storage = multer.memoryStorage();
 
 export const multerConfig = multer({
    storage,
-   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
+   limits: { fileSize: 15 * 1024 * 1024 }, // 15 MB limit
    fileFilter: (req, file, cb) => {
       const allowedMimes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
       if (allowedMimes.includes(file.mimetype)) {
