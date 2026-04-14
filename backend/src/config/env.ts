@@ -18,6 +18,11 @@ const envSchema = z.object({
    SMTP_USER: z.string().email(),
    SMTP_PASS: z.string().min(1),
    SMTP_FROM: z.string().email().optional(),
+
+   // ZEGOCLOUD — populate from https://console.zegocloud.com/
+   ZEGO_APP_ID: z.coerce.number().default(0),
+   ZEGO_APP_SIGN: z.string().default(""),
+   ZEGO_SERVER_SECRET: z.string().default(""),
 });
 
 const _env = envSchema.safeParse(process.env);

@@ -6,6 +6,7 @@ import { seedAdmins } from "./seeders/admin";
 import { seedSubscriptionPlans } from "./seeders/plan";
 import { seedProfileData } from "./seeders/answers";
 import { seedUsers } from "./seeders/user";
+import { seedMutualConnections } from "./seeders/mutual_connections";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ async function main() {
       await seedSubscriptionPlans(prisma);
       await seedProfileData(prisma);
       await seedUsers(prisma);
+      await seedMutualConnections(prisma);
 
       console.log("Database seeding completed successfully.");
    } catch (error) {

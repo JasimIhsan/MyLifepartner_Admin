@@ -43,7 +43,7 @@ dependencies:
    dio: ^5.9.1
    shared_preferences: ^2.5.4
    image_picker: ^1.2.1
-   file_picker: ^10.3.10
+   file_picker: 10.3.8
    mime: ^2.0.0
    cached_network_image: ^3.4.1
    swipeable_stack: ^0.4.3
@@ -53,6 +53,12 @@ dependencies:
    http_parser: ^4.1.2
    app_links: ^6.4.1
    geolocator: ^14.0.2
+   zego_uikit_prebuilt_call: ^4.22.4
+   intl: ^0.20.2
+   zego_uikit_signaling_plugin: ^2.8.20
+
+dependency_overrides:
+   zego_zim: 2.21.1
 
 dev_dependencies:
    flutter_test:

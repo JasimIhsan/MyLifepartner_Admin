@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
+import 'package:mylifepartner/providers/chat_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
 import 'package:mylifepartner/screens/discover_screen/discover_screen.dart';
 import 'package:mylifepartner/screens/likes_screen/likes_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/services/zego_service.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
@@ -29,11 +32,31 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initZegoAndChat();
       _checkProfileCompletion();
     });
   }
 
-  // ─── Profile completion check ──────────────────────────────────────────────
+  Future<void> _initZegoAndChat() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+      if (userId == null || !mounted) return;
+
+      final userIdStr = userId.toString();
+      if (!ZegoService.instance.isLoggedIn) {
+        await ZegoService.instance.login(userIdStr, 'User $userId');
+      }
+
+      if (mounted) {
+        context.read<ChatProvider>().setCurrentUserId(userId);
+        context.read<ChatProvider>().startListening();
+        context.read<ChatProvider>().loadConversations();
+      }
+    } catch (e) {
+      debugPrint('[HomePage] Zego init failed: $e');
+    }
+  }
 
   Future<void> _checkProfileCompletion() async {
     if (!mounted || _isSheetShowing || _isCheckingProfile) return;

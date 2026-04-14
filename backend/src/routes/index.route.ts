@@ -20,6 +20,12 @@ router.use("/user/profile", profileRoute);
 router.use("/user/subscriptions", userSubscriptionRoute);
 router.use("/matches", matchRoute);
 
+import chatRoute from "@/routes/user/chat.routes";
+router.use("/chat", chatRoute);
+
+import zegoRoute from "@/routes/user/zego.routes";
+router.use("/zego", zegoRoute);
+
 router.use("/admin/auth", adminAuthRoute);
 router.use("/admin/users", authenticateAdmin, adminUsersRoute);
 router.use("/admin/questionnaire", authenticateAdmin, adminQuestionnaireRoute);

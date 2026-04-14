@@ -26,6 +26,10 @@ model User {
   subscriptions     UserSubscription[]
   userFeature       UserFeature?
 
+  conversationsAsOne Conversation[] @relation("ConversationUserOne")
+  conversationsAsTwo Conversation[] @relation("ConversationUserTwo")
+  chatMessages       ChatMessage[]
+
   @@map("users")
 }
 
@@ -382,4 +386,42 @@ enum ImageAssetsSection {
   ADS
   ONBOARDING
   ICON
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+}
+
+// ─── Chat ───────────────────────────────────────────────────────────────────
+
+model Conversation {
+  id        Int           @id @default(autoincrement())
+  userOneId Int
+  userTwoId Int
+  userOne   User          @relation("ConversationUserOne", fields: [userOneId], references: [id])
+  userTwo   User          @relation("ConversationUserTwo", fields: [userTwoId], references: [id])
+  messages  ChatMessage[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([userOneId, userTwoId])
+  @@map("conversations")
+}
+
+model ChatMessage {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  senderId       Int
+  sender         User         @relation(fields: [senderId], references: [id])
+  content        String
+  messageType    MessageType  @default(TEXT)
+  zegoMessageId  String?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
 }

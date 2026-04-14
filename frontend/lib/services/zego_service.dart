@@ -1,0 +1,146 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:zego_zim/zego_zim.dart';
+import 'package:mylifepartner/config/env.dart';
+
+/// Singleton service to manage ZEGOCLOUD ZIM (In-app Messaging) lifecycle.
+class ZegoService {
+  ZegoService._();
+  static final ZegoService instance = ZegoService._();
+
+  final _messageController = StreamController<ZegoZIMMessage>.broadcast();
+  Stream<ZegoZIMMessage> get onMessageReceived => _messageController.stream;
+
+  bool _isInitialized = false;
+  bool _isLoggedIn = false;
+
+  bool get isLoggedIn => _isLoggedIn;
+
+  /// Initialize ZIM with app credentials. Call once at app startup.
+  void init() {
+    if (_isInitialized) return;
+
+    final appConfig = ZIMAppConfig()
+      ..appID = Env.zegoAppId
+      ..appSign = Env.zegoAppSign;
+
+    ZIM.create(appConfig);
+    _isInitialized = true;
+    _setupEventHandlers();
+    debugPrint('[ZegoService] ZIM initialized');
+  }
+
+  ZIM _getZIM() {
+    final zim = ZIM.getInstance();
+    if (zim == null) {
+      debugPrint('[ZegoService] ZIM instance is null, re-initializing...');
+      _isInitialized = false;
+      init();
+      final retryZim = ZIM.getInstance();
+      if (retryZim == null) {
+        throw StateError(
+          'ZIM native instance not available. '
+          'Check zegoAppId (${Env.zegoAppId}) and zegoAppSign.',
+        );
+      }
+      return retryZim;
+    }
+    return zim;
+  }
+
+  void _setupEventHandlers() {
+    ZIMEventHandler.onPeerMessageReceived = (
+      ZIM zim,
+      List<ZIMMessage> messageList,
+      ZIMMessageReceivedInfo info,
+      String fromUserID,
+    ) {
+      for (final msg in messageList) {
+        _messageController.add(ZegoZIMMessage(
+          messageID: msg.messageID.toString(),
+          fromUserId: fromUserID,
+          content: msg is ZIMTextMessage ? msg.message : '',
+          timestamp: msg.timestamp,
+        ));
+      }
+    };
+  }
+
+  /// Log in to ZIM. userId must be a string representation of the app user ID.
+  Future<void> login(String userId, String userName) async {
+    if (_isLoggedIn) return;
+
+    final zim = _getZIM();
+    final loginConfig = ZIMLoginConfig()..userName = userName;
+
+    try {
+      await zim.login(userId, loginConfig);
+      _isLoggedIn = true;
+      debugPrint('[ZegoService] Logged in as $userId');
+    } catch (e) {
+      debugPrint('[ZegoService] Login failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Send a peer text message via ZIM.
+  Future<ZIMMessageSentResult?> sendMessage(
+    String toUserId,
+    String content,
+  ) async {
+    if (!_isLoggedIn) {
+      debugPrint('[ZegoService] Not logged in, cannot send message');
+      return null;
+    }
+
+    final zim = _getZIM();
+    final textMessage = ZIMTextMessage(message: content);
+    final sendConfig = ZIMMessageSendConfig();
+
+    try {
+      final result = await zim.sendMessage(
+        textMessage,
+        toUserId,
+        ZIMConversationType.peer,
+        sendConfig,
+      );
+      return result;
+    } catch (e) {
+      debugPrint('[ZegoService] Send message failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Logout and cleanup
+  Future<void> logout() async {
+    try {
+      ZIM.getInstance()?.logout();
+      _isLoggedIn = false;
+      debugPrint('[ZegoService] Logged out');
+    } catch (e) {
+      debugPrint('[ZegoService] Logout failed: $e');
+    }
+  }
+
+  void destroy() {
+    _messageController.close();
+    ZIM.getInstance()?.destroy();
+    _isInitialized = false;
+    _isLoggedIn = false;
+  }
+}
+
+/// Simple wrapper for incoming ZIM messages
+class ZegoZIMMessage {
+  final String messageID;
+  final String fromUserId;
+  final String content;
+  final int timestamp;
+
+  ZegoZIMMessage({
+    required this.messageID,
+    required this.fromUserId,
+    required this.content,
+    required this.timestamp,
+  });
+}

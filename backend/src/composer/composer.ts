@@ -34,6 +34,9 @@ export const questionnaireRepository = new QuestionnaireRepository();
 export const subscriptionRepository = new SubscriptionRepository();
 export const matchRepository = new MatchRepository();
 
+import { ChatRepository } from "@/repositories/chat.repository";
+export const chatRepository = new ChatRepository();
+
 // ... (Infrastucture Svcs)
 import { CacheService } from "@/services/cache.service";
 import { EmailService } from "@/services/email.service";
@@ -82,6 +85,12 @@ export const matchService = new MatchService(matchRepository, s3Service, userFea
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 export const userSubscriptionService = new UserSubscriptionService(subscriptionRepository, userFeatureRepository);
 
+import { ChatService } from "@/services/chat.service";
+export const chatService = new ChatService(chatRepository);
+
+import { ZegoService } from "@/services/zego.service";
+export const zegoService = new ZegoService();
+
 // ─── 4. Controllers ───────────────────────────────────────────────────────────
 import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";
 import { AdminManagementController } from "@/controllers/admin/admin.management.controller";
@@ -117,3 +126,9 @@ export const matchController = new MatchController(matchService);
 
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService);
+
+import { ChatController } from "@/controllers/user/chat.controller";
+export const chatController = new ChatController(chatService);
+
+import { ZegoController } from "@/controllers/user/zego.controller";
+export const zegoController = new ZegoController(zegoService);
