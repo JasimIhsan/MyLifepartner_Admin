@@ -92,10 +92,18 @@ class ZegoService {
       debugPrint('[ZegoService] Not logged in, cannot send message');
       return null;
     }
+    debugPrint('[ZegoService] isLoggedIn=$_isLoggedIn, sending...');
 
     final zim = _getZIM();
     final textMessage = ZIMTextMessage(message: content);
     final sendConfig = ZIMMessageSendConfig();
+    final notification = ZIMMessageSendNotification(
+      onMessageAttached: (message) {
+        debugPrint('[ZegoService] Message attached, id: ${message.messageID}');
+      },
+    );
+
+    debugPrint('[ZegoService] Sending to: "$toUserId", content length: ${content.length}');
 
     try {
       final result = await zim.sendMessage(
@@ -103,11 +111,14 @@ class ZegoService {
         toUserId,
         ZIMConversationType.peer,
         sendConfig,
+        notification,
       );
       return result;
     } catch (e) {
-      debugPrint('[ZegoService] Send message failed: $e');
-      rethrow;
+      // ZIM errors like "peer user not exist" (109001) should not block
+      // messaging — messages will still be persisted to the backend.
+      debugPrint('[ZegoService] ZIM send failed (non-fatal): $e');
+      return null;
     }
   }
 

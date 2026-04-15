@@ -98,7 +98,7 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  /// Send a message: persist to backend + send via ZIM
+  /// Send a message: persist to backend (source of truth) + best-effort ZIM delivery
   Future<void> sendMessage({
     required int receiverId,
     required String content,
@@ -107,17 +107,13 @@ class ChatProvider extends ChangeNotifier {
     if (content.trim().isEmpty) return;
 
     try {
-      // 1. Send via ZIM for real-time delivery
-      await ZegoService.instance
-          .sendMessage(receiverId.toString(), content);
-
-      // 2. Persist to backend
+      // 1. Persist to backend first — this is the source of truth
       final saved = await ChatApiService.sendMessage(
         receiverId: receiverId,
         content: content,
       );
 
-      // 3. Add to local state
+      // 2. Add to local state
       if (saved != null) {
         final message = ChatMessage.fromJson(saved);
         final convoId = message.conversationId;
@@ -125,6 +121,14 @@ class ChatProvider extends ChangeNotifier {
         _messagesByConversation[convoId]!.add(message);
         notifyListeners();
       }
+
+      // 3. Best-effort ZIM delivery (won't block if peer is offline/unregistered)
+      ZegoService.instance
+          .sendMessage(receiverId.toString(), content)
+          .catchError((e) {
+        debugPrint('[ChatProvider] ZIM delivery failed (non-fatal): $e');
+        return null;
+      });
     } catch (e) {
       debugPrint('[ChatProvider] Failed to send message: $e');
       rethrow;

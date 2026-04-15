@@ -38,8 +38,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       final chatProvider = context.read<ChatProvider>();
       // Find the existing conversation if it exists
       final existingConvo = chatProvider.conversations.where((c) {
-        return (c.userOneId == widget.currentUserId && c.userTwoId == widget.profile.id) ||
-               (c.userOneId == widget.profile.id && c.userTwoId == widget.currentUserId);
+        return (c.userOneId == widget.currentUserId &&
+                c.userTwoId == widget.profile.id) ||
+            (c.userOneId == widget.profile.id &&
+                c.userTwoId == widget.currentUserId);
       }).firstOrNull;
 
       if (existingConvo != null) {
@@ -65,18 +67,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _msgController.clear();
 
     final chatProvider = context.read<ChatProvider>();
-    await chatProvider.sendMessage(
-      receiverId: widget.profile.id,
-      content: text,
-      conversationId: _conversationId,
-    );
-     _initChat(); // Re-fetch to update convo id if it was newly created
+    try {
+      print(" the id is ${widget.profile.id}");
+      await chatProvider.sendMessage(
+        receiverId: widget.profile.id,
+        content: text,
+        conversationId: _conversationId,
+      );
+      _initChat(); // Re-fetch to update convo id if it was newly created
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send message. Try again.')),
+        );
+      }
+    }
   }
 
   String? get _profileImageUrl {
     final primary = widget.profile.images.where((img) => img.isPrimary);
     if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (widget.profile.images.isNotEmpty) return widget.profile.images.first.imageUrl;
+    if (widget.profile.images.isNotEmpty)
+      return widget.profile.images.first.imageUrl;
     return null;
   }
 
@@ -109,11 +121,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                   return ListView.builder(
                     controller: _scrollController,
-                    reverse: true, // Show bottom to top since messages usually reverse ordered
+                    reverse: true, // Render from bottom up
                     padding: const EdgeInsets.all(16),
                     itemCount: messages.length,
                     itemBuilder: (context, index) {
-                      final msg = messages[index];
+                      // Reverse the index mapping since the list is oldest-first,
+                      // and we want newest (last in list) at the bottom (index 0 of ListView).
+                      final msg = messages[messages.length - 1 - index];
                       final isMe = msg.senderId == widget.currentUserId;
                       return _buildMessageBubble(msg, isMe);
                     },
@@ -134,8 +148,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       elevation: 1,
       shadowColor: Colors.black12,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textPrimary, size: 20),
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: AppColors.textPrimary,
+          size: 20,
+        ),
         onPressed: () => Navigator.pop(context),
       ),
       title: Row(
@@ -147,7 +164,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 ? NetworkImage(_profileImageUrl!)
                 : null,
             child: _profileImageUrl == null
-                ? const Icon(Icons.person, color: AppColors.textSecondary, size: 20)
+                ? const Icon(
+                    Icons.person,
+                    color: AppColors.textSecondary,
+                    size: 20,
+                  )
                 : null,
           ),
           const SizedBox(width: 10),
@@ -272,9 +293,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 minLines: 1,
                 decoration: const InputDecoration(
                   hintText: 'Type a message...',
-                  hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 15),
+                  hintStyle: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                  ),
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
                 style: const TextStyle(
                   color: AppColors.textPrimary,
