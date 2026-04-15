@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/providers/call_provider.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
@@ -52,6 +53,13 @@ class _HomePageState extends State<HomePage> {
         context.read<ChatProvider>().setCurrentUserId(userId);
         context.read<ChatProvider>().startListening();
         context.read<ChatProvider>().loadConversations();
+
+        final callProvider = context.read<CallProvider>();
+        callProvider.configure(
+          userId: userIdStr,
+          userName: 'User $userId',
+        );
+        callProvider.startListening();
       }
     } catch (e) {
       debugPrint('[HomePage] Zego init failed: $e');

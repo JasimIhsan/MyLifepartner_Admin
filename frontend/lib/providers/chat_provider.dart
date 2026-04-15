@@ -51,6 +51,9 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void _handleIncomingMessage(ZegoZIMMessage msg) {
+    // Skip JSON call-signaling messages — handled by CallProvider.
+    if (msg.content.startsWith('{')) return;
+
     print("msg recieved is: $msg");
     // Do NOT persist to backend here, the sender is responsible for that.
     // Instead, we just show it up locally or show an unread nudge.

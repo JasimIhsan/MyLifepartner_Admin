@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
+import 'package:mylifepartner/providers/call_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/call_screen.dart';
 import 'package:intl/intl.dart';
@@ -88,6 +89,23 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         );
       }
     }
+  }
+
+  void _startCall({required bool isVideo}) {
+    final callProvider = context.read<CallProvider>();
+    final otherUserId = widget.profile.id.toString();
+
+    // Send invitation signal to the other user
+    callProvider.initiateCall(otherUserId: otherUserId, isVideo: isVideo);
+
+    // Navigate caller to the call screen immediately
+    CallScreen.startCall(
+      context,
+      currentUserId: widget.currentUserId.toString(),
+      currentUserName: 'User ${widget.currentUserId}',
+      otherUserId: otherUserId,
+      isVideoCall: isVideo,
+    );
   }
 
   String? get _profileImageUrl {
@@ -194,23 +212,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.call_rounded, color: AppColors.primary),
-          onPressed: () => CallScreen.startCall(
-            context,
-            currentUserId: widget.currentUserId.toString(),
-            currentUserName: 'User ${widget.currentUserId}',
-            otherUserId: widget.profile.id.toString(),
-            isVideoCall: false,
-          ),
+          onPressed: () => _startCall(isVideo: false),
         ),
         IconButton(
           icon: const Icon(Icons.videocam_rounded, color: AppColors.primary),
-          onPressed: () => CallScreen.startCall(
-            context,
-            currentUserId: widget.currentUserId.toString(),
-            currentUserName: 'User ${widget.currentUserId}',
-            otherUserId: widget.profile.id.toString(),
-            isVideoCall: true,
-          ),
+          onPressed: () => _startCall(isVideo: true),
         ),
         const SizedBox(width: 8),
       ],

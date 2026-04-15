@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:zego_zim/zego_zim.dart';
 import 'package:mylifepartner/config/env.dart';
@@ -120,6 +121,37 @@ class ZegoService {
       debugPrint('[ZegoService] ZIM send failed (non-fatal): $e');
       return null;
     }
+  }
+
+  // ─── Call Signaling ──────────────────────────────────────────────────────
+
+  /// Send a call invitation signal via ZIM.
+  Future<void> sendCallInvitation({
+    required String toUserId,
+    required String callerName,
+    required String callId,
+    required bool isVideo,
+  }) async {
+    final payload = jsonEncode({
+      'type': 'call_invite',
+      'callId': callId,
+      'callerName': callerName,
+      'isVideo': isVideo,
+    });
+    await sendMessage(toUserId, payload);
+  }
+
+  /// Send a call response signal (accept / decline / cancel).
+  Future<void> sendCallResponse({
+    required String toUserId,
+    required String callId,
+    required String responseType,
+  }) async {
+    final payload = jsonEncode({
+      'type': responseType,
+      'callId': callId,
+    });
+    await sendMessage(toUserId, payload);
   }
 
   /// Logout and cleanup
