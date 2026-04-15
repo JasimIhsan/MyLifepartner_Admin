@@ -11,8 +11,14 @@ class ChatProvider extends ChangeNotifier {
   int? _currentUserId;
   StreamSubscription? _zimSubscription;
 
+  int? _activeUserId;
+  final Set<int> _unreadUserIds = {};
+
   List<ChatConversation> get conversations => _conversations;
   bool get isLoading => _isLoading;
+
+  int? get activeUserId => _activeUserId;
+  bool hasUnreadNudge(int userId) => _unreadUserIds.contains(userId);
 
   List<ChatMessage> getMessages(int conversationId) {
     return _messagesByConversation[conversationId] ?? [];
@@ -20,6 +26,19 @@ class ChatProvider extends ChangeNotifier {
 
   void setCurrentUserId(int userId) {
     _currentUserId = userId;
+  }
+
+  void setActiveUserId(int? userId) {
+    _activeUserId = userId;
+    if (userId != null) {
+      clearUnreadNudge(userId);
+    }
+  }
+
+  void clearUnreadNudge(int userId) {
+    if (_unreadUserIds.remove(userId)) {
+      notifyListeners();
+    }
   }
 
   /// Start listening for incoming ZIM messages
@@ -31,38 +50,60 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void _handleIncomingMessage(ZegoZIMMessage msg) {
-    // We'll persist to backend and add to local state
+    print("msg recieved is: $msg");
+    // Do NOT persist to backend here, the sender is responsible for that.
+    // Instead, we just show it up locally or show an unread nudge.
     final senderId = int.tryParse(msg.fromUserId);
     if (senderId == null || _currentUserId == null) return;
 
-    // Persist to backend in background
-    ChatApiService.sendMessage(
-      receiverId: _currentUserId!,
-      content: msg.content,
-      zegoMessageId: msg.messageID,
-    ).catchError((e) {
-      debugPrint('[ChatProvider] Failed to persist incoming message: $e');
-      return null;
-    });
+    final conversationIndex = _conversations.indexWhere((c) => c.otherUserId == senderId);
+    ChatConversation? conversation;
+    if (conversationIndex != -1) {
+      conversation = _conversations[conversationIndex];
+    }
 
-    // Refresh conversations to pick up the new message
-    loadConversations();
+    if (_activeUserId == senderId) {
+      // Append to local state if active
+      if (conversation != null) {
+        final message = ChatMessage(
+          id: DateTime.now().microsecondsSinceEpoch,
+          conversationId: conversation.id,
+          senderId: senderId,
+          content: msg.content,
+          createdAt: DateTime.now(),
+        );
+
+        _messagesByConversation[conversation.id] ??= [];
+        _messagesByConversation[conversation.id]!.add(message);
+      }
+    } else {
+      // They are not in this chat interface actively, show nudge
+      _unreadUserIds.add(senderId);
+    }
+
+    // Refresh conversations to pick up the new message silently
+    notifyListeners();
+    loadConversations(showLoading: false);
   }
 
   /// Load all conversations
-  Future<void> loadConversations() async {
+  Future<void> loadConversations({bool showLoading = true}) async {
     if (_currentUserId == null) return;
 
-    _isLoading = true;
-    notifyListeners();
+    if (showLoading) {
+      _isLoading = true;
+      notifyListeners();
+    }
 
     try {
       final data = await ChatApiService.getConversations();
       _conversations = data
-          .map((json) => ChatConversation.fromJson(
-                json as Map<String, dynamic>,
-                _currentUserId!,
-              ))
+          .map(
+            (json) => ChatConversation.fromJson(
+              json as Map<String, dynamic>,
+              _currentUserId!,
+            ),
+          )
           .toList();
     } catch (e) {
       debugPrint('[ChatProvider] Failed to load conversations: $e');
@@ -75,13 +116,9 @@ class ChatProvider extends ChangeNotifier {
   /// Load messages for a specific conversation
   Future<void> loadMessages(int conversationId, {int page = 1}) async {
     try {
-      final data = await ChatApiService.getMessages(
-        conversationId,
-        page: page,
-      );
+      final data = await ChatApiService.getMessages(conversationId, page: page);
       final messages = (data['messages'] as List<dynamic>? ?? [])
-          .map((json) =>
-              ChatMessage.fromJson(json as Map<String, dynamic>))
+          .map((json) => ChatMessage.fromJson(json as Map<String, dynamic>))
           .toList();
 
       if (page == 1) {
@@ -126,9 +163,9 @@ class ChatProvider extends ChangeNotifier {
       ZegoService.instance
           .sendMessage(receiverId.toString(), content)
           .catchError((e) {
-        debugPrint('[ChatProvider] ZIM delivery failed (non-fatal): $e');
-        return null;
-      });
+            debugPrint('[ChatProvider] ZIM delivery failed (non-fatal): $e');
+            return null;
+          });
     } catch (e) {
       debugPrint('[ChatProvider] Failed to send message: $e');
       rethrow;

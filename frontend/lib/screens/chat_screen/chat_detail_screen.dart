@@ -35,7 +35,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _initChat() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       final chatProvider = context.read<ChatProvider>();
+      chatProvider.setActiveUserId(widget.profile.id);
+
       // Find the existing conversation if it exists
       final existingConvo = chatProvider.conversations.where((c) {
         return (c.userOneId == widget.currentUserId &&
@@ -55,6 +58,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   void dispose() {
+    if (mounted) {
+      context.read<ChatProvider>().setActiveUserId(null);
+    }
     _msgController.dispose();
     _scrollController.dispose();
     super.dispose();

@@ -139,6 +139,7 @@ class _ChatListTile extends StatelessWidget {
     final chatProvider = context.watch<ChatProvider>();
     final conversation = chatProvider.conversations.where((c) => c.otherUserId == profile.id).firstOrNull;
     final lastMessageStr = conversation?.lastMessage ?? 'Tap to start chatting';
+    final hasUnread = chatProvider.hasUnreadNudge(profile.id);
     
     return InkWell(
       onTap: () async {
@@ -197,7 +198,17 @@ class _ChatListTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      if (conversation == null)
+                      if (hasUnread)
+                        Container(
+                          width: 10,
+                          height: 10,
+                          margin: const EdgeInsets.only(right: 4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        )
+                      else if (conversation == null)
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
@@ -221,8 +232,12 @@ class _ChatListTile extends StatelessWidget {
                     lastMessageStr,
                     style: TextStyle(
                       fontSize: 14,
-                      color: conversation == null ? AppColors.textSecondary : AppColors.textPrimary,
-                      fontWeight: conversation == null ? FontWeight.normal : FontWeight.w500,
+                      color: conversation == null 
+                          ? AppColors.textSecondary 
+                          : (hasUnread ? AppColors.textPrimary : AppColors.textSecondary),
+                      fontWeight: conversation == null 
+                          ? FontWeight.normal 
+                          : (hasUnread ? FontWeight.w700 : FontWeight.w500),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
