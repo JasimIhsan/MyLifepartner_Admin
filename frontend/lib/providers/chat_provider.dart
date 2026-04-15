@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/services/chat_service.dart';
 import 'package:mylifepartner/services/zego_service.dart';
@@ -55,6 +56,9 @@ class ChatProvider extends ChangeNotifier {
     // Instead, we just show it up locally or show an unread nudge.
     final senderId = int.tryParse(msg.fromUserId);
     if (senderId == null || _currentUserId == null) return;
+
+    // Vibrate the phone
+    HapticFeedback.vibrate();
 
     final conversationIndex = _conversations.indexWhere((c) => c.otherUserId == senderId);
     ChatConversation? conversation;
