@@ -6,7 +6,7 @@ import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/call_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
-import 'package:mylifepartner/screens/chat_screen/call_screen.dart';
+import 'package:mylifepartner/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:intl/intl.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -95,16 +95,22 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final callProvider = context.read<CallProvider>();
     final otherUserId = widget.profile.id.toString();
 
-    // Send invitation signal to the other user
-    callProvider.initiateCall(otherUserId: otherUserId, isVideo: isVideo);
-
-    // Navigate caller to the call screen immediately
-    CallScreen.startCall(
-      context,
-      currentUserId: widget.currentUserId.toString(),
-      currentUserName: 'User ${widget.currentUserId}',
+    // Send invitation signal and track outgoing call state
+    callProvider.initiateCall(
       otherUserId: otherUserId,
-      isVideoCall: isVideo,
+      otherUserName: widget.profile.name,
+      isVideo: isVideo,
+    );
+
+    // Navigate to the "Calling..." screen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OutgoingCallScreen(
+          calleeName: widget.profile.name,
+          isVideoCall: isVideo,
+        ),
+      ),
     );
   }
 

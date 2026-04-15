@@ -18,10 +18,26 @@ class IncomingCall {
   });
 }
 
-/// Manages call signaling state – incoming invitations, accept/decline flow.
+/// Represents an outgoing call (caller is waiting for callee to respond).
+class OutgoingCall {
+  final String callId;
+  final String calleeId;
+  final String calleeName;
+  final bool isVideo;
+
+  const OutgoingCall({
+    required this.callId,
+    required this.calleeId,
+    required this.calleeName,
+    required this.isVideo,
+  });
+}
+
+/// Manages call signaling state – incoming/outgoing invitations.
 class CallProvider extends ChangeNotifier {
   StreamSubscription? _zimSubscription;
   IncomingCall? _incomingCall;
+  OutgoingCall? _outgoingCall;
   String? _currentUserId;
   String? _currentUserName;
 
@@ -32,8 +48,15 @@ class CallProvider extends ChangeNotifier {
   bool _wasDeclined = false;
   bool get wasDeclined => _wasDeclined;
 
+  /// Whether the callee accepted the call (caller should navigate).
+  bool _wasAccepted = false;
+  bool get wasAccepted => _wasAccepted;
+
   IncomingCall? get incomingCall => _incomingCall;
   bool get hasIncomingCall => _incomingCall != null;
+
+  OutgoingCall? get outgoingCall => _outgoingCall;
+  bool get hasOutgoingCall => _outgoingCall != null;
 
   void configure({required String userId, required String userName}) {
     _currentUserId = userId;
@@ -48,7 +71,6 @@ class CallProvider extends ChangeNotifier {
   }
 
   void _handleMessage(ZegoZIMMessage msg) {
-    // Only process JSON call-signaling messages.
     if (!msg.content.startsWith('{')) return;
 
     try {
@@ -68,17 +90,16 @@ class CallProvider extends ChangeNotifier {
           break;
 
         case 'call_decline':
+          // Callee declined — caller sees feedback.
           _wasDeclined = true;
+          _outgoingCall = null;
           notifyListeners();
-          // Auto-clear after 3 seconds
-          Future.delayed(const Duration(seconds: 3), () {
-            _wasDeclined = false;
-            notifyListeners();
-          });
           break;
 
         case 'call_accept':
-          // Callee accepted — caller is already on CallScreen, nothing to do.
+          // Callee accepted — caller navigates to call screen.
+          _wasAccepted = true;
+          notifyListeners();
           break;
 
         case 'call_cancel':
@@ -98,13 +119,24 @@ class CallProvider extends ChangeNotifier {
     return 'call_${ids[0]}_${ids[1]}';
   }
 
-  /// Caller initiates a call — sends invitation signal via ZIM.
+  /// Caller initiates a call — sends invitation and tracks outgoing state.
   Future<void> initiateCall({
     required String otherUserId,
+    required String otherUserName,
     required bool isVideo,
   }) async {
     if (_currentUserId == null) return;
     final callId = generateCallId(_currentUserId!, otherUserId);
+
+    _outgoingCall = OutgoingCall(
+      callId: callId,
+      calleeId: otherUserId,
+      calleeName: otherUserName,
+      isVideo: isVideo,
+    );
+    _wasDeclined = false;
+    _wasAccepted = false;
+    notifyListeners();
 
     await ZegoService.instance.sendCallInvitation(
       toUserId: otherUserId,
@@ -112,6 +144,28 @@ class CallProvider extends ChangeNotifier {
       callId: callId,
       isVideo: isVideo,
     );
+  }
+
+  /// Caller cancels the outgoing call.
+  void cancelOutgoingCall() {
+    if (_outgoingCall == null) return;
+
+    ZegoService.instance.sendCallResponse(
+      toUserId: _outgoingCall!.calleeId,
+      callId: _outgoingCall!.callId,
+      responseType: 'call_cancel',
+    );
+
+    _outgoingCall = null;
+    notifyListeners();
+  }
+
+  /// Clear outgoing call state after navigating to call screen.
+  void clearOutgoingCall() {
+    _outgoingCall = null;
+    _wasAccepted = false;
+    _wasDeclined = false;
+    notifyListeners();
   }
 
   /// Callee accepts the incoming call.
@@ -123,9 +177,6 @@ class CallProvider extends ChangeNotifier {
       callId: _incomingCall!.callId,
       responseType: 'call_accept',
     );
-
-    // The overlay reads incomingCall to navigate, so don't clear it yet.
-    // It will be cleared after navigation.
   }
 
   /// Clear incoming call state (after navigation or dismissal).
@@ -146,11 +197,6 @@ class CallProvider extends ChangeNotifier {
 
     _incomingCall = null;
     notifyListeners();
-  }
-
-  /// Reset declined state (e.g. when leaving call screen).
-  void clearDeclined() {
-    _wasDeclined = false;
   }
 
   @override

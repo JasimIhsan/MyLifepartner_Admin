@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/main.dart' show navigatorKey;
 import 'package:mylifepartner/providers/call_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/call_screen.dart';
 
@@ -42,12 +43,12 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
 
     provider.acceptCall();
 
-    // Use the callee's own credentials (from CallProvider), not the caller's.
-    Navigator.of(context).push(
+    // Use navigatorKey to push onto MaterialApp's navigator.
+    navigatorKey.currentState?.push(
       MaterialPageRoute(
         builder: (_) => CallScreen(
           callID: call.callId,
-          userID: provider.currentUserId ?? call.callerId,
+          userID: provider.currentUserId ?? '',
           userName: provider.currentUserName ?? 'User',
           isVideoCall: call.isVideo,
         ),
@@ -187,15 +188,12 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Decline
                       _CallActionButton(
                         icon: Icons.call_end_rounded,
                         label: 'Decline',
                         color: const Color(0xFFFF3B30),
                         onTap: () => _onDecline(provider),
                       ),
-
-                      // Accept
                       _CallActionButton(
                         icon: Icons.call_rounded,
                         label: 'Accept',
