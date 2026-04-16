@@ -31,4 +31,10 @@ router.get("/features", userSubscriptionController.getUserFeatures);
  */
 router.post("/subscribe", userSubscriptionController.subscribe);
 
+/**
+ * @route POST /user/subscriptions/check-call
+ * @desc Check if user can initiate an audio or video call
+ */
+router.post("/check-call", userSubscriptionController.checkCallAccess);
+
 export default router;

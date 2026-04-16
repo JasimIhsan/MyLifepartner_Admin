@@ -1,10 +1,14 @@
 import { ChatService } from "@/services/chat.service";
+import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { Request, Response } from "express";
 
 export class ChatController {
-   constructor(private readonly chatService: ChatService) {}
+   constructor(
+      private readonly chatService: ChatService,
+      private readonly userFeatureService: IUserFeatureService
+   ) {}
 
    /**
     * POST /chat/messages
@@ -18,6 +22,21 @@ export class ChatController {
          return res.status(400).json(
             new ApiResponse(400, null, "receiverId and content are required"),
          );
+      }
+
+      if (messageType === "CALL_LOG") {
+         try {
+            const payload = JSON.parse(content);
+            const callType = payload.callType;
+            const duration = payload.duration;
+            if (callType && typeof duration === "number") {
+               await this.userFeatureService.consumeCallDuration(senderId, callType, duration);
+            }
+         } catch (e) {
+            // ignore JSON parse error
+         }
+      } else {
+         await this.userFeatureService.consumeMessage(senderId);
       }
 
       const message = await this.chatService.sendMessage(

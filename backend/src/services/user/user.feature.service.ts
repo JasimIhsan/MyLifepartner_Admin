@@ -80,4 +80,31 @@ export class UserFeatureService implements IUserFeatureService {
 
       await this.updateInterests(userId, 1);
    }
+
+   async checkMessageAccess(userId: number): Promise<boolean> {
+      const features = await this.userFeatureRepository.findByUserId(userId);
+      if (!features || !features.canSendMessage) return false;
+      return features.messages < features.maxMessages;
+   }
+
+   async consumeMessage(userId: number): Promise<void> {
+      const features = await this.userFeatureRepository.findByUserId(userId);
+      if (!features || !features.canSendMessage) {
+         throw new ApiError(402, "Message feature not available in your plan.");
+      }
+      if (features.messages >= features.maxMessages) {
+         throw new ApiError(402, "You have reached your message limit. Upgrade your plan to send more messages.");
+      }
+      await this.updateMessages(userId, 1);
+   }
+
+   async consumeCallDuration(userId: number, type: "audio" | "video", durationSeconds: number): Promise<void> {
+      const features = await this.userFeatureRepository.findByUserId(userId);
+      if (!features) return;
+      if (type === "audio") {
+         await this.updateAudioCallMinutes(userId, durationSeconds);
+      } else {
+         await this.updateVideoCallMinutes(userId, durationSeconds);
+      }
+   }
 }

@@ -45,13 +45,13 @@ class UserFeature {
       canSendMessage: json['canSendMessage'] ?? false,
       isProfileBlurEnabled: json['isProfileBlurEnabled'] ?? false,
       maxInterests: json['maxInterests'] ?? 0,
-      remainingInterests: json['remainingInterests'] ?? 0,
+      remainingInterests: (json['maxInterests'] ?? 0) - (json['interests'] ?? 0),
       maxVideoCallMinutes: json['maxVideoCallMinutes'] ?? 0,
-      remainingVideoCallMinutes: json['remainingVideoCallMinutes'] ?? 0,
+      remainingVideoCallMinutes: (json['maxVideoCallMinutes'] ?? 0) - (json['videoCallMinutes'] ?? 0),
       maxAudioCallMinutes: json['maxAudioCallMinutes'] ?? 0,
-      remainingAudioCallMinutes: json['remainingAudioCallMinutes'] ?? 0,
+      remainingAudioCallMinutes: (json['maxAudioCallMinutes'] ?? 0) - (json['audioCallMinutes'] ?? 0),
       maxMessages: json['maxMessages'] ?? 0,
-      remainingMessages: json['remainingMessages'] ?? 0,
+      remainingMessages: (json['maxMessages'] ?? 0) - (json['messages'] ?? 0),
     );
   }
 }

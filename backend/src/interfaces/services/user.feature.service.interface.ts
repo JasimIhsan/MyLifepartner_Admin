@@ -9,4 +9,7 @@ export interface IUserFeatureService {
    updateAudioCallMinutes(userId: number, amount: number): Promise<UserFeature>;
    checkSwipeAccess(userId: number, action: SwipeAction): Promise<boolean>;
    consumeSwipe(userId: number, action: SwipeAction): Promise<void>;
+   checkMessageAccess(userId: number): Promise<boolean>;
+   consumeMessage(userId: number): Promise<void>;
+   consumeCallDuration(userId: number, type: "audio" | "video", durationSeconds: number): Promise<void>;
 }

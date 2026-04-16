@@ -128,7 +128,7 @@ import { UserSubscriptionController } from "@/controllers/user/user.subscription
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService);
 
 import { ChatController } from "@/controllers/user/chat.controller";
-export const chatController = new ChatController(chatService);
+export const chatController = new ChatController(chatService, userFeatureService);
 
 import { ZegoController } from "@/controllers/user/zego.controller";
 export const zegoController = new ZegoController(zegoService);
