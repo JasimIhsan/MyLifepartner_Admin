@@ -305,22 +305,26 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final timeStr = format.format(msg.createdAt.toLocal());
 
     IconData icon;
-    String text;
+    String title;
+    String subtitle;
     Color iconColor;
 
     bool isVideo = callType == 'video';
 
     if (status == 'completed') {
       icon = isVideo ? Icons.videocam_rounded : Icons.call_rounded;
-      text = '${isVideo ? 'Video' : 'Audio'} Call \u2022 ${_formatDuration(duration)}';
-      iconColor = isMe ? Colors.white : AppColors.primary;
+      title = '${isVideo ? 'Video' : 'Voice'} Call';
+      subtitle = _formatDuration(duration);
+      iconColor = AppColors.primary;
     } else if (status == 'declined') {
       icon = isVideo ? Icons.videocam_off_rounded : Icons.phone_disabled_rounded;
-      text = 'Declined ${isVideo ? 'Video' : 'Audio'} Call';
+      title = 'Declined Call';
+      subtitle = isVideo ? 'Video' : 'Voice';
       iconColor = const Color(0xFFFF3B30);
     } else {
       icon = isVideo ? Icons.missed_video_call_rounded : Icons.call_missed_rounded;
-      text = 'Missed ${isVideo ? 'Video' : 'Audio'} Call';
+      title = 'Missed Call';
+      subtitle = isVideo ? 'Video' : 'Voice';
       iconColor = const Color(0xFFFF3B30);
     }
 
@@ -329,51 +333,71 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
         constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
+          maxWidth: MediaQuery.of(context).size.width * 0.85,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isMe ? AppColors.primary.withValues(alpha: 0.85) : AppColors.surface,
+          color: AppColors.background,
+          border: Border.all(
+            color: isMe ? AppColors.primary.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.2),
+          ),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
             topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(isMe ? 16 : 0),
-            bottomRight: Radius.circular(isMe ? 0 : 16),
+            bottomLeft: Radius.circular(isMe ? 16 : 4),
+            bottomRight: Radius.circular(isMe ? 4 : 16),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 4,
+              color: Colors.black.withValues(alpha: 0.02),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              mainAxisSize: MainAxisSize.min,
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: iconColor, size: 20),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    text,
-                    style: TextStyle(
-                      color: isMe ? Colors.white : AppColors.textPrimary,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              timeStr,
-              style: TextStyle(
-                color: isMe ? Colors.white70 : AppColors.textSecondary,
-                fontSize: 10,
+            const SizedBox(width: 16),
+            Padding(
+              padding: const EdgeInsets.only(top: 18),
+              child: Text(
+                timeStr,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 11,
+                ),
               ),
             ),
           ],

@@ -34,11 +34,38 @@ class CallScreen extends StatefulWidget {
 
 class _CallScreenState extends State<CallScreen> {
   late DateTime _startTime;
+  ChatProvider? _chatProvider;
 
   @override
   void initState() {
     super.initState();
     _startTime = DateTime.now();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _chatProvider = context.read<ChatProvider>();
+  }
+
+  @override
+  void dispose() {
+    final duration = DateTime.now().difference(_startTime).inSeconds;
+    if (widget.isCaller && _chatProvider != null) {
+      final callType = widget.isVideoCall ? 'video' : 'audio';
+      final payload = jsonEncode({
+        'type': 'CALL_LOG',
+        'callType': callType,
+        'status': 'completed',
+        'duration': duration,
+      });
+      _chatProvider!.sendMessage(
+        receiverId: int.parse(widget.otherUserId),
+        content: payload,
+        messageType: 'CALL_LOG',
+      );
+    }
+    super.dispose();
   }
 
   @override
@@ -69,26 +96,7 @@ class _CallScreenState extends State<CallScreen> {
           }
           ..turnOnMicrophoneWhenJoining = true
           ..useSpeakerWhenJoining = widget.isVideoCall,
-        onDispose: () {
-          final duration = DateTime.now().difference(_startTime).inSeconds;
-          if (widget.isCaller) {
-            final callType = widget.isVideoCall ? 'video' : 'audio';
-            final payload = jsonEncode({
-              'type': 'CALL_LOG',
-              'callType': callType,
-              'status': 'completed',
-              'duration': duration,
-            });
-            context.read<ChatProvider>().sendMessage(
-              receiverId: int.parse(widget.otherUserId),
-              content: payload,
-              messageType: 'CALL_LOG',
-            );
-          }
-          Navigator.of(context).pop();
-        },
       ),
     );
   }
-
 }
