@@ -10,6 +10,7 @@ import 'package:mylifepartner/screens/likes_screen/likes_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:mylifepartner/services/user_repository.dart';
 import 'package:mylifepartner/services/zego_service.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_bar.dart';
@@ -45,8 +46,19 @@ class _HomePageState extends State<HomePage> {
       if (userId == null || !mounted) return;
 
       final userIdStr = userId.toString();
+      
+      String userName = 'User $userId';
+      try {
+        final profile = await UserRepository().getUser();
+        if (profile.name != null && profile.name!.trim().isNotEmpty) {
+          userName = profile.name!;
+        }
+      } catch (_) {
+        // Fallback to default if fetching fails
+      }
+
       if (!ZegoService.instance.isLoggedIn) {
-        await ZegoService.instance.login(userIdStr, 'User $userId');
+        await ZegoService.instance.login(userIdStr, userName);
       }
 
       if (mounted) {
@@ -57,7 +69,7 @@ class _HomePageState extends State<HomePage> {
         final callProvider = context.read<CallProvider>();
         callProvider.configure(
           userId: userIdStr,
-          userName: 'User $userId',
+          userName: userName,
         );
         callProvider.loadUserAvatar();
         callProvider.startListening();
