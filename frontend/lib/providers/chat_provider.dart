@@ -147,6 +147,7 @@ class ChatProvider extends ChangeNotifier {
     required int receiverId,
     required String content,
     int? conversationId,
+    String messageType = 'TEXT',
   }) async {
     if (content.trim().isEmpty) return;
 
@@ -155,6 +156,7 @@ class ChatProvider extends ChangeNotifier {
       final saved = await ChatApiService.sendMessage(
         receiverId: receiverId,
         content: content,
+        messageType: messageType,
       );
 
       // 2. Add to local state

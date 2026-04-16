@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -232,6 +233,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   Widget _buildMessageBubble(ChatMessage msg, bool isMe) {
+    if (msg.messageType == 'CALL_LOG') {
+      return _buildCallLogBubble(msg, isMe);
+    }
+
     final format = DateFormat('hh:mm a');
     final timeStr = format.format(msg.createdAt.toLocal());
 
@@ -282,6 +287,106 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildCallLogBubble(ChatMessage msg, bool isMe) {
+    String callType = 'audio';
+    String status = 'completed';
+    int duration = 0;
+
+    try {
+      final payload = jsonDecode(msg.content);
+      callType = payload['callType'] ?? 'audio';
+      status = payload['status'] ?? 'completed';
+      duration = payload['duration'] ?? 0;
+    } catch (_) {}
+
+    final format = DateFormat('hh:mm a');
+    final timeStr = format.format(msg.createdAt.toLocal());
+
+    IconData icon;
+    String text;
+    Color iconColor;
+
+    bool isVideo = callType == 'video';
+
+    if (status == 'completed') {
+      icon = isVideo ? Icons.videocam_rounded : Icons.call_rounded;
+      text = '${isVideo ? 'Video' : 'Audio'} Call \u2022 ${_formatDuration(duration)}';
+      iconColor = isMe ? Colors.white : AppColors.primary;
+    } else if (status == 'declined') {
+      icon = isVideo ? Icons.videocam_off_rounded : Icons.phone_disabled_rounded;
+      text = 'Declined ${isVideo ? 'Video' : 'Audio'} Call';
+      iconColor = const Color(0xFFFF3B30);
+    } else {
+      icon = isVideo ? Icons.missed_video_call_rounded : Icons.call_missed_rounded;
+      text = 'Missed ${isVideo ? 'Video' : 'Audio'} Call';
+      iconColor = const Color(0xFFFF3B30);
+    }
+
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isMe ? AppColors.primary.withValues(alpha: 0.85) : AppColors.surface,
+          borderRadius: BorderRadius.only(
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: Radius.circular(isMe ? 16 : 0),
+            bottomRight: Radius.circular(isMe ? 0 : 16),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: iconColor, size: 20),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    text,
+                    style: TextStyle(
+                      color: isMe ? Colors.white : AppColors.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              timeStr,
+              style: TextStyle(
+                color: isMe ? Colors.white70 : AppColors.textSecondary,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDuration(int totalSeconds) {
+    final m = totalSeconds ~/ 60;
+    final s = totalSeconds % 60;
+    if (m > 0) return '${m}m ${s}s';
+    return '${s}s';
   }
 
   Widget _buildInputArea() {

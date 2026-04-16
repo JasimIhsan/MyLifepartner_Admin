@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/main.dart' show navigatorKey;
 import 'package:mylifepartner/providers/call_provider.dart';
+import 'package:mylifepartner/providers/chat_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/call_screen.dart';
 
 /// Full-screen overlay shown when an incoming call is received.
@@ -53,6 +55,8 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
           localUserAvatar: provider.currentUserAvatar,
           remoteUserAvatar: call.callerAvatar,
           isVideoCall: call.isVideo,
+          isCaller: false,
+          otherUserId: call.callerId,
         ),
       ),
     );
@@ -61,6 +65,20 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
   }
 
   void _onDecline(CallProvider provider) {
+    if (provider.incomingCall != null) {
+      final callType = provider.incomingCall!.isVideo ? 'video' : 'audio';
+      final payload = jsonEncode({
+        'type': 'CALL_LOG',
+        'callType': callType,
+        'status': 'declined',
+        'duration': 0,
+      });
+      context.read<ChatProvider>().sendMessage(
+        receiverId: int.parse(provider.incomingCall!.callerId),
+        content: payload,
+        messageType: 'CALL_LOG',
+      );
+    }
     provider.declineCall();
   }
 

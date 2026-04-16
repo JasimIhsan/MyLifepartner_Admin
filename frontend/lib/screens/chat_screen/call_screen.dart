@@ -1,15 +1,20 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 import 'package:mylifepartner/config/env.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/providers/chat_provider.dart';
 
-class CallScreen extends StatelessWidget {
+class CallScreen extends StatefulWidget {
   final String callID;
   final String userID;
   final String userName;
   final String? localUserAvatar;
   final String? remoteUserAvatar;
   final bool isVideoCall;
+  final bool isCaller;
+  final String otherUserId;
 
   const CallScreen({
     super.key,
@@ -19,7 +24,22 @@ class CallScreen extends StatelessWidget {
     this.localUserAvatar,
     this.remoteUserAvatar,
     this.isVideoCall = true,
+    required this.isCaller,
+    required this.otherUserId,
   });
+
+  @override
+  State<CallScreen> createState() => _CallScreenState();
+}
+
+class _CallScreenState extends State<CallScreen> {
+  late DateTime _startTime;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTime = DateTime.now();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,14 +47,14 @@ class CallScreen extends StatelessWidget {
       child: ZegoUIKitPrebuiltCall(
         appID: Env.zegoAppId,
         appSign: Env.zegoAppSign,
-        userID: userID,
-        userName: userName,
-        callID: callID,
-        config: (isVideoCall
+        userID: widget.userID,
+        userName: widget.userName,
+        callID: widget.callID,
+        config: (widget.isVideoCall
             ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
             : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall())
           ..avatarBuilder = (BuildContext context, Size size, user, Map extraInfo) {
-            final avatarUrl = user?.id == userID ? localUserAvatar : remoteUserAvatar;
+            final avatarUrl = user?.id == widget.userID ? widget.localUserAvatar : widget.remoteUserAvatar;
             return user != null && avatarUrl != null
                 ? Container(
                     decoration: BoxDecoration(
@@ -48,40 +68,27 @@ class CallScreen extends StatelessWidget {
                 : const SizedBox();
           }
           ..turnOnMicrophoneWhenJoining = true
-          ..useSpeakerWhenJoining = isVideoCall,
+          ..useSpeakerWhenJoining = widget.isVideoCall,
         onDispose: () {
+          final duration = DateTime.now().difference(_startTime).inSeconds;
+          if (widget.isCaller) {
+            final callType = widget.isVideoCall ? 'video' : 'audio';
+            final payload = jsonEncode({
+              'type': 'CALL_LOG',
+              'callType': callType,
+              'status': 'completed',
+              'duration': duration,
+            });
+            context.read<ChatProvider>().sendMessage(
+              receiverId: int.parse(widget.otherUserId),
+              content: payload,
+              messageType: 'CALL_LOG',
+            );
+          }
           Navigator.of(context).pop();
         },
       ),
     );
   }
 
-  /// Helper to launch a call between two users (optional usage fallback)
-  static void startCall(
-    BuildContext context, {
-    required String currentUserId,
-    required String currentUserName,
-    String? localUserAvatar,
-    String? remoteUserAvatar,
-    required String otherUserId,
-    required bool isVideoCall,
-  }) {
-    // Generate a deterministic callID from both user IDs
-    final ids = [int.parse(currentUserId), int.parse(otherUserId)]..sort();
-    final callID = 'call_${ids[0]}_${ids[1]}';
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CallScreen(
-          callID: callID,
-          userID: currentUserId,
-          userName: currentUserName,
-          localUserAvatar: localUserAvatar,
-          remoteUserAvatar: remoteUserAvatar,
-          isVideoCall: isVideoCall,
-        ),
-      ),
-    );
-  }
 }

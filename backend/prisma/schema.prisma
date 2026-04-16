@@ -393,6 +393,7 @@ enum MessageType {
   IMAGE
   AUDIO
   VIDEO
+  CALL_LOG
 }
 
 // ─── Chat ───────────────────────────────────────────────────────────────────

@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/call_provider.dart';
+import 'package:mylifepartner/providers/chat_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/call_screen.dart';
 
 /// Screen shown to the caller while waiting for the callee to accept/decline.
@@ -47,6 +49,20 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
 
   void _onCancel() {
     final provider = context.read<CallProvider>();
+    if (provider.outgoingCall != null) {
+      final callType = provider.outgoingCall!.isVideo ? 'video' : 'audio';
+      final payload = jsonEncode({
+        'type': 'CALL_LOG',
+        'callType': callType,
+        'status': 'canceled',
+        'duration': 0,
+      });
+      context.read<ChatProvider>().sendMessage(
+        receiverId: int.parse(provider.outgoingCall!.calleeId),
+        content: payload,
+        messageType: 'CALL_LOG',
+      );
+    }
     provider.cancelOutgoingCall();
     Navigator.of(context).pop();
   }
@@ -69,6 +85,8 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                   localUserAvatar: provider.currentUserAvatar,
                   remoteUserAvatar: widget.calleeAvatar,
                   isVideoCall: call.isVideo,
+                  isCaller: true,
+                  otherUserId: call.calleeId,
                 ),
               ),
             );
