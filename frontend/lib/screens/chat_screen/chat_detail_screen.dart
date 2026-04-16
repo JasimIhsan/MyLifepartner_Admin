@@ -99,6 +99,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     callProvider.initiateCall(
       otherUserId: otherUserId,
       otherUserName: widget.profile.name,
+      calleeAvatar: _profileImageUrl,
       isVideo: isVideo,
     );
 
@@ -108,6 +109,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       MaterialPageRoute(
         builder: (_) => OutgoingCallScreen(
           calleeName: widget.profile.name,
+          calleeAvatar: _profileImageUrl,
           isVideoCall: isVideo,
         ),
       ),

@@ -7,6 +7,8 @@ class CallScreen extends StatelessWidget {
   final String callID;
   final String userID;
   final String userName;
+  final String? localUserAvatar;
+  final String? remoteUserAvatar;
   final bool isVideoCall;
 
   const CallScreen({
@@ -14,6 +16,8 @@ class CallScreen extends StatelessWidget {
     required this.callID,
     required this.userID,
     required this.userName,
+    this.localUserAvatar,
+    this.remoteUserAvatar,
     this.isVideoCall = true,
   });
 
@@ -26,9 +30,25 @@ class CallScreen extends StatelessWidget {
         userID: userID,
         userName: userName,
         callID: callID,
-        config: isVideoCall
+        config: (isVideoCall
             ? ZegoUIKitPrebuiltCallConfig.oneOnOneVideoCall()
-            : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall(),
+            : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall())
+          ..avatarBuilder = (BuildContext context, Size size, user, Map extraInfo) {
+            final avatarUrl = user?.id == userID ? localUserAvatar : remoteUserAvatar;
+            return user != null && avatarUrl != null
+                ? Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: NetworkImage(avatarUrl),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  )
+                : const SizedBox();
+          }
+          ..turnOnMicrophoneWhenJoining = true
+          ..useSpeakerWhenJoining = isVideoCall,
         onDispose: () {
           Navigator.of(context).pop();
         },
@@ -36,11 +56,13 @@ class CallScreen extends StatelessWidget {
     );
   }
 
-  /// Helper to launch a call between two users
+  /// Helper to launch a call between two users (optional usage fallback)
   static void startCall(
     BuildContext context, {
     required String currentUserId,
     required String currentUserName,
+    String? localUserAvatar,
+    String? remoteUserAvatar,
     required String otherUserId,
     required bool isVideoCall,
   }) {
@@ -55,6 +77,8 @@ class CallScreen extends StatelessWidget {
           callID: callID,
           userID: currentUserId,
           userName: currentUserName,
+          localUserAvatar: localUserAvatar,
+          remoteUserAvatar: remoteUserAvatar,
           isVideoCall: isVideoCall,
         ),
       ),

@@ -59,6 +59,7 @@ class _HomePageState extends State<HomePage> {
           userId: userIdStr,
           userName: 'User $userId',
         );
+        callProvider.loadUserAvatar();
         callProvider.startListening();
       }
     } catch (e) {

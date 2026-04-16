@@ -2,18 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mylifepartner/services/zego_service.dart';
+import 'package:mylifepartner/services/profile_repository.dart';
 
 /// Represents an incoming call invitation.
 class IncomingCall {
   final String callId;
   final String callerId;
   final String callerName;
+  final String? callerAvatar;
   final bool isVideo;
 
   const IncomingCall({
     required this.callId,
     required this.callerId,
     required this.callerName,
+    this.callerAvatar,
     required this.isVideo,
   });
 }
@@ -23,12 +26,14 @@ class OutgoingCall {
   final String callId;
   final String calleeId;
   final String calleeName;
+  final String? calleeAvatar;
   final bool isVideo;
 
   const OutgoingCall({
     required this.callId,
     required this.calleeId,
     required this.calleeName,
+    this.calleeAvatar,
     required this.isVideo,
   });
 }
@@ -40,9 +45,11 @@ class CallProvider extends ChangeNotifier {
   OutgoingCall? _outgoingCall;
   String? _currentUserId;
   String? _currentUserName;
+  String? _currentUserAvatar;
 
   String? get currentUserId => _currentUserId;
   String? get currentUserName => _currentUserName;
+  String? get currentUserAvatar => _currentUserAvatar;
 
   /// Whether the caller's invitation was declined by the callee.
   bool _wasDeclined = false;
@@ -61,6 +68,20 @@ class CallProvider extends ChangeNotifier {
   void configure({required String userId, required String userName}) {
     _currentUserId = userId;
     _currentUserName = userName;
+  }
+
+  /// Load current user's avatar from the backend endpoint.
+  Future<void> loadUserAvatar() async {
+    try {
+      final repository = ProfileRepository();
+      final images = await repository.getUserImages();
+      final primary = images.where((img) => img.isPrimary).firstOrNull ?? images.firstOrNull;
+      if (primary != null) {
+        _currentUserAvatar = primary.imageUrl;
+      }
+    } catch (_) {
+      // Ignore
+    }
   }
 
   /// Start listening to ZIM messages for call signaling.
@@ -84,6 +105,7 @@ class CallProvider extends ChangeNotifier {
             callId: data['callId'] as String,
             callerId: msg.fromUserId,
             callerName: data['callerName'] as String? ?? 'Unknown',
+            callerAvatar: data['callerAvatar'] as String?,
             isVideo: data['isVideo'] as bool? ?? false,
           );
           notifyListeners();
@@ -123,6 +145,7 @@ class CallProvider extends ChangeNotifier {
   Future<void> initiateCall({
     required String otherUserId,
     required String otherUserName,
+    String? calleeAvatar,
     required bool isVideo,
   }) async {
     if (_currentUserId == null) return;
@@ -132,6 +155,7 @@ class CallProvider extends ChangeNotifier {
       callId: callId,
       calleeId: otherUserId,
       calleeName: otherUserName,
+      calleeAvatar: calleeAvatar,
       isVideo: isVideo,
     );
     _wasDeclined = false;
@@ -141,6 +165,7 @@ class CallProvider extends ChangeNotifier {
     await ZegoService.instance.sendCallInvitation(
       toUserId: otherUserId,
       callerName: _currentUserName ?? 'User $_currentUserId',
+      callerAvatar: _currentUserAvatar,
       callId: callId,
       isVideo: isVideo,
     );

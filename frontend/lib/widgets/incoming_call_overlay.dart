@@ -50,6 +50,8 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
           callID: call.callId,
           userID: provider.currentUserId ?? '',
           userName: provider.currentUserName ?? 'User',
+          localUserAvatar: provider.currentUserAvatar,
+          remoteUserAvatar: call.callerAvatar,
           isVideoCall: call.isVideo,
         ),
       ),
@@ -142,16 +144,22 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
                       ],
                     ),
                     child: Center(
-                      child: Text(
-                        call.callerName.isNotEmpty
-                            ? call.callerName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 44,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: call.callerAvatar != null
+                          ? CircleAvatar(
+                              radius: 53,
+                              backgroundImage: NetworkImage(call.callerAvatar!),
+                              backgroundColor: Colors.transparent,
+                            )
+                          : Text(
+                              call.callerName.isNotEmpty
+                                  ? call.callerName[0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 44,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ),

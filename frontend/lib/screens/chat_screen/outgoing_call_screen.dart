@@ -7,11 +7,13 @@ import 'package:mylifepartner/screens/chat_screen/call_screen.dart';
 /// Screen shown to the caller while waiting for the callee to accept/decline.
 class OutgoingCallScreen extends StatefulWidget {
   final String calleeName;
+  final String? calleeAvatar;
   final bool isVideoCall;
 
   const OutgoingCallScreen({
     super.key,
     required this.calleeName,
+    this.calleeAvatar,
     required this.isVideoCall,
   });
 
@@ -64,6 +66,8 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                   callID: call.callId,
                   userID: provider.currentUserId ?? '',
                   userName: provider.currentUserName ?? 'User',
+                  localUserAvatar: provider.currentUserAvatar,
+                  remoteUserAvatar: widget.calleeAvatar,
                   isVideoCall: call.isVideo,
                 ),
               ),
@@ -169,16 +173,22 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                       ],
                     ),
                     child: Center(
-                      child: Text(
-                        widget.calleeName.isNotEmpty
-                            ? widget.calleeName[0].toUpperCase()
-                            : '?',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 44,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: widget.calleeAvatar != null
+                          ? CircleAvatar(
+                              radius: 53,
+                              backgroundImage: NetworkImage(widget.calleeAvatar!),
+                              backgroundColor: Colors.transparent,
+                            )
+                          : Text(
+                              widget.calleeName.isNotEmpty
+                                  ? widget.calleeName[0].toUpperCase()
+                                  : '?',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 44,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ),
