@@ -313,7 +313,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           Navigator.pop(context);
                           final picker = ImagePicker();
                           final file = await picker.pickImage(source: ImageSource.gallery);
-                          if (file != null) _sendMediaMsg(file.path, 'IMAGE');
+                          if (file != null) _previewAndSendMedia(file.path, 'IMAGE');
                         },
                       ),
                       _buildAttachmentOption(
@@ -324,7 +324,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           Navigator.pop(context);
                           final picker = ImagePicker();
                           final file = await picker.pickVideo(source: ImageSource.gallery);
-                          if (file != null) _sendMediaMsg(file.path, 'VIDEO');
+                          if (file != null) _previewAndSendMedia(file.path, 'VIDEO');
                         },
                       ),
                       _buildAttachmentOption(
@@ -335,7 +335,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           Navigator.pop(context);
                           final picker = ImagePicker();
                           final file = await picker.pickImage(source: ImageSource.camera);
-                          if (file != null) _sendMediaMsg(file.path, 'IMAGE');
+                          if (file != null) _previewAndSendMedia(file.path, 'IMAGE');
                         },
                       ),
                     ],
@@ -346,6 +346,64 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           ),
         );
       },
+    );
+  }
+
+  void _previewAndSendMedia(String path, String type) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            leading: IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: type == 'IMAGE'
+                        ? Image.file(File(path), fit: BoxFit.contain)
+                        : InlineVideoPlayer(source: path, isMe: true),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('Cancel', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                          _sendMediaMsg(path, type);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: const BoxDecoration(
+                            color: AppColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.send_rounded, color: Colors.white, size: 28),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
