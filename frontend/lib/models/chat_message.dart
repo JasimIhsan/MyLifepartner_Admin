@@ -1,3 +1,5 @@
+import 'dart:convert' as dart_convert;
+
 class ChatMessage {
   final int id;
   final int conversationId;
@@ -41,6 +43,7 @@ class ChatConversation {
   final String? otherUserImage;
   final int otherUserId;
   final String? lastMessage;
+  final String lastMessageType;
   final DateTime? lastMessageTime;
   final DateTime createdAt;
 
@@ -52,9 +55,31 @@ class ChatConversation {
     this.otherUserImage,
     required this.otherUserId,
     this.lastMessage,
+    this.lastMessageType = 'TEXT',
     this.lastMessageTime,
     required this.createdAt,
   });
+
+  /// Returns a clean UI string avoiding raw JSON for CALL_LOG types
+  String get displayLastMessage {
+    if (lastMessage == null) return 'Tap to start chatting';
+    
+    // Check if messageType is explicitly CALL_LOG or if the content is a JSON call log
+    if (lastMessageType == 'CALL_LOG' || (lastMessage!.startsWith('{') && lastMessage!.contains('"CALL_LOG"'))) {
+      try {
+        final Map<String, dynamic> data = dart_convert.jsonDecode(lastMessage!);
+        final isVideo = data['callType'] == 'video';
+        final status = data['status'] as String?;
+        final isMissed = status == 'canceled' || status == 'missed' || status == 'declined' || status == 'timeout';
+        final callTypeName = isVideo ? 'Video call' : 'Audio call';
+        return isMissed ? 'Missed $callTypeName' : callTypeName;
+      } catch (_) {
+        // Fallback in case it's not valid JSON
+      }
+    }
+    
+    return lastMessage!;
+  }
 
   factory ChatConversation.fromJson(
     Map<String, dynamic> json,
@@ -81,6 +106,7 @@ class ChatConversation {
       otherUserName: otherProfile?['name'] as String?,
       otherUserImage: primaryImage as String?,
       lastMessage: lastMsg?['content'] as String?,
+      lastMessageType: lastMsg?['messageType'] as String? ?? 'TEXT',
       lastMessageTime: lastMsg?['createdAt'] != null
           ? DateTime.parse(lastMsg['createdAt'] as String)
           : null,

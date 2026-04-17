@@ -164,7 +164,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       appBar: _buildAppBar(),
       body: SafeArea(child: _buildBody()),
       bottomNavigationBar: _buildBottomNavigationBar(),
