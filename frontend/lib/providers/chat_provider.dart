@@ -15,12 +15,19 @@ class ChatProvider extends ChangeNotifier {
 
   int? _activeUserId;
   final Set<int> _unreadUserIds = {};
+  final Set<int> _downloadedMedia = {};
 
   List<ChatConversation> get conversations => _conversations;
   bool get isLoading => _isLoading;
 
   int? get activeUserId => _activeUserId;
   bool hasUnreadNudge(int userId) => _unreadUserIds.contains(userId);
+
+  bool isMediaDownloaded(int messageId) => _downloadedMedia.contains(messageId);
+  void markMediaDownloaded(int messageId) {
+    _downloadedMedia.add(messageId);
+    notifyListeners();
+  }
 
   List<ChatMessage> getMessages(int conversationId) {
     return _messagesByConversation[conversationId] ?? [];
