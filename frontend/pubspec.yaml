@@ -56,6 +56,10 @@ dependencies:
    zego_uikit_prebuilt_call: ^4.22.4
    intl: ^0.20.2
    zego_uikit_signaling_plugin: ^2.8.20
+   record: ^6.2.0
+   audioplayers: ^6.6.0
+   video_player: ^2.11.1
+   path_provider: ^2.1.5
 
 dependency_overrides:
    zego_zim: 2.21.1

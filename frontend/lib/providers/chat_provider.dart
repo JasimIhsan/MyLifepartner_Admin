@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/services/chat_service.dart';
 import 'package:mylifepartner/services/zego_service.dart';
+import 'package:zego_zim/zego_zim.dart';
 
 class ChatProvider extends ChangeNotifier {
   final Map<int, List<ChatMessage>> _messagesByConversation = {};
@@ -77,6 +78,7 @@ class ChatProvider extends ChangeNotifier {
           conversationId: conversation.id,
           senderId: senderId,
           content: msg.content,
+          messageType: msg.messageType,
           createdAt: DateTime.now(),
         );
 
@@ -177,6 +179,61 @@ class ChatProvider extends ChangeNotifier {
           });
     } catch (e) {
       debugPrint('[ChatProvider] Failed to send message: $e');
+      rethrow;
+    }
+  }
+
+  /// Send a media message: ZIM upload -> ZIM delivery -> Backend Persist
+  Future<void> sendMediaMessage({
+    required int receiverId,
+    required String filePath,
+    required String messageType, // 'IMAGE', 'VIDEO', 'AUDIO'
+    int? audioDuration,
+  }) async {
+    try {
+      // 1. Create ZIM media message based on type
+      ZIMMediaMessage? zimMediaMsg;
+      if (messageType == 'IMAGE') {
+        zimMediaMsg = ZIMImageMessage(filePath);
+      } else if (messageType == 'VIDEO') {
+        zimMediaMsg = ZIMVideoMessage(filePath);
+      } else if (messageType == 'AUDIO') {
+        final msg = ZIMAudioMessage(filePath);
+        if (audioDuration != null) msg.audioDuration = audioDuration;
+        zimMediaMsg = msg;
+      } else {
+        zimMediaMsg = ZIMFileMessage(filePath);
+      }
+
+      // 2. Upload and deliver via ZIM
+      final result = await ZegoService.instance.sendMediaMessage(
+        receiverId.toString(),
+        zimMediaMsg,
+      );
+
+      if (result != null && result.message is ZIMMediaMessage) {
+        final uploadedMsg = result.message as ZIMMediaMessage;
+        final downloadUrl = uploadedMsg.fileDownloadUrl;
+        
+        // 3. Persist to backend 
+        final saved = await ChatApiService.sendMessage(
+          receiverId: receiverId,
+          content: downloadUrl.isNotEmpty ? downloadUrl : filePath,
+          messageType: messageType,
+          zegoMessageId: uploadedMsg.messageID.toString(),
+        );
+
+        // 4. Update local state
+        if (saved != null) {
+          final message = ChatMessage.fromJson(saved);
+          final convoId = message.conversationId;
+          _messagesByConversation[convoId] ??= [];
+          _messagesByConversation[convoId]!.add(message);
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('[ChatProvider] Failed to send media message: $e');
       rethrow;
     }
   }

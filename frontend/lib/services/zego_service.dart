@@ -57,10 +57,24 @@ class ZegoService {
       String fromUserID,
     ) {
       for (final msg in messageList) {
+        String content = '';
+        String messageType = 'TEXT';
+
+        if (msg is ZIMTextMessage) {
+          content = msg.message;
+        } else if (msg is ZIMMediaMessage) {
+          content = msg.fileDownloadUrl;
+          if (msg is ZIMImageMessage) messageType = 'IMAGE';
+          else if (msg is ZIMAudioMessage) messageType = 'AUDIO';
+          else if (msg is ZIMVideoMessage) messageType = 'VIDEO';
+          else messageType = 'FILE';
+        }
+
         _messageController.add(ZegoZIMMessage(
           messageID: msg.messageID.toString(),
           fromUserId: fromUserID,
-          content: msg is ZIMTextMessage ? msg.message : '',
+          content: content,
+          messageType: messageType,
           timestamp: msg.timestamp,
         ));
       }
@@ -123,6 +137,37 @@ class ZegoService {
     }
   }
 
+  /// Send a media message via ZIM (uploads file automatically).
+  Future<ZIMMessageSentResult?> sendMediaMessage(
+    String toUserId,
+    ZIMMediaMessage mediaMessage,
+  ) async {
+    if (!_isLoggedIn) {
+      debugPrint('[ZegoService] Not logged in, cannot send media message');
+      return null;
+    }
+
+    final zim = _getZIM();
+    final sendConfig = ZIMMessageSendConfig();
+
+    try {
+      final result = await zim.sendMediaMessage(
+        mediaMessage,
+        toUserId,
+        ZIMConversationType.peer,
+        sendConfig,
+        ZIMMediaMessageSendNotification(
+          onMessageAttached: (message) {},
+          onMediaUploadingProgress: (message, currentFileSize, totalFileSize) {},
+        ),
+      );
+      return result;
+    } catch (e) {
+      debugPrint('[ZegoService] ZIM media send failed (non-fatal): $e');
+      return null;
+    }
+  }
+
   // ─── Call Signaling ──────────────────────────────────────────────────────
 
   /// Send a call invitation signal via ZIM.
@@ -180,12 +225,14 @@ class ZegoZIMMessage {
   final String messageID;
   final String fromUserId;
   final String content;
+  final String messageType;
   final int timestamp;
 
   ZegoZIMMessage({
     required this.messageID,
     required this.fromUserId,
     required this.content,
+    required this.messageType,
     required this.timestamp,
   });
 }

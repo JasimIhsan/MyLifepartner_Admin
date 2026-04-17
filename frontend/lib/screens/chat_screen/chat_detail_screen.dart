@@ -4,6 +4,13 @@ import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:intl/intl.dart';
 
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
+
+import 'package:mylifepartner/widgets/inline_audio_player.dart';
+import 'package:mylifepartner/widgets/inline_video_player.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
@@ -33,6 +40,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final TextEditingController _msgController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   int? _conversationId;
+
+  final AudioRecorder _audioRecorder = AudioRecorder();
+  bool _isRecording = false;
+  String? _recordingPath;
+  DateTime? _recordingStartTime;
 
   @override
   void initState() {
@@ -71,6 +83,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (mounted) {
       context.read<ChatProvider>().setActiveUserId(null);
     }
+    _audioRecorder.dispose();
     _msgController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -114,6 +127,180 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         }
       }
     }
+  }
+
+  void _sendMediaMsg(String path, String messageType, {int? duration}) async {
+    final chatProvider = context.read<ChatProvider>();
+    try {
+      await chatProvider.sendMediaMessage(
+        receiverId: widget.profile.id,
+        filePath: path,
+        messageType: messageType,
+        audioDuration: duration,
+      );
+      if (mounted) context.read<SubscriptionProvider>().fetchMySubscription();
+      
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        if (e is DioException && e.response?.statusCode == 402) {
+          showDialog(
+            context: context,
+            builder: (_) => const FeatureExhaustedModal(featureType: 'Chat Messages'),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to send media msg.')),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _startRecording() async {
+    if (await _audioRecorder.hasPermission()) {
+      final dir = await getTemporaryDirectory();
+      final filename = 'audio_msg_${DateTime.now().millisecondsSinceEpoch}.m4a';
+      _recordingPath = '${dir.path}/$filename';
+      _recordingStartTime = DateTime.now();
+      await _audioRecorder.start(
+        const RecordConfig(),
+        path: _recordingPath!,
+      );
+      if (mounted) setState(() => _isRecording = true);
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    final path = await _audioRecorder.stop();
+    if (mounted) setState(() => _isRecording = false);
+    
+    if (path != null && _recordingStartTime != null) {
+      final duration = DateTime.now().difference(_recordingStartTime!).inSeconds;
+      if (duration > 0) {
+        _sendMediaMsg(path, 'AUDIO', duration: duration);
+      }
+    }
+  }
+
+  void _showAttachmentOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    decoration: BoxDecoration(
+                      color: AppColors.divider,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildAttachmentOption(
+                        icon: Icons.image_rounded,
+                        label: 'Photo',
+                        color: Colors.purple.shade400,
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final picker = ImagePicker();
+                          final file = await picker.pickImage(source: ImageSource.gallery);
+                          if (file != null) _sendMediaMsg(file.path, 'IMAGE');
+                        },
+                      ),
+                      _buildAttachmentOption(
+                        icon: Icons.video_collection_rounded,
+                        label: 'Video',
+                        color: Colors.orange.shade400,
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final picker = ImagePicker();
+                          final file = await picker.pickVideo(source: ImageSource.gallery);
+                          if (file != null) _sendMediaMsg(file.path, 'VIDEO');
+                        },
+                      ),
+                      _buildAttachmentOption(
+                        icon: Icons.camera_alt_rounded,
+                        label: 'Camera',
+                        color: Colors.blue.shade400,
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final picker = ImagePicker();
+                          final file = await picker.pickImage(source: ImageSource.camera);
+                          if (file != null) _sendMediaMsg(file.path, 'IMAGE');
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAttachmentOption({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 60,
+            width: 60,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 28),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _startCall({required bool isVideo}) async {
@@ -394,15 +581,27 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              msg.content,
-              style: TextStyle(
-                color: isMe ? Colors.white : AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                height: 1.35,
+            if (msg.messageType == 'IMAGE')
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: msg.content.startsWith('http')
+                  ? Image.network(msg.content, width: 200, fit: BoxFit.cover)
+                  : Image.file(File(msg.content), width: 200, fit: BoxFit.cover),
+              )
+            else if (msg.messageType == 'VIDEO')
+               InlineVideoPlayer(source: msg.content, isMe: isMe)
+            else if (msg.messageType == 'AUDIO')
+               InlineAudioPlayer(source: msg.content, isMe: isMe)
+            else
+              Text(
+                msg.content,
+                style: TextStyle(
+                  color: isMe ? Colors.white : AppColors.textPrimary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  height: 1.35,
+                ),
               ),
-            ),
             const SizedBox(height: 4),
             Row(
               mainAxisSize: MainAxisSize.min,
@@ -447,7 +646,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: _showAttachmentOptions,
             icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
             color: AppColors.textSecondary,
             padding: EdgeInsets.zero,
@@ -496,28 +695,37 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          GestureDetector(
-            onTap: _sendMessage,
-            child: Container(
-              height: 44,
-              width: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.primary,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Color(0x33FF3F3F),
-                    blurRadius: 8,
-                    offset: Offset(0, 4),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: _msgController,
+            builder: (context, value, child) {
+              final isTextEmpty = value.text.trim().isEmpty;
+              return GestureDetector(
+                onTap: isTextEmpty ? null : _sendMessage,
+                onLongPressStart: isTextEmpty ? (_) => _startRecording() : null,
+                onLongPressEnd: isTextEmpty ? (_) => _stopRecording() : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: _isRecording ? 52 : 44,
+                  width: _isRecording ? 52 : 44,
+                  decoration: BoxDecoration(
+                    color: _isRecording ? Colors.redAccent : AppColors.primary,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: _isRecording ? Colors.redAccent.withValues(alpha: 0.3) : const Color(0x33FF3F3F),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: const Icon(
-                Icons.arrow_upward_rounded,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
+                  child: Icon(
+                    isTextEmpty ? Icons.mic_rounded : Icons.arrow_upward_rounded,
+                    color: Colors.white,
+                    size: _isRecording ? 28 : 24,
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
