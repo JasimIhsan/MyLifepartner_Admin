@@ -4,6 +4,7 @@ import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:country_flags/country_flags.dart';
 
 class OnboardingFlowScreen extends StatefulWidget {
   const OnboardingFlowScreen({super.key});
@@ -115,7 +116,8 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   Future<void> _submit() async {
     setState(() => _isLoading = true);
     try {
-      final name = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'.trim();
+      final name = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'
+          .trim();
       await _profileRepo.updateBasicProfile({
         'name': name,
         'gender': _gender,
@@ -279,10 +281,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 16,
-          ),
+          hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 16),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 18,
@@ -299,68 +298,39 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     );
   }
 
-  Widget _genderCard({
-    required String label,
-    required String value,
-    required String assetPath,
-  }) {
+  Widget _genderCard({required String label, required String value}) {
     final isSelected = _gender == value;
+
     return GestureDetector(
       onTap: () => setState(() => _gender = value),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              border: Border.all(
-                color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
-                width: 1.5,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.08)
+              : Colors.white,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: AppColors.textPrimary,
               ),
-              borderRadius: BorderRadius.circular(24),
             ),
-            child: Stack(
-              children: [
-                Image.asset(
-                  assetPath,
-                  width: 120,
-                  height: 120,
-                  errorBuilder: (ctx, _, __) => Container(
-                    width: 120,
-                    height: 120,
-                    color: Colors.grey[100],
-                  ),
-                ),
-                if (isSelected)
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        ],
+            const Spacer(),
+            if (isSelected)
+              const Icon(Icons.check, color: AppColors.primary, size: 18),
+          ],
+        ),
       ),
     );
   }
@@ -486,10 +456,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
               )
             : Text(
                 _currentStep == _totalSteps - 1 ? 'Finish' : 'Continue',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
       ),
     );
@@ -550,21 +517,20 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("What's your gender?"),
-        const SizedBox(height: 40),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _genderCard(
-              label: 'Man',
-              value: 'MALE',
-              assetPath: 'assets/images/onboarding/gender_male.png',
-            ),
-            _genderCard(
-              label: 'Woman',
-              value: 'FEMALE',
-              assetPath: 'assets/images/onboarding/gender_female.png',
-            ),
-          ],
+        const SizedBox(height: 20),
+
+        _selectionTile(
+          label: 'Man',
+          value: 'MALE',
+          selectedValue: _gender,
+          onTap: () => setState(() => _gender = 'MALE'),
+        ),
+
+        _selectionTile(
+          label: 'Woman',
+          value: 'FEMALE',
+          selectedValue: _gender,
+          onTap: () => setState(() => _gender = 'FEMALE'),
         ),
       ],
     );
@@ -579,7 +545,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("What's your marital status?"),
-        _buildIllustration('assets/images/onboarding/marital_status.png'),
+        // _buildIllustration('assets/images/onboarding/marital_status.png'),
         const SizedBox(height: 10),
         for (final (label, value) in options)
           _selectionTile(
@@ -596,7 +562,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("Where do you live?"),
-        _buildIllustration('assets/images/onboarding/location.png'),
+        //_buildIllustration('assets/images/onboarding/location.png'),
         const SizedBox(height: 10),
         _sectionLabel("Country"),
         _countryPicker(),
@@ -640,6 +606,13 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         ),
         child: Row(
           children: [
+            if (_country != null)
+              CountryFlag.fromCountryCode(
+                _kCountries.firstWhere((c) => c.name == _country).code,
+                height: 18,
+                width: 26,
+              ),
+            if (_country != null) const SizedBox(width: 8),
             Expanded(
               child: Text(
                 _country ?? 'Select your country',
@@ -666,7 +639,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("Are you ready for a serious relationship?"),
-        _buildIllustration('assets/images/onboarding/relationship.png'),
+        //_buildIllustration('assets/images/onboarding/relationship.png'),
         const SizedBox(height: 20),
         _selectionTile(
           label: "Yes, I'm ready",
@@ -723,7 +696,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("What languages are you comfortable with?"),
-        _buildIllustration(illustration),
+        //_buildIllustration(illustration),
         const SizedBox(height: 20),
         Wrap(
           alignment: WrapAlignment.center,
@@ -737,7 +710,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("Do you have children?"),
-        _buildIllustration('assets/images/onboarding/children.png'),
+        //_buildIllustration('assets/images/onboarding/children.png'),
         const SizedBox(height: 32),
         _selectionTile(
           label: 'Yes, living with me',
@@ -794,7 +767,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("What is your height?"),
-        _buildIllustration(illustration, height: 140),
+        //_buildIllustration(illustration, height: 140),
         const SizedBox(height: 20),
 
         // Height Picker
@@ -881,7 +854,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("What are you looking for?"),
-        _buildIllustration('assets/images/onboarding/relationship.png'),
+        //_buildIllustration('assets/images/onboarding/relationship.png'),
         const SizedBox(height: 20),
         _selectionTile(
           label: 'Marriage',
@@ -916,7 +889,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("What's your highest education?"),
-        _buildIllustration('assets/images/onboarding/education.png'),
+        //_buildIllustration('assets/images/onboarding/education.png'),
         const SizedBox(height: 20),
         for (final (label, value) in options)
           _selectionTile(
@@ -933,7 +906,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     return Column(
       children: [
         _stepTitle("What do you do for work?"),
-        _buildIllustration('assets/images/onboarding/work.png'),
+        //_buildIllustration('assets/images/onboarding/work.png'),
         const SizedBox(height: 20),
         _inputField(
           controller: _professionCtrl,
@@ -950,7 +923,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       children: [
         _stepTitle("A few more details"),
         const SizedBox(height: 30),
-        _sectionLabel("Drinking"),
+        _sectionLabel("Do you drink?"),
         Row(
           children: [
             Expanded(
@@ -973,7 +946,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           ],
         ),
         const SizedBox(height: 20),
-        _sectionLabel("Smoking"),
+        _sectionLabel("Do you smoke?"),
         Row(
           children: [
             Expanded(
@@ -1084,14 +1057,15 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 class _CountryPickerSheet extends StatefulWidget {
   final String? selected;
   const _CountryPickerSheet({this.selected});
-
   @override
   State<_CountryPickerSheet> createState() => _CountryPickerSheetState();
 }
 
 class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   final TextEditingController _search = TextEditingController();
-  List<String> _filtered = _kCountries;
+
+  // ✅ IMPORTANT: uses Country model
+  List<Country> _filtered = _kCountries;
 
   @override
   void dispose() {
@@ -1104,7 +1078,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       _filtered = q.isEmpty
           ? _kCountries
           : _kCountries
-                .where((c) => c.toLowerCase().contains(q.toLowerCase()))
+                .where((c) => c.name.toLowerCase().contains(q.toLowerCase()))
                 .toList();
     });
   }
@@ -1121,6 +1095,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
           child: Column(
             children: [
+              // top drag handle
               Container(
                 width: 40,
                 height: 4,
@@ -1129,7 +1104,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
+
               const SizedBox(height: 16),
+
+              // title
               Text(
                 'Select Country',
                 style: TextStyle(
@@ -1138,7 +1116,10 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   color: AppColors.textPrimary,
                 ),
               ),
+
               const SizedBox(height: 14),
+
+              // 🔍 search box
               Container(
                 decoration: BoxDecoration(
                   color: const Color(0xFFF5F2F2),
@@ -1148,7 +1129,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   controller: _search,
                   onChanged: _onSearch,
                   autofocus: true,
-                  style: TextStyle(fontSize: 15),
+                  style: const TextStyle(fontSize: 15),
                   decoration: InputDecoration(
                     hintText: 'Search your country…',
                     hintStyle: TextStyle(
@@ -1168,28 +1149,50 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 10),
+
+              // 📃 country list
               Expanded(
                 child: ListView.builder(
                   controller: scrollCtrl,
                   itemCount: _filtered.length,
                   itemBuilder: (_, i) {
                     final country = _filtered[i];
-                    final isSelected = country == widget.selected;
+                    final isSelected = country.name == widget.selected;
+
                     return ListTile(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                      title: Text(
-                        country,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textPrimary,
-                        ),
+                      title: Row(
+                        children: [
+                          // 🌍 flag
+                          CountryFlag.fromCountryCode(
+                            country.code,
+                            height: 20,
+                            width: 28,
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          // country name
+                          Expanded(
+                            child: Text(
+                              country.name,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
+
+                      // ✔ selected indicator
                       trailing: isSelected
                           ? const Icon(
                               Icons.check,
@@ -1197,7 +1200,9 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                               size: 20,
                             )
                           : null,
-                      onTap: () => Navigator.pop(context, country),
+
+                      // 👉 select
+                      onTap: () => Navigator.pop(context, country.name),
                     );
                   },
                 ),
@@ -1210,199 +1215,21 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
   }
 }
 
-const List<String> _kCountries = [
-  'Afghanistan',
-  'Albania',
-  'Algeria',
-  'Andorra',
-  'Angola',
-  'Antigua and Barbuda',
-  'Argentina',
-  'Armenia',
-  'Australia',
-  'Austria',
-  'Azerbaijan',
-  'Bahamas',
-  'Bahrain',
-  'Bangladesh',
-  'Barbados',
-  'Belarus',
-  'Belgium',
-  'Belize',
-  'Benin',
-  'Bhutan',
-  'Bolivia',
-  'Bosnia and Herzegovina',
-  'Botswana',
-  'Brazil',
-  'Brunei',
-  'Bulgaria',
-  'Burkina Faso',
-  'Burundi',
-  'Cabo Verde',
-  'Cambodia',
-  'Cameroon',
-  'Canada',
-  'Central African Republic',
-  'Chad',
-  'Chile',
-  'China',
-  'Colombia',
-  'Comoros',
-  'Congo',
-  'Costa Rica',
-  'Croatia',
-  'Cuba',
-  'Cyprus',
-  'Czech Republic',
-  'Denmark',
-  'Djibouti',
-  'Dominica',
-  'Dominican Republic',
-  'Ecuador',
-  'Egypt',
-  'El Salvador',
-  'Equatorial Guinea',
-  'Eritrea',
-  'Estonia',
-  'Eswatini',
-  'Ethiopia',
-  'Fiji',
-  'Finland',
-  'France',
-  'Gabon',
-  'Gambia',
-  'Georgia',
-  'Germany',
-  'Ghana',
-  'Greece',
-  'Grenada',
-  'Guatemala',
-  'Guinea',
-  'Guinea-Bissau',
-  'Guyana',
-  'Haiti',
-  'Honduras',
-  'Hungary',
-  'Iceland',
-  'India',
-  'Indonesia',
-  'Iran',
-  'Iraq',
-  'Ireland',
-  'Israel',
-  'Italy',
-  'Jamaica',
-  'Japan',
-  'Jordan',
-  'Kazakhstan',
-  'Kenya',
-  'Kiribati',
-  'Kuwait',
-  'Kyrgyzstan',
-  'Laos',
-  'Latvia',
-  'Lebanon',
-  'Lesotho',
-  'Liberia',
-  'Libya',
-  'Liechtenstein',
-  'Lithuania',
-  'Luxembourg',
-  'Madagascar',
-  'Malawi',
-  'Malaysia',
-  'Maldives',
-  'Mali',
-  'Malta',
-  'Marshall Islands',
-  'Mauritania',
-  'Mauritius',
-  'Mexico',
-  'Micronesia',
-  'Moldova',
-  'Monaco',
-  'Mongolia',
-  'Montenegro',
-  'Morocco',
-  'Mozambique',
-  'Myanmar',
-  'Namibia',
-  'Nauru',
-  'Nepal',
-  'Netherlands',
-  'New Zealand',
-  'Nicaragua',
-  'Niger',
-  'Nigeria',
-  'North Korea',
-  'North Macedonia',
-  'Norway',
-  'Oman',
-  'Pakistan',
-  'Palau',
-  'Palestine',
-  'Panama',
-  'Papua New Guinea',
-  'Paraguay',
-  'Peru',
-  'Philippines',
-  'Poland',
-  'Portugal',
-  'Qatar',
-  'Romania',
-  'Russia',
-  'Rwanda',
-  'Saint Kitts and Nevis',
-  'Saint Lucia',
-  'Saint Vincent and the Grenadines',
-  'Samoa',
-  'San Marino',
-  'Sao Tome and Principe',
-  'Saudi Arabia',
-  'Senegal',
-  'Serbia',
-  'Seychelles',
-  'Sierra Leone',
-  'Singapore',
-  'Slovakia',
-  'Slovenia',
-  'Solomon Islands',
-  'Somalia',
-  'South Africa',
-  'South Korea',
-  'South Sudan',
-  'Spain',
-  'Sri Lanka',
-  'Sudan',
-  'Suriname',
-  'Sweden',
-  'Switzerland',
-  'Syria',
-  'Taiwan',
-  'Tajikistan',
-  'Tanzania',
-  'Thailand',
-  'Timor-Leste',
-  'Togo',
-  'Tonga',
-  'Trinidad and Tobago',
-  'Tunisia',
-  'Turkey',
-  'Turkmenistan',
-  'Tuvalu',
-  'Uganda',
-  'Ukraine',
-  'United Arab Emirates',
-  'United Kingdom',
-  'United States',
-  'Uruguay',
-  'Uzbekistan',
-  'Vanuatu',
-  'Vatican City',
-  'Venezuela',
-  'Vietnam',
-  'Yemen',
-  'Zambia',
-  'Zimbabwe',
+class Country {
+  final String name;
+  final String code;
+  const Country(this.name, this.code);
+}
+
+const List<Country> _kCountries = [
+  Country('India', 'IN'),
+  Country('United States', 'US'),
+  Country('United Kingdom', 'GB'),
+  Country('Canada', 'CA'),
+  Country('Australia', 'AU'),
+  Country('Germany', 'DE'),
+  Country('France', 'FR'),
+  Country('Italy', 'IT'),
+  Country('Spain', 'ES'),
+  Country('Brazil', 'BR'),
 ];

@@ -219,7 +219,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "What age range are you looking for?",
             subtitle: "Drag the slider to set your preference.",
           ),
-          _buildIllustration('assets/images/onboarding/relationship.png'),
+          //_buildIllustration('assets/images/onboarding/relationship.png'),
           const SizedBox(height: 28),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -261,7 +261,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "Which background are you open to?",
             subtitle: "Select at least one option.",
           ),
-          _buildIllustration('assets/images/onboarding/marital_status.png'),
+          //_buildIllustration('assets/images/onboarding/marital_status.png'),
           const SizedBox(height: 12),
           Wrap(
             spacing: 10,
@@ -302,7 +302,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "What education level do you prefer?",
             subtitle: "Select at least one option.",
           ),
-          _buildIllustration('assets/images/onboarding/education.png'),
+          //_buildIllustration('assets/images/onboarding/education.png'),
           const SizedBox(height: 12),
           Wrap(
             spacing: 10,
@@ -347,7 +347,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "Any industry preference?",
             subtitle: "Select at least one option.",
           ),
-          _buildIllustration('assets/images/onboarding/work.png'),
+          //_buildIllustration('assets/images/onboarding/work.png'),
           const SizedBox(height: 12),
           Wrap(
             spacing: 10,
@@ -400,7 +400,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "Any language preference?",
             subtitle: "Select at least one option.",
           ),
-          _buildIllustration('assets/images/onboarding/language_female.png'),
+          //_buildIllustration('assets/images/onboarding/language_female.png'),
           const SizedBox(height: 12),
           Wrap(
             spacing: 10,
@@ -458,10 +458,10 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
             "What height range do you prefer?",
             subtitle: "Drag the slider to set your preference.",
           ),
-          _buildIllustration(
-            'assets/images/onboarding/height_female.png',
-            height: 140,
-          ),
+          //_buildIllustration(
+          //  'assets/images/onboarding/height_female.png',
+          // height: 140,
+          //),
           const SizedBox(height: 28),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),

@@ -60,6 +60,7 @@ dependencies:
    audioplayers: ^6.6.0
    video_player: ^2.11.1
    path_provider: ^2.1.5
+   country_flags: ^2.0.0
 
 dependency_overrides:
    zego_zim: 2.21.1
