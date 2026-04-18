@@ -14,6 +14,7 @@ export interface MatchRecommendationItem {
    isVerified: boolean;
    heightCm: number | null;
    city: string | null;
+   country: string | null;
    religion: string | null;
    occupation: string | null;
    matchPercentage: number;

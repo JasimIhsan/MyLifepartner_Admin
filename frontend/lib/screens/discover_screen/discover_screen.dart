@@ -11,6 +11,8 @@ import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_lim
 import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
 import 'package:mylifepartner/services/match_service.dart';
 import 'package:provider/provider.dart';
+import 'package:country_flags/country_flags.dart';
+import 'package:mylifepartner/core/country_helper.dart';
 
 /// Discover screen refactored into a modern profile browser UI.
 /// Each profile is displayed as a large hero card with floating navigation and interaction buttons.
@@ -421,13 +423,38 @@ class _ProfileBrowserCard extends StatelessWidget {
                   builder: (_) => ProfileDetailScreen(
                     profileId: profile.id,
                     profileName: profile.name,
-                    seedProfile: profile,
                   ),
                 ),
               ),
               child: Container(color: Colors.transparent),
             ),
           ),
+
+          // Country Flag Top Right
+          if (CountryHelper.getCode(profile.country) != null)
+            Positioned(
+              top: 24,
+              right: 20,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: CountryFlag.fromCountryCode(
+                    CountryHelper.getCode(profile.country)!,
+                    width: 36,
+                    height: 36,
+                  ),
+                ),
+              ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
+            ),
         ],
       ),
     );
@@ -455,9 +482,8 @@ class _ProfileBrowserCard extends StatelessWidget {
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: Colors.transparent,
-                    builder: (_) => VerifiedProfileBottomSheet(
-                      profileName: profile.name,
-                    ),
+                    builder: (_) =>
+                        VerifiedProfileBottomSheet(profileName: profile.name),
                   );
                 },
                 child: Image.asset(
@@ -470,8 +496,6 @@ class _ProfileBrowserCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        if (profile.occupation != null)
-          _buildInfoRow(Icons.work_outline_rounded, profile.occupation!),
         if (profile.city != null)
           _buildInfoRow(Icons.location_on_outlined, profile.city!),
         // if (profile.religion != null)
@@ -528,41 +552,38 @@ class _SideNavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.only(
-          left: isLeft ? 16 : 0,
-          right: !isLeft ? 16 : 0,
-        ),
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white.withValues(alpha: 0.95),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
-              spreadRadius: 2,
-            ),
-          ],
-        ),
-        child: Center(
-          child: Icon(
-            icon,
-            color: AppColors.textPrimary,
-            size: 28,
-          ),
-        ),
-      )
-      .animate()
-      .fadeIn(duration: 400.ms)
-      .scale(
-        begin: const Offset(0.8, 0.8),
-        end: const Offset(1.0, 1.0),
-        curve: Curves.easeOutBack,
-        duration: 500.ms,
-      ),
+      child:
+          Container(
+                margin: EdgeInsets.only(
+                  left: isLeft ? 16 : 0,
+                  right: !isLeft ? 16 : 0,
+                ),
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.95),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Icon(icon, color: AppColors.textPrimary, size: 28),
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 400.ms)
+              .scale(
+                begin: const Offset(0.8, 0.8),
+                end: const Offset(1.0, 1.0),
+                curve: Curves.easeOutBack,
+                duration: 500.ms,
+              ),
     );
   }
 }
@@ -582,8 +603,8 @@ class _ActionButtonsRow extends StatelessWidget {
       children: [
         Expanded(
           child: _ActionButton(
-            label: 'Not Interested',
-            icon: Icons.hourglass_empty,
+            label: '',
+            icon: Icons.close,
             onTap: onNotInterested,
             primary: false,
           ),
@@ -591,7 +612,7 @@ class _ActionButtonsRow extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: _ActionButton(
-            label: 'Interested',
+            label: '',
             icon: Icons.favorite_rounded,
             onTap: onInterest,
             primary: true,

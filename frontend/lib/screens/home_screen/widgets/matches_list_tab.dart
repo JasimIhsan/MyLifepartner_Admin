@@ -344,7 +344,6 @@ class _HeroCard extends StatelessWidget {
           builder: (_) => ProfileDetailScreen(
             profileId: profile.id,
             profileName: profile.name,
-            seedProfile: profile,
           ),
         ),
       ),
@@ -506,7 +505,6 @@ class _PortraitCard extends StatelessWidget {
           builder: (_) => ProfileDetailScreen(
             profileId: profile.id,
             profileName: profile.name,
-            seedProfile: profile,
           ),
         ),
       ),

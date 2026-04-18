@@ -178,10 +178,7 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
           const SizedBox(width: 6),
           Text(
             text,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -388,7 +385,6 @@ class _ConnectionCard extends StatelessWidget {
                 builder: (_) => ProfileDetailScreen(
                   profileId: profile.id,
                   profileName: profile.name,
-                  seedProfile: profile,
                 ),
               ),
             );

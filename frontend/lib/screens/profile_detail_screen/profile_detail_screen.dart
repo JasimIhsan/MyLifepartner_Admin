@@ -10,19 +10,17 @@ import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_deta
 import 'package:mylifepartner/services/match_service.dart';
 import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
+import 'package:country_flags/country_flags.dart';
+import 'package:mylifepartner/core/country_helper.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final int profileId;
   final String profileName;
 
-  /// Passed from the listing so the page can render immediately (hack fix).
-  final MatchRecommendation? seedProfile;
-
   const ProfileDetailScreen({
     super.key,
     required this.profileId,
     required this.profileName,
-    this.seedProfile,
   });
 
   @override
@@ -42,8 +40,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     _enrichFromApi();
   }
 
-  /// Tries to fetch full profile from API in background.
-  /// The seed profile is shown immediately while this runs.
+  /// Fetches full profile from API.
   Future<void> _enrichFromApi() async {
     try {
       final data = await MatchService.getProfileDetail(widget.profileId);
@@ -51,41 +48,25 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         setState(() => _apiProfile = data);
       }
     } catch (_) {
-      // Silently swallow – seed data is enough for now.
+      // Handle error gracefully
     }
   }
 
-  // ─── Resolve helpers (prefer API data, fall back to seed) ─────────────────
+  // ─── Resolve helpers ────────────────────────────────────────────────────────
+
 
   Map<String, dynamic> get _resolvedProfile {
-    if (_apiProfile != null) return _apiProfile!;
-    final s = widget.seedProfile;
-    if (s == null) return {};
-    return {
-      'id': s.id,
-      'name': s.name,
-      'age': s.age,
-      'city': s.city,
-      'religion': s.religion,
-      'occupation': s.occupation,
-      'heightCm': s.heightCm,
-      'isVerified': s.isVerified,
-      'matchPercentage': s.matchPercentage,
-      'compatibilityHighlights': s.compatibilityHighlights,
-      'interactionState': s.interactionState,
-      'images': s.images
-          .map((img) => {'imageUrl': img.imageUrl, 'isPrimary': img.isPrimary})
-          .toList(),
-    };
+    return _apiProfile ?? {};
   }
 
-  bool get _hasSeedOrApi => widget.seedProfile != null || _apiProfile != null;
+  bool get _hasApiData => _apiProfile != null;
 
   // ─── Build ─────────────────────────────────────────────────────────────────
 
+
   @override
   Widget build(BuildContext context) {
-    if (!_hasSeedOrApi) {
+    if (!_hasApiData) {
       return Scaffold(
         backgroundColor: AppColors.textWhite,
         body: const Center(
@@ -182,6 +163,32 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           child: _buildBackButton(),
         ),
 
+        // Floating country flag
+        if (p['country'] != null && CountryHelper.getCode(p['country']) != null)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            right: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: CountryFlag.fromCountryCode(
+                  CountryHelper.getCode(p['country'])!,
+                  width: 38,
+                  height: 38,
+                ),
+              ),
+            ),
+          ),
+
         // Fixed bottom action bar
         Positioned(bottom: 0, left: 0, right: 0, child: _buildActionBar(p)),
       ],
@@ -234,7 +241,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
   Widget _buildNameRow(Map<String, dynamic> p, {bool isOverlay = false}) {
     final textColor = isOverlay ? Colors.white : AppColors.textPrimary;
-    final subTextColor = isOverlay ? Colors.white.withValues(alpha: 0.9) : AppColors.textSecondary;
+    final subTextColor = isOverlay
+        ? Colors.white.withValues(alpha: 0.9)
+        : AppColors.textSecondary;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -253,7 +262,14 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                         fontWeight: FontWeight.w800,
                         color: textColor,
                         letterSpacing: -0.5,
-                        shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 10)] : null,
+                        shadows: isOverlay
+                            ? [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  blurRadius: 10,
+                                ),
+                              ]
+                            : null,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -289,7 +305,14 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                         Icons.location_on_rounded,
                         size: 16,
                         color: subTextColor,
-                        shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
+                        shadows: isOverlay
+                            ? [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  blurRadius: 5,
+                                ),
+                              ]
+                            : null,
                       ),
                       const SizedBox(width: 4),
                       Text(
@@ -301,7 +324,14 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: subTextColor,
-                          shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
+                          shadows: isOverlay
+                              ? [
+                                  Shadow(
+                                    color: Colors.black.withValues(alpha: 0.5),
+                                    blurRadius: 5,
+                                  ),
+                                ]
+                              : null,
                         ),
                       ),
                     ],
@@ -602,7 +632,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                       spreadRadius: 2,
-                    )
+                    ),
                   ]
                 : null,
           ),
