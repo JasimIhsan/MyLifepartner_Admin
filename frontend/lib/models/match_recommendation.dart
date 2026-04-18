@@ -39,6 +39,7 @@ class MatchRecommendation {
   final String? country;
   final String? religion;
   final String? occupation;
+  final String? maritalStatus;
   final int matchPercentage;
   final List<String> compatibilityHighlights;
   final List<MatchImage> images;
@@ -54,6 +55,7 @@ class MatchRecommendation {
     this.country,
     this.religion,
     this.occupation,
+    this.maritalStatus,
     required this.matchPercentage,
     required this.compatibilityHighlights,
     required this.images,
@@ -71,6 +73,7 @@ class MatchRecommendation {
       country: json['country'] as String?,
       religion: json['religion'] as String?,
       occupation: json['occupation'] as String?,
+      maritalStatus: json['maritalStatus'] as String?,
       matchPercentage: json['matchPercentage'] as int,
       compatibilityHighlights:
           (json['compatibilityHighlights'] as List<dynamic>? ?? [])

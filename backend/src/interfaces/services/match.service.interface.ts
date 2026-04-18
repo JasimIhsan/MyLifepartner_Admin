@@ -17,6 +17,7 @@ export interface MatchRecommendationItem {
    country: string | null;
    religion: string | null;
    occupation: string | null;
+   maritalStatus: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
    images: Array<{ imageUrl: string; isPrimary: boolean }>;

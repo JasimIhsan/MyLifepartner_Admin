@@ -496,10 +496,10 @@ class _ProfileBrowserCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
+        if (profile.maritalStatus != null)
+          _buildInfoRow(Icons.favorite_border_rounded, _formatEnum(profile.maritalStatus!)),
         if (profile.city != null)
           _buildInfoRow(Icons.location_on_outlined, profile.city!),
-        // if (profile.religion != null)
-        //   _buildInfoRow(Icons.star_border_rounded, profile.religion!),
       ],
     );
   }
@@ -535,6 +535,15 @@ class _ProfileBrowserCard extends StatelessWidget {
           )
         : null,
   );
+
+  String _formatEnum(String value) {
+    return value
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .join(' ');
+  }
 }
 
 class _SideNavigationButton extends StatelessWidget {

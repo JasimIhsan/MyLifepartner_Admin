@@ -43,7 +43,6 @@ class DatingProfileCard extends StatelessWidget {
             builder: (_) => ProfileDetailScreen(
               profileId: profile.id,
               profileName: profile.name,
-              seedProfile: profile,
             ),
           ),
         );
@@ -59,8 +58,8 @@ class DatingProfileCard extends StatelessWidget {
               blurRadius: 10,
               spreadRadius: 2,
               offset: const Offset(0, 5),
-            )
-          ]
+            ),
+          ],
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(
@@ -86,11 +85,14 @@ class DatingProfileCard extends StatelessWidget {
                   color: Colors.black.withValues(alpha: 0.5),
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: Colors.white24)
+                        border: Border.all(color: Colors.white24),
                       ),
                       child: Text(
                         "Action Recorded",
@@ -123,7 +125,7 @@ class DatingProfileCard extends StatelessWidget {
                         Colors.black.withValues(alpha: 0.4),
                         Colors.transparent,
                       ],
-                      stops: const [0.0, 0.3, 0.6, 1.0]
+                      stops: const [0.0, 0.3, 0.6, 1.0],
                     ),
                   ),
                 ),
@@ -144,8 +146,12 @@ class DatingProfileCard extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: Padding(
                       padding: EdgeInsets.only(left: 12.0),
-                      child: Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white70, size: 28),
-                    )
+                      child: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white70,
+                        size: 28,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -164,8 +170,12 @@ class DatingProfileCard extends StatelessWidget {
                     alignment: Alignment.centerRight,
                     child: Padding(
                       padding: EdgeInsets.only(right: 12.0),
-                      child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.white70, size: 28),
-                    )
+                      child: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        color: Colors.white70,
+                        size: 28,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -179,7 +189,7 @@ class DatingProfileCard extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                   // Name and Age
+                  // Name and Age
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -200,42 +210,47 @@ class DatingProfileCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Location details
-                  if (profile.city != null) ...[
+                  if (profile.city != null ||
+                      profile.maritalStatus != null) ...[
                     Row(
                       children: [
-                        const Icon(
-                          Icons.work_outline,
-                          size: 14,
-                          color: Colors.white70,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          profile.occupation ?? 'Not working',
-                          style: TextStyle(
-                            fontSize: 14,
+                        if (profile.maritalStatus != null) ...[
+                          const Icon(
+                            Icons.favorite_border_rounded,
+                            size: 14,
                             color: Colors.white70,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(
-                          Icons.location_on_outlined,
-                          size: 14,
-                          color: Colors.white70,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            profile.city!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          const SizedBox(width: 4),
+                          Text(
+                            _formatEnum(profile.maritalStatus!),
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.white70,
                             ),
                           ),
-                        ),
+                          const SizedBox(width: 8),
+                        ],
+                        if (profile.city != null) ...[
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 14,
+                            color: Colors.white70,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              profile.city!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 4),
@@ -245,7 +260,11 @@ class DatingProfileCard extends StatelessWidget {
                   if (profile.religion != null) ...[
                     Row(
                       children: [
-                        const Icon(Icons.star_border_rounded, size: 14, color: Colors.white70),
+                        const Icon(
+                          Icons.star_border_rounded,
+                          size: 14,
+                          color: Colors.white70,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
@@ -263,7 +282,7 @@ class DatingProfileCard extends StatelessWidget {
                   ],
 
                   const SizedBox(height: 24),
-                  
+
                   // Action Buttons Layout
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -277,12 +296,13 @@ class DatingProfileCard extends StatelessWidget {
                         label: "Not Interested",
                         onTap: isSwiped ? null : onNotInterested,
                       ),
-                      
+
                       // Interest Button (Heart)
                       _ActionButton(
                         icon: Icons.favorite_rounded,
                         color: Colors.white,
-                        backgroundColor: AppColors.primary, // Using primary theme color
+                        backgroundColor:
+                            AppColors.primary, // Using primary theme color
                         borderColor: Colors.transparent,
                         label: "Interest",
                         onTap: isSwiped ? null : onInterest,
@@ -305,6 +325,17 @@ class DatingProfileCard extends StatelessWidget {
         child: Icon(Icons.person, size: 100, color: Colors.grey),
       ),
     );
+  }
+
+  String _formatEnum(String value) {
+    return value
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .split(' ')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
+        .join(' ');
   }
 }
 
@@ -347,11 +378,7 @@ class _ActionButton extends StatelessWidget {
                 ),
               ],
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
+            child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(height: 8),
           Text(

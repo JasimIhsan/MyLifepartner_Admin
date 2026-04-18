@@ -54,7 +54,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
   // ─── Resolve helpers ────────────────────────────────────────────────────────
 
-
   Map<String, dynamic> get _resolvedProfile {
     return _apiProfile ?? {};
   }
@@ -63,22 +62,194 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
 
   // ─── Build ─────────────────────────────────────────────────────────────────
 
-
   @override
   Widget build(BuildContext context) {
     if (!_hasApiData) {
       return Scaffold(
         backgroundColor: AppColors.textWhite,
-        body: const Center(
-          child: CircularProgressIndicator(
-            color: AppColors.primary,
-            strokeWidth: 2,
-          ),
-        ),
+        body: _buildSkeleton(),
       );
     }
 
     return Scaffold(backgroundColor: AppColors.textWhite, body: _buildBody());
+  }
+
+  Widget _buildSkeleton() {
+    final double actionBarAndGapHeight =
+        90 + MediaQuery.of(context).padding.bottom;
+    final double topSectionHeight =
+        MediaQuery.of(context).size.height - actionBarAndGapHeight;
+
+    return Stack(
+      children: [
+        // Scrollable skeleton (same structure as real UI)
+        CustomScrollView(
+          slivers: [
+            // 🔝 HEADER (same as real)
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: topSectionHeight,
+                child: Stack(
+                  children: [
+                    // Image placeholder
+                    Positioned.fill(
+                      child: Container(color: Colors.grey.shade300),
+                    ),
+
+                    // Gradient overlay (same as real)
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: 250,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.4),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Name row skeleton
+                    Positioned(
+                      bottom: 30,
+                      left: 20,
+                      right: 20,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _skeletonBox(width: 180, height: 28),
+                                const SizedBox(height: 8),
+                                _skeletonBox(width: 120, height: 16),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          _skeletonBox(width: 60, height: 40),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 🔽 BODY (same spacing & structure)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Compatibility section
+                    _skeletonBox(width: 120, height: 18),
+                    const SizedBox(height: 12),
+
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: List.generate(
+                        4,
+                        (_) => _skeletonBox(width: 80, height: 28),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // About section
+                    _skeletonBox(width: 100, height: 18),
+                    const SizedBox(height: 12),
+                    _skeletonBox(height: 80),
+
+                    const SizedBox(height: 24),
+
+                    // Details grid placeholder
+                    _skeletonBox(height: 120),
+
+                    const SizedBox(height: 24),
+
+                    // Photos section
+                    _skeletonBox(width: 140, height: 18),
+                    const SizedBox(height: 12),
+                    _skeletonBox(height: 260),
+
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        // 🔙 Back button (same position)
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8,
+          left: 12,
+          child: _skeletonCircle(44),
+        ),
+
+        // 🌍 Flag placeholder
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 10,
+          right: 16,
+          child: _skeletonCircle(38),
+        ),
+
+        // ⬇️ Bottom action bar skeleton
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+            ),
+            color: Colors.white,
+            child: Row(
+              children: [
+                Expanded(child: _skeletonBox(height: 50)),
+                const SizedBox(width: 12),
+                Expanded(child: _skeletonBox(height: 50)),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _skeletonCircle(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        shape: BoxShape.circle,
+      ),
+    );
+  }
+
+  Widget _skeletonBox({double width = double.infinity, double height = 16}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade300,
+        borderRadius: BorderRadius.circular(8),
+      ),
+    ).animate().fadeIn(duration: 400.ms);
   }
 
   Widget _buildBody() {
@@ -254,26 +425,29 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             children: [
               Row(
                 children: [
-                  Flexible(
-                    child: Text(
-                      '${p['name'] ?? 'Unknown'}, ${p['age'] ?? ''}',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: textColor,
-                        letterSpacing: -0.5,
-                        shadows: isOverlay
-                            ? [
-                                Shadow(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  blurRadius: 10,
-                                ),
-                              ]
-                            : null,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        p['name'] ?? 'Unknown',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${p['age'] ?? ''}',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800, // 👈 added
+                          color: subTextColor,
+                        ),
+                      ),
+                    ],
                   ),
                   if (p['isVerified'] == true) ...[
                     const SizedBox(width: 8),
@@ -296,33 +470,34 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   ],
                 ],
               ),
-              if (p['city'] != null || p['state'] != null)
+              if (p['city'] != null || p['state'] != null || p['maritalStatus'] != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.location_on_rounded,
-                        size: 16,
-                        color: subTextColor,
-                        shadows: isOverlay
-                            ? [
-                                Shadow(
-                                  color: Colors.black.withValues(alpha: 0.5),
-                                  blurRadius: 5,
-                                ),
-                              ]
-                            : null,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        [
-                          p['city'],
-                          p['state'],
-                        ].where((e) => e != null).join(', '),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                      if (p['maritalStatus'] != null) ...[
+                        Icon(
+                          Icons.favorite_border_rounded,
+                          size: 16,
+                          color: subTextColor,
+                          shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatEnum(p['maritalStatus']),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: subTextColor,
+                            shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      if (p['city'] != null || p['state'] != null) ...[
+                        Icon(
+                          Icons.location_on_rounded,
+                          size: 16,
                           color: subTextColor,
                           shadows: isOverlay
                               ? [
@@ -333,7 +508,27 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                                 ]
                               : null,
                         ),
-                      ),
+                        const SizedBox(width: 4),
+                        Text(
+                          [
+                            p['city'],
+                            p['state'],
+                          ].where((e) => e != null).join(', '),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: subTextColor,
+                            shadows: isOverlay
+                                ? [
+                                    Shadow(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      blurRadius: 5,
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -343,6 +538,15 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         _buildMatchBadge(p['matchPercentage'] ?? 0),
       ],
     ).animate().fadeIn(duration: 400.ms);
+  }
+
+  String _formatEnum(String value) {
+    return value
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .split(' ')
+        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .join(' ');
   }
 
   Widget _buildMatchBadge(int pct) {
