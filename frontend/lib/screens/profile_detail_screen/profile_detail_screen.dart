@@ -297,12 +297,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (highlights.isNotEmpty) ...[
-                      _buildSectionLabel('Compatibility'),
-                      const SizedBox(height: 10),
-                      _buildHighlights(highlights),
-                      const SizedBox(height: 20),
-                    ],
+                    //if (highlights.isNotEmpty) ...[
+                    //_buildSectionLabel('Compatibility'),
+                    //const SizedBox(height: 10),
+                    // _buildHighlights(highlights),
+                    //  const SizedBox(height: 20),
+                    //],
                     if (p['bio'] != null &&
                         (p['bio'] as String).isNotEmpty) ...[
                       _buildSectionLabel('About'),
@@ -419,38 +419,71 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
+        /// LEFT SIDE (flexible)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              /// 🔹 Name + age + verified
               Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        p['name'] ?? 'Unknown',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          color: textColor,
+                  /// NAME + AGE (flexible, prevents overflow)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                p['name'] ?? 'Unknown',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 28, // reduced from 32 (important)
+                                  fontWeight: FontWeight.w800,
+                                  color: textColor,
+                                ),
+                              ),
+                            ),
+                            if (_isNewProfile(p['createdAt']?.toString() ?? ''))
+                              Container(
+                                margin: const EdgeInsets.only(left: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Text(
+                                  'NEW',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${p['age'] ?? ''}',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800, // 👈 added
-                          color: subTextColor,
+                        const SizedBox(height: 2),
+                        Text(
+                          '${p['age'] ?? ''}',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: subTextColor,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+
+                  /// VERIFIED BADGE
                   if (p['isVerified'] == true) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     GestureDetector(
                       onTap: () {
                         showModalBottomSheet(
@@ -463,81 +496,137 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       },
                       child: Image.asset(
                         'assets/icons/verified_icon.png',
-                        width: 26,
-                        height: 26,
+                        width: 22,
+                        height: 22,
                       ),
                     ),
                   ],
                 ],
               ),
-              if (p['city'] != null || p['state'] != null || p['maritalStatus'] != null)
+
+              /// 🔹 META (marital status + location + last seen) → WRAPS instead of overflow
+              if (p['maritalStatus'] != null ||
+                  p['city'] != null ||
+                  p['state'] != null ||
+                  p['lastLoginAt'] != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 6),
-                  child: Row(
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      if (p['maritalStatus'] != null) ...[
-                        Icon(
-                          Icons.favorite_border_rounded,
-                          size: 16,
-                          color: subTextColor,
-                          shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
+                      /// MARITAL STATUS
+                      if (p['maritalStatus'] != null)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.favorite_border_rounded,
+                              size: 16,
+                              color: subTextColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatEnum(p['maritalStatus']),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: subTextColor,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatEnum(p['maritalStatus']),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: subTextColor,
-                            shadows: isOverlay ? [Shadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 5)] : null,
-                          ),
+
+                      /// LOCATION
+                      if (p['city'] != null || p['state'] != null)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.location_on_rounded,
+                              size: 16,
+                              color: subTextColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                [
+                                  p['city'],
+                                  p['state'],
+                                ].where((e) => e != null).join(', '),
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: subTextColor,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 12),
-                      ],
-                      if (p['city'] != null || p['state'] != null) ...[
-                        Icon(
-                          Icons.location_on_rounded,
-                          size: 16,
-                          color: subTextColor,
-                          shadows: isOverlay
-                              ? [
-                                  Shadow(
-                                    color: Colors.black.withValues(alpha: 0.5),
-                                    blurRadius: 5,
-                                  ),
-                                ]
-                              : null,
+
+                      /// LAST SEEN (Access time)
+                      if (p['lastLoginAt'] != null)
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time_rounded,
+                              size: 16,
+                              color: subTextColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              _formatLastLogin(p['lastLoginAt'].toString()),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: subTextColor,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          [
-                            p['city'],
-                            p['state'],
-                          ].where((e) => e != null).join(', '),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: subTextColor,
-                            shadows: isOverlay
-                                ? [
-                                    Shadow(
-                                      color: Colors.black.withValues(alpha: 0.5),
-                                      blurRadius: 5,
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
             ],
           ),
         ),
+
+        /// RIGHT SIDE (fixed)
         _buildMatchBadge(p['matchPercentage'] ?? 0),
       ],
     ).animate().fadeIn(duration: 400.ms);
+  }
+
+  bool _isNewProfile(String isoString) {
+    try {
+      if (isoString.isEmpty) return false;
+      final date = DateTime.parse(isoString);
+      final diff = DateTime.now().difference(date);
+      return diff.inDays <= 7;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  String _formatLastLogin(String isoString) {
+    try {
+      if (isoString.isEmpty) return '';
+      final date = DateTime.parse(isoString);
+      final diff = DateTime.now().difference(date);
+      if (diff.inDays == 0) {
+        if (diff.inHours == 0) return 'Active just now';
+        return 'Active ${diff.inHours}h ago';
+      } else if (diff.inDays == 1) {
+        return 'Active yesterday';
+      } else {
+        return 'Active ${diff.inDays}d ago';
+      }
+    } catch (_) {
+      return '';
+    }
   }
 
   String _formatEnum(String value) {
@@ -545,7 +634,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         .replaceAll('_', ' ')
         .toLowerCase()
         .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
         .join(' ');
   }
 

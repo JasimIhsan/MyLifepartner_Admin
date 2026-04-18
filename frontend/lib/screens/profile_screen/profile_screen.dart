@@ -68,12 +68,177 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Widget _buildSkeleton() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+
+            /// 🔵 Profile Image (exact match)
+            Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.borderColor, width: 2),
+                color: Colors.grey.shade300,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            /// 🔤 Name
+            Container(
+              width: 140,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+
+            const SizedBox(height: 6),
+
+            /// 📧 Email
+            Container(
+              width: 200,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            /// 🧩 Section 1 (Account)
+            _skeletonSection(),
+
+            /// 🧩 Section 2 (Subscription)
+            _skeletonSection(),
+
+            /// 🧩 Section 3 (Preferences)
+            _skeletonSection(),
+
+            /// 🧩 Section 4 (Support)
+            _skeletonSection(),
+
+            const SizedBox(height: 24),
+
+            /// 🔘 Logout button
+            Container(
+              width: double.infinity,
+              height: 56,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.borderColor),
+                color: Colors.grey.shade200,
+              ),
+            ),
+
+            const SizedBox(height: 50),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _skeletonSection() {
+    return Column(
+      children: [
+        /// Section title
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Container(
+            width: 100,
+            height: 12,
+            margin: const EdgeInsets.only(bottom: 8, left: 8),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(6),
+            ),
+          ),
+        ),
+
+        /// Card container (matches your real container)
+        Container(
+          margin: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.borderColor, width: 1.2),
+          ),
+          child: Column(
+            children: List.generate(2, (index) {
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                    child: Row(
+                      children: [
+                        /// Icon placeholder
+                        Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+
+                        /// Text placeholder
+                        Expanded(
+                          child: Container(
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        /// Arrow placeholder
+                        Container(
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  if (index == 0)
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 56,
+                      color: AppColors.divider,
+                    ),
+                ],
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading || _user == null) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
+      return _buildSkeleton();
     }
 
     return SingleChildScrollView(
@@ -117,26 +282,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             size: 70,
                             color: AppColors.textSecondary,
                           ),
-                    Positioned(
-                      bottom: 0,
-                      right: 10,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.surface,
-                            width: 3,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.edit,
-                          color: AppColors.onPrimary,
-                          size: 18,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),

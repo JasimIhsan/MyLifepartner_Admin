@@ -63,6 +63,8 @@ export class MatchService implements IMatchService {
                compatibilityHighlights: highlights,
                images: presignedImages,
                interactionState: candidate.interactionState ?? InteractionState.NONE,
+               createdAt: candidate.createdAt,
+               lastLoginAt: candidate.lastLoginAt,
             });
          }
       }
@@ -123,6 +125,8 @@ export class MatchService implements IMatchService {
          compatibilityHighlights: highlights,
          images: presignedImages,
          interactionState: candidate.interactionState ?? InteractionState.NONE,
+         createdAt: candidate.createdAt,
+         lastLoginAt: candidate.lastLoginAt,
       };
    }
 
@@ -172,6 +176,8 @@ export class MatchService implements IMatchService {
             compatibilityHighlights: highlights,
             images: presignedImages,
             interactionState: candidate.interactionState ?? InteractionState.NONE,
+            createdAt: candidate.createdAt,
+            lastLoginAt: candidate.lastLoginAt,
          });
       }
 

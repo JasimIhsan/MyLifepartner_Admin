@@ -191,9 +191,9 @@ class DatingProfileCard extends StatelessWidget {
                 children: [
                   // Name and Age
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Expanded(
+                      Flexible(
                         child: Text(
                           '${profile.name}, ${profile.age}',
                           style: TextStyle(
@@ -207,6 +207,23 @@ class DatingProfileCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      if (_isNewProfile(profile.createdAt))
+                        Container(
+                          margin: const EdgeInsets.only(left: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'NEW',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -256,7 +273,6 @@ class DatingProfileCard extends StatelessWidget {
                     const SizedBox(height: 4),
                   ],
 
-                  // Religion Details
                   if (profile.religion != null) ...[
                     Row(
                       children: [
@@ -279,7 +295,31 @@ class DatingProfileCard extends StatelessWidget {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 4),
                   ],
+
+                  // Last login details
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.access_time_rounded,
+                        size: 14,
+                        color: Colors.white70,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          _formatLastLogin(profile.lastLoginAt),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
 
                   const SizedBox(height: 24),
 
@@ -336,6 +376,33 @@ class DatingProfileCard extends StatelessWidget {
           (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
         )
         .join(' ');
+  }
+
+  String _formatLastLogin(String isoString) {
+    try {
+      final date = DateTime.parse(isoString);
+      final diff = DateTime.now().difference(date);
+      if (diff.inDays == 0) {
+        if (diff.inHours == 0) return 'Active just now';
+        return 'Active ${diff.inHours}h ago';
+      } else if (diff.inDays == 1) {
+        return 'Active yesterday';
+      } else {
+        return 'Active ${diff.inDays}d ago';
+      }
+    } catch (_) {
+      return '';
+    }
+  }
+
+  bool _isNewProfile(String isoString) {
+    try {
+      final date = DateTime.parse(isoString);
+      final diff = DateTime.now().difference(date);
+      return diff.inDays <= 7;
+    } catch (_) {
+      return false;
+    }
   }
 }
 

@@ -22,6 +22,8 @@ export interface MatchRecommendationItem {
    compatibilityHighlights: string[];
    images: Array<{ imageUrl: string; isPrimary: boolean }>;
    interactionState: InteractionState;
+   createdAt: Date;
+   lastLoginAt: Date;
 }
 
 export interface SwipeInput {
@@ -50,6 +52,8 @@ export interface ProfileDetail {
    compatibilityHighlights: string[];
    images: Array<{ imageUrl: string; isPrimary: boolean }>;
    interactionState: InteractionState;
+   createdAt: Date;
+   lastLoginAt: Date;
 }
 
 export interface IMatchService {

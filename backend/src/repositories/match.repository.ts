@@ -66,6 +66,8 @@ export class MatchRepository implements IMatchRepository {
                      where: currentUser?.profile?.id ? { targetProfileId: currentUser.profile.id } : { id: -1 },
                   },
                   isVerified: true,
+                  createdAt: true,
+                  updatedAt: true,
                },
             },
          },
@@ -92,6 +94,8 @@ export class MatchRepository implements IMatchRepository {
          images: p.images.map((img) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
          answers: p.answers,
          interactionState: this.determineInteractionState(p.swipesOnMe, p.user.profileSwipes),
+         createdAt: p.user.createdAt,
+         lastLoginAt: p.user.updatedAt,
       }));
    }
 
@@ -119,7 +123,7 @@ export class MatchRepository implements IMatchRepository {
          include: {
             targetProfile: {
                include: {
-                  user: { select: { isVerified: true } },
+                  user: { select: { isVerified: true, createdAt: true, updatedAt: true } },
                   images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
                   answers: { select: { questionId: true, answer: true, score: true } },
                },
@@ -147,6 +151,8 @@ export class MatchRepository implements IMatchRepository {
          gender: s.targetProfile.gender,
          images: s.targetProfile.images.map((img) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
          answers: s.targetProfile.answers,
+         createdAt: s.targetProfile.user.createdAt,
+         lastLoginAt: s.targetProfile.user.updatedAt,
       }));
    }
 
@@ -159,7 +165,7 @@ export class MatchRepository implements IMatchRepository {
          include: {
             targetProfile: {
                include: {
-                  user: { select: { isVerified: true } },
+                  user: { select: { isVerified: true, createdAt: true, updatedAt: true } },
                   images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
                   answers: { select: { questionId: true, answer: true, score: true } },
                },
@@ -260,6 +266,9 @@ export class MatchRepository implements IMatchRepository {
                   profileSwipes: {
                      where: currentUser?.profile?.id ? { targetProfileId: currentUser.profile.id } : { id: -1 },
                   },
+                  isVerified: true,
+                  createdAt: true,
+                  updatedAt: true,
                },
             },
          },
@@ -292,6 +301,8 @@ export class MatchRepository implements IMatchRepository {
          images: p.images.map((img: any) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
          answers: p.answers,
          interactionState,
+         createdAt: p.user?.createdAt ?? new Date(),
+         lastLoginAt: p.user?.updatedAt ?? new Date(),
       };
    }
 }
@@ -302,7 +313,11 @@ function sweepsToProfiles(swipes: any[]) {
       if (current.user?.profile) {
          acc.push({
             ...current.user.profile,
-            user: { isVerified: current.user.isVerified },
+            user: { 
+               isVerified: current.user.isVerified,
+               createdAt: current.user.createdAt,
+               updatedAt: current.user.updatedAt,
+            },
          });
       }
       return acc;

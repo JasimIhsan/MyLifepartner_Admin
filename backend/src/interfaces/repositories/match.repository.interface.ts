@@ -35,6 +35,8 @@ export interface CandidateProfile {
    gender: string | null;
    images: Array<{ imageUrl: string; isPrimary: boolean }>;
    answers: UserAnswerData[];
+   createdAt: Date;
+   lastLoginAt: Date;
 }
 
 export interface UserPreferenceData {

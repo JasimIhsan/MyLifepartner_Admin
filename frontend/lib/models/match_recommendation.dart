@@ -44,6 +44,8 @@ class MatchRecommendation {
   final List<String> compatibilityHighlights;
   final List<MatchImage> images;
   final InteractionState interactionState;
+  final String createdAt;
+  final String lastLoginAt;
 
   MatchRecommendation({
     required this.id,
@@ -60,6 +62,8 @@ class MatchRecommendation {
     required this.compatibilityHighlights,
     required this.images,
     required this.interactionState,
+    required this.createdAt,
+    required this.lastLoginAt,
   });
 
   factory MatchRecommendation.fromJson(Map<String, dynamic> json) {
@@ -85,6 +89,8 @@ class MatchRecommendation {
       interactionState: InteractionState.fromString(
         json['interactionState'] as String? ?? 'NONE',
       ),
+      createdAt: json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      lastLoginAt: json['lastLoginAt'] as String? ?? DateTime.now().toIso8601String(),
     );
   }
 }
