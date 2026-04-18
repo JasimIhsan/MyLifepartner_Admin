@@ -54,6 +54,7 @@ export interface ProfileDetail {
    interactionState: InteractionState;
    createdAt: Date;
    lastLoginAt: Date;
+   isVerified: boolean;
 }
 
 export interface IMatchService {

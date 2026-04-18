@@ -15,7 +15,7 @@ export class MatchService implements IMatchService {
       private readonly matchRepository: IMatchRepository,
       private readonly s3Service: IS3Service,
       private readonly userFeatureService: IUserFeatureService
-   ) {}
+   ) { }
 
    async getRecommendations(userId: number): Promise<MatchRecommendationItem[]> {
       // 1. Fetch preferences & answers of current user
@@ -127,6 +127,7 @@ export class MatchService implements IMatchService {
          interactionState: candidate.interactionState ?? InteractionState.NONE,
          createdAt: candidate.createdAt,
          lastLoginAt: candidate.lastLoginAt,
+         isVerified: candidate.isVerified,
       };
    }
 

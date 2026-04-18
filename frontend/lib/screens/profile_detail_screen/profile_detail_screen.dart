@@ -419,49 +419,27 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        /// LEFT SIDE (flexible)
+        /// LEFT SIDE (flexible content)
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /// 🔹 Name + age + verified
+              /// 🔥 NAME + VERIFIED (same row — FIXED)
               Row(
                 children: [
-                  /// NAME + AGE (flexible, prevents overflow)
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                p['name'] ?? 'Unknown',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  fontSize: 28, // reduced from 32 (important)
-                                  fontWeight: FontWeight.w800,
-                                  color: textColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${p['age'] ?? ''}',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: subTextColor,
-                          ),
-                        ),
-                      ],
+                  Flexible(
+                    child: Text(
+                      p['name'] ?? 'Unknown',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: textColor,
+                      ),
                     ),
                   ),
 
-                  /// VERIFIED BADGE
                   if (p['isVerified'] == true) ...[
                     const SizedBox(width: 6),
                     GestureDetector(
@@ -476,15 +454,27 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                       },
                       child: Image.asset(
                         'assets/icons/verified_icon.png',
-                        width: 22,
-                        height: 22,
+                        width: 20,
+                        height: 20,
                       ),
                     ),
                   ],
                 ],
               ),
 
-              /// 🔹 META (marital status + location + last seen) → WRAPS instead of overflow
+              const SizedBox(height: 2),
+
+              /// 🔹 AGE
+              Text(
+                '${p['age'] ?? ''}',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                  color: subTextColor,
+                ),
+              ),
+
+              /// 🔹 META (wrap = no overflow ever)
               if (p['maritalStatus'] != null ||
                   p['city'] != null ||
                   p['state'] != null ||
@@ -546,7 +536,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                           ],
                         ),
 
-                      /// LAST SEEN (Access time)
+                      /// LAST ACTIVE
                       if (p['lastLoginAt'] != null)
                         Row(
                           mainAxisSize: MainAxisSize.min,
@@ -574,7 +564,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           ),
         ),
 
-        /// RIGHT SIDE (fixed)
+        /// RIGHT SIDE (match badge stays fixed)
         _buildMatchBadge(p['matchPercentage'] ?? 0),
       ],
     ).animate().fadeIn(duration: 400.ms);
