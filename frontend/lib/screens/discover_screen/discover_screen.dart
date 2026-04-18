@@ -340,6 +340,17 @@ class _ProfileBrowserCard extends StatelessWidget {
     return null;
   }
 
+  bool _isNewProfile(String isoString) {
+    try {
+      if (isoString.isEmpty) return false;
+      final date = DateTime.parse(isoString);
+      final diff = DateTime.now().difference(date);
+      return diff.inDays <= 7;
+    } catch (_) {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -389,7 +400,37 @@ class _ProfileBrowserCard extends StatelessWidget {
               ),
             ),
           ),
-
+          if (_isNewProfile(profile.createdAt?.toString() ?? ''))
+            Positioned(
+              top: 24,
+              left: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'NEW',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
+            ),
           // Detail Overlay & Action Buttons
           Positioned(
             left: 20,
@@ -497,7 +538,10 @@ class _ProfileBrowserCard extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         if (profile.maritalStatus != null)
-          _buildInfoRow(Icons.favorite_border_rounded, _formatEnum(profile.maritalStatus!)),
+          _buildInfoRow(
+            Icons.favorite_border_rounded,
+            _formatEnum(profile.maritalStatus!),
+          ),
         if (profile.city != null)
           _buildInfoRow(Icons.location_on_outlined, profile.city!),
       ],
@@ -541,7 +585,9 @@ class _ProfileBrowserCard extends StatelessWidget {
         .replaceAll('_', ' ')
         .toLowerCase()
         .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
         .join(' ');
   }
 }
