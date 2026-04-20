@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mylifepartner/screens/notification_screen/notification_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/call_provider.dart';
@@ -29,13 +30,13 @@ class _HomePageState extends State<HomePage> {
   final ProfileRepository _profileRepository = ProfileRepository();
   bool _isSheetShowing = false;
   bool _isCheckingProfile = false;
-
+  bool _showNotifications = false;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initZegoAndChat();
-      _checkProfileCompletion();
+      //_checkProfileCompletion();
     });
   }
 
@@ -46,7 +47,7 @@ class _HomePageState extends State<HomePage> {
       if (userId == null || !mounted) return;
 
       final userIdStr = userId.toString();
-      
+
       String userName = 'User $userId';
       try {
         final profile = await UserRepository().getUser();
@@ -67,10 +68,7 @@ class _HomePageState extends State<HomePage> {
         context.read<ChatProvider>().loadConversations();
 
         final callProvider = context.read<CallProvider>();
-        callProvider.configure(
-          userId: userIdStr,
-          userName: userName,
-        );
+        callProvider.configure(userId: userIdStr, userName: userName);
         callProvider.loadUserAvatar();
         callProvider.startListening();
       }
@@ -115,7 +113,7 @@ class _HomePageState extends State<HomePage> {
                 )
                 .then((_) {
                   if (mounted) {
-                    _checkProfileCompletion();
+                    //_checkProfileCompletion();
                   }
                 });
           },
@@ -150,8 +148,10 @@ class _HomePageState extends State<HomePage> {
 
   void _onTabTapped(int index) {
     setState(() => _selectedIndex = index);
+    _showNotifications = false; // 🔥 THIS is what you missed
     if (index == 0) {
-      _checkProfileCompletion();
+      //_checkProfileCompletion();
+
       final provider = context.read<MatchProvider>();
       if (provider.profiles.isEmpty) {
         provider.loadRecommendations();
@@ -185,7 +185,11 @@ class _HomePageState extends State<HomePage> {
             Icons.notifications_outlined,
             color: AppColors.textPrimary,
           ),
-          onPressed: () {},
+          onPressed: () {
+            setState(() {
+              _showNotifications = true;
+            });
+          },
         ),
         // IconButton(
         //   icon: const Icon(
@@ -224,6 +228,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
+    if (_showNotifications) {
+      return NotificationScreen(
+        onBack: () {
+          setState(() {
+            _showNotifications = false;
+          });
+        },
+      );
+    }
     switch (_selectedIndex) {
       case 0:
         return const DiscoverScreen();
