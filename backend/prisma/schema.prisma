@@ -18,6 +18,7 @@ model User {
   isDeleted    Boolean  @default(false)
   role         Role     @default(USER)
   createdAt    DateTime @default(now())
+  //@muhammedsirajudeen - this is the lastLoginAt
   updatedAt    DateTime @updatedAt
 
   profile           Profile?
@@ -195,6 +196,7 @@ model SubscriptionPlan {
   durationDays      Int
   isActive          Boolean            @default(true)
   isMostPopular     Boolean            @default(false)
+  identifier        String?            @unique
   features          PlanFeature[]
   userSubscriptions UserSubscription[]
   createdAt         DateTime           @default(now())
