@@ -28,11 +28,7 @@ class PlanFeature {
   final String limit;
   final Feature feature;
 
-  PlanFeature({
-    required this.id,
-    required this.limit,
-    required this.feature,
-  });
+  PlanFeature({required this.id, required this.limit, required this.feature});
 
   factory PlanFeature.fromJson(Map<String, dynamic> json) {
     return PlanFeature(
@@ -41,10 +37,10 @@ class PlanFeature {
       feature: json['feature'] != null
           ? Feature.fromJson(json['feature'])
           : Feature(
-            id: 0,
-            key: json['featureKey'] ?? 'unknown',
-            name: json['featureKey'] ?? 'Unknown',
-          ),
+              id: 0,
+              key: json['featureKey'] ?? 'unknown',
+              name: json['featureKey'] ?? 'Unknown',
+            ),
     );
   }
 }
@@ -52,11 +48,15 @@ class PlanFeature {
 class SubscriptionPlan {
   final int id;
   final String name;
-  final int price; // in paise
+  final int price; // backend price (paise)
   final int durationDays;
   final bool isActive;
   final bool isMostPopular;
   final List<PlanFeature> features;
+
+  // 🔥 NEW (RevenueCat overrides)
+  final String? rcDisplayPrice;
+  final double? rcPrice;
 
   SubscriptionPlan({
     required this.id,
@@ -66,7 +66,31 @@ class SubscriptionPlan {
     required this.isActive,
     required this.isMostPopular,
     required this.features,
+    this.rcDisplayPrice,
+    this.rcPrice,
   });
+  SubscriptionPlan copyWith({
+    String? name,
+    int? price,
+    int? durationDays,
+    bool? isActive,
+    bool? isMostPopular,
+    List<PlanFeature>? features,
+    String? rcDisplayPrice,
+    double? rcPrice,
+  }) {
+    return SubscriptionPlan(
+      id: id,
+      name: name ?? this.name,
+      price: price ?? this.price,
+      durationDays: durationDays ?? this.durationDays,
+      isActive: isActive ?? this.isActive,
+      isMostPopular: isMostPopular ?? this.isMostPopular,
+      features: features ?? this.features,
+      rcDisplayPrice: rcDisplayPrice ?? this.rcDisplayPrice,
+      rcPrice: rcPrice ?? this.rcPrice,
+    );
+  }
 
   factory SubscriptionPlan.fromJson(Map<String, dynamic> json) {
     return SubscriptionPlan(
@@ -76,7 +100,8 @@ class SubscriptionPlan {
       durationDays: json['durationDays'] ?? 0,
       isActive: json['isActive'] ?? true,
       isMostPopular: json['isMostPopular'] ?? false,
-      features: (json['features'] as List?)
+      features:
+          (json['features'] as List?)
               ?.map((e) => PlanFeature.fromJson(e))
               .toList() ??
           [],
@@ -85,8 +110,9 @@ class SubscriptionPlan {
 
   /// Helper getter to format price from paise to readable string, assuming USD/INR formatting
   String get displayPrice {
+    if (rcDisplayPrice != null) return rcDisplayPrice!;
+
     final amount = price / 100;
-    // You can customize currency symbol based on locale, assuming INR here since it's paise
     return '₹${amount.toStringAsFixed(0)}';
   }
 
@@ -117,7 +143,9 @@ class UserSubscription {
     return UserSubscription(
       id: json['id'],
       planId: json['planId'],
-      plan: json['plan'] != null ? SubscriptionPlan.fromJson(json['plan']) : null,
+      plan: json['plan'] != null
+          ? SubscriptionPlan.fromJson(json['plan'])
+          : null,
       startDate: DateTime.parse(json['startDate']),
       endDate: DateTime.parse(json['endDate']),
       status: json['status'],

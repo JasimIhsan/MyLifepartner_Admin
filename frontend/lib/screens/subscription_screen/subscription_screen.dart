@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:mylifepartner/config/env.dart';
 
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/subscription_plan.dart' as model;
 import 'package:mylifepartner/providers/subscription_provider.dart';
+import 'package:mylifepartner/screens/subscription_screen/subscription_error_widget.dart';
 import 'package:mylifepartner/shared/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -18,33 +22,46 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<SubscriptionProvider>();
-      provider.fetchPlans();
-      provider.fetchMySubscription();
-    });
+    _initSubscriptions();
+  }
+
+  Future<void> _initSubscriptions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getInt('userId') ?? 0;
+    debugPrint("UserId from prefs: $userId");
+    if (userId == 0) {
+      debugPrint("Invalid userId");
+      return;
+    }
+
+    if (!mounted) return;
+
+    context.read<SubscriptionProvider>().loadSubscriptions(userId.toString());
   }
 
   void _handleSubscribe(model.SubscriptionPlan plan) async {
     final provider = context.read<SubscriptionProvider>();
-    final success = await provider.subscribeToPlan(plan.id);
+
+    final success = await provider.subscribeToPlan(
+      plan.id.toString(), // 🔥 FIXED
+    );
+
     if (!mounted) return;
 
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Successfully subscribed to ${plan.name}'),
-          backgroundColor: AppColors.primary,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? 'Successfully subscribed to ${plan.name}'
+              : (provider.error ?? 'Failed to subscribe'),
         ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(provider.error ?? 'Failed to subscribe'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+        backgroundColor: success ? AppColors.primary : Colors.red,
+      ),
+    );
+  }
+
+  Future<void> initRevenueCat() async {
+    await Purchases.configure(PurchasesConfiguration(Env.revenueCatApiKey));
   }
 
   @override
@@ -80,31 +97,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             }
 
             if (provider.error != null && provider.plans.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        color: Colors.red,
-                        size: 48,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        provider.error!,
-                        style: TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      CustomButton(
-                        onPressed: provider.fetchPlans,
-                        text: 'Retry',
-                      ),
-                    ],
-                  ),
-                ),
+              return SubscriptionErrorWidget(
+                error: provider.error,
+                onRetry: _initSubscriptions,
               );
             }
 
@@ -171,7 +166,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                   ),
                                 ),
                                 Text(
-                                  currentSub!.plan?.name ?? 'Unknown',
+                                  currentSub!.name,
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w700,
@@ -190,8 +185,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     final index = entry.key;
                     final plan = entry.value;
                     final isCurrentPlan =
-                        currentSub?.isActive == true &&
-                        currentSub?.planId == plan.id;
+                        currentSub != null && currentSub.id == plan.id;
                     return _buildPlanCard(
                           plan,
                           isCurrentPlan,
