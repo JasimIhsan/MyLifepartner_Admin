@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -310,10 +309,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 12),
             Text(
               'Loading more…',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -453,7 +449,7 @@ class _HeroCard extends StatelessWidget {
 
   Widget _buildChips() {
     final items = <String>[];
-    if (profile.religion != null) items.add(profile.religion!);
+    // if (profile.religion != null) items.add(profile.religion!);
     if (profile.occupation != null) items.add(profile.occupation!);
     if (items.isEmpty) return const SizedBox.shrink();
     return Wrap(
@@ -625,7 +621,7 @@ class _PortraitCard extends StatelessWidget {
 
   Widget _buildBottom() {
     final items = <String>[];
-    if (profile.religion != null) items.add(profile.religion!);
+    // if (profile.religion != null) items.add(profile.religion!);
     if (profile.occupation != null) items.add(profile.occupation!);
     if (items.isEmpty) return const SizedBox.shrink();
     return Wrap(

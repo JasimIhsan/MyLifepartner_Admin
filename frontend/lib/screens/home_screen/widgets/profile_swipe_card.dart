@@ -115,7 +115,7 @@ class ProfileSwipeCard extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    _buildReligionOccupation(),
+                                    _buildOccupation(),
                                     style: TextStyle(
                                       color: AppColors.textWhite.withValues(
                                         alpha: 0.6,
@@ -232,9 +232,8 @@ class ProfileSwipeCard extends StatelessWidget {
     return parts.join(' • ');
   }
 
-  String _buildReligionOccupation() {
+  String _buildOccupation() {
     final parts = <String>[];
-    if (profile.religion != null) parts.add(profile.religion!);
     if (profile.occupation != null) parts.add(profile.occupation!);
     return parts.join(' • ');
   }

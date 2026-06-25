@@ -21,14 +21,12 @@ export interface UserDto {
    dateOfBirth?: Date | null;
    maritalStatus?: string | null;
    heightCm?: number | null;
-   religion?: string | null;
    motherTongue?: string | null;
    city?: string | null;
    state?: string | null;
    country?: string | null;
    highestEducation?: string | null;
    occupation?: string | null;
-   annualIncome?: number | null;
    bio?: string | null;
    profileCompletion?: number | null;
 
@@ -56,14 +54,12 @@ export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPri
    dateOfBirth: user.profile?.dateOfBirth || null,
    maritalStatus: user.profile?.maritalStatus || null,
    heightCm: user.profile?.heightCm || null,
-   religion: user.profile?.religion || null,
    motherTongue: user.profile?.motherTongue || null,
    city: user.profile?.city || null,
    state: user.profile?.state || null,
    country: user.profile?.country || null,
    highestEducation: user.profile?.highestEducation || null,
    occupation: user.profile?.occupation || null,
-   annualIncome: user.profile?.annualIncome || null,
    bio: user.profile?.bio || null,
    profileCompletion: user.profile?.profileCompletion || null,
 

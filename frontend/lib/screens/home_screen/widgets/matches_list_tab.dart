@@ -453,7 +453,6 @@ class _HeroCard extends StatelessWidget {
 
   Widget _buildChips() {
     final items = <String>[];
-    if (profile.religion != null) items.add(profile.religion!);
     if (profile.occupation != null) items.add(profile.occupation!);
     if (items.isEmpty) return const SizedBox.shrink();
     return Wrap(
@@ -625,7 +624,6 @@ class _PortraitCard extends StatelessWidget {
 
   Widget _buildBottom() {
     final items = <String>[];
-    if (profile.religion != null) items.add(profile.religion!);
     if (profile.occupation != null) items.add(profile.occupation!);
     if (items.isEmpty) return const SizedBox.shrink();
     return Wrap(

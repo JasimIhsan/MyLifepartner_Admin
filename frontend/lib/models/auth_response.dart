@@ -92,7 +92,6 @@ class User {
   final DateTime? dateOfBirth;
   final String? maritalStatus;
   final int? heightCm;
-  final String? religion;
   final String? caste;
   final String? motherTongue;
   final String? city;
@@ -100,7 +99,6 @@ class User {
   final String? country;
   final String? highestEducation;
   final String? occupation;
-  final int? annualIncome;
   final String? bio;
   final int? profileCompletion;
   final String? childrenStatus;
@@ -125,7 +123,6 @@ class User {
     this.dateOfBirth,
     this.maritalStatus,
     this.heightCm,
-    this.religion,
     this.caste,
     this.motherTongue,
     this.city,
@@ -133,7 +130,6 @@ class User {
     this.country,
     this.highestEducation,
     this.occupation,
-    this.annualIncome,
     this.bio,
     this.profileCompletion,
     this.childrenStatus,
@@ -165,7 +161,6 @@ class User {
           : null,
       maritalStatus: json['maritalStatus'],
       heightCm: json['heightCm'],
-      religion: json['religion'],
       caste: json['caste'],
       motherTongue: json['motherTongue'],
       city: json['city'],
@@ -173,7 +168,6 @@ class User {
       country: json['country'],
       highestEducation: json['highestEducation'],
       occupation: json['occupation'],
-      annualIncome: json['annualIncome'],
       bio: json['bio'],
       profileCompletion: json['profileCompletion'],
       childrenStatus: json['childrenStatus'],

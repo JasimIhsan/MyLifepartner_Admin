@@ -74,12 +74,9 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         'ageTo': _ageRange.end.round(),
         'heightFrom': _heightRange.start.round(),
         'heightTo': _heightRange.end.round(),
-        // 'annualIncomeFrom': _incomeRange.start.round(),
-        // 'annualIncomeTo': _incomeRange.end.round(),
         'maritalStatus': _maritalStatus,
         'highestEducation': _education,
         'occupation': _occupation,
-        // 'religion': _religion,
         'motherTongue': _languages,
       });
 
@@ -416,37 +413,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     );
   }
 
-  // Widget _buildReligionStep() {
-  //   const options = [
-  //     'Islam',
-  //     'Hinduism',
-  //     'Christianity',
-  //     'Sikhism',
-  //     'Buddhism',
-  //     'Jainism',
-  //     'Other',
-  //   ];
-  //   return _PrefStepContainer(
-  //     key: const ValueKey(5),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         _stepHeader(
-  //           "What is your religious preference?",
-  //           subtitle: "Select at least one option.",
-  //         ),
-  //         const SizedBox(height: 32),
-  //         Wrap(
-  //           spacing: 10,
-  //           runSpacing: 10,
-  //           children: options
-  //               .map((r) => _chip(r, r, _religion, () => _toggle(_religion, r)))
-  //               .toList(),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _buildHeightStep() {
     return _PrefStepContainer(
@@ -486,39 +452,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     );
   }
 
-  // Widget _buildIncomeStep() {
-  //   return _PrefStepContainer(
-  //     key: const ValueKey(7),
-  //     child: Column(
-  //       crossAxisAlignment: CrossAxisAlignment.start,
-  //       children: [
-  //         _stepHeader(
-  //           "Any annual income preference?",
-  //           subtitle: "Values are in Lakhs per annum.",
-  //         ),
-  //         const SizedBox(height: 48),
-  //         Padding(
-  //           padding: const EdgeInsets.symmetric(horizontal: 4),
-  //           child: Row(
-  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //             children: [
-  //               _labelWithSuffix('Min', _incomeRange.start.round(), 'L'),
-  //               _labelWithSuffix('Max', _incomeRange.end.round(), 'L'),
-  //             ],
-  //           ),
-  //         ),
-  //         const SizedBox(height: 20),
-  //         _customRangeSlider(
-  //           values: _incomeRange,
-  //           min: 0,
-  //           max: 200,
-  //           divisions: 40,
-  //           onChanged: (v) => setState(() => _incomeRange = v),
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
 
   Widget _labelWithSuffix(String label, int value, String suffix) {
     return Column(
@@ -578,12 +511,8 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         return _buildOccupationStep();
       case 4:
         return _buildLanguagesStep();
-      // case 5:
-      //   return _buildReligionStep();
       case 5:
         return _buildHeightStep();
-      // case 6:
-      //   return _buildIncomeStep();
       default:
         return const SizedBox();
     }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:mylifepartner/config/env.dart';
+import 'package:mylifepartner/models/subscription_plan.dart';
 import 'package:mylifepartner/services/subscription_service.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-import 'package:mylifepartner/models/subscription_plan.dart';
-import 'package:mylifepartner/config/env.dart';
 
 class SubscriptionProvider extends ChangeNotifier {
   bool isLoading = false;
@@ -15,7 +15,7 @@ class SubscriptionProvider extends ChangeNotifier {
 
   bool _isPurchasing = false;
   bool _isInitialized = false;
-  SubscriptionService _subscriptionService = SubscriptionService();
+  final SubscriptionService _subscriptionService = SubscriptionService();
 
   /// =========================
   /// INIT (call once)

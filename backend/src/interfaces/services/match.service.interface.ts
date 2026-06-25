@@ -15,7 +15,6 @@ export interface MatchRecommendationItem {
    heightCm: number | null;
    city: string | null;
    country: string | null;
-   religion: string | null;
    occupation: string | null;
    maritalStatus: string | null;
    matchPercentage: number;
@@ -42,11 +41,9 @@ export interface ProfileDetail {
    city: string | null;
    state: string | null;
    country: string | null;
-   religion: string | null;
    motherTongue: string | null;
    highestEducation: string | null;
    occupation: string | null;
-   annualIncome: number | null;
    bio: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];

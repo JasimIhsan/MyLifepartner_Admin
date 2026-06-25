@@ -44,9 +44,7 @@ model Profile {
   dateOfBirth   DateTime?
   maritalStatus MaritalStatus?
   heightCm      Int?
-
-  religion     String?
-  motherTongue String?
+  motherTongue  String?
 
   city    String?
   state   String?
@@ -57,7 +55,6 @@ model Profile {
 
   highestEducation String?
   occupation       String?
-  annualIncome     Int?
   bio              String?
 
   languages String[]
@@ -96,12 +93,9 @@ model PartnerPreference {
   heightFrom       Int?
   heightTo         Int?
   maritalStatus    MaritalStatus[]
-  religion         String[]
   motherTongue     String[]
   highestEducation String[]
   occupation       String[]
-  annualIncomeFrom Int?
-  annualIncomeTo   Int?
 
   @@map("partner_preferences")
 }

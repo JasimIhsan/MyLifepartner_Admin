@@ -37,7 +37,6 @@ class MatchRecommendation {
   final int? heightCm;
   final String? city;
   final String? country;
-  final String? religion;
   final String? occupation;
   final String? maritalStatus;
   final int matchPercentage;
@@ -55,7 +54,6 @@ class MatchRecommendation {
     this.heightCm,
     this.city,
     this.country,
-    this.religion,
     this.occupation,
     this.maritalStatus,
     required this.matchPercentage,
@@ -75,7 +73,6 @@ class MatchRecommendation {
       heightCm: json['heightCm'] as int?,
       city: json['city'] as String?,
       country: json['country'] as String?,
-      religion: json['religion'] as String?,
       occupation: json['occupation'] as String?,
       maritalStatus: json['maritalStatus'] as String?,
       matchPercentage: json['matchPercentage'] as int,

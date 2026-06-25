@@ -6,7 +6,7 @@ class Env {
   // Environment flags
   // isProduction => Siraj
   // !isProduction => Jasim
-  static const bool isProduction = true;
+  static const bool isProduction = false;
 
   // ZEGOCLOUD — populate from https://console.zegocloud.com/
   static const int zegoAppId = 1140904980; // Replace with your AppID
