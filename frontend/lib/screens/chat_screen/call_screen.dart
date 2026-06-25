@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 import 'package:mylifepartner/config/env.dart';
-import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
 
 class CallScreen extends StatefulWidget {

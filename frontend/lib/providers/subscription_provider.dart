@@ -186,7 +186,7 @@ class SubscriptionProvider extends ChangeNotifier {
     final entitlement = active.values.first;
 
     currentSubscription = plans.firstWhere(
-      (p) => p.id == entitlement.productIdentifier,
+      (p) => p.id.toString() == entitlement.productIdentifier,
       orElse: () =>
           plans.isNotEmpty ? plans.first : throw Exception("No plans"),
     );
@@ -204,6 +204,7 @@ class SubscriptionProvider extends ChangeNotifier {
 
       final package = _rcPackages.firstWhere((p) => p.identifier == id);
 
+      // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);
 
       _handleCustomerInfoUpdate(result.customerInfo);
@@ -229,22 +230,6 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
   /// UTILS
   /// =========================
-  int _parseDuration(Period? period) {
-    if (period == null) return 0;
-
-    switch (period.unit) {
-      case PeriodUnit.day:
-        return period.value;
-      case PeriodUnit.week:
-        return period.value * 7;
-      case PeriodUnit.month:
-        return period.value * 30;
-      case PeriodUnit.year:
-        return period.value * 365;
-      default:
-        return 0;
-    }
-  }
 
   Future<void> fetchMySubscription() async {
     try {

@@ -1779,7 +1779,7 @@ packages:
     source: hosted
     version: "2.8.20"
   zego_zim:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       name: zego_zim
       sha256: bc2ef8d8fd63854138ca8831482510dac341d17009f5616eb9fe1bb6bd06c11c

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -400,7 +398,7 @@ class _ProfileBrowserCard extends StatelessWidget {
               ),
             ),
           ),
-          if (_isNewProfile(profile.createdAt?.toString() ?? ''))
+          if (_isNewProfile(profile.createdAt.toString()))
             Positioned(
               top: 24,
               left: 20,

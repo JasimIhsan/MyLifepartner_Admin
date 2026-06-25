@@ -1,7 +1,9 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/core/country_helper.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
@@ -10,8 +12,6 @@ import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_deta
 import 'package:mylifepartner/services/match_service.dart';
 import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
-import 'package:country_flags/country_flags.dart';
-import 'package:mylifepartner/core/country_helper.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final int profileId;
@@ -108,7 +108,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withOpacity(0.4),
+                              Colors.black.withValues(alpha: 0.4),
                               Colors.transparent,
                             ],
                           ),
@@ -255,9 +255,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
   Widget _buildBody() {
     final p = _resolvedProfile;
     final images = (p['images'] as List<dynamic>? ?? []);
-    final highlights = (p['compatibilityHighlights'] as List<dynamic>? ?? [])
-        .map((e) => e.toString())
-        .toList();
 
     // The action bar is roughly 90px + safe area bottom.
     // Making the top section take (ScreenHeight - 90 - safeArea) guarantees
@@ -570,17 +567,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     ).animate().fadeIn(duration: 400.ms);
   }
 
-  bool _isNewProfile(String isoString) {
-    try {
-      if (isoString.isEmpty) return false;
-      final date = DateTime.parse(isoString);
-      final diff = DateTime.now().difference(date);
-      return diff.inDays <= 7;
-    } catch (_) {
-      return false;
-    }
-  }
-
   String _formatLastLogin(String isoString) {
     try {
       if (isoString.isEmpty) return '';
@@ -644,30 +630,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
         color: AppColors.textPrimary,
       ),
     );
-  }
-
-  Widget _buildHighlights(List<String> highlights) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: highlights.map((h) {
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            color: AppColors.primaryLight,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Text(
-            h,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
-            ),
-          ),
-        );
-      }).toList(),
-    ).animate().fadeIn(duration: 300.ms, delay: 80.ms);
   }
 
   Widget _buildBio(String bio) {

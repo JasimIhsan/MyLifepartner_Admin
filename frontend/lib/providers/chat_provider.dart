@@ -62,7 +62,7 @@ class ChatProvider extends ChangeNotifier {
     // Skip JSON call-signaling messages — handled by CallProvider.
     if (msg.content.startsWith('{')) return;
 
-    print("msg recieved is: $msg");
+    debugPrint("msg recieved is: $msg");
     // Do NOT persist to backend here, the sender is responsible for that.
     // Instead, we just show it up locally or show an unread nudge.
     final senderId = int.tryParse(msg.fromUserId);

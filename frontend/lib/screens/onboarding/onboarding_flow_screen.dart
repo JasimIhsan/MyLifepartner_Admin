@@ -1,10 +1,9 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:country_flags/country_flags.dart';
 
 class OnboardingFlowScreen extends StatefulWidget {
   const OnboardingFlowScreen({super.key});
@@ -231,29 +230,6 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     );
   }
 
-  Widget _buildIllustration(String assetPath, {double height = 160}) {
-    // Special handling for requested images
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Image.asset(
-          assetPath,
-          height: height,
-          fit: BoxFit.contain,
-          errorBuilder: (ctx, _, __) => Container(
-            height: height,
-            width: height * 1.5,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(Icons.image, color: Colors.grey),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _inputField({
     required TextEditingController controller,
     required String hint,
@@ -293,43 +269,6 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
                   child: suffixIcon,
                 )
               : null,
-        ),
-      ),
-    );
-  }
-
-  Widget _genderCard({required String label, required String value}) {
-    final isSelected = _gender == value;
-
-    return GestureDetector(
-      onTap: () => setState(() => _gender = value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withOpacity(0.08)
-              : Colors.white,
-          border: Border.all(
-            color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const Spacer(),
-            if (isSelected)
-              const Icon(Icons.check, color: AppColors.primary, size: 18),
-          ],
         ),
       ),
     );
@@ -689,10 +628,6 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       'Persian',
       'Urdu',
     ];
-    final illustration = _gender == 'FEMALE'
-        ? 'assets/images/onboarding/language_female.png'
-        : 'assets/images/onboarding/language_male.png';
-
     return Column(
       children: [
         _stepTitle("What languages are you comfortable with?"),
@@ -735,10 +670,6 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   }
 
   Widget _buildHeightStep() {
-    final illustration = _gender == 'FEMALE'
-        ? 'assets/images/onboarding/height_female.png'
-        : 'assets/images/onboarding/height_male.png';
-
     // Height range: 140cm to 220cm
     const minHeight = 140;
     const maxHeight = 220;

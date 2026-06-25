@@ -116,28 +116,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  Widget _buildIllustration(String assetPath, {double height = 160}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 20),
-      child: Center(
-        child: Image.asset(
-          assetPath,
-          height: height,
-          fit: BoxFit.contain,
-          errorBuilder: (ctx, _, __) => Container(
-            height: height,
-            width: height * 1.5,
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Icon(Icons.image, color: Colors.grey),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _stepHeader(String title, {String? subtitle}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

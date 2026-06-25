@@ -63,6 +63,7 @@ dependencies:
    country_flags: ^2.0.0
    purchases_flutter: ^10.0.1
    purchases_ui_flutter: ^10.0.1
+   zego_zim: 2.21.1
 
 dependency_overrides:
    zego_zim: 2.21.1

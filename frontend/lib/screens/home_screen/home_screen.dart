@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/screens/notification_screen/notification_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/call_provider.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
+import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
 import 'package:mylifepartner/screens/discover_screen/discover_screen.dart';
 import 'package:mylifepartner/screens/likes_screen/likes_screen.dart';
+import 'package:mylifepartner/screens/notification_screen/notification_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
-import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/services/user_repository.dart';
 import 'package:mylifepartner/services/zego_service.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,9 +24,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  final ProfileRepository _profileRepository = ProfileRepository();
-  bool _isSheetShowing = false;
-  bool _isCheckingProfile = false;
   bool _showNotifications = false;
   @override
   void initState() {
@@ -77,60 +71,60 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _checkProfileCompletion() async {
-    if (!mounted || _isSheetShowing || _isCheckingProfile) return;
+  // Future<void> _checkProfileCompletion() async {
+  //   if (!mounted || _isSheetShowing || _isCheckingProfile) return;
 
-    _isCheckingProfile = true;
+  //   _isCheckingProfile = true;
 
-    try {
-      final status = await _profileRepository.getCompletionStatus();
+  //   try {
+  //     final status = await _profileRepository.getCompletionStatus();
 
-      if (!mounted) return;
+  //     if (!mounted) return;
 
-      if (status['isCompleted'] == false) {
-        _isSheetShowing = true;
+  //     if (status['isCompleted'] == false) {
+  //       _isSheetShowing = true;
 
-        await CustomBottomSheet.show(
-          context: context,
-          type: BottomSheetType.info,
-          isScrollControlled: true,
-          isDismissible: false,
-          title: "Complete Your Profile",
-          message:
-              "You have pending profile questions. Complete them to find better matches.",
-          primaryButtonText: "Continue",
-          onPrimaryPressed: () {
-            Navigator.of(context).pop();
+  //       await CustomBottomSheet.show(
+  //         context: context,
+  //         type: BottomSheetType.info,
+  //         isScrollControlled: true,
+  //         isDismissible: false,
+  //         title: "Complete Your Profile",
+  //         message:
+  //             "You have pending profile questions. Complete them to find better matches.",
+  //         primaryButtonText: "Continue",
+  //         onPrimaryPressed: () {
+  //           Navigator.of(context).pop();
 
-            Navigator.of(context)
-                .push(
-                  MaterialPageRoute(
-                    builder: (_) => QuestionaireScreen(
-                      isPrimaryFlow: false,
-                      initialSectionOrder: status['nextPendingSectionOrder'],
-                    ),
-                  ),
-                )
-                .then((_) {
-                  if (mounted) {
-                    //_checkProfileCompletion();
-                  }
-                });
-          },
-          secondaryButtonText: "Later",
-          onSecondaryPressed: () {
-            Navigator.of(context).pop();
-          },
-        );
+  //           Navigator.of(context)
+  //               .push(
+  //                 MaterialPageRoute(
+  //                   builder: (_) => QuestionaireScreen(
+  //                     isPrimaryFlow: false,
+  //                     initialSectionOrder: status['nextPendingSectionOrder'],
+  //                   ),
+  //                 ),
+  //               )
+  //               .then((_) {
+  //                 if (mounted) {
+  //                   //_checkProfileCompletion();
+  //                 }
+  //               });
+  //         },
+  //         secondaryButtonText: "Later",
+  //         onSecondaryPressed: () {
+  //           Navigator.of(context).pop();
+  //         },
+  //       );
 
-        _isSheetShowing = false;
-      }
-    } catch (e) {
-      debugPrint("Error checking profile completion: $e");
-    } finally {
-      _isCheckingProfile = false;
-    }
-  }
+  //       _isSheetShowing = false;
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error checking profile completion: $e");
+  //   } finally {
+  //     _isCheckingProfile = false;
+  //   }
+  // }
 
   // ─── Navigation helpers ────────────────────────────────────────────────────
 

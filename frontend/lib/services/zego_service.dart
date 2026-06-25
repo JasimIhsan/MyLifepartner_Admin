@@ -64,10 +64,15 @@ class ZegoService {
           content = msg.message;
         } else if (msg is ZIMMediaMessage) {
           content = msg.fileDownloadUrl;
-          if (msg is ZIMImageMessage) messageType = 'IMAGE';
-          else if (msg is ZIMAudioMessage) messageType = 'AUDIO';
-          else if (msg is ZIMVideoMessage) messageType = 'VIDEO';
-          else messageType = 'FILE';
+          if (msg is ZIMImageMessage) {
+            messageType = 'IMAGE';
+          } else if (msg is ZIMAudioMessage) {
+            messageType = 'AUDIO';
+          } else if (msg is ZIMVideoMessage) {
+            messageType = 'VIDEO';
+          } else {
+            messageType = 'FILE';
+          }
         }
 
         _messageController.add(ZegoZIMMessage(
@@ -151,6 +156,7 @@ class ZegoService {
     final sendConfig = ZIMMessageSendConfig();
 
     try {
+      // ignore: deprecated_member_use
       final result = await zim.sendMediaMessage(
         mediaMessage,
         toUserId,
