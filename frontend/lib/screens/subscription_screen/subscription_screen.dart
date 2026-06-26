@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/config/env.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/subscription_plan.dart' as model;
 import 'package:mylifepartner/providers/subscription_provider.dart';
@@ -42,8 +41,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   void _handleSubscribe(model.SubscriptionPlan plan) async {
     final provider = context.read<SubscriptionProvider>();
 
+    if (plan.price == 0 &&
+        provider.currentSubscription != null &&
+        provider.currentSubscription!.price > 0) {
+      final confirm = await showModalBottomSheet<bool>(
+        context: context,
+        backgroundColor: AppColors.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) => _buildCancelConfirmationSheet(),
+      );
+
+      if (confirm != true) return;
+    }
+
     final success = await provider.subscribeToPlan(
-      plan.id.toString(), // 🔥 FIXED
+      plan.identifier ?? plan.id.toString(),
     );
 
     if (!mounted) return;
@@ -56,6 +70,64 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               : (provider.error ?? 'Failed to subscribe'),
         ),
         backgroundColor: success ? AppColors.primary : Colors.red,
+      ),
+    );
+  }
+
+  Widget _buildCancelConfirmationSheet() {
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const Icon(Icons.warning_rounded, color: Colors.redAccent, size: 48),
+          const SizedBox(height: 16),
+          const Text(
+            'Cancel Subscription?',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'Are you sure you want to cancel your premium plan? You will lose access to all premium features immediately.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 32),
+          Row(
+            children: [
+              Expanded(
+                child: CustomButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  text: 'Yes, Cancel',
+                  type: CustomButtonType.outline,
+                  backgroundColor: AppColors.surface,
+                  textColor: AppColors.textPrimary,
+                  height: 52,
+                  borderRadius: 16,
+                ),
+              ),
+
+              const SizedBox(width: 16),
+              Expanded(
+                child: CustomButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  text: 'Keep Plan',
+                  type: CustomButtonType.primary,
+                  backgroundColor: AppColors.primary,
+                  textColor: Colors.white,
+                  height: 52,
+                  borderRadius: 16,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
@@ -328,7 +400,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       Padding(
                         padding: const EdgeInsets.only(bottom: 5, left: 4),
                         child: Text(
-                          ' / ${plan.durationDays} days',
+                          ' / ${plan.rcDurationTitle ?? '${plan.durationDays} days'}',
                           style: TextStyle(
                             fontSize: 14,
                             color: isPopular

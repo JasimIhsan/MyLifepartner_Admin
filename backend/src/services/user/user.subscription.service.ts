@@ -15,11 +15,11 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    async getPlans(): Promise<EnrichedSubscriptionPlan[]> {
       const plans = await this.subscriptionRepository.getAllPlansWithFeatures();
 
-      // Ensure FREE plan is always first
+      // Ensure FREE plan is always first, then sort by price
       const sortedPlans = [...plans].sort((a, b) => {
          if (a.name === "FREE") return -1;
          if (b.name === "FREE") return 1;
-         return 0;
+         return a.price - b.price;
       });
 
       return sortedPlans.map((plan) => ({

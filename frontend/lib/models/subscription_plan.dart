@@ -52,11 +52,13 @@ class SubscriptionPlan {
   final int durationDays;
   final bool isActive;
   final bool isMostPopular;
+  final String? identifier;
   final List<PlanFeature> features;
 
   // 🔥 NEW (RevenueCat overrides)
   final String? rcDisplayPrice;
   final double? rcPrice;
+  final String? rcDurationTitle;
 
   SubscriptionPlan({
     required this.id,
@@ -65,9 +67,11 @@ class SubscriptionPlan {
     required this.durationDays,
     required this.isActive,
     required this.isMostPopular,
+    this.identifier,
     required this.features,
     this.rcDisplayPrice,
     this.rcPrice,
+    this.rcDurationTitle,
   });
   SubscriptionPlan copyWith({
     String? name,
@@ -75,9 +79,11 @@ class SubscriptionPlan {
     int? durationDays,
     bool? isActive,
     bool? isMostPopular,
+    String? identifier,
     List<PlanFeature>? features,
     String? rcDisplayPrice,
     double? rcPrice,
+    String? rcDurationTitle,
   }) {
     return SubscriptionPlan(
       id: id,
@@ -86,9 +92,11 @@ class SubscriptionPlan {
       durationDays: durationDays ?? this.durationDays,
       isActive: isActive ?? this.isActive,
       isMostPopular: isMostPopular ?? this.isMostPopular,
+      identifier: identifier ?? this.identifier,
       features: features ?? this.features,
       rcDisplayPrice: rcDisplayPrice ?? this.rcDisplayPrice,
       rcPrice: rcPrice ?? this.rcPrice,
+      rcDurationTitle: rcDurationTitle ?? this.rcDurationTitle,
     );
   }
 
@@ -100,6 +108,7 @@ class SubscriptionPlan {
       durationDays: json['durationDays'] ?? 0,
       isActive: json['isActive'] ?? true,
       isMostPopular: json['isMostPopular'] ?? false,
+      identifier: json['identifier'],
       features:
           (json['features'] as List?)
               ?.map((e) => PlanFeature.fromJson(e))
