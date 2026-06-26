@@ -68,8 +68,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           success
               ? 'Successfully subscribed to ${plan.name}'
               : (provider.error ?? 'Failed to subscribe'),
+          style: const TextStyle(color: Colors.white),
         ),
-        backgroundColor: success ? AppColors.primary : Colors.red,
+        backgroundColor: Colors.black,
       ),
     );
   }

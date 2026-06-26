@@ -5,13 +5,13 @@ import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS, HTTP_STATUS, RATE_LIMIT_CONFIG } from "@/utils/constants";
 import bcrypt from "bcrypt";
 
+import { ISubscriptionRepository } from "@/interfaces/repositories/subscription.repository.interface";
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
 import { IOtpService } from "@/interfaces/services/otp.service.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
-import { ISubscriptionRepository } from "@/interfaces/repositories/subscription.repository.interface";
 
 export class AuthService implements IUserAuthService {
    constructor(
@@ -28,10 +28,10 @@ export class AuthService implements IUserAuthService {
    async initiateAuth(email: string, ip: string, purpose: string = "auth") {
       if (!email) throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Email is required");
 
-      const user = await this.userRepository.findByEmail(email);
+      const user = await this.userRepository.findByEmail(email.toLowerCase());
       const exists = !!user;
 
-      const otpResult = await this.otpService.sendOtp(email, ip, purpose);
+      const otpResult = await this.otpService.sendOtp(email.toLowerCase(), ip, purpose);
 
       return { exists, otp: otpResult };
    }

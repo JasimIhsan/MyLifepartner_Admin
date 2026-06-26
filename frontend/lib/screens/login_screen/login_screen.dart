@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
@@ -45,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      final email = _emailController.text.trim();
+      final email = _emailController.text.trim().toLowerCase();
       final response = await _authRepository.initiateAuth(email: email);
 
       debugPrint("Initiate Auth Response: ${response.message}");
