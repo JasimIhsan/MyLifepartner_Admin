@@ -1,16 +1,18 @@
+import 'dart:ui';
+
+import 'package:country_flags/country_flags.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/core/country_helper.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
-import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
 import 'package:mylifepartner/services/match_service.dart';
+import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
-import 'package:country_flags/country_flags.dart';
-import 'package:mylifepartner/core/country_helper.dart';
 
 /// Discover screen refactored into a modern profile browser UI.
 /// Each profile is displayed as a large hero card with floating navigation and interaction buttons.
@@ -608,25 +610,28 @@ class _SideNavigationButton extends StatelessWidget {
       child:
           Container(
                 margin: EdgeInsets.only(
-                  left: isLeft ? 16 : 0,
-                  right: !isLeft ? 16 : 0,
+                  left: isLeft ? 25 : 0,
+                  right: !isLeft ? 25 : 0,
                 ),
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.95),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                      spreadRadius: 2,
+                width: 55,
+                height: 55,
+                child: ClipOval(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.4),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(icon, color: Colors.white, size: 24),
+                      ),
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(icon, color: AppColors.textPrimary, size: 28),
+                  ),
                 ),
               )
               .animate()
