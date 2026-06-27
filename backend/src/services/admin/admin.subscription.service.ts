@@ -11,7 +11,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
 
    // ── Plans ────────────────────────────────────────────────────────────────
 
-   async createPlan(data: { name: string; price: number; durationDays: number }): Promise<EnrichedSubscriptionPlan> {
+   async createPlan(data: { name: string; price: number; durationDays: number; identifier: string }): Promise<EnrichedSubscriptionPlan> {
       // Ensure plan name is unique (case-insensitive normalisation)
       const existing = await this.subscriptionRepository.getPlanByName(data.name.toUpperCase());
       if (existing) {
@@ -22,6 +22,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
          name: data.name.toUpperCase(),
          price: data.price,
          durationDays: data.durationDays,
+         identifier: data.identifier,
       });
 
       return {
@@ -64,7 +65,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
       } as EnrichedSubscriptionPlan;
    }
 
-   async updatePlan(id: number, data: { price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean }): Promise<EnrichedSubscriptionPlan> {
+   async updatePlan(id: number, data: { price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean; identifier?: string }): Promise<EnrichedSubscriptionPlan> {
       const plan = await this.subscriptionRepository.getPlanById(id);
       if (!plan) throw new ApiError(404, "Subscription plan not found.");
 

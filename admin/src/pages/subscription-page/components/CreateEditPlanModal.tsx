@@ -16,6 +16,7 @@ interface CreateEditPlanModalProps {
 
 export default function CreateEditPlanModal({ isOpen, onClose, onSuccess, editingPlan }: CreateEditPlanModalProps) {
    const [name, setName] = useState("");
+   const [identifier, setIdentifier] = useState("");
    const [priceRupees, setPriceRupees] = useState<string>("");
    const [durationDays, setDurationDays] = useState<string>("");
    const [loading, setLoading] = useState(false);
@@ -26,10 +27,12 @@ export default function CreateEditPlanModal({ isOpen, onClose, onSuccess, editin
    useEffect(() => {
       if (editingPlan) {
          setName(editingPlan.name);
+         setIdentifier(editingPlan.identifier || "");
          setPriceRupees(String(editingPlan.price / 100));
          setDurationDays(String(editingPlan.durationDays));
       } else {
          setName("");
+         setIdentifier("");
          setPriceRupees("");
          setDurationDays("");
       }
@@ -48,19 +51,23 @@ export default function CreateEditPlanModal({ isOpen, onClose, onSuccess, editin
          toast.error("Duration must be at least 1 day");
          return;
       }
+      if (!identifier.trim()) {
+         toast.error("Identifier is required");
+         return;
+      }
 
       try {
          setLoading(true);
          if (isEditing && editingPlan) {
             // Only send changed fields
-            await updatePlan(editingPlan.id, { price, durationDays: days });
+            await updatePlan(editingPlan.id, { price, durationDays: days, identifier: identifier.trim() });
             toast.success("Plan updated successfully");
          } else {
             if (!name.trim()) {
                toast.error("Plan name is required");
                return;
             }
-            await createPlan({ name: name.trim(), price, durationDays: days });
+            await createPlan({ name: name.trim(), price, durationDays: days, identifier: identifier.trim() });
             toast.success("Plan created successfully");
          }
          onSuccess();
@@ -95,6 +102,19 @@ export default function CreateEditPlanModal({ isOpen, onClose, onSuccess, editin
                      <p className="text-xs text-muted-foreground">Letters, numbers, underscores only. Auto-uppercased.</p>
                   </div>
                )}
+
+               {/* Identifier */}
+               <div className="space-y-1.5">
+                  <Label htmlFor="plan-identifier">Identifier (RevenueCat ID)</Label>
+                  <Input
+                     id="plan-identifier"
+                     placeholder="e.g. premium_monthly"
+                     value={identifier}
+                     onChange={(e) => setIdentifier(e.target.value)}
+                     required
+                  />
+                  <p className="text-xs text-muted-foreground">The exact product identifier from RevenueCat.</p>
+               </div>
 
                {/* Price in ₹ */}
                <div className="space-y-1.5">

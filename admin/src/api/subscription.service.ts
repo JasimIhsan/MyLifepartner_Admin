@@ -25,6 +25,7 @@ export interface SubscriptionPlan {
    durationDays: number;
    isActive: boolean;
    isMostPopular: boolean;
+   identifier?: string;
    features: PlanFeature[];
    createdAt: string;
    updatedAt: string;
@@ -46,12 +47,12 @@ export const getPlans = async () => {
    return res.data; // { success, data, message }
 };
 
-export const createPlan = async (data: { name: string; price: number; durationDays: number }) => {
+export const createPlan = async (data: { name: string; price: number; durationDays: number; identifier: string }) => {
    const res = await axiosInstance.post("/admin/plans", data);
    return res.data;
 };
 
-export const updatePlan = async (planId: number, data: { price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean }) => {
+export const updatePlan = async (planId: number, data: { price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean; identifier?: string }) => {
    const res = await axiosInstance.patch(`/admin/plans/${planId}`, data);
    return res.data;
 };
