@@ -291,15 +291,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: isPopular ? AppColors.primary : AppColors.surface,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isPopular
-              ? AppColors.primary
-              : isCurrentPlan
+          color: isCurrentPlan
+              ? AppColors.black
+              : isPopular
               ? AppColors.primary
               : AppColors.borderColor,
-          width: 1.5,
+          width: isPopular || isCurrentPlan ? 2.0 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
@@ -321,15 +321,15 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.onPrimary,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: Text(
+                child: const Text(
                   'MOST POPULAR',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
+                    color: AppColors.onPrimary,
                   ),
                 ),
               ),
@@ -344,24 +344,20 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.onPrimary,
+                  color: AppColors.textPrimary,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.check_circle_rounded,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
+                    const Icon(Icons.check, size: 12, color: Colors.white),
                     const SizedBox(width: 4),
-                    Text(
-                      'ACTIVE',
+                    const Text(
+                      'CURRENT PLAN',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: Colors.white,
                       ),
                     ),
                   ],
@@ -375,12 +371,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               children: [
                 Text(
                   plan.name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: isPopular
-                        ? AppColors.onPrimary
-                        : AppColors.textPrimary,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -390,63 +384,55 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     children: [
                       Text(
                         plan.displayPrice,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
-                          color: isPopular
-                              ? AppColors.onPrimary
-                              : AppColors.textPrimary,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(bottom: 5, left: 4),
                         child: Text(
                           ' / ${plan.rcDurationTitle ?? '${plan.durationDays} days'}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
-                            color: isPopular
-                                ? AppColors.onPrimary.withValues(alpha: 0.7)
-                                : AppColors.textSecondary,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ),
                     ],
                   )
                 else
-                  Text(
+                  const Text(
                     'Get Started Free',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
-                      color: isPopular
-                          ? AppColors.onPrimary
-                          : AppColors.primary,
+                      color: AppColors.primary,
                     ),
                   ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 const Divider(color: AppColors.divider),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 ...plan.featureDescriptions.map(
                   (feature) => Padding(
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.check_circle_rounded,
                           size: 20,
-                          color: isPopular
-                              ? AppColors.onPrimary
-                              : AppColors.primary,
+                          color: AppColors.primary,
                         ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
                             feature,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
-                              color: isPopular
-                                  ? AppColors.onPrimary
-                                  : AppColors.textPrimary,
+                              color: AppColors.textPrimary,
+                              height: 1.4,
                             ),
                           ),
                         ),
@@ -459,24 +445,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                   onPressed: isCurrentPlan || isLoading
                       ? () {}
                       : () => _handleSubscribe(plan),
-                  text: Theme.of(context).platform == TargetPlatform.iOS
-                      ? (isCurrentPlan
-                            ? 'Current Plan'
-                            : isLoading
-                            ? 'Processing...'
-                            : 'Select ${plan.name}')
-                      : (isCurrentPlan
-                            ? 'Current Plan'
-                            : isLoading
-                            ? 'Processing...'
-                            : 'Select ${plan.name}'),
-                  type: isPopular
+                  text: isCurrentPlan
+                      ? 'Current Plan'
+                      : isLoading
+                      ? 'Processing...'
+                      : 'Select ${plan.name}',
+                  type: isCurrentPlan
+                      ? CustomButtonType.secondary
+                      : isPopular
                       ? CustomButtonType.primary
                       : CustomButtonType.outline,
-                  backgroundColor: isPopular
-                      ? AppColors.onPrimary
+                  backgroundColor: isCurrentPlan
+                      ? AppColors.divider
+                      : isPopular
+                      ? AppColors.primary
                       : AppColors.primary,
-                  textColor: isPopular ? AppColors.primary : AppColors.primary,
+                  textColor: isCurrentPlan
+                      ? AppColors.textSecondary
+                      : isPopular
+                      ? Colors.white
+                      : AppColors.primary,
                   width: double.infinity,
                   borderRadius: 16,
                   height: 52,
