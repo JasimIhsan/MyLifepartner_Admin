@@ -69,8 +69,8 @@ class _LandingScreenState extends State<LandingScreen> {
                         : (landingAsset != null
                             ? CachedNetworkImage(
                                 imageUrl: landingAsset.imageUrl,
-                                fit: BoxFit.contain,
-                                alignment: Alignment.bottomCenter,
+                                fit: BoxFit.cover,
+                                alignment: Alignment.center,
                                 errorWidget: (context, url, error) =>
                                     _buildDefaultBackground(),
                               )
