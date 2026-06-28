@@ -185,9 +185,6 @@ class _ChatListTileState extends State<_ChatListTile> {
       onTap: () async {
         final prefs = await SharedPreferences.getInstance();
         final currentUserId = prefs.getInt('userId') ?? 0;
-
-        debugPrint("😂 ✅ Current User ID: $currentUserId");
-        debugPrint("😂 ✅ Other User : ${widget.profile.userId}");
         if (!context.mounted) return;
         Navigator.push(
           context,

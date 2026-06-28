@@ -32,7 +32,7 @@ class ChatApiService {
   static Future<Map<String, dynamic>> getMessages(
     int conversationId, {
     int page = 1,
-    int limit = 50,
+    int limit = 15,
   }) async {
     final response = await _dio.get(
       '/chat/conversations/$conversationId/messages',

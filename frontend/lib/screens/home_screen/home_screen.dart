@@ -29,9 +29,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      debugPrint("😂 initState called");
       _initZegoAndChat();
-      debugPrint("😂 _initZegoAndChat called");
       //_checkProfileCompletion();
     });
   }

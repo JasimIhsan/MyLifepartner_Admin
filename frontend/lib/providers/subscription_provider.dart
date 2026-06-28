@@ -294,12 +294,8 @@ class SubscriptionProvider extends ChangeNotifier {
         (p) => p.storeProduct.identifier == id,
       );
 
-      debugPrint(" 🔥 package: ${package.storeProduct.identifier}");
-
       // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);
-
-      debugPrint("🔥 result: ${result.customerInfo}");
 
       // Send the request to the backend to create/activate the subscription locally
       final sub = await _subscriptionService.subscribe(backendPlan.id);

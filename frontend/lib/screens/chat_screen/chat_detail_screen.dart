@@ -55,8 +55,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _chatProvider = context.read<ChatProvider>();
     _initChat();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 50) {
+      if (_conversationId != null) {
+        if (_chatProvider.hasMoreMessages(_conversationId!) &&
+            !_chatProvider.isLoadingMore(_conversationId!)) {
+          _chatProvider.loadMessages(
+            _conversationId!,
+            page: _chatProvider.currentPage(_conversationId!) + 1,
+          );
+        }
+      }
+    }
   }
 
   void _initChat() {
@@ -107,17 +123,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         .firstOrNull
         ?.id;
 
-    debugPrint("😂 ✅ [ChatDetailScreen] Sending message...");
-    debugPrint("😂 ✅ [ChatDetailScreen] widget.profile.id (Profile ID): ${widget.profile.id}");
-    debugPrint("😂 ✅ [ChatDetailScreen] widget.profile.userId (User ID): ${widget.profile.userId}");
-    debugPrint("😂 ✅ [ChatDetailScreen] Determined convoId: $convoId");
-
     try {
-      await chatProvider.sendMessage(
+      final message = await chatProvider.sendMessage(
         receiverId: widget.profile.userId,
         content: text,
         conversationId: convoId ?? _conversationId,
       );
+      
+      if (mounted && _conversationId == null && message != null) {
+        setState(() {
+          _conversationId = message.conversationId;
+        });
+      }
+      
       _initChat(); // Re-fetch to update convo id if it was newly created
       if (mounted) context.read<SubscriptionProvider>().fetchMySubscription();
 
@@ -138,8 +156,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 const FeatureExhaustedModal(featureType: 'Chat Messages'),
           );
         } else {
+          String errorMsg = 'Failed to send message. Try again.';
+          if (e is DioException && e.response?.data != null && e.response?.data is Map) {
+            errorMsg = e.response?.data['message'] ?? errorMsg;
+          }
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to send message. Try again.')),
+            SnackBar(content: Text(errorMsg)),
           );
         }
       }
@@ -149,12 +171,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _sendMediaMsg(String path, String messageType, {int? duration}) async {
     final chatProvider = context.read<ChatProvider>();
     try {
-      await chatProvider.sendMediaMessage(
+      final message = await chatProvider.sendMediaMessage(
         receiverId: widget.profile.userId,
         filePath: path,
         messageType: messageType,
         audioDuration: duration,
       );
+      
+      if (mounted && _conversationId == null && message != null) {
+        setState(() {
+          _conversationId = message.conversationId;
+        });
+      }
+      
       if (mounted) context.read<SubscriptionProvider>().fetchMySubscription();
 
       if (_scrollController.hasClients) {
@@ -173,8 +202,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 const FeatureExhaustedModal(featureType: 'Chat Messages'),
           );
         } else {
+          String errorMsg = 'Failed to send media msg.';
+          if (e is DioException && e.response?.data != null && e.response?.data is Map) {
+            errorMsg = e.response?.data['message'] ?? errorMsg;
+          }
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to send media msg.')),
+            SnackBar(content: Text(errorMsg)),
           );
         }
       }
@@ -494,9 +527,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
           );
         } else {
+          String errorMsg = 'Failed to verify call access. Try again.';
+          if (e is DioException && e.response?.data != null && e.response?.data is Map) {
+            errorMsg = e.response?.data['message'] ?? errorMsg;
+          }
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Failed to verify call access. Try again.'),
+            SnackBar(
+              content: Text(errorMsg),
             ),
           );
         }
@@ -508,11 +545,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     final callProvider = context.read<CallProvider>();
     final otherUserId = widget.profile.userId.toString();
-
-    debugPrint("😂 ✅ [ChatDetailScreen] Starting call...");
-    debugPrint("😂 ✅ [ChatDetailScreen] widget.profile.id (Profile ID): ${widget.profile.id}");
-    debugPrint("😂 ✅ [ChatDetailScreen] widget.profile.userId (User ID): ${widget.profile.userId}");
-    debugPrint("😂 ✅ Other User ID: $otherUserId");
 
     // Send invitation signal and track outgoing call state
     callProvider.initiateCall(
@@ -600,8 +632,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       left: 16,
                       right: 16,
                     ),
-                    itemCount: messages.length,
+                    itemCount: messages.length +
+                        (provider.isLoadingMore(_conversationId!) ? 1 : 0),
                     itemBuilder: (context, index) {
+                      if (index == messages.length) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          child: Center(
+                            child: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: AppColors.primary,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
                       final msg = messages[messages.length - 1 - index];
                       final isMe = msg.senderId == widget.currentUserId;
 
@@ -617,7 +666,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           needsMoreSpace = true;
                         }
                       } else {
-                        needsMoreSpace = true; // First message
+                        needsMoreSpace = true; // First message visually (topmost)
                       }
 
                       return Padding(

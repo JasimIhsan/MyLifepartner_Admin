@@ -9,6 +9,9 @@ import 'package:zego_zim/zego_zim.dart';
 
 class ChatProvider extends ChangeNotifier {
   final Map<int, List<ChatMessage>> _messagesByConversation = {};
+  final Map<int, int> _currentPageByConversation = {};
+  final Map<int, bool> _hasMoreByConversation = {};
+  final Map<int, bool> _isLoadingMoreByConversation = {};
   List<ChatConversation> _conversations = [];
   bool _isLoading = false;
   int? _currentUserId;
@@ -20,6 +23,10 @@ class ChatProvider extends ChangeNotifier {
 
   List<ChatConversation> get conversations => _conversations;
   bool get isLoading => _isLoading;
+
+  bool hasMoreMessages(int conversationId) => _hasMoreByConversation[conversationId] ?? true;
+  bool isLoadingMore(int conversationId) => _isLoadingMoreByConversation[conversationId] ?? false;
+  int currentPage(int conversationId) => _currentPageByConversation[conversationId] ?? 1;
 
   int? get activeUserId => _activeUserId;
   bool hasUnreadNudge(int userId) => _unreadUserIds.contains(userId);
@@ -35,7 +42,6 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void setCurrentUserId(int userId) {
-    debugPrint('😂 setCurrentUserId called: $userId');
     _currentUserId = userId;
   }
 
@@ -54,10 +60,8 @@ class ChatProvider extends ChangeNotifier {
 
   /// Start listening for incoming ZIM messages
   void startListening() {
-    debugPrint('😂 startListening called');
     _zimSubscription?.cancel();
     _zimSubscription = ZegoService.instance.onMessageReceived.listen((msg) {
-      debugPrint('😂 msg recieved: $msg');
       _handleIncomingMessage(msg);
     });
   }
@@ -66,7 +70,6 @@ class ChatProvider extends ChangeNotifier {
     // Skip JSON call-signaling messages — handled by CallProvider.
     if (msg.content.startsWith('{')) return;
 
-    debugPrint("msg recieved is: $msg");
     // Do NOT persist to backend here, the sender is responsible for that.
     // Instead, we just show it up locally or show an unread nudge.
     final senderId = int.tryParse(msg.fromUserId);
@@ -110,7 +113,6 @@ class ChatProvider extends ChangeNotifier {
 
   /// Load all conversations
   Future<void> loadConversations({bool showLoading = true}) async {
-    debugPrint('😂 loadConversations called');
     if (_currentUserId == null) return;
 
     if (showLoading) {
@@ -128,8 +130,6 @@ class ChatProvider extends ChangeNotifier {
             ),
           )
           .toList();
-
-      debugPrint('🤪 conversations are : $_conversations');
     } catch (e) {
       debugPrint('[ChatProvider] Failed to load conversations: $e');
     } finally {
@@ -140,11 +140,22 @@ class ChatProvider extends ChangeNotifier {
 
   /// Load messages for a specific conversation
   Future<void> loadMessages(int conversationId, {int page = 1}) async {
+    if (page > 1 && (_isLoadingMoreByConversation[conversationId] ?? false)) return;
+    if (page > 1 && !(_hasMoreByConversation[conversationId] ?? true)) return;
+
+    if (page > 1) {
+      _isLoadingMoreByConversation[conversationId] = true;
+      notifyListeners();
+    }
+
     try {
       final data = await ChatApiService.getMessages(conversationId, page: page);
       final messages = (data['messages'] as List<dynamic>? ?? [])
           .map((json) => ChatMessage.fromJson(json as Map<String, dynamic>))
           .toList();
+          
+      final total = data['total'] as int? ?? 0;
+      final limit = data['limit'] as int? ?? 15;
 
       if (page == 1) {
         _messagesByConversation[conversationId] = messages;
@@ -154,20 +165,29 @@ class ChatProvider extends ChangeNotifier {
           ...(_messagesByConversation[conversationId] ?? []),
         ];
       }
+      
+      _currentPageByConversation[conversationId] = page;
+      _hasMoreByConversation[conversationId] = (page * limit) < total;
+
       notifyListeners();
     } catch (e) {
       debugPrint('[ChatProvider] Failed to load messages: $e');
+    } finally {
+      if (page > 1) {
+        _isLoadingMoreByConversation[conversationId] = false;
+        notifyListeners();
+      }
     }
   }
 
   /// Send a message: persist to backend (source of truth) + best-effort ZIM delivery
-  Future<void> sendMessage({
+  Future<ChatMessage?> sendMessage({
     required int receiverId,
     required String content,
     int? conversationId,
     String messageType = 'TEXT',
   }) async {
-    if (content.trim().isEmpty) return;
+    if (content.trim().isEmpty) return null;
 
     try {
       // 1. Persist to backend first — this is the source of truth
@@ -178,16 +198,18 @@ class ChatProvider extends ChangeNotifier {
       );
 
       // 2. Add to local state
+      ChatMessage? returnMessage;
       if (saved != null) {
         final message = ChatMessage.fromJson(saved);
+        returnMessage = message;
         final convoId = message.conversationId;
         _messagesByConversation[convoId] ??= [];
-        _messagesByConversation[convoId]!.insert(0, message);
+        _messagesByConversation[convoId]!.add(message);
         notifyListeners();
+        // Refresh conversations to pick up the new message silently in the listing
+        loadConversations(showLoading: false);
       }
 
-      debugPrint("😂 ✅ Receiver ID: $receiverId");
-      debugPrint("😂 ✅ Content: $content");
       // 3. Best-effort ZIM delivery (won't block if peer is offline/unregistered)
       ZegoService.instance
           .sendMessage(receiverId.toString(), content)
@@ -195,6 +217,8 @@ class ChatProvider extends ChangeNotifier {
             debugPrint('[ChatProvider] ZIM delivery failed (non-fatal): $e');
             return null;
           });
+      
+      return returnMessage;
     } catch (e) {
       debugPrint('[ChatProvider] Failed to send message: $e');
       rethrow;
@@ -202,7 +226,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   /// Send a media message: ZIM upload -> ZIM delivery -> Backend Persist
-  Future<void> sendMediaMessage({
+  Future<ChatMessage?> sendMediaMessage({
     required int receiverId,
     required String filePath,
     required String messageType, // 'IMAGE', 'VIDEO', 'AUDIO'
@@ -242,14 +266,20 @@ class ChatProvider extends ChangeNotifier {
         );
 
         // 4. Update local state
+        ChatMessage? returnMessage;
         if (saved != null) {
           final message = ChatMessage.fromJson(saved);
+          returnMessage = message;
           final convoId = message.conversationId;
           _messagesByConversation[convoId] ??= [];
-          _messagesByConversation[convoId]!.insert(0, message);
+          _messagesByConversation[convoId]!.add(message);
           notifyListeners();
+          // Refresh conversations to pick up the new message silently in the listing
+          loadConversations(showLoading: false);
         }
+        return returnMessage;
       }
+      return null;
     } catch (e) {
       debugPrint('[ChatProvider] Failed to send media message: $e');
       rethrow;
