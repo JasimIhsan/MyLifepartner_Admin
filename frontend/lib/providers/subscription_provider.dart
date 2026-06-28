@@ -330,6 +330,12 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
 
   Future<void> fetchMySubscription() async {
+    if (!_isInitialized) {
+      debugPrint(
+        "⚠️ fetchMySubscription called but Purchases not initialized yet.",
+      );
+      return;
+    }
     try {
       final customerInfo = await Purchases.getCustomerInfo();
 
@@ -342,9 +348,13 @@ class SubscriptionProvider extends ChangeNotifier {
 
   String _getReadableError(dynamic e) {
     if (e is PlatformException) {
-      final errorCode = PurchasesErrorHelper.getErrorCode(e);
-      if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
-        return "Purchase was cancelled.";
+      try {
+        final errorCode = PurchasesErrorHelper.getErrorCode(e);
+        if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+          return "Purchase was cancelled.";
+        }
+      } catch (_) {
+        // If parsing the error code fails (e.g. FormatException), fallback to generic message.
       }
       return e.message ?? "A payment service error occurred. Please try again.";
     }

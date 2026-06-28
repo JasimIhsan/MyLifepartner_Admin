@@ -9,6 +9,7 @@ export enum InteractionState {
 
 export interface MatchRecommendationItem {
    id: number;
+   userId: number;
    name: string;
    age: number;
    isVerified: boolean;
@@ -33,6 +34,7 @@ export interface SwipeInput {
 
 export interface ProfileDetail {
    id: number;
+   userId: number;
    name: string;
    age: number;
    gender: string | null;

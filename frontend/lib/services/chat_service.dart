@@ -10,12 +10,15 @@ class ChatApiService {
     String messageType = 'TEXT',
     String? zegoMessageId,
   }) async {
-    final response = await _dio.post('/chat/messages', data: {
-      'receiverId': receiverId,
-      'content': content,
-      'messageType': messageType,
-      if (zegoMessageId != null) 'zegoMessageId': zegoMessageId,
-    });
+    final response = await _dio.post(
+      '/chat/messages',
+      data: {
+        'receiverId': receiverId,
+        'content': content,
+        'messageType': messageType,
+        if (zegoMessageId != null) 'zegoMessageId': zegoMessageId,
+      },
+    );
     return response.data?['data'] as Map<String, dynamic>?;
   }
 
@@ -39,16 +42,13 @@ class ChatApiService {
   }
 
   /// Get ZEGOCLOUD access token
-  static Future<Map<String, dynamic>?> getZegoToken() async {
-    final response = await _dio.get('/zego/token');
-    return response.data?['data'] as Map<String, dynamic>?;
-  }
+  // static Future<Map<String, dynamic>?> getZegoToken() async {
+  //   final response = await _dio.get('/zego/token');
+  //   return response.data?['data'] as Map<String, dynamic>?;
+  // }
 
   /// Verify via backend if current user can initiate an audio or video call
   static Future<void> checkCallAccess({required String type}) async {
-    await _dio.post(
-      '/user/subscriptions/check-call',
-      data: {'type': type},
-    );
+    await _dio.post('/user/subscriptions/check-call', data: {'type': type});
   }
 }

@@ -31,6 +31,7 @@ enum InteractionState {
 
 class MatchRecommendation {
   final int id;
+  final int userId;
   final String name;
   final int age;
   final bool isVerified;
@@ -48,6 +49,7 @@ class MatchRecommendation {
 
   MatchRecommendation({
     required this.id,
+    required this.userId,
     required this.name,
     required this.age,
     required this.isVerified,
@@ -67,6 +69,7 @@ class MatchRecommendation {
   factory MatchRecommendation.fromJson(Map<String, dynamic> json) {
     return MatchRecommendation(
       id: json['id'] as int,
+      userId: json['userId'] as int,
       name: json['name'] as String,
       isVerified: json['isVerified'] as bool,
       age: json['age'] as int,

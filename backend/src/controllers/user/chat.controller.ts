@@ -1,5 +1,5 @@
-import { ChatService } from "@/services/chat.service";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
+import { ChatService } from "@/services/chat.service";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { Request, Response } from "express";
@@ -18,10 +18,10 @@ export class ChatController {
       const senderId = req.user!.id;
       const { receiverId, content, messageType, zegoMessageId } = req.body;
 
+      console.log("😂 ✅ [ChatController] sendMessage:", req.body);
+
       if (!receiverId || !content) {
-         return res.status(400).json(
-            new ApiResponse(400, null, "receiverId and content are required"),
-         );
+         return res.status(400).json(new ApiResponse(400, null, "receiverId and content are required"));
       }
 
       if (messageType === "CALL_LOG") {
@@ -39,17 +39,9 @@ export class ChatController {
          await this.userFeatureService.consumeMessage(senderId);
       }
 
-      const message = await this.chatService.sendMessage(
-         senderId,
-         receiverId,
-         content,
-         messageType,
-         zegoMessageId,
-      );
+      const message = await this.chatService.sendMessage(senderId, receiverId, content, messageType, zegoMessageId);
 
-      res.status(201).json(
-         new ApiResponse(201, message, "Message sent"),
-      );
+      res.status(201).json(new ApiResponse(201, message, "Message sent"));
    });
 
    /**
@@ -58,9 +50,7 @@ export class ChatController {
    getConversations = asyncHandler(async (req: Request, res: Response) => {
       const userId = req.user!.id;
       const conversations = await this.chatService.getConversations(userId);
-      res.status(200).json(
-         new ApiResponse(200, conversations, "Conversations retrieved"),
-      );
+      res.status(200).json(new ApiResponse(200, conversations, "Conversations retrieved"));
    });
 
    /**
@@ -72,15 +62,8 @@ export class ChatController {
       const page = Number(req.query.page) || 1;
       const limit = Math.min(Number(req.query.limit) || 50, 100);
 
-      const result = await this.chatService.getMessages(
-         userId,
-         conversationId,
-         page,
-         limit,
-      );
+      const result = await this.chatService.getMessages(userId, conversationId, page, limit);
 
-      res.status(200).json(
-         new ApiResponse(200, result, "Messages retrieved"),
-      );
+      res.status(200).json(new ApiResponse(200, result, "Messages retrieved"));
    });
 }

@@ -152,7 +152,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Edit Profile Info',
           style: TextStyle(
             color: AppColors.textPrimary,
@@ -164,101 +164,208 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLabel('Name'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _nameController,
-                hintText: 'Enter your name',
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildLabel('Age'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _ageController,
-                hintText: 'Age',
-                enabled: false,
-              ),
-              const SizedBox(height: 20),
-              _buildLabel('Date of Birth'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _dateController,
-                hintText: 'Date of birth',
-                readOnly: true,
-                onTap: () async {
-                  final now = DateTime.now();
-                  final eighteenYearsAgo =
-                      DateTime(now.year - 18, now.month, now.day);
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        _dateOfBirth != null &&
-                                _dateOfBirth!.isBefore(eighteenYearsAgo)
-                            ? _dateOfBirth!
-                            : eighteenYearsAgo,
-                    firstDate: DateTime(1900),
-                    lastDate: eighteenYearsAgo,
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.light(
-                            primary: AppColors.primary,
-                            onPrimary: Colors.white,
-                            onSurface: AppColors.textPrimary,
+              // Welcome / Header Card
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.only(bottom: 24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primary,
+                      AppColors.primary.withValues(alpha: 0.8),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.mode_edit_outline_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Keep Your Profile Fresh',
+                          style: TextStyle(
+                            color: AppColors.textWhite,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        child: child!,
-                      );
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Provide accurate information so matches can find you easily.',
+                      style: TextStyle(
+                        color: AppColors.textWhite.withValues(alpha: 0.85),
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Section 1: Account Info
+              _buildSection(
+                title: 'Account Credentials',
+                icon: Icons.lock_open_rounded,
+                children: [
+                  _buildReadOnlyField(
+                    label: 'Email Address',
+                    value: _emailController.text,
+                    icon: Icons.email_outlined,
+                    lockedReason: 'This email is linked to your registered login.',
+                  ),
+                ],
+              ),
+
+              // Section 2: Personal Profile
+              _buildSection(
+                title: 'Personal Details',
+                icon: Icons.person_outline_rounded,
+                children: [
+                  _buildLabel('Display Name'),
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    controller: _nameController,
+                    hintText: 'Enter your name',
+                    prefixIcon: Icons.person_outline,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your name';
+                      }
+                      return null;
                     },
-                  );
-                  if (picked != null && picked != _dateOfBirth) {
-                    setState(() {
-                      _dateOfBirth = picked;
-                      _dateController.text = _formatDate(picked);
-                      _ageController.text = _calculateAge(picked);
-                    });
-                  }
-                },
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel('Date of Birth'),
+                            const SizedBox(height: 8),
+                            _buildTextField(
+                              controller: _dateController,
+                              hintText: 'Date of birth',
+                              prefixIcon: Icons.calendar_month_outlined,
+                              readOnly: true,
+                              onTap: () async {
+                                final now = DateTime.now();
+                                final eighteenYearsAgo =
+                                    DateTime(now.year - 18, now.month, now.day);
+                                final DateTime? picked = await showDatePicker(
+                                  context: context,
+                                  initialDate: _dateOfBirth != null &&
+                                          _dateOfBirth!
+                                              .isBefore(eighteenYearsAgo)
+                                      ? _dateOfBirth!
+                                      : eighteenYearsAgo,
+                                  firstDate: DateTime(1900),
+                                  lastDate: eighteenYearsAgo,
+                                  builder: (context, child) {
+                                    return Theme(
+                                      data: Theme.of(context).copyWith(
+                                        colorScheme: const ColorScheme.light(
+                                          primary: AppColors.primary,
+                                          onPrimary: Colors.white,
+                                          onSurface: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      child: child!,
+                                    );
+                                  },
+                                );
+                                if (picked != null && picked != _dateOfBirth) {
+                                  setState(() {
+                                    _dateOfBirth = picked;
+                                    _dateController.text = _formatDate(picked);
+                                    _ageController.text = _calculateAge(picked);
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildLabel('Calculated Age'),
+                            const SizedBox(height: 8),
+                            _buildTextField(
+                              controller: _ageController,
+                              hintText: '--',
+                              prefixIcon: Icons.cake_outlined,
+                              enabled: false,
+                              suffixIcon: const Icon(
+                                Icons.lock_outline_rounded,
+                                size: 16,
+                                color: AppColors.textLight,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              _buildLabel('Email'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _emailController,
-                hintText: 'Email address',
-                keyboardType: TextInputType.emailAddress,
-                enabled: false,
+
+              // Section 3: Location Settings
+              _buildSection(
+                title: 'Location Information',
+                icon: Icons.location_on_outlined,
+                children: [
+                  _buildLabel('Country'),
+                  const SizedBox(height: 8),
+                  _buildCountryPicker(),
+                  const SizedBox(height: 20),
+                  _buildLabel('City'),
+                  const SizedBox(height: 8),
+                  _buildTextField(
+                    controller: _cityController,
+                    hintText: 'Enter your city',
+                    prefixIcon: Icons.location_city_outlined,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your city';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              _buildLabel('Country'),
-              const SizedBox(height: 8),
-              _buildCountryPicker(),
-              const SizedBox(height: 20),
-              _buildLabel('City'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _cityController,
-                hintText: 'Enter your city',
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your city';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 40),
+
+              const SizedBox(height: 16),
+
+              // Save Button Container
               SizedBox(
                 width: double.infinity,
                 child: CustomButton(
@@ -267,6 +374,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                   isLoading: _isLoading,
                 ),
               ),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -274,12 +382,123 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     );
   }
 
+  Widget _buildSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.borderColor, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+            child: Row(
+              children: [
+                Icon(icon, size: 20, color: AppColors.primary),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1, thickness: 1, color: AppColors.divider),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: children,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReadOnlyField({
+    required String label,
+    required String value,
+    required IconData icon,
+    required String lockedReason,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel(label),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: AppColors.background.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: AppColors.borderColor),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: AppColors.textSecondary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      value,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      lockedReason,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: AppColors.textLight,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.lock_outline_rounded,
+                size: 16,
+                color: AppColors.textLight,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
+      style: const TextStyle(
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
         color: AppColors.textPrimary,
       ),
     );
@@ -288,6 +507,8 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,
+    required IconData prefixIcon,
+    Widget? suffixIcon,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
     bool enabled = true,
@@ -302,19 +523,45 @@ class _EditProfileScreenState extends State<EditProfileScreen>
       readOnly: readOnly,
       onTap: onTap,
       style: TextStyle(
+        fontSize: 15,
         color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
       ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: AppColors.textSecondary),
+        hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
         filled: true,
         fillColor: enabled
             ? AppColors.surface
-            : AppColors.surface.withValues(alpha: 0.65),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            : AppColors.background.withValues(alpha: 0.5),
+        prefixIcon: Icon(prefixIcon, color: AppColors.textSecondary, size: 20),
+        suffixIcon: suffixIcon,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.borderColor, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.borderColor, width: 1),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.borderColor, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
     );
@@ -330,7 +577,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
           isScrollControlled: true,
           backgroundColor: Colors.white,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           ),
           builder: (_) => _CountryPickerSheet(selected: _country),
         );
@@ -345,7 +592,7 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: hasCountry ? AppColors.primary : AppColors.borderColor,
             width: hasCountry ? 1.5 : 1,
@@ -353,6 +600,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
         ),
         child: Row(
           children: [
+            const Icon(
+              Icons.public_outlined,
+              color: AppColors.textSecondary,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 hasCountry ? _country! : 'Select your country',
@@ -417,7 +670,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
       expand: false,
       builder: (_, scrollController) {
         return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
           child: Column(
             children: [
               Container(
@@ -429,23 +682,24 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
+              const Text(
                 'Select Country',
                 style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               TextField(
                 controller: _searchController,
                 onChanged: _onSearch,
                 autofocus: true,
-                style: TextStyle(fontSize: 14),
+                style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
-                  hintText: 'Search...',
-                  hintStyle: TextStyle(
-                    color: AppColors.textSecondary,
+                  hintText: 'Search country...',
+                  hintStyle: const TextStyle(
+                    color: AppColors.textLight,
                     fontSize: 14,
                   ),
                   prefixIcon: const Icon(
@@ -453,20 +707,22 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                     color: AppColors.textSecondary,
                     size: 20,
                   ),
+                  filled: true,
+                  fillColor: AppColors.background.withValues(alpha: 0.5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.borderColor),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(color: AppColors.borderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(
                       color: AppColors.primary,
                       width: 1.5,
@@ -474,7 +730,7 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -482,29 +738,38 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                   itemBuilder: (_, index) {
                     final country = _filteredCountries[index];
                     final isSelected = country == widget.selected;
-                    return ListTile(
-                      dense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                      title: Text(
-                        country,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textPrimary,
-                        ),
+                    return Container(
+                      margin: const EdgeInsets.symmetric(vertical: 2),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary.withValues(alpha: 0.05)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      trailing: isSelected
-                          ? const Icon(
-                              Icons.check,
-                              color: AppColors.primary,
-                              size: 18,
-                            )
-                          : null,
-                      onTap: () => Navigator.pop(context, country),
+                      child: ListTile(
+                        dense: true,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                        title: Text(
+                          country,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w400,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.textPrimary,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? const Icon(
+                                Icons.check_circle_rounded,
+                                color: AppColors.primary,
+                                size: 20,
+                              )
+                            : null,
+                        onTap: () => Navigator.pop(context, country),
+                      ),
                     );
                   },
                 ),

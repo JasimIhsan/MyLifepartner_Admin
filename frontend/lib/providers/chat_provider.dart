@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mylifepartner/models/chat_message.dart';
@@ -34,6 +35,7 @@ class ChatProvider extends ChangeNotifier {
   }
 
   void setCurrentUserId(int userId) {
+    debugPrint('😂 setCurrentUserId called: $userId');
     _currentUserId = userId;
   }
 
@@ -52,8 +54,10 @@ class ChatProvider extends ChangeNotifier {
 
   /// Start listening for incoming ZIM messages
   void startListening() {
+    debugPrint('😂 startListening called');
     _zimSubscription?.cancel();
     _zimSubscription = ZegoService.instance.onMessageReceived.listen((msg) {
+      debugPrint('😂 msg recieved: $msg');
       _handleIncomingMessage(msg);
     });
   }
@@ -71,7 +75,9 @@ class ChatProvider extends ChangeNotifier {
     // Vibrate the phone
     HapticFeedback.vibrate();
 
-    final conversationIndex = _conversations.indexWhere((c) => c.otherUserId == senderId);
+    final conversationIndex = _conversations.indexWhere(
+      (c) => c.otherUserId == senderId,
+    );
     ChatConversation? conversation;
     if (conversationIndex != -1) {
       conversation = _conversations[conversationIndex];
@@ -104,6 +110,7 @@ class ChatProvider extends ChangeNotifier {
 
   /// Load all conversations
   Future<void> loadConversations({bool showLoading = true}) async {
+    debugPrint('😂 loadConversations called');
     if (_currentUserId == null) return;
 
     if (showLoading) {
@@ -121,6 +128,8 @@ class ChatProvider extends ChangeNotifier {
             ),
           )
           .toList();
+
+      debugPrint('🤪 conversations are : $_conversations');
     } catch (e) {
       debugPrint('[ChatProvider] Failed to load conversations: $e');
     } finally {
@@ -173,10 +182,12 @@ class ChatProvider extends ChangeNotifier {
         final message = ChatMessage.fromJson(saved);
         final convoId = message.conversationId;
         _messagesByConversation[convoId] ??= [];
-        _messagesByConversation[convoId]!.add(message);
+        _messagesByConversation[convoId]!.insert(0, message);
         notifyListeners();
       }
 
+      debugPrint("😂 ✅ Receiver ID: $receiverId");
+      debugPrint("😂 ✅ Content: $content");
       // 3. Best-effort ZIM delivery (won't block if peer is offline/unregistered)
       ZegoService.instance
           .sendMessage(receiverId.toString(), content)
@@ -221,8 +232,8 @@ class ChatProvider extends ChangeNotifier {
       if (result != null && result.message is ZIMMediaMessage) {
         final uploadedMsg = result.message as ZIMMediaMessage;
         final downloadUrl = uploadedMsg.fileDownloadUrl;
-        
-        // 3. Persist to backend 
+
+        // 3. Persist to backend
         final saved = await ChatApiService.sendMessage(
           receiverId: receiverId,
           content: downloadUrl.isNotEmpty ? downloadUrl : filePath,
@@ -235,7 +246,7 @@ class ChatProvider extends ChangeNotifier {
           final message = ChatMessage.fromJson(saved);
           final convoId = message.conversationId;
           _messagesByConversation[convoId] ??= [];
-          _messagesByConversation[convoId]!.add(message);
+          _messagesByConversation[convoId]!.insert(0, message);
           notifyListeners();
         }
       }

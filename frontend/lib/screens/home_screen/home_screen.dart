@@ -29,7 +29,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      debugPrint("😂 initState called");
       _initZegoAndChat();
+      debugPrint("😂 _initZegoAndChat called");
       //_checkProfileCompletion();
     });
   }
@@ -53,6 +55,9 @@ class _HomePageState extends State<HomePage> {
       }
 
       if (!ZegoService.instance.isLoggedIn) {
+        debugPrint(
+          "😂 ZegoService.instance.isLoggedIn ${ZegoService.instance.isLoggedIn}",
+        );
         await ZegoService.instance.login(userIdStr, userName);
       }
 

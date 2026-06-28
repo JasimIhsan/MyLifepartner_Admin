@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/auth_response.dart';
 import 'package:mylifepartner/models/user_image.dart';
@@ -9,8 +8,8 @@ import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/services/user_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../shared/widgets/custom_bottom_sheet.dart';
 import '../../shared/widgets/custom_button.dart';
+import '../../shared/widgets/logout_bottom_sheet.dart';
 import '../login_screen/login_screen.dart';
 import '../subscription_screen/subscription_screen.dart';
 import 'manage_profile_pictures_screen.dart';
@@ -361,21 +360,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ]),
 
-            _buildSectionHeader("Preferences"),
-            _buildActionGroup([
-              _buildActionItem(
-                icon: Icons.settings_outlined,
-                title: "Settings",
-                onTap: () {},
-              ),
-              _buildActionItem(
-                icon: Icons.notifications_outlined,
-                title: "Notifications",
-                showDivider: false,
-                onTap: () {},
-              ),
-            ]),
-
+            // _buildSectionHeader("Preferences"),
+            // _buildActionGroup([
+            //   _buildActionItem(
+            //     icon: Icons.settings_outlined,
+            //     title: "Settings",
+            //     onTap: () {},
+            //   ),
+            //   _buildActionItem(
+            //     icon: Icons.notifications_outlined,
+            //     title: "Notifications",
+            //     showDivider: false,
+            //     onTap: () {},
+            //   ),
+            // ]),
             _buildSectionHeader("Support"),
             _buildActionGroup([
               _buildActionItem(
@@ -391,13 +389,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               width: double.infinity,
               child: CustomButton(
                 onPressed: () {
-                  CustomBottomSheet.show(
+                  LogoutBottomSheet.show(
                     context: context,
-                    type: BottomSheetType.confirmation,
-                    title: "Logout",
-                    message: "Are you sure you want to logout?",
-                    primaryButtonText: "Logout",
-                    onPrimaryPressed: () async {
+                    onLogoutConfirm: () async {
                       final sharedPrefs = await SharedPreferences.getInstance();
                       await sharedPrefs.clear();
                       if (context.mounted) {

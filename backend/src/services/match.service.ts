@@ -50,6 +50,7 @@ export class MatchService implements IMatchService {
 
             scored.push({
                id: candidate.id,
+               userId: candidate.userId,
                name: candidate.name ?? "Unknown",
                age,
                heightCm: candidate.heightCm,
@@ -106,6 +107,7 @@ export class MatchService implements IMatchService {
 
       return {
          id: candidate.id,
+         userId: candidate.userId,
          name: candidate.name ?? "Unknown",
          age,
          gender: candidate.gender,
@@ -161,6 +163,7 @@ export class MatchService implements IMatchService {
 
          result.push({
             id: candidate.id,
+            userId: candidate.userId,
             name: candidate.name ?? "Unknown",
             age,
             heightCm: candidate.heightCm,

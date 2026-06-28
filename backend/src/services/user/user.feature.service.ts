@@ -89,6 +89,7 @@ export class UserFeatureService implements IUserFeatureService {
 
    async consumeMessage(userId: number): Promise<void> {
       const features = await this.userFeatureRepository.findByUserId(userId);
+      console.log("👉 features:", features);
       if (!features || !features.canSendMessage) {
          throw new ApiError(402, "Message feature not available in your plan.");
       }
