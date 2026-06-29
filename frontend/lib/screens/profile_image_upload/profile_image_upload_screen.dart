@@ -1,5 +1,5 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/user_image.dart';
@@ -20,14 +20,9 @@ class ProfileImageUploadScreen extends StatefulWidget {
       _ProfileImageUploadScreenState();
 }
 
-class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen>
-    with SingleTickerProviderStateMixin {
+class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
   final ProfileRepository _profileRepository = ProfileRepository();
   final ImagePicker _picker = ImagePicker();
-
-  late AnimationController _animController;
-  late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
 
   bool _isLoading = false;
   bool _isSaving = false;
@@ -40,37 +35,21 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen>
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
-    );
-    _slideAnim =
-        Tween<Offset>(begin: const Offset(0, 0.05), end: Offset.zero).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-    );
-    _animController.forward();
     _fetchImages();
-  }
-
-  @override
-  void dispose() {
-    _animController.dispose();
-    super.dispose();
   }
 
   Future<void> _fetchImages() async {
     setState(() => _isLoading = true);
     try {
       final images = await _profileRepository.getUserImages();
-      // Ensure primary image is always at index 0 (Hero slot)
+      
+      // Ensure the primary photo is always at index 0 (the large slot)
       images.sort((a, b) {
-        if (a.isPrimary == true) return -1;
-        if (b.isPrimary == true) return 1;
+        if (a.isPrimary && !b.isPrimary) return -1;
+        if (!a.isPrimary && b.isPrimary) return 1;
         return 0;
       });
+
       if (mounted) {
         setState(() {
           _images = images;
@@ -145,16 +124,14 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen>
   Future<void> _completeUpload() async {
     if (_images.length != _maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please upload all 4 photos to continue.')),
+        const SnackBar(content: Text('Please upload all 4 photos to continue.')),
       );
       return;
     }
     final hasPrimary = _images.any((img) => img.isPrimary == true);
     if (!hasPrimary) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please set one photo as your main photo.')),
+        const SnackBar(content: Text('Please set one photo as your main photo.')),
       );
       return;
     }
@@ -181,10 +158,8 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen>
   void _showImageOptions(UserImage image) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       builder: (_) => ImageOptionsBottomSheet(
         image: image,
         onSetPrimary: _setPrimaryImage,
@@ -217,70 +192,23 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen>
     }
   }
 
-  Widget _buildPhotoLayout() {
-    final bool hasHero = _images.isNotEmpty;
-    final bool isUploadingHero = _images.isEmpty && _isUploading;
+  Widget _buildSlot(int index) {
+    final isNextUpload = index == _images.length && _isUploading;
 
-    return Column(
-      children: [
-        // Hero Slot (Index 0)
-        AspectRatio(
-          aspectRatio: 3.2 / 4,
-          child: hasHero
-              ? FilledSlot(
-                  image: _images[0],
-                  slotIndex: 0,
-                  isProcessing: _processingImageId == _images[0].id,
-                  onTap: () => _showImageOptions(_images[0]),
-                )
-              : EmptySlot(
-                  slotIndex: 0,
-                  isUploading: isUploadingHero,
-                  onTap: isUploadingHero || _isUploading
-                      ? null
-                      : _pickAndUploadImage,
-                ),
-        ),
-        const SizedBox(height: 16),
-        // Secondary Slots (Indexes 1, 2, 3)
-        Row(
-          children: List.generate(3, (i) {
-            final index = i + 1;
-            final isNextUpload = index == _images.length && _isUploading;
-
-            Widget slot;
-            if (index < _images.length) {
-              slot = FilledSlot(
-                image: _images[index],
-                slotIndex: index,
-                isProcessing: _processingImageId == _images[index].id,
-                onTap: () => _showImageOptions(_images[index]),
-              );
-            } else {
-              slot = EmptySlot(
-                slotIndex: index,
-                isUploading: isNextUpload,
-                onTap:
-                    isNextUpload || _isUploading ? null : _pickAndUploadImage,
-              );
-            }
-
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: i == 0 ? 0 : 8,
-                  right: i == 2 ? 0 : 8,
-                ),
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: slot,
-                ),
-              ),
-            );
-          }),
-        ),
-      ],
-    );
+    if (index < _images.length) {
+      return FilledSlot(
+        image: _images[index],
+        slotIndex: index,
+        isProcessing: _processingImageId == _images[index].id,
+        onTap: () => _showImageOptions(_images[index]),
+      );
+    } else {
+      return EmptySlot(
+        slotIndex: index,
+        isUploading: isNextUpload,
+        onTap: isNextUpload || _isUploading ? null : _pickAndUploadImage,
+      );
+    }
   }
 
   @override
@@ -290,162 +218,178 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: const SizedBox.shrink(),
         actions: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: IconButton(
-                icon: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withValues(alpha: 0.6),
-                    border: Border.all(
-                        color: AppColors.borderColor.withValues(alpha: 0.5),
-                        width: 1),
-                  ),
-                  child: const Icon(Icons.question_mark_rounded,
-                      size: 16, color: AppColors.textPrimary),
-                ),
-                onPressed: _showPhotoTips,
+          IconButton(
+            icon: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.borderColor, width: 1.5),
               ),
+              child: const Icon(Icons.question_mark_rounded,
+                  size: 16, color: AppColors.textSecondary),
             ),
+            onPressed: _showPhotoTips,
           ),
           IconButton(
             icon: const Icon(Icons.logout,
-                color: AppColors.textPrimary, size: 22),
+                color: AppColors.textSecondary, size: 20),
             onPressed: _logout,
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          // Premium Animated Background Gradient
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    const Color(0xFFFAFAFA),
-                    AppColors.primaryLight.withValues(alpha: 0.08),
-                    Colors.white,
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          SafeArea(
-            bottom: false,
-            child: _isLoading && _images.isEmpty
-                ? const Center(
-                    child: CircularProgressIndicator(color: AppColors.primary))
-                : SlideTransition(
-                    position: _slideAnim,
-                    child: FadeTransition(
-                      opacity: _fadeAnim,
+      body: SafeArea(
+        top: false,
+        child: _isLoading && _images.isEmpty
+            ? const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.primary))
+            : Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: SingleChildScrollView(
-                              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  // ── Header ───────────────────────────────────────
-                                  const Text(
-                                    'Add your photos',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.5,
-                                      color: AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    'Upload 4 clear photos of yourself. Tap any photo to manage it.',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: AppColors.textSecondary,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 32),
-
-                                  // ── Hero & Secondary Photo Grid ─────────────────
-                                  _buildPhotoLayout(),
-
-                                  const SizedBox(height: 40),
-                                ],
-                              ),
+                          // ── Header ───────────────────────────────────────
+                          Text(
+                            'Add your photos',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
                             ),
                           ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Upload 4 clear photos of yourself. Tap any photo to manage it.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+
+                          // ── Photo grid ──────────────────────────────────
+                          AspectRatio(
+                            aspectRatio: 0.8, // Taller ratio for main photo
+                            child: _buildSlot(0),
+                          ).animate().fade(duration: 400.ms).slideY(begin: 0.05),
+
+                          const SizedBox(height: 16),
+
+                          Row(
+                            children: [
+                              Expanded(
+                                child: AspectRatio(
+                                  aspectRatio: 0.75,
+                                  child: _buildSlot(1),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: AspectRatio(
+                                  aspectRatio: 0.75,
+                                  child: _buildSlot(2),
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: AspectRatio(
+                                  aspectRatio: 0.75,
+                                  child: _buildSlot(3),
+                                ),
+                              ),
+                            ],
+                          ).animate().fade(duration: 500.ms, delay: 100.ms).slideY(begin: 0.1),
+
+                          const SizedBox(height: 24),
+
+
                         ],
                       ),
                     ),
                   ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            height: 56,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: isValid
-                  ? [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.35),
-                        blurRadius: 16,
-                        offset: const Offset(0, 6),
-                      )
-                    ]
-                  : [],
-            ),
-            child: ElevatedButton(
-              onPressed: _isSaving || !isValid ? null : _completeUpload,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: AppColors.borderColor,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                          strokeWidth: 2.5, color: Colors.white),
-                    )
-                  : const Text(
-                      'Continue',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+
+                  // ── Continue button ───────────────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: _isSaving || !isValid
+                            ? null
+                            : _completeUpload,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent, // Handled by container
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: _isSaving || !isValid
+                                ? null
+                                : const LinearGradient(
+                                    colors: [Color(0xFFFF4B4B), Color(0xFFFF7A7A)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                            color: _isSaving || !isValid ? AppColors.borderColor : null,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: _isSaving || !isValid
+                                ? []
+                                : [
+                                    BoxShadow(
+                                      color: const Color(0xFFFF4B4B).withValues(alpha: 0.4),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                          ),
+                          child: Container(
+                            alignment: Alignment.center,
+                            child: _isSaving
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2.5, color: Colors.white),
+                                  )
+                                : const Text(
+                                    'Continue',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ).animate(target: isValid ? 1 : 0).scale(
+                        duration: 300.ms,
+                        curve: Curves.easeOutBack,
+                        begin: const Offset(0.95, 0.95),
                       ),
                     ),
-            ),
-          ),
-        ),
+                  ),
+                ],
+              ),
       ),
     );
   }
 }
+
