@@ -128,13 +128,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         content: text,
         conversationId: convoId ?? _conversationId,
       );
-      
+
       if (mounted && _conversationId == null && message != null) {
         setState(() {
           _conversationId = message.conversationId;
         });
       }
-      
+
       _initChat(); // Re-fetch to update convo id if it was newly created
       if (mounted) context.read<SubscriptionProvider>().fetchMySubscription();
 
@@ -156,12 +156,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           );
         } else {
           String errorMsg = 'Failed to send message. Try again.';
-          if (e is DioException && e.response?.data != null && e.response?.data is Map) {
+          if (e is DioException &&
+              e.response?.data != null &&
+              e.response?.data is Map) {
             errorMsg = e.response?.data['message'] ?? errorMsg;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(errorMsg)));
         }
       }
     }
@@ -176,13 +178,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         messageType: messageType,
         audioDuration: duration,
       );
-      
+
       if (mounted && _conversationId == null && message != null) {
         setState(() {
           _conversationId = message.conversationId;
         });
       }
-      
+
       if (mounted) context.read<SubscriptionProvider>().fetchMySubscription();
 
       if (_scrollController.hasClients) {
@@ -202,12 +204,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           );
         } else {
           String errorMsg = 'Failed to send media msg.';
-          if (e is DioException && e.response?.data != null && e.response?.data is Map) {
+          if (e is DioException &&
+              e.response?.data != null &&
+              e.response?.data is Map) {
             errorMsg = e.response?.data['message'] ?? errorMsg;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(errorMsg)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(errorMsg)));
         }
       }
     }
@@ -525,14 +529,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           );
         } else {
           String errorMsg = 'Failed to verify call access. Try again.';
-          if (e is DioException && e.response?.data != null && e.response?.data is Map) {
+          if (e is DioException &&
+              e.response?.data != null &&
+              e.response?.data is Map) {
             errorMsg = e.response?.data['message'] ?? errorMsg;
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(errorMsg),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(errorMsg)));
         }
       }
       return;
@@ -634,7 +638,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       left: 16,
                       right: 16,
                     ),
-                    itemCount: messages.length +
+                    itemCount:
+                        messages.length +
                         (provider.isLoadingMore(_conversationId!) ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index == messages.length) {
@@ -668,7 +673,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           needsMoreSpace = true;
                         }
                       } else {
-                        needsMoreSpace = true; // First message visually (topmost)
+                        needsMoreSpace =
+                            true; // First message visually (topmost)
                       }
 
                       return Padding(
@@ -698,5 +704,4 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
     );
   }
-
 }
