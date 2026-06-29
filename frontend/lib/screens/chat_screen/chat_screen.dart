@@ -163,8 +163,9 @@ class _ChatListTileState extends State<_ChatListTile> {
   String? get _imageUrl {
     final primary = widget.profile.images.where((img) => img.isPrimary);
     if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (widget.profile.images.isNotEmpty)
+    if (widget.profile.images.isNotEmpty) {
       return widget.profile.images.first.imageUrl;
+    }
     return null;
   }
 

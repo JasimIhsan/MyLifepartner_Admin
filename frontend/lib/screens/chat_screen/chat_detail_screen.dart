@@ -1,12 +1,9 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
@@ -15,13 +12,15 @@ import 'package:mylifepartner/providers/chat_provider.dart';
 import 'package:mylifepartner/providers/subscription_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:mylifepartner/services/chat_service.dart';
-import 'package:mylifepartner/widgets/call_log_bubble.dart';
 import 'package:mylifepartner/widgets/feature_exhausted_modal.dart';
-import 'package:mylifepartner/widgets/inline_audio_player.dart';
 import 'package:mylifepartner/widgets/inline_video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
+
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_detail_app_bar.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_message_bubble.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_input_area.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final MatchRecommendation profile;
@@ -313,11 +312,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
   }
 
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    return "${twoDigits(d.inMinutes.remainder(60))}:${twoDigits(d.inSeconds.remainder(60))}";
-  }
-
   void _showAttachmentOptions() {
     showModalBottomSheet(
       context: context,
@@ -364,8 +358,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           final file = await picker.pickImage(
                             source: ImageSource.gallery,
                           );
-                          if (file != null)
+                          if (file != null) {
                             _previewAndSendMedia(file.path, 'IMAGE');
+                          }
                         },
                       ),
                       _buildAttachmentOption(
@@ -378,8 +373,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           final file = await picker.pickVideo(
                             source: ImageSource.gallery,
                           );
-                          if (file != null)
+                          if (file != null) {
                             _previewAndSendMedia(file.path, 'VIDEO');
+                          }
                         },
                       ),
                       _buildAttachmentOption(
@@ -392,8 +388,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           final file = await picker.pickImage(
                             source: ImageSource.camera,
                           );
-                          if (file != null)
+                          if (file != null) {
                             _previewAndSendMedia(file.path, 'IMAGE');
+                          }
                         },
                       ),
                     ],
@@ -580,7 +577,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar(context),
+      appBar: ChatDetailAppBar(
+        profileName: widget.profile.name,
+        profileImageUrl: _profileImageUrl,
+        onAudioCall: () => _startCall(isVideo: false),
+        onVideoCall: () => _startCall(isVideo: true),
+      ),
       body: SafeArea(
         child: Column(
           children: [
@@ -671,208 +673,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
                       return Padding(
                         padding: EdgeInsets.only(top: needsMoreSpace ? 16 : 4),
-                        child: _buildMessageBubble(msg, isMe),
+                        child: ChatMessageBubble(msg: msg, isMe: isMe),
                       );
                     },
                   );
                 },
               ),
             ),
-            _buildInputArea(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    return AppBar(
-      backgroundColor: Colors.white.withValues(alpha: 0.95),
-      elevation: 0,
-      centerTitle: false,
-      surfaceTintColor: Colors.white,
-      foregroundColor: AppColors.textPrimary,
-      flexibleSpace: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-          child: Container(color: Colors.transparent),
-        ),
-      ),
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 8.0),
-        child: IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: AppColors.textPrimary,
-            size: 22,
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      leadingWidth: 48,
-      title: Row(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.divider, width: 1),
-            ),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.surface,
-              backgroundImage: _profileImageUrl != null
-                  ? NetworkImage(_profileImageUrl!)
-                  : null,
-              child: _profileImageUrl == null
-                  ? const Icon(
-                      Icons.person,
-                      color: AppColors.textSecondary,
-                      size: 20,
-                    )
-                  : null,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              widget.profile.name,
-              style: const TextStyle(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        Row(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.call_rounded,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-                onPressed: () => _startCall(isVideo: false),
-                splashRadius: 24,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.videocam_rounded,
-                  color: AppColors.primary,
-                  size: 22,
-                ),
-                onPressed: () => _startCall(isVideo: true),
-                splashRadius: 24,
-              ),
-            ),
-            const SizedBox(width: 16),
-          ],
-        ),
-      ],
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(color: AppColors.divider, height: 1),
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble(ChatMessage msg, bool isMe) {
-    if (msg.messageType == 'CALL_LOG') {
-      return CallLogBubble(msg: msg, isMe: isMe);
-    }
-
-    final format = DateFormat('hh:mm a');
-    final timeStr = format.format(msg.createdAt.toLocal());
-
-    return Align(
-      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.of(context).size.width * 0.75,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: isMe
-              ? const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [AppColors.primary, Color(0xFFE82B2B)],
-                )
-              : null,
-          color: isMe ? null : AppColors.background,
-          borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: Radius.circular(isMe ? 20 : 4),
-            bottomRight: Radius.circular(isMe ? 4 : 20),
-          ),
-          boxShadow: isMe
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (msg.messageType == 'IMAGE' || msg.messageType == 'VIDEO')
-              _buildDownloadableMedia(msg, isMe, context)
-            else if (msg.messageType == 'AUDIO')
-              InlineAudioPlayer(source: msg.content, isMe: isMe)
-            else
-              Text(
-                msg.content,
-                style: TextStyle(
-                  color: isMe ? Colors.white : AppColors.textPrimary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  height: 1.35,
-                ),
-              ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  timeStr,
-                  style: TextStyle(
-                    color: isMe
-                        ? Colors.white.withValues(alpha: 0.7)
-                        : AppColors.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                if (isMe) ...[
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons
-                        .done_all_rounded, // or any read receipt icon you prefer
-                    size: 14,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                ],
-              ],
+            ChatInputArea(
+              isRecording: _isRecording,
+              isRecordingFinished: _isRecordingFinished,
+              msgController: _msgController,
+              recordingPath: _recordingPath,
+              recordingDuration: _recordingDuration,
+              onCancelRecording: _cancelRecording,
+              onShowAttachmentOptions: _showAttachmentOptions,
+              onSendMessage: _sendMessage,
+              onSendRecordedAudio: _sendRecordedAudio,
+              onStartRecording: _startRecordingUI,
+              onStopRecording: _stopAndPreviewRecording,
             ),
           ],
         ),
@@ -880,283 +699,4 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
   }
 
-  Widget _buildDownloadableMedia(
-    ChatMessage msg,
-    bool isMe,
-    BuildContext context,
-  ) {
-    final chatProvider = context.read<ChatProvider>();
-    final isDownloaded = chatProvider.isMediaDownloaded(msg.id);
-
-    final placeholder = Container(
-      key: const ValueKey('placeholder'),
-      width: 240,
-      height: 240,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
-      ),
-      alignment: Alignment.center,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            msg.messageType == 'IMAGE'
-                ? Icons.image_rounded
-                : Icons.video_collection_rounded,
-            size: 48,
-            color: AppColors.primary.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 12),
-          isDownloaded
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 2,
-                  ),
-                )
-              : GestureDetector(
-                  onTap: () => chatProvider.markMediaDownloaded(msg.id),
-                  behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(
-                          Icons.download_rounded,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'Download',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-        ],
-      ),
-    );
-
-    Widget content;
-    if (!isMe && !isDownloaded) {
-      content = placeholder;
-    } else {
-      if (msg.messageType == 'IMAGE') {
-        content = msg.content.startsWith('http')
-            ? Image.network(
-                msg.content,
-                key: ValueKey(msg.content),
-                width: 240,
-                fit: BoxFit.cover,
-                frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                  if (wasSynchronouslyLoaded || frame != null) return child;
-                  return placeholder;
-                },
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) return child;
-                  return placeholder;
-                },
-              )
-            : Image.file(
-                File(msg.content),
-                key: ValueKey(msg.content),
-                width: 240,
-                fit: BoxFit.cover,
-              );
-      } else {
-        content = InlineVideoPlayer(
-          source: msg.content,
-          isMe: isMe,
-          key: ValueKey(msg.content),
-        );
-      }
-    }
-
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedSize(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: content,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInputArea() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.divider, width: 1)),
-      ),
-      padding: const EdgeInsets.only(top: 12, bottom: 20, left: 16, right: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (_isRecording || _isRecordingFinished)
-            IconButton(
-              onPressed: _cancelRecording,
-              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            )
-          else
-            IconButton(
-              onPressed: _showAttachmentOptions,
-              icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
-              color: AppColors.textSecondary,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              splashRadius: 24,
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-              ),
-              child: _isRecording || _isRecordingFinished
-                  ? _buildRecordingMiddle()
-                  : _buildTextMiddle(),
-            ),
-          ),
-          const SizedBox(width: 12),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: _msgController,
-            builder: (context, value, child) {
-              final isTextEmpty = value.text.trim().isEmpty;
-              return GestureDetector(
-                onTap: () {
-                  if (_isRecordingFinished) {
-                    _sendRecordedAudio();
-                  } else if (!isTextEmpty && !_isRecording) {
-                    _sendMessage();
-                  }
-                },
-                onLongPressStart:
-                    (isTextEmpty && !_isRecording && !_isRecordingFinished)
-                    ? (_) => _startRecordingUI()
-                    : null,
-                onLongPressEnd: _isRecording
-                    ? (_) => _stopAndPreviewRecording()
-                    : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: _isRecording ? 52 : 44,
-                  width: _isRecording ? 52 : 44,
-                  decoration: BoxDecoration(
-                    color: _isRecording ? Colors.redAccent : AppColors.primary,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: _isRecording
-                            ? Colors.redAccent.withValues(alpha: 0.3)
-                            : const Color(0x33FF3F3F),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    _isRecordingFinished
-                        ? Icons.send_rounded
-                        : (isTextEmpty
-                              ? Icons.mic_rounded
-                              : Icons.arrow_upward_rounded),
-                    color: Colors.white,
-                    size: _isRecording ? 28 : 24,
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecordingMiddle() {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      alignment: Alignment.center,
-      child: _isRecording
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                      width: 10,
-                      height: 10,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .fade(duration: 500.ms),
-                const SizedBox(width: 8),
-                Text(
-                  _formatDuration(_recordingDuration),
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            )
-          : InlineAudioPlayer(source: _recordingPath!, isMe: true),
-    );
-  }
-
-  Widget _buildTextMiddle() {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Expanded(
-          child: TextField(
-            controller: _msgController,
-            textInputAction: TextInputAction.send,
-            onSubmitted: (_) => _sendMessage(),
-            maxLines: 4,
-            minLines: 1,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
-              hintText: 'Message...',
-              hintStyle: TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 16,
-              ),
-              border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-            ),
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
-          ),
-        ),
-      ],
-    );
-  }
 }
