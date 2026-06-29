@@ -3,6 +3,7 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { ApiError } from "@/utils/ApiError";
 import { IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
+import { hasFeature, hasReachedLimit, UserFeatureMaxKey, UserFeatureUsageKey } from "@/utils/feature.utils";
 
 export class UserSubscriptionController {
    constructor(private userSubscriptionService: IUserSubscriptionService) {}
@@ -52,13 +53,13 @@ export class UserSubscriptionController {
       }
 
       if (type === 'video') {
-         if (!features.canVideoCall) throw new ApiError(402, "Video call not available in your plan.");
-         if (features.maxVideoCallMinutes > 0 && features.videoCallMinutes >= features.maxVideoCallMinutes) {
+         if (!hasFeature(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES)) throw new ApiError(402, "Video call not available in your plan.");
+         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES, UserFeatureUsageKey.VIDEO_CALL_MINUTES)) {
             throw new ApiError(402, "Video call limit exhausted.");
          }
       } else {
-         if (!features.canAudioCall) throw new ApiError(402, "Audio call not available in your plan.");
-         if (features.maxAudioCallMinutes > 0 && features.audioCallMinutes >= features.maxAudioCallMinutes) {
+         if (!hasFeature(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES)) throw new ApiError(402, "Audio call not available in your plan.");
+         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES, UserFeatureUsageKey.AUDIO_CALL_MINUTES)) {
             throw new ApiError(402, "Audio call limit exhausted.");
          }
       }

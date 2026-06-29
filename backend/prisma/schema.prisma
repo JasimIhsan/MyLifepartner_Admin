@@ -234,9 +234,6 @@ model UserFeature {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Boolean Features
-  canAudioCall         Boolean @default(false)
-  canVideoCall         Boolean @default(false)
-  canSendMessage       Boolean @default(false)
   isProfileBlurEnabled Boolean @default(false)
 
   // Interest Limits

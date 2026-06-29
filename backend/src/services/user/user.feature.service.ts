@@ -2,6 +2,7 @@ import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.r
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { SwipeAction, UserFeature } from "@prisma/client";
+import { hasFeature, hasReachedLimit, UserFeatureMaxKey, UserFeatureUsageKey } from "@/utils/feature.utils";
 
 export class UserFeatureService implements IUserFeatureService {
    constructor(private userFeatureRepository: IUserFeatureRepository) {}
@@ -56,10 +57,10 @@ export class UserFeatureService implements IUserFeatureService {
       const features = await this.userFeatureRepository.findByUserId(userId);
       console.log("features:", features);
 
-      if (!features) return false;
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_INTERESTS)) return false;
 
       if (action === SwipeAction.RIGHT || action === SwipeAction.LEFT) {
-         return features.interests < features.maxInterests;
+         return !hasReachedLimit(features, UserFeatureMaxKey.MAX_INTERESTS, UserFeatureUsageKey.INTERESTS);
       }
 
       return false;
@@ -70,11 +71,11 @@ export class UserFeatureService implements IUserFeatureService {
 
       const features = await this.userFeatureRepository.findByUserId(userId);
 
-      if (!features) {
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_INTERESTS)) {
          throw new ApiError(404, "User features not found");
       }
 
-      if (features.interests >= features.maxInterests) {
+      if (hasReachedLimit(features, UserFeatureMaxKey.MAX_INTERESTS, UserFeatureUsageKey.INTERESTS)) {
          throw new ApiError(402, "You have reached your interest limit. Upgrade your plan to send more interests!");
       }
 
@@ -83,17 +84,17 @@ export class UserFeatureService implements IUserFeatureService {
 
    async checkMessageAccess(userId: number): Promise<boolean> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      if (!features || !features.canSendMessage) return false;
-      return features.messages < features.maxMessages;
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_MESSAGES)) return false;
+      return !hasReachedLimit(features, UserFeatureMaxKey.MAX_MESSAGES, UserFeatureUsageKey.MESSAGES);
    }
 
    async consumeMessage(userId: number): Promise<void> {
       const features = await this.userFeatureRepository.findByUserId(userId);
       console.log("👉 features:", features);
-      if (!features || !features.canSendMessage) {
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_MESSAGES)) {
          throw new ApiError(402, "Message feature not available in your plan.");
       }
-      if (features.messages >= features.maxMessages) {
+      if (hasReachedLimit(features, UserFeatureMaxKey.MAX_MESSAGES, UserFeatureUsageKey.MESSAGES)) {
          throw new ApiError(402, "You have reached your message limit. Upgrade your plan to send more messages.");
       }
       await this.updateMessages(userId, 1);

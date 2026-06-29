@@ -95,9 +95,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       // Map plan features to fixed columns
       const newLimits = {
-         canAudioCall: false,
-         canVideoCall: false,
-         canSendMessage: false,
          isProfileBlurEnabled: false,
          maxInterests: 0,
          maxVideoCallMinutes: 0,
@@ -109,9 +106,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          const key = pf.featureKey as FeatureKey;
          const valStr = pf.limit;
 
-         if (key === FeatureKey.AUDIO_CALL) newLimits.canAudioCall = valStr === "true";
-         if (key === FeatureKey.VIDEO_CALL) newLimits.canVideoCall = valStr === "true";
-         if (key === FeatureKey.SEND_MESSAGE) newLimits.canSendMessage = valStr === "true";
          if (key === FeatureKey.PROFILE_BLUR) newLimits.isProfileBlurEnabled = valStr === "true";
 
          if (key === FeatureKey.MAX_INTERESTS) newLimits.maxInterests = parseInt(valStr) || 0;
@@ -123,9 +117,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       const existingUserFeature = await this.userFeatureRepository.findByUserId(userId);
 
       const featurePayload = {
-         canAudioCall: newLimits.canAudioCall,
-         canVideoCall: newLimits.canVideoCall,
-         canSendMessage: newLimits.canSendMessage,
          isProfileBlurEnabled: newLimits.isProfileBlurEnabled,
 
          maxInterests: newLimits.maxInterests,
