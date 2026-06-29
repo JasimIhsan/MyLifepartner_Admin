@@ -56,11 +56,12 @@ export class SubscriptionRepository implements ISubscriptionRepository {
    // Features (Plan mapping)
    // ══════════════════════════════════════════════
 
-   async addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string }[]): Promise<import("@prisma/client").PlanFeature[]> {
+   async addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string; description?: string }[]): Promise<import("@prisma/client").PlanFeature[]> {
       const data = featureData.map((f) => ({
          planId,
          featureKey: f.featureKey,
          limit: f.limit,
+         description: f.description,
       }));
 
       // Create many
@@ -88,10 +89,10 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
    }
 
-   async updatePlanFeature(id: number, limit: string): Promise<import("@prisma/client").PlanFeature> {
+   async updatePlanFeature(id: number, data: { limit?: string; description?: string }): Promise<import("@prisma/client").PlanFeature> {
       return await prisma.planFeature.update({
          where: { id },
-         data: { limit },
+         data,
       });
    }
 

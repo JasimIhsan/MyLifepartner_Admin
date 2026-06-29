@@ -186,6 +186,7 @@ model Admins {
 model SubscriptionPlan {
   id                Int                @id @default(autoincrement())
   name              String             @unique // FREE, PREMIUM, GOLD
+  description       String?            // User understandable explanation of the plan
   price             Int // price in paise (₹1 = 100 paise)
   durationDays      Int
   isActive          Boolean            @default(true)
@@ -200,13 +201,14 @@ model SubscriptionPlan {
 }
 
 model PlanFeature {
-  id         Int              @id @default(autoincrement())
-  planId     Int
-  plan       SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  featureKey String
-  limit      String // e.g. "50", "UNLIMITED", "true"
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  id          Int              @id @default(autoincrement())
+  planId      Int
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureKey  String
+  description String?          // User understandable feature explanation for the plan card
+  limit       String // e.g. "50", "UNLIMITED", "true"
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@unique([planId, featureKey]) // one limit per feature per plan
   @@map("plan_features")

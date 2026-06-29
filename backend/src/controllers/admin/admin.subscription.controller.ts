@@ -75,7 +75,7 @@ export class AdminSubscriptionController {
       if (!parsed.success) {
          throw new ApiError(400, parsed.error.issues[0].message);
       }
-      const feature = await this.adminSubscriptionService.updatePlanFeature(planFeatureId, parsed.data.limit);
+      const feature = await this.adminSubscriptionService.updatePlanFeature(planFeatureId, parsed.data);
       res.status(200).json(new ApiResponse(200, feature, "Plan feature updated successfully"));
    });
 

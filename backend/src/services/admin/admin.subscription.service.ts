@@ -11,7 +11,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
 
    // ── Plans ────────────────────────────────────────────────────────────────
 
-   async createPlan(data: { name: string; price: number; durationDays: number; identifier: string }): Promise<EnrichedSubscriptionPlan> {
+   async createPlan(data: { name: string; price: number; durationDays: number; identifier: string; description?: string }): Promise<EnrichedSubscriptionPlan> {
       // Ensure plan name is unique (case-insensitive normalisation)
       const existing = await this.subscriptionRepository.getPlanByName(data.name.toUpperCase());
       if (existing) {
@@ -23,6 +23,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
          price: data.price,
          durationDays: data.durationDays,
          identifier: data.identifier,
+         description: data.description,
       });
 
       return {
@@ -93,7 +94,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
    // Feature Management for Plans
    // ══════════════════════════════════════════════
 
-   async addFeatures(planId: number, features: { featureKey: FeatureKey; limit: string }[]): Promise<PlanFeature[]> {
+   async addFeatures(planId: number, features: { featureKey: FeatureKey; limit: string; description?: string }[]): Promise<PlanFeature[]> {
       // 1. Ensure plan exists
       await this.getPlanById(planId);
 
@@ -115,13 +116,13 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
       return await this.subscriptionRepository.addFeaturesToPlan(planId, features as any);
    }
 
-   async updatePlanFeature(planFeatureId: number, limit: string): Promise<PlanFeature> {
+   async updatePlanFeature(planFeatureId: number, data: { limit?: string; description?: string }): Promise<PlanFeature> {
       const existing = await this.subscriptionRepository.getPlanFeatureById(planFeatureId);
       if (!existing) {
          throw new ApiError(404, "Plan Feature mapping not found");
       }
 
-      return await this.subscriptionRepository.updatePlanFeature(planFeatureId, limit);
+      return await this.subscriptionRepository.updatePlanFeature(planFeatureId, data);
    }
 
    async deletePlanFeature(planFeatureId: number): Promise<void> {

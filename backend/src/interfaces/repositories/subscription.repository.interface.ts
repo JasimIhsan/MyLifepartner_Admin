@@ -11,10 +11,10 @@ export interface ISubscriptionRepository {
    untoggleMostPopularPlans(): Promise<Prisma.BatchPayload>;
 
    // -- Features (Plan logic) --
-   addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string }[]): Promise<PlanFeature[]>;
+   addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string; description?: string }[]): Promise<PlanFeature[]>;
    getPlanFeaturesByKeys(planId: number, featureKeys: string[]): Promise<PlanFeature[]>;
    getPlanFeatureById(id: number): Promise<PlanFeature | null>;
-   updatePlanFeature(id: number, limit: string): Promise<PlanFeature>;
+   updatePlanFeature(id: number, data: { limit?: string; description?: string }): Promise<PlanFeature>;
    deletePlanFeature(id: number): Promise<PlanFeature>;
 
    // -- User Subscriptions --

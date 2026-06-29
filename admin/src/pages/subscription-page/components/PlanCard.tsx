@@ -1,11 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { paiseToRupees, type SubscriptionPlan } from "@/api/subscription.service";
+import { paiseToRupees, type SubscriptionPlan, type GlobalFeature } from "@/api/subscription.service";
 import { Calendar, CheckCircle2, Edit2, Settings2, Trash2, XCircle, Zap } from "lucide-react";
 
 interface PlanCardProps {
    plan: SubscriptionPlan;
+   globalFeatures: GlobalFeature[];
    onEdit: (plan: SubscriptionPlan) => void;
    onToggleActive: (plan: SubscriptionPlan) => void;
    onToggleMostPopular: (plan: SubscriptionPlan) => void;
@@ -13,7 +14,7 @@ interface PlanCardProps {
    onManageFeatures: (plan: SubscriptionPlan) => void;
 }
 
-export default function PlanCard({ plan, onEdit, onToggleActive, onToggleMostPopular, onDelete, onManageFeatures }: PlanCardProps) {
+export default function PlanCard({ plan, globalFeatures, onEdit, onToggleActive, onToggleMostPopular, onDelete, onManageFeatures }: PlanCardProps) {
    return (
       <Card
          className={`flex flex-col border shadow-sm hover:shadow-md transition-all duration-200 ${
@@ -36,6 +37,11 @@ export default function PlanCard({ plan, onEdit, onToggleActive, onToggleMostPop
                         )}
                      </div>
                      <p className="text-2xl font-extrabold text-primary mt-0.5">{paiseToRupees(plan.price)}</p>
+                     {plan.description && (
+                        <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-tight" title={plan.description}>
+                           {plan.description}
+                        </p>
+                     )}
                   </div>
                </div>
                <Badge variant={plan.isActive ? "default" : "secondary"} className="shrink-0">
@@ -66,11 +72,16 @@ export default function PlanCard({ plan, onEdit, onToggleActive, onToggleMostPop
                </p>
                {plan.features.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
-                     {plan.features.slice(0, 5).map((f) => (
-                        <Badge key={f.id} variant="outline" className="text-xs font-mono">
-                           {f.featureKey}: {f.limit}
-                        </Badge>
-                     ))}
+                     {plan.features.slice(0, 5).map((f) => {
+                        const gf = globalFeatures.find((g) => g.key === f.featureKey);
+                        const displayName = gf ? gf.name : f.featureKey;
+                        const displayLimit = gf?.boolean ? (f.limit === "true" ? "Yes" : "No") : f.limit;
+                        return (
+                           <Badge key={f.id} variant="outline" className="text-xs">
+                              {displayName}: {displayLimit}
+                           </Badge>
+                        );
+                     })}
 
                      {plan.features.length > 5 && (
                         <Badge variant="outline" className="text-xs">

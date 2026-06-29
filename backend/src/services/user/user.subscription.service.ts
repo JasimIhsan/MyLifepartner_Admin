@@ -24,10 +24,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       return sortedPlans.map((plan) => ({
          ...plan,
-         features: plan.features.map((pf) => ({
-            ...pf,
-            feature: SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey),
-         })),
+         features: plan.features.map((pf) => {
+            const feature = SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey);
+            return {
+               ...pf,
+               description: pf.description || feature?.description,
+               feature,
+            };
+         }),
       })) as EnrichedSubscriptionPlan[];
    }
 
@@ -54,10 +58,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          ...sub,
          plan: {
             ...sub.plan,
-            features: sub.plan.features.map((pf) => ({
-               ...pf,
-               feature: SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey),
-            })),
+            features: sub.plan.features.map((pf) => {
+               const feature = SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey);
+               return {
+                  ...pf,
+                  description: pf.description || feature?.description,
+                  feature,
+               };
+            }),
          },
       } as EnrichedUserSubscription;
    }
@@ -144,10 +152,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          ...userSubscription,
          plan: {
             ...userSubscription.plan,
-            features: userSubscription.plan.features.map((pf) => ({
-               ...pf,
-               feature: SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey),
-            })),
+            features: userSubscription.plan.features.map((pf) => {
+               const feature = SYSTEM_FEATURES.find((sf) => sf.key === pf.featureKey);
+               return {
+                  ...pf,
+                  description: pf.description || feature?.description,
+                  feature,
+               };
+            }),
          },
       };
 
