@@ -269,16 +269,19 @@ class _ChatListTileState extends State<_ChatListTile> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              if (lastMessageStr.toLowerCase().contains(
+                              if (lastMessageStr == 'Attachment' ||
+                                  lastMessageStr.toLowerCase().contains(
                                     'video call',
                                   ) ||
                                   lastMessageStr.toLowerCase().contains(
                                     'audio call',
                                   )) ...[
                                 Icon(
-                                  lastMessageStr.toLowerCase().contains(
-                                        'video call',
-                                      )
+                                  lastMessageStr == 'Attachment'
+                                      ? Icons.attachment_rounded
+                                      : lastMessageStr.toLowerCase().contains(
+                                          'video call',
+                                        )
                                       ? Icons.videocam_rounded
                                       : Icons.call_rounded,
                                   size: 14,

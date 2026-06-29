@@ -78,6 +78,11 @@ class ChatConversation {
       }
     }
     
+    // Check if it's a ZegoCloud media URL
+    if (lastMessage!.contains('zim/file_access')) {
+      return 'Attachment';
+    }
+
     return lastMessage!;
   }
 
