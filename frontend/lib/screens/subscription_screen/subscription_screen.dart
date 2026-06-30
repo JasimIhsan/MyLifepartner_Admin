@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/config/env.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/subscription_plan.dart' as model;
@@ -235,62 +234,66 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   //   );
   // }
 
-  Widget _buildActivePlanBanner(model.SubscriptionPlan plan) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        color: AppColors.success.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.success, width: 1.2),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.check_circle_rounded,
-            color: AppColors.success,
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'CURRENT ACTIVE PLAN',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.success,
-                  ),
-                ),
-                Text(
-                  plan.name,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ],
-            ),
-          ),
+  _PlanVisuals _getPlanVisuals(String name) {
+    final lower = name.toLowerCase();
+    if (lower.contains('gold')) {
+      return _PlanVisuals(
+        themeColor: const Color(0xFFF1A80A),
+        borderColor: const Color(0xFFFFD54F),
+        bgColor: const Color(0xFFFFFDF7),
+        coupleAsset: 'assets/images/landing_couple_1.png',
+        shortcutIcons: [
+          Icons.chat_bubble_outline_rounded,
+          Icons.phone_outlined,
+          Icons.videocam_outlined,
+          Icons.shield_outlined,
         ],
-      ),
-    );
+        isPopular: false,
+      );
+    } else if (lower.contains('platinum')) {
+      return _PlanVisuals(
+        themeColor: const Color(0xFF1E88E5),
+        borderColor: const Color(0xFF90CAF9),
+        bgColor: const Color(0xFFF4FAFF),
+        coupleAsset: 'assets/images/landing_couple_3.png',
+        shortcutIcons: [
+          Icons.chat_bubble_outline_rounded,
+          Icons.phone_outlined,
+          Icons.videocam_outlined,
+          Icons.visibility_outlined,
+          Icons.shield_outlined,
+        ],
+        isPopular: false,
+      );
+    } else {
+      return _PlanVisuals(
+        themeColor: const Color(0xFFFF2D55),
+        borderColor: const Color(0xFFFF8A9F),
+        bgColor: const Color(0xFFFFF5F6),
+        coupleAsset: 'assets/images/landing_couple_2.png',
+        shortcutIcons: [
+          Icons.chat_bubble_outline_rounded,
+          Icons.phone_outlined,
+          Icons.videocam_outlined,
+          Icons.visibility_outlined,
+          Icons.shield_outlined,
+        ],
+        isPopular: true,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(
             Icons.arrow_back_ios,
-            color: AppColors.textPrimary,
+            color: Color(0xFF0F172A),
             size: 20,
           ),
           onPressed: () => Navigator.pop(context),
@@ -298,11 +301,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         title: const Text(
           'Choose Your Plan',
           style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w700,
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.favorite_border_rounded,
+              color: Color(0xFFFF2D55),
+              size: 24,
+            ),
+            onPressed: () {},
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Consumer<SubscriptionProvider>(
         builder: (context, provider, child) {
@@ -325,52 +340,30 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
           final plans = provider.plans;
           final currentSub = provider.currentSubscription;
 
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                              'Unlock Premium Features',
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            )
-                            .animate()
-                            .fadeIn(duration: 400.ms)
-                            .slideY(begin: 0.2, end: 0),
-                        const SizedBox(height: 8),
-                        Text(
-                              'Choose a plan that fits your needs and start your journey towards finding your life partner.',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: AppColors.textSecondary,
-                              ),
-                            )
-                            .animate()
-                            .fadeIn(delay: 200.ms, duration: 400.ms)
-                            .slideY(begin: 0.2, end: 0),
-                        const SizedBox(height: 20),
-                        if (currentSub?.isActive ?? false)
-                          _buildActivePlanBanner(currentSub!),
-                        // _buildFeatureHighlights().animate().fadeIn(
-                        //   delay: 300.ms,
-                        // ),
-                      ],
-                    ),
-                  ),
+          // Safely bound current page in case plans list changed
+          if (_currentPage >= plans.length && plans.isNotEmpty) {
+            _currentPage = plans.length - 1;
+          }
 
-                  // Horizontal Carousel of Plans
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 4),
+                const Text(
+                  'Unlock more ways to connect',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                // Horizontal Carousel of Plans
+                if (plans.isNotEmpty) ...[
                   SizedBox(
-                    height: 385,
+                    height: MediaQuery.of(context).size.height * 0.65,
                     child: PageView.builder(
                       controller: _pageController,
                       itemCount: plans.length,
@@ -386,7 +379,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         final isSelectedPage = index == _currentPage;
 
                         return AnimatedScale(
-                          scale: isSelectedPage ? 1.0 : 0.94,
+                          scale: isSelectedPage ? 1.0 : 0.92,
                           duration: const Duration(milliseconds: 250),
                           curve: Curves.easeOutCubic,
                           child: _buildPlanCard(
@@ -399,8 +392,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       },
                     ),
                   ),
-
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // Carousel Indicators
                   Row(
@@ -414,16 +406,88 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         height: 8,
                         decoration: BoxDecoration(
                           color: _currentPage == index
-                              ? AppColors.primary
-                              : AppColors.divider,
+                              ? const Color(0xFFFF2D55)
+                              : const Color(0xFFE2E8F0),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
+
+                  // Dynamic Select Button below PageView
+                  Builder(
+                    builder: (context) {
+                      final plan = plans[_currentPage];
+                      final isCurrentPlan =
+                          currentSub != null && currentSub.id == plan.id;
+
+                      String buttonText = 'Choose ${plan.name}';
+                      if (isCurrentPlan) {
+                        buttonText = 'Current Active Plan';
+                      } else if (provider.isLoading) {
+                        buttonText = 'Processing...';
+                      }
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFE3F6C), Color(0xFFFF527B)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(28),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFFFE3F6C,
+                                ).withValues(alpha: 0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                          ),
+                          child: ElevatedButton(
+                            onPressed: isCurrentPlan || provider.isLoading
+                                ? null
+                                : () => _handleSubscribe(plan),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.transparent,
+                              shadowColor: Colors.transparent,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                            ),
+                            child: Text(
+                              buttonText,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ] else ...[
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(40.0),
+                      child: Text(
+                        'No subscription plans available.',
+                        style: TextStyle(color: Color(0xFF64748B)),
+                      ),
+                    ),
+                  ),
                 ],
-              ),
+                const SizedBox(height: 40),
+              ],
             ),
           );
         },
@@ -437,217 +501,164 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     bool isLoading,
     bool isSelectedPage,
   ) {
-    final isPopular = plan.isMostPopular;
+    final visuals = _getPlanVisuals(plan.name);
 
-    // Define color mappings for active/popular states
-    final hasDarkBg = isPopular && !isCurrentPlan;
-    final cardBgColor = hasDarkBg ? null : AppColors.surface;
-    final cardGradient = hasDarkBg
-        ? const LinearGradient(
-            colors: [Color(0xFFFF3F3F), Color(0xFFFF6B6B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-        : null;
-
-    final titleColor = hasDarkBg ? Colors.white : AppColors.textPrimary;
-    final subtitleColor = hasDarkBg
-        ? Colors.white.withValues(alpha: 0.85)
-        : AppColors.textSecondary;
-    final dividerColor = hasDarkBg
-        ? Colors.white.withValues(alpha: 0.3)
-        : AppColors.divider;
+    final features = plan.featureDescriptions.isNotEmpty
+        ? plan.featureDescriptions
+        : [
+            'Message Anyone',
+            'Interest List',
+            'Audio Call Access',
+            'Photo Privacy',
+            'See Who Liked You',
+          ];
 
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
       decoration: BoxDecoration(
-        color: cardBgColor,
-        gradient: cardGradient,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isCurrentPlan
-              ? AppColors.black
-              : isPopular
-              ? AppColors.primary
-              : AppColors.borderColor,
-          width: isPopular || isCurrentPlan ? 2.0 : 1.0,
-        ),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: visuals.borderColor, width: 2.0),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: visuals.themeColor.withValues(alpha: 0.1),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          if (isPopular && !isCurrentPlan)
+          if (visuals.isPopular)
             Positioned(
-              top: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'POPULAR',
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
+              top: -12,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 5,
                   ),
-                ),
-              ),
-            ),
-          if (isCurrentPlan)
-            Positioned(
-              top: 16,
-              right: 16,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.textPrimary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.check, size: 10, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text(
-                      'ACTIVE',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
+                  decoration: BoxDecoration(
+                    color: visuals.themeColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Text(
+                    'POPULAR',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Icon(
+                  Icons.workspace_premium_rounded,
+                  color: visuals.themeColor,
+                  size: 40,
+                ),
+                const SizedBox(height: 8),
                 Text(
                   plan.name,
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: titleColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w800,
+                    color: visuals.themeColor,
                   ),
                 ),
-                const SizedBox(height: 8),
-                if (plan.price > 0)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        plan.displayPrice,
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w900,
-                          color: titleColor,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 4, left: 4),
-                        child: Text(
-                          '/ ${plan.rcDurationTitle ?? '${plan.durationDays} days'}',
-                          style: TextStyle(fontSize: 12, color: subtitleColor),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  Text(
-                    'Get Started Free',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: hasDarkBg ? Colors.white : AppColors.primary,
-                    ),
+                const SizedBox(height: 4),
+                Text(
+                  plan.price > 0 ? plan.displayPrice : 'Free',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF0F172A),
                   ),
-                const SizedBox(height: 12),
-                Divider(color: dividerColor, height: 1),
-                const SizedBox(height: 12),
-                // Feature List
-                Expanded(
-                  child: ListView(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: EdgeInsets.zero,
-                    children: plan.featureDescriptions
-                        .map(
-                          (feature) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Icon(
-                                  Icons.check_circle_rounded,
-                                  size: 16,
-                                  color: hasDarkBg
-                                      ? Colors.white
-                                      : AppColors.primary,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    feature,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: titleColor,
-                                      height: 1.3,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
+                ),
+                Text(
+                  '${plan.durationDays} days',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF64748B),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 16),
-                CustomButton(
-                  onPressed: isCurrentPlan || isLoading
-                      ? () {}
-                      : () => _handleSubscribe(plan),
-                  text: isCurrentPlan
-                      ? 'Current Plan'
-                      : isLoading
-                      ? 'Processing...'
-                      : 'Select ${plan.name}',
-                  type: isCurrentPlan
-                      ? CustomButtonType.secondary
-                      : isPopular
-                      ? CustomButtonType.primary
-                      : CustomButtonType.outline,
-                  backgroundColor: isCurrentPlan
-                      ? AppColors.divider
-                      : isPopular
-                      ? (hasDarkBg ? Colors.white : AppColors.primary)
-                      : AppColors.primary,
-                  textColor: isCurrentPlan
-                      ? AppColors.textSecondary
-                      : isPopular
-                      ? (hasDarkBg ? AppColors.primary : Colors.white)
-                      : AppColors.primary,
-                  width: double.infinity,
-                  borderRadius: 14,
-                  height: 46,
+                Container(
+                  width: 130,
+                  height: 130,
+                  decoration: BoxDecoration(
+                    color: visuals.themeColor.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: ClipOval(
+                    child: Image.asset(visuals.coupleAsset, fit: BoxFit.cover),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: Column(
+                    children: features.take(5).map((feature) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(top: 2),
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                color: visuals.themeColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.check,
+                                size: 10,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                feature,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1E293B),
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: visuals.shortcutIcons.map((icon) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                      padding: const EdgeInsets.all(8.0),
+                      decoration: BoxDecoration(
+                        color: visuals.themeColor.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(icon, size: 18, color: visuals.themeColor),
+                    );
+                  }).toList(),
                 ),
               ],
             ),
@@ -656,4 +667,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
       ),
     );
   }
+}
+
+class _PlanVisuals {
+  final Color themeColor;
+  final Color borderColor;
+  final Color bgColor;
+  final String coupleAsset;
+  final List<IconData> shortcutIcons;
+  final bool isPopular;
+
+  _PlanVisuals({
+    required this.themeColor,
+    required this.borderColor,
+    required this.bgColor,
+    required this.coupleAsset,
+    required this.shortcutIcons,
+    required this.isPopular,
+  });
 }
