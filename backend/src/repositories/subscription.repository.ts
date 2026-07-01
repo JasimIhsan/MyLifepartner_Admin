@@ -127,4 +127,31 @@ export class SubscriptionRepository implements ISubscriptionRepository {
          data: { status: "EXPIRED" },
       });
    }
+
+   async updateUserSubscription(id: number, data: Prisma.UserSubscriptionUpdateInput): Promise<any> {
+      return prisma.userSubscription.update({
+         where: { id },
+         data,
+         include: { plan: { include: { features: true } } },
+      });
+   }
+
+   async findPlanByIdentifier(identifier: string): Promise<SubscriptionPlan | null> {
+      return prisma.subscriptionPlan.findUnique({
+         where: { identifier },
+      });
+   }
+
+   async hasProcessedEvent(eventId: string): Promise<boolean> {
+      const event = await prisma.processedRevenueCatEvent.findUnique({
+         where: { id: eventId },
+      });
+      return !!event;
+   }
+
+   async markEventProcessed(eventId: string, type: string): Promise<void> {
+      await prisma.processedRevenueCatEvent.create({
+         data: { id: eventId, type },
+      });
+   }
 }

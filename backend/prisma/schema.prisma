@@ -215,19 +215,29 @@ model PlanFeature {
 }
 
 model UserSubscription {
-  id        Int                @id @default(autoincrement())
-  userId    Int
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId    Int
-  plan      SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
-  startDate DateTime           @default(now())
-  endDate   DateTime
-  status    SubscriptionStatus @default(ACTIVE)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id                  Int                @id @default(autoincrement())
+  userId              Int
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId              Int
+  plan                SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  startDate           DateTime           @default(now())
+  endDate             DateTime
+  status              SubscriptionStatus @default(ACTIVE)
+  willRenew           Boolean            @default(true)
+  nextPlanId          Int?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@index([userId, status])
   @@map("user_subscriptions")
+}
+
+model ProcessedRevenueCatEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+
+  @@map("processed_revenuecat_events")
 }
 
 model UserFeature {

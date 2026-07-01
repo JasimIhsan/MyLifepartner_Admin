@@ -21,4 +21,8 @@ export interface ISubscriptionRepository {
    createUserSubscription(data: Prisma.UserSubscriptionCreateInput): Promise<import("@prisma/client").UserSubscription & { plan: import("@prisma/client").SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] } }>;
    findActiveSubscriptionByUserId(userId: number): Promise<(import("@prisma/client").UserSubscription & { plan: import("@prisma/client").SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] } }) | null>;
    deactivateUserSubscriptions(userId: number): Promise<Prisma.BatchPayload>;
+   updateUserSubscription(id: number, data: Prisma.UserSubscriptionUpdateInput): Promise<any>;
+   findPlanByIdentifier(identifier: string): Promise<SubscriptionPlan | null>;
+   hasProcessedEvent(eventId: string): Promise<boolean>;
+   markEventProcessed(eventId: string, type: string): Promise<void>;
 }

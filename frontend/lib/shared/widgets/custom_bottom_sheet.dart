@@ -18,6 +18,7 @@ class CustomBottomSheet {
     VoidCallback? onSecondaryPressed,
     bool isDismissible = true,
     bool isScrollControlled = false,
+    String? imagePath,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -36,6 +37,7 @@ class CustomBottomSheet {
         onPrimaryPressed: onPrimaryPressed,
         secondaryButtonText: secondaryButtonText,
         onSecondaryPressed: onSecondaryPressed,
+        imagePath: imagePath,
       ),
     );
   }
@@ -57,6 +59,13 @@ class CustomBottomSheet {
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 24,
+              offset: const Offset(0, -8),
+            ),
+          ],
         ),
         child: child,
       ),
@@ -74,6 +83,7 @@ class _BottomSheetContent extends StatefulWidget {
   final VoidCallback? onPrimaryPressed;
   final String? secondaryButtonText;
   final VoidCallback? onSecondaryPressed;
+  final String? imagePath;
 
   const _BottomSheetContent({
     required this.type,
@@ -83,6 +93,7 @@ class _BottomSheetContent extends StatefulWidget {
     this.onPrimaryPressed,
     this.secondaryButtonText,
     this.onSecondaryPressed,
+    this.imagePath,
   });
 
   @override
@@ -93,9 +104,22 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 20,
+            offset: const Offset(0, -8),
+          ),
+        ],
+        border: const Border(
+          top: BorderSide(
+            color: Color(0xFFF9F9F9),
+            width: 1.5,
+          ),
+        ),
       ),
       child: widget.type == BottomSheetType.info
           ? _buildProfileCompleteSheet(context)
@@ -109,11 +133,8 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // ── Drag handle
         _DragHandle(),
         const SizedBox(height: 8),
-
-        // ── Content
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 24, 28, 8),
           child: Column(
@@ -122,7 +143,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               // Title
               Text(
                 widget.title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -134,12 +155,12 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                   .fadeIn(delay: 100.ms, duration: 350.ms)
                   .slideY(begin: 0.06, end: 0),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
 
               // Message
               Text(
                 widget.message,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   height: 1.55,
@@ -157,9 +178,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                   .fadeIn(delay: 260.ms, duration: 350.ms)
                   .slideY(begin: 0.06, end: 0),
 
-              // Safe area bottom padding
-              SizedBox(
-                  height: MediaQuery.of(context).padding.bottom + 16),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
             ],
           ),
         ),
@@ -178,6 +197,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
             text: widget.primaryButtonText ?? 'Continue',
             borderRadius: 16,
             height: 52,
+            fontSize: 16,
           ),
         ),
         if (widget.secondaryButtonText != null) ...[
@@ -194,7 +214,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               ),
               child: Text(
                 widget.secondaryButtonText!,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                   color: AppColors.textSecondary,
@@ -216,36 +236,105 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _DragHandle(),
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 0, 28, 0),
           child: Column(
             children: [
-              // Icon pill
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: cfg.iconBg,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: cfg.iconBorder, width: 1.5),
-                ),
-                child: Icon(cfg.icon, size: 34, color: cfg.iconColor),
-              )
-                  .animate()
-                  .scale(
+              if (widget.imagePath != null)
+                Container(
+                  height: 120,
+                  alignment: Alignment.center,
+                  child: Image.asset(
+                    widget.imagePath!,
+                    fit: BoxFit.contain,
+                  ),
+                )
+                    .animate()
+                    .scale(
                       begin: const Offset(0.7, 0.7),
                       end: const Offset(1, 1),
-                      curve: Curves.elasticOut,
-                      duration: 600.ms)
-                  .fadeIn(duration: 300.ms),
+                      curve: Curves.easeOutBack,
+                      duration: 500.ms,
+                    )
+                    .fadeIn(duration: 250.ms)
+              else
+                // Vibrant nested glowing icon with pulse
+                Container(
+                  width: 90,
+                  height: 90,
+                  alignment: Alignment.center,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Pulse ring
+                      Container(
+                        width: 86,
+                        height: 86,
+                        decoration: BoxDecoration(
+                          color: cfg.iconColor.withValues(alpha: 0.06),
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                          .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                          .scale(
+                            begin: const Offset(0.92, 0.92),
+                            end: const Offset(1.06, 1.06),
+                            duration: 2000.ms,
+                            curve: Curves.easeInOut,
+                          ),
+                      // Middle border ring
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: cfg.iconColor.withValues(alpha: 0.09),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: cfg.iconBorder.withValues(alpha: 0.5),
+                            width: 1.5,
+                          ),
+                        ),
+                      ),
+                      // Main filled circle with shadow
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          color: cfg.iconBg,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: cfg.iconColor.withValues(alpha: 0.12),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          cfg.icon,
+                          size: 28,
+                          color: cfg.iconColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+                    .animate()
+                    .scale(
+                      begin: const Offset(0.4, 0.4),
+                      end: const Offset(1, 1),
+                      curve: Curves.easeOutBack,
+                      duration: 500.ms,
+                    )
+                    .fadeIn(duration: 250.ms),
 
               const SizedBox(height: 20),
 
               Text(
                 widget.title,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
@@ -261,7 +350,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               Text(
                 widget.message,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.textSecondary,
                   height: 1.55,
@@ -278,8 +367,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                   .fadeIn(delay: 230.ms, duration: 300.ms)
                   .slideY(begin: 0.06, end: 0),
 
-              SizedBox(
-                  height: MediaQuery.of(context).padding.bottom + 20),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 20),
             ],
           ),
         ),
@@ -305,16 +393,22 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               text: widget.secondaryButtonText ?? 'Cancel',
               type: CustomButtonType.outline,
               borderRadius: 16,
-              height: 50,
+              height: 52,
+              backgroundColor: AppColors.borderColor,
+              textColor: AppColors.textSecondary,
+              fontSize: 15,
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: CustomButton(
               onPressed: widget.onPrimaryPressed,
               text: primaryText,
               borderRadius: 16,
-              height: 50,
+              height: 52,
+              backgroundColor: AppColors.primary,
+              textColor: Colors.white,
+              fontSize: 15,
             ),
           ),
         ],
@@ -328,7 +422,8 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
             widget.onPrimaryPressed ?? () => Navigator.pop(context),
         text: primaryText,
         borderRadius: 16,
-        height: 50,
+        height: 52,
+        fontSize: 16,
       ),
     );
   }
@@ -336,43 +431,43 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
   _SheetConfig _sheetConfig(BottomSheetType type) {
     switch (type) {
       case BottomSheetType.success:
-        return _SheetConfig(
-          icon: Icons.check_rounded,
-          iconColor: Colors.black,
-          iconBg: const Color(0xFFF0F0F0),
-          iconBorder: const Color(0xFFDDDDDD),
+        return const _SheetConfig(
+          icon: Icons.check_circle_outline_rounded,
+          iconColor: Color(0xFF10B981),
+          iconBg: Color(0xFFECFDF5),
+          iconBorder: Color(0xFFA7F3D0),
           defaultPrimaryText: 'Continue',
         );
       case BottomSheetType.error:
-        return _SheetConfig(
-          icon: Icons.close_rounded,
-          iconColor: Colors.black,
-          iconBg: const Color(0xFFF5F5F5),
-          iconBorder: const Color(0xFFE0E0E0),
+        return const _SheetConfig(
+          icon: Icons.error_outline_rounded,
+          iconColor: Color(0xFFEF4444),
+          iconBg: Color(0xFFFEF2F2),
+          iconBorder: Color(0xFFFEE2E2),
           defaultPrimaryText: 'Close',
         );
       case BottomSheetType.warning:
-        return _SheetConfig(
+        return const _SheetConfig(
           icon: Icons.warning_amber_rounded,
-          iconColor: Colors.black,
-          iconBg: const Color(0xFFF5F5F5),
-          iconBorder: const Color(0xFFE0E0E0),
+          iconColor: Color(0xFFF59E0B),
+          iconBg: Color(0xFFFFFBEB),
+          iconBorder: Color(0xFFFEF3C7),
           defaultPrimaryText: 'Okay',
         );
       case BottomSheetType.confirmation:
-        return _SheetConfig(
+        return const _SheetConfig(
           icon: Icons.help_outline_rounded,
           iconColor: AppColors.primary,
-          iconBg: AppColors.primaryLight,
-          iconBorder: AppColors.borderColor,
+          iconBg: Color(0xFFFFF5F5),
+          iconBorder: Color(0xFFFED7D7),
           defaultPrimaryText: 'Confirm',
         );
       case BottomSheetType.info:
-        return _SheetConfig(
+        return const _SheetConfig(
           icon: Icons.info_outline_rounded,
-          iconColor: Colors.black,
-          iconBg: const Color(0xFFF5F5F5),
-          iconBorder: const Color(0xFFE0E0E0),
+          iconColor: Color(0xFF3B82F6),
+          iconBg: Color(0xFFEFF6FF),
+          iconBorder: Color(0xFFDBEAFE),
           defaultPrimaryText: 'Okay',
         );
     }
@@ -387,18 +482,16 @@ class _DragHandle extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 14),
       child: Container(
-        width: 40,
-        height: 4,
+        width: 36,
+        height: 4.5,
         decoration: BoxDecoration(
-          color: const Color(0xFFD8D8D8),
+          color: const Color(0xFFE2E8F0),
           borderRadius: BorderRadius.circular(4),
         ),
       ),
     );
   }
 }
-
-
 
 // ─── Config model ───────────────────────────────────────────────────────────
 

@@ -297,9 +297,11 @@ class SubscriptionProvider extends ChangeNotifier {
       // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);
 
-      // Send the request to the backend to create/activate the subscription locally
-      final sub = await _subscriptionService.subscribe(backendPlan.id);
-      _mySubscription = sub;
+      // Trigger verification and sync with the backend
+      final syncedSub = await _subscriptionService.syncSubscription();
+      if (syncedSub != null) {
+        _mySubscription = syncedSub;
+      }
 
       _handleCustomerInfoUpdate(result.customerInfo);
 
@@ -334,6 +336,12 @@ class SubscriptionProvider extends ChangeNotifier {
     }
     try {
       final customerInfo = await Purchases.getCustomerInfo();
+      
+      // Perform backend sync to verify subscription with RevenueCat directly
+      final syncedSub = await _subscriptionService.syncSubscription();
+      if (syncedSub != null) {
+        _mySubscription = syncedSub;
+      }
 
       _handleCustomerInfoUpdate(customerInfo);
     } catch (e) {
@@ -341,6 +349,8 @@ class SubscriptionProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  String? get currentSubscriptionMessage => _mySubscription?.message;
 
   String _getReadableError(dynamic e) {
     if (e is PlatformException) {

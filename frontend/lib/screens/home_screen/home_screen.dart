@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/call_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
@@ -12,6 +13,7 @@ import 'package:mylifepartner/services/user_repository.dart';
 import 'package:mylifepartner/services/zego_service.dart';
 import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
 import 'package:mylifepartner/shared/widgets/custom_bottom_bar.dart';
+import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,6 +27,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool _showNotifications = false;
+  DateTime? _lastBackPressed;
+
   @override
   void initState() {
     super.initState();
@@ -74,81 +78,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Future<void> _checkProfileCompletion() async {
-  //   if (!mounted || _isSheetShowing || _isCheckingProfile) return;
-
-  //   _isCheckingProfile = true;
-
-  //   try {
-  //     final status = await _profileRepository.getCompletionStatus();
-
-  //     if (!mounted) return;
-
-  //     if (status['isCompleted'] == false) {
-  //       _isSheetShowing = true;
-
-  //       await CustomBottomSheet.show(
-  //         context: context,
-  //         type: BottomSheetType.info,
-  //         isScrollControlled: true,
-  //         isDismissible: false,
-  //         title: "Complete Your Profile",
-  //         message:
-  //             "You have pending profile questions. Complete them to find better matches.",
-  //         primaryButtonText: "Continue",
-  //         onPrimaryPressed: () {
-  //           Navigator.of(context).pop();
-
-  //           Navigator.of(context)
-  //               .push(
-  //                 MaterialPageRoute(
-  //                   builder: (_) => QuestionaireScreen(
-  //                     isPrimaryFlow: false,
-  //                     initialSectionOrder: status['nextPendingSectionOrder'],
-  //                   ),
-  //                 ),
-  //               )
-  //               .then((_) {
-  //                 if (mounted) {
-  //                   //_checkProfileCompletion();
-  //                 }
-  //               });
-  //         },
-  //         secondaryButtonText: "Later",
-  //         onSecondaryPressed: () {
-  //           Navigator.of(context).pop();
-  //         },
-  //       );
-
-  //       _isSheetShowing = false;
-  //     }
-  //   } catch (e) {
-  //     debugPrint("Error checking profile completion: $e");
-  //   } finally {
-  //     _isCheckingProfile = false;
-  //   }
-  // }
-
   // ─── Navigation helpers ────────────────────────────────────────────────────
-
-  // Future<void> _logout() async {
-  //   final sharedPrefs = await SharedPreferences.getInstance();
-  //   sharedPrefs.clear();
-  //   if (mounted) {
-  //     Navigator.pushAndRemoveUntil(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => const LoginPage()),
-  //       ModalRoute.withName('/'),
-  //     );
-  //   }
-  // }
 
   void _onTabTapped(int index) {
     setState(() => _selectedIndex = index);
-    _showNotifications = false; // 🔥 THIS is what you missed
+    _showNotifications = false;
     if (index == 0) {
-      //_checkProfileCompletion();
-
       final provider = context.read<MatchProvider>();
       if (provider.profiles.isEmpty) {
         provider.loadRecommendations();
@@ -156,15 +91,74 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _handleBackPress() async {
+    if (_showNotifications) {
+      setState(() {
+        _showNotifications = false;
+      });
+      return;
+    }
+    if (_selectedIndex != 0) {
+      setState(() {
+        _selectedIndex = 0;
+      });
+      return;
+    }
+
+    final now = DateTime.now();
+    final backButtonHasNotBeenPressedOrExpired = _lastBackPressed == null ||
+        now.difference(_lastBackPressed!) > const Duration(seconds: 2);
+
+    if (backButtonHasNotBeenPressedOrExpired) {
+      _lastBackPressed = now;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Press back again to exit'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } else {
+      _lastBackPressed = null;
+      if (!mounted) return;
+      
+      // Clear SnackBar
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      await CustomBottomSheet.show(
+        context: context,
+        type: BottomSheetType.confirmation,
+        title: 'Exit App',
+        message: 'Are you sure you want to exit the app?',
+        primaryButtonText: 'Exit',
+        onPrimaryPressed: () {
+          SystemNavigator.pop();
+        },
+        secondaryButtonText: 'Cancel',
+        onSecondaryPressed: () {
+          Navigator.of(context).pop();
+        },
+        imagePath: 'assets/images/illustrations/exit.png',
+      );
+    }
+  }
+
   // ─── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: SafeArea(child: _buildBody()),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(),
+        body: SafeArea(child: _buildBody()),
+        bottomNavigationBar: _buildBottomNavigationBar(),
+      ),
     );
   }
 
@@ -188,13 +182,6 @@ class _HomePageState extends State<HomePage> {
             });
           },
         ),
-        // IconButton(
-        //   icon: const Icon(
-        //     Icons.exit_to_app_outlined,
-        //     color: AppColors.textPrimary,
-        //   ),
-        //   onPressed: _logout,
-        // ),
       ],
     );
   }

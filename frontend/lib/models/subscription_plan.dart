@@ -142,6 +142,7 @@ class UserSubscription {
   final DateTime startDate;
   final DateTime endDate;
   final String status;
+  final String? message;
 
   UserSubscription({
     required this.id,
@@ -150,6 +151,7 @@ class UserSubscription {
     required this.startDate,
     required this.endDate,
     required this.status,
+    this.message,
   });
 
   factory UserSubscription.fromJson(Map<String, dynamic> json) {
@@ -162,6 +164,7 @@ class UserSubscription {
       startDate: DateTime.parse(json['startDate']),
       endDate: DateTime.parse(json['endDate']),
       status: json['status'],
+      message: json['message'],
     );
   }
 

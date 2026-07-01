@@ -42,7 +42,7 @@ export class UserSubscriptionController {
       res.status(201).json(new ApiResponse(201, subscription, "Subscribed successfully"));
    });
 
-   /** POST /user/subscriptions/check-call-access */
+    /** POST /user/subscriptions/check-call-access */
    checkCallAccess = asyncHandler(async (req: Request, res: Response) => {
       const userId = req.user!.id;
       const { type } = req.body; // "audio" | "video"
@@ -65,5 +65,19 @@ export class UserSubscriptionController {
       }
       
       res.status(200).json(new ApiResponse(200, null, "Call allowed"));
+   });
+
+   /** POST /user/subscriptions/sync */
+   sync = asyncHandler(async (req: Request, res: Response) => {
+      const userId = req.user!.id;
+      const subscription = await this.userSubscriptionService.syncSubscription(userId);
+      res.status(200).json(new ApiResponse(200, subscription, "Subscription synced successfully"));
+   });
+
+   /** POST /user/subscriptions/webhook */
+   webhook = asyncHandler(async (req: Request, res: Response) => {
+      const signatureHeader = req.headers["authorization"] as string || "";
+      await this.userSubscriptionService.handleWebhook(req.body, signatureHeader);
+      res.status(200).json(new ApiResponse(200, null, "Webhook handled successfully"));
    });
 }
