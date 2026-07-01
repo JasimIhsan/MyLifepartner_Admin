@@ -23,4 +23,16 @@ class GuideService {
       rethrow;
     }
   }
+
+  static Future<GuideItem?> getGuideById(int id) async {
+    try {
+      final response = await _client.get('/user/guides/$id');
+      if (response.data['success'] == true) {
+        return GuideItem.fromJson(response.data['data']);
+      }
+      return null;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

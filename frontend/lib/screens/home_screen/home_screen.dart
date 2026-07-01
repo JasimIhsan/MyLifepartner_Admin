@@ -107,7 +107,8 @@ class _HomePageState extends State<HomePage> {
     }
 
     final now = DateTime.now();
-    final backButtonHasNotBeenPressedOrExpired = _lastBackPressed == null ||
+    final backButtonHasNotBeenPressedOrExpired =
+        _lastBackPressed == null ||
         now.difference(_lastBackPressed!) > const Duration(seconds: 2);
 
     if (backButtonHasNotBeenPressedOrExpired) {
@@ -122,7 +123,7 @@ class _HomePageState extends State<HomePage> {
     } else {
       _lastBackPressed = null;
       if (!mounted) return;
-      
+
       // Clear SnackBar
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
@@ -174,7 +175,23 @@ class _HomePageState extends State<HomePage> {
       actions: [
         IconButton(
           icon: const Icon(
-            Icons.notifications_outlined,
+            Icons.support_agent_rounded,
+            color: AppColors.textPrimary,
+          ),
+          tooltip: 'LPA Guide',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const Scaffold(body: SafeArea(child: LpaGuideScreen())),
+              ),
+            );
+          },
+        ),
+        IconButton(
+          icon: const Icon(
+            Icons.notifications_active_outlined,
             color: AppColors.textPrimary,
           ),
           onPressed: () {
@@ -199,10 +216,6 @@ class _HomePageState extends State<HomePage> {
         BottomNavigationBarItem(
           icon: Icon(Icons.favorite_border),
           label: 'Matches',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.menu_book_outlined),
-          label: 'LPA Guide',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.message_outlined),
@@ -232,10 +245,8 @@ class _HomePageState extends State<HomePage> {
       case 1:
         return const LikedMatchesScreen();
       case 2:
-        return const LpaGuideScreen();
-      case 3:
         return const ChatPlaceholderScreen();
-      case 4:
+      case 3:
         return const ProfileScreen();
       default:
         return const DiscoverScreen();

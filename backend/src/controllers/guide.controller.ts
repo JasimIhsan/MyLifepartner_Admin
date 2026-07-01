@@ -23,7 +23,15 @@ export class GuideController {
       const search = req.query.search ? (req.query.search as string) : undefined;
 
       const { guides, total } = await this.guideService.getAllGuides({ categoryId, search });
-      res.status(200).json(new ApiResponse(200, { guides, total }, "Guides retrieved successfully"));
+      
+      const categories = [
+         { id: 1, name: "About LPA" },
+         { id: 2, name: "Safety & Privacy" },
+         { id: 3, name: "Account & Trust" },
+         { id: 4, name: "Membership" }
+      ];
+
+      res.status(200).json(new ApiResponse(200, { guides, total, categories }, "Guides retrieved successfully"));
    });
 
    /** GET /admin/guides */
