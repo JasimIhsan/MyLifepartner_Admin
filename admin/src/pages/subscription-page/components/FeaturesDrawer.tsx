@@ -31,7 +31,7 @@ interface FeatureRowProps {
 }
 
 /** A single editable feature row */
-function FeatureRow({ planId, feature, globalFeature, isEditing, onStartEdit, onCancelEdit, onUpdate, onDelete }: FeatureRowProps) {
+function FeatureRow({ feature, globalFeature, isEditing, onStartEdit, onCancelEdit, onUpdate, onDelete }: FeatureRowProps) {
    const [editedLimit, setEditedLimit] = useState(feature.limit);
    const [editedDesc, setEditedDesc] = useState(feature.description || "");
    const [loading, setLoading] = useState(false);

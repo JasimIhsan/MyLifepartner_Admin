@@ -431,3 +431,16 @@ model ChatMessage {
   @@index([conversationId, createdAt])
   @@map("chat_messages")
 }
+
+model Guide {
+  id           Int      @id @default(autoincrement())
+  question     String   @unique
+  answer       String
+  categoryId   Int      // 1 = About LPA, 2 = Safety & Privacy, 3 = Verification & Account, 4 = Membership & Subscription
+  bullets      String[] @default([])
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("guides")
+}

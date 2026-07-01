@@ -7,6 +7,7 @@ import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
 import 'package:mylifepartner/screens/discover_screen/discover_screen.dart';
 import 'package:mylifepartner/screens/likes_screen/likes_screen.dart';
+import 'package:mylifepartner/screens/lpa_guide_screen/lpa_guide_screen.dart';
 import 'package:mylifepartner/screens/notification_screen/notification_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
 import 'package:mylifepartner/services/user_repository.dart';
@@ -200,6 +201,10 @@ class _HomePageState extends State<HomePage> {
           label: 'Matches',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.menu_book_outlined),
+          label: 'LPA Guide',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.message_outlined),
           label: 'Chat',
         ),
@@ -227,8 +232,10 @@ class _HomePageState extends State<HomePage> {
       case 1:
         return const LikedMatchesScreen();
       case 2:
-        return const ChatPlaceholderScreen();
+        return const LpaGuideScreen();
       case 3:
+        return const ChatPlaceholderScreen();
+      case 4:
         return const ProfileScreen();
       default:
         return const DiscoverScreen();
