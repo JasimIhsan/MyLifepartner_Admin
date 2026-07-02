@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 import 'package:pinput/pinput.dart';
 
 class OtpForm extends StatelessWidget {
@@ -41,9 +41,7 @@ class OtpForm extends StatelessWidget {
         fontWeight: FontWeight.bold,
       ),
       decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFE0E0E0), width: 3),
-        ),
+        border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0), width: 3)),
       ),
     );
 
@@ -107,10 +105,7 @@ class OtpForm extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 text: "Didn't receive a code? ",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 children: [
                   if (isResendEnabled)
                     WidgetSpan(

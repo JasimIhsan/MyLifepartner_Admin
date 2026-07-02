@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
+import 'package:mylifepartner/widgets/verified_profile_bottom_sheet.dart';
 
 class ProfileNameRow extends StatelessWidget {
   final Map<String, dynamic> profile;
@@ -181,7 +181,9 @@ class ProfileNameRow extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              _formatLastLogin(profile['lastLoginAt'].toString()),
+                              _formatLastLogin(
+                                profile['lastLoginAt'].toString(),
+                              ),
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
@@ -220,7 +222,10 @@ class ProfileNameRow extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          const Text('match', style: TextStyle(fontSize: 10, color: Colors.white70)),
+          const Text(
+            'match',
+            style: TextStyle(fontSize: 10, color: Colors.white70),
+          ),
         ],
       ),
     );

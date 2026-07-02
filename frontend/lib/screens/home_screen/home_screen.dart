@@ -12,9 +12,9 @@ import 'package:mylifepartner/screens/notification_screen/notification_screen.da
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
 import 'package:mylifepartner/services/user_repository.dart';
 import 'package:mylifepartner/services/zego_service.dart';
-import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_bottom_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
+import 'package:mylifepartner/widgets/custom_app_bar.dart';
+import 'package:mylifepartner/widgets/custom_bottom_bar.dart';
+import 'package:mylifepartner/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

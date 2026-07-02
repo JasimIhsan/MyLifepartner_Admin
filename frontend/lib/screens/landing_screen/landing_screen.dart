@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/image_asset_provider.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 
 import '../splash_screen/splash_screen.dart';
@@ -67,14 +67,14 @@ class _LandingScreenState extends State<LandingScreen> {
                             ),
                           )
                         : (landingAsset != null
-                            ? CachedNetworkImage(
-                                imageUrl: landingAsset.imageUrl,
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
-                                errorWidget: (context, url, error) =>
-                                    _buildDefaultBackground(),
-                              )
-                            : _buildDefaultBackground()),
+                              ? CachedNetworkImage(
+                                  imageUrl: landingAsset.imageUrl,
+                                  fit: BoxFit.cover,
+                                  alignment: Alignment.center,
+                                  errorWidget: (context, url, error) =>
+                                      _buildDefaultBackground(),
+                                )
+                              : _buildDefaultBackground()),
                   ),
                 ),
 

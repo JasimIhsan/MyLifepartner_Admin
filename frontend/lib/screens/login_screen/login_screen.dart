@@ -6,8 +6,8 @@ import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 
-import '../../shared/widgets/auth_layout.dart';
-import '../../shared/widgets/custom_button.dart';
+import '../../widgets/auth_layout.dart';
+import '../../widgets/custom_button.dart';
 import '../otp_screen/otp_screen.dart';
 
 class LoginPage extends StatefulWidget {

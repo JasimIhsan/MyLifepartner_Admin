@@ -6,7 +6,7 @@ import 'package:mylifepartner/providers/subscription_provider.dart';
 import 'package:mylifepartner/screens/subscription_screen/connection_illustration.dart';
 import 'package:mylifepartner/screens/subscription_screen/subscription_background_painter.dart';
 import 'package:mylifepartner/screens/subscription_screen/subscription_error_widget.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -633,60 +633,6 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureIconsRow() {
-    final List<Map<String, dynamic>> features = [
-      {'icon': Icons.favorite_border_rounded, 'label': 'Unlimited\nInterests'},
-      {'icon': Icons.favorite_rounded, 'label': 'See Who\nLiked You'},
-      {'icon': Icons.tune_rounded, 'label': 'Advanced\nFilters'},
-      {'icon': Icons.chat_bubble_outline_rounded, 'label': 'Chat\nAccess'},
-      {'icon': Icons.bolt_rounded, 'label': 'Better\nVisibility'},
-    ];
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: features.map((f) {
-          return Container(
-            width: 82,
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(f['icon'] as IconData, color: AppColors.primary, size: 22),
-                const SizedBox(height: 8),
-                Text(
-                  f['label'] as String,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
       ),
     );
   }

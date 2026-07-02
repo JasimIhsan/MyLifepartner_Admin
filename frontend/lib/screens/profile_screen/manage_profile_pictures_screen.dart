@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/user_image.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
+import 'package:mylifepartner/widgets/custom_app_bar.dart';
 
 import '../profile_image_upload/widgets/dashed_border_painter.dart';
 import '../profile_image_upload/widgets/image_options_sheet.dart';

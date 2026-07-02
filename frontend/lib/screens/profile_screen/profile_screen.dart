@@ -9,8 +9,8 @@ import 'package:mylifepartner/services/user_repository.dart';
 // import 'package:mylifepartner/shared/widgets/header_waves_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../shared/widgets/custom_button.dart';
-import '../../shared/widgets/logout_bottom_sheet.dart';
+import '../../widgets/custom_button.dart';
+import '../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../login_screen/login_screen.dart';
 import '../subscription_screen/subscription_screen.dart';
 import 'manage_profile_pictures_screen.dart';

@@ -17,7 +17,7 @@ import 'package:mylifepartner/screens/chat_screen/widgets/chat_input_area.dart';
 import 'package:mylifepartner/screens/chat_screen/widgets/chat_message_bubble.dart';
 import 'package:mylifepartner/screens/chat_screen/widgets/media_preview_screen.dart';
 import 'package:mylifepartner/services/chat_service.dart';
-import 'package:mylifepartner/widgets/feature_exhausted_modal.dart';
+import 'package:mylifepartner/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';

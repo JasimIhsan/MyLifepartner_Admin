@@ -6,7 +6,7 @@ import 'package:mylifepartner/models/auth_response.dart';
 import 'package:mylifepartner/screens/profile_screen/manage_profile_pictures_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/widgets/edit_profile_ui_helpers.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/shared/widgets/header_waves_background.dart';
+import 'package:mylifepartner/widgets/header_waves_background.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -470,7 +470,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                           // Floating Rounded Card
                           Expanded(
                             child: Padding(
-                              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                              padding: const EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                bottom: 20,
+                              ),
                               child: Container(
                                 width: double.infinity,
                                 decoration: BoxDecoration(
@@ -478,7 +482,9 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.03),
+                                      color: Colors.black.withValues(
+                                        alpha: 0.03,
+                                      ),
                                       blurRadius: 15,
                                       offset: const Offset(0, 8),
                                     ),
@@ -488,14 +494,16 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                   left: 20,
                                   right: 20,
                                   top: 24,
-                                  bottom: MediaQuery.of(context).padding.bottom > 0
+                                  bottom:
+                                      MediaQuery.of(context).padding.bottom > 0
                                       ? MediaQuery.of(context).padding.bottom
                                       : 24,
                                 ),
                                 child: Form(
                                   key: _formKey,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       // Section Header: Personal Details
                                       Row(
@@ -544,11 +552,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                               readOnly: true,
                                               onTap: () async {
                                                 final now = DateTime.now();
-                                                final eighteenYearsAgo = DateTime(
-                                                  now.year - 18,
-                                                  now.month,
-                                                  now.day,
-                                                );
+                                                final eighteenYearsAgo =
+                                                    DateTime(
+                                                      now.year - 18,
+                                                      now.month,
+                                                      now.day,
+                                                    );
                                                 final DateTime?
                                                 picked = await showDatePicker(
                                                   context: context,
@@ -665,10 +674,12 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.primary,
                                             foregroundColor: Colors.white,
-                                            disabledBackgroundColor: AppColors.primary
+                                            disabledBackgroundColor: AppColors
+                                                .primary
                                                 .withValues(alpha: 0.5),
                                             shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(16),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
                                             ),
                                             elevation: 0,
                                           ),
@@ -676,10 +687,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                               ? const SizedBox(
                                                   height: 24,
                                                   width: 24,
-                                                  child: CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                    strokeWidth: 2.5,
-                                                  ),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                        strokeWidth: 2.5,
+                                                      ),
                                                 )
                                               : Row(
                                                   mainAxisAlignment:
@@ -694,16 +706,18 @@ class _EditProfileScreenState extends State<EditProfileScreen>
                                                     Container(
                                                       width: 1,
                                                       height: 20,
-                                                      color: Colors.white.withValues(
-                                                        alpha: 0.35,
-                                                      ),
+                                                      color: Colors.white
+                                                          .withValues(
+                                                            alpha: 0.35,
+                                                          ),
                                                     ),
                                                     const SizedBox(width: 12),
                                                     const Text(
                                                       'Save Changes',
                                                       style: TextStyle(
                                                         fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         color: Colors.white,
                                                       ),
                                                     ),

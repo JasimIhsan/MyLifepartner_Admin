@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 
 enum BottomSheetType { success, error, warning, info, confirmation }
 
@@ -115,10 +115,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
           ),
         ],
         border: const Border(
-          top: BorderSide(
-            color: Color(0xFFF9F9F9),
-            width: 1.5,
-          ),
+          top: BorderSide(color: Color(0xFFF9F9F9), width: 1.5),
         ),
       ),
       child: widget.type == BottomSheetType.info
@@ -142,15 +139,15 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
             children: [
               // Title
               Text(
-                widget.title,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.4,
-                  height: 1.2,
-                ),
-              )
+                    widget.title,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.4,
+                      height: 1.2,
+                    ),
+                  )
                   .animate()
                   .fadeIn(delay: 100.ms, duration: 350.ms)
                   .slideY(begin: 0.06, end: 0),
@@ -159,13 +156,13 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
 
               // Message
               Text(
-                widget.message,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                  height: 1.55,
-                ),
-              )
+                    widget.message,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.55,
+                    ),
+                  )
                   .animate()
                   .fadeIn(delay: 150.ms, duration: 350.ms)
                   .slideY(begin: 0.06, end: 0),
@@ -210,7 +207,8 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                   widget.onSecondaryPressed ?? () => Navigator.pop(context),
               style: TextButton.styleFrom(
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16)),
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               child: Text(
                 widget.secondaryButtonText!,
@@ -243,13 +241,13 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
             children: [
               if (widget.imagePath != null)
                 Container(
-                  height: 120,
-                  alignment: Alignment.center,
-                  child: Image.asset(
-                    widget.imagePath!,
-                    fit: BoxFit.contain,
-                  ),
-                )
+                      height: 120,
+                      alignment: Alignment.center,
+                      child: Image.asset(
+                        widget.imagePath!,
+                        fit: BoxFit.contain,
+                      ),
+                    )
                     .animate()
                     .scale(
                       begin: const Offset(0.7, 0.7),
@@ -261,65 +259,68 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               else
                 // Vibrant nested glowing icon with pulse
                 Container(
-                  width: 90,
-                  height: 90,
-                  alignment: Alignment.center,
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Pulse ring
-                      Container(
-                        width: 86,
-                        height: 86,
-                        decoration: BoxDecoration(
-                          color: cfg.iconColor.withValues(alpha: 0.06),
-                          shape: BoxShape.circle,
-                        ),
-                      )
-                          .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                          .scale(
-                            begin: const Offset(0.92, 0.92),
-                            end: const Offset(1.06, 1.06),
-                            duration: 2000.ms,
-                            curve: Curves.easeInOut,
-                          ),
-                      // Middle border ring
-                      Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: cfg.iconColor.withValues(alpha: 0.09),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: cfg.iconBorder.withValues(alpha: 0.5),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      // Main filled circle with shadow
-                      Container(
-                        width: 58,
-                        height: 58,
-                        decoration: BoxDecoration(
-                          color: cfg.iconBg,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: cfg.iconColor.withValues(alpha: 0.12),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
+                      width: 90,
+                      height: 90,
+                      alignment: Alignment.center,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          // Pulse ring
+                          Container(
+                                width: 86,
+                                height: 86,
+                                decoration: BoxDecoration(
+                                  color: cfg.iconColor.withValues(alpha: 0.06),
+                                  shape: BoxShape.circle,
+                                ),
+                              )
+                              .animate(
+                                onPlay: (controller) =>
+                                    controller.repeat(reverse: true),
+                              )
+                              .scale(
+                                begin: const Offset(0.92, 0.92),
+                                end: const Offset(1.06, 1.06),
+                                duration: 2000.ms,
+                                curve: Curves.easeInOut,
+                              ),
+                          // Middle border ring
+                          Container(
+                            width: 72,
+                            height: 72,
+                            decoration: BoxDecoration(
+                              color: cfg.iconColor.withValues(alpha: 0.09),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: cfg.iconBorder.withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: Icon(
-                          cfg.icon,
-                          size: 28,
-                          color: cfg.iconColor,
-                        ),
+                          ),
+                          // Main filled circle with shadow
+                          Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              color: cfg.iconBg,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: cfg.iconColor.withValues(alpha: 0.12),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Icon(
+                              cfg.icon,
+                              size: 28,
+                              color: cfg.iconColor,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                )
+                    )
                     .animate()
                     .scale(
                       begin: const Offset(0.4, 0.4),
@@ -332,15 +333,15 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               const SizedBox(height: 20),
 
               Text(
-                widget.title,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.3,
-                ),
-              )
+                    widget.title,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                      letterSpacing: -0.3,
+                    ),
+                  )
                   .animate()
                   .fadeIn(delay: 120.ms, duration: 300.ms)
                   .slideY(begin: 0.06, end: 0),
@@ -348,14 +349,14 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               const SizedBox(height: 8),
 
               Text(
-                widget.message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                  height: 1.55,
-                ),
-              )
+                    widget.message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.55,
+                    ),
+                  )
                   .animate()
                   .fadeIn(delay: 170.ms, duration: 300.ms)
                   .slideY(begin: 0.06, end: 0),
@@ -376,11 +377,13 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
   }
 
   Widget _buildGenericButtons(BuildContext context) {
-    final isDouble = widget.type == BottomSheetType.confirmation ||
+    final isDouble =
+        widget.type == BottomSheetType.confirmation ||
         (widget.type == BottomSheetType.info &&
             widget.secondaryButtonText != null);
 
-    final primaryText = widget.primaryButtonText ??
+    final primaryText =
+        widget.primaryButtonText ??
         _sheetConfig(widget.type).defaultPrimaryText;
 
     if (isDouble) {
@@ -418,8 +421,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
     return SizedBox(
       width: double.infinity,
       child: CustomButton(
-        onPressed:
-            widget.onPrimaryPressed ?? () => Navigator.pop(context),
+        onPressed: widget.onPrimaryPressed ?? () => Navigator.pop(context),
         text: primaryText,
         borderRadius: 16,
         height: 52,

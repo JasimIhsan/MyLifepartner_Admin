@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 
 class LogoutBottomSheet extends StatelessWidget {
   final VoidCallback onLogoutConfirm;
