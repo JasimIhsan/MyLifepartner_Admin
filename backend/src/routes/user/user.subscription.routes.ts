@@ -4,7 +4,9 @@ import { verifyJWT } from "@/middlewares/auth.middleware";
 
 const router = Router();
 
-// Protect all subscription routes
+// Protect all subscription routes except webhook
+router.post("/webhook", userSubscriptionController.webhook);
+
 router.use(verifyJWT);
 
 /**
@@ -36,5 +38,11 @@ router.post("/subscribe", userSubscriptionController.subscribe);
  * @desc Check if user can initiate an audio or video call
  */
 router.post("/check-call", userSubscriptionController.checkCallAccess);
+
+/**
+ * @route POST /user/subscriptions/sync
+ * @desc Sync active subscriptions from RevenueCat
+ */
+router.post("/sync", userSubscriptionController.sync);
 
 export default router;

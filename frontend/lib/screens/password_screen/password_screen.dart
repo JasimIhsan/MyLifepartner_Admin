@@ -10,8 +10,8 @@ import 'package:mylifepartner/screens/partner_preference/partner_preference_scre
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
-import 'package:mylifepartner/shared/widgets/auth_layout.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/auth_layout.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -293,10 +293,7 @@ class _PasswordScreenState extends State<PasswordScreen> {
                 const SizedBox(height: 12),
                 Text(
                   "For ${widget.email}",
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
                 const SizedBox(height: 24),
                 TextFormField(

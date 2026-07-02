@@ -1,14 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/image_asset_provider.dart';
 import 'package:mylifepartner/services/auth_repository.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 
-import '../../shared/widgets/auth_layout.dart';
-import '../../shared/widgets/custom_button.dart';
+import '../../widgets/auth_layout.dart';
+import '../../widgets/custom_button.dart';
 import '../otp_screen/otp_screen.dart';
 
 class LoginPage extends StatefulWidget {
@@ -45,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
     try {
-      final email = _emailController.text.trim();
+      final email = _emailController.text.trim().toLowerCase();
       final response = await _authRepository.initiateAuth(email: email);
 
       debugPrint("Initiate Auth Response: ${response.message}");

@@ -20,7 +20,6 @@ export interface UserInterface {
    dateOfBirth?: Date | null;
    maritalStatus?: string | null;
    heightCm?: number | null;
-   religion?: string | null;
    caste?: string | null;
    motherTongue?: string | null;
    city?: string | null;
@@ -28,7 +27,6 @@ export interface UserInterface {
    country?: string | null;
    highestEducation?: string | null;
    occupation?: string | null;
-   annualIncome?: number | null;
    bio?: string | null;
    profileCompletion?: number | null;
 

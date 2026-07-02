@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 
 class SubscriptionErrorWidget extends StatelessWidget {
   final String? error;
@@ -21,7 +21,7 @@ class SubscriptionErrorWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
+                color: AppColors.primary.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -65,7 +65,7 @@ class SubscriptionErrorWidget extends StatelessWidget {
                 error!,
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.red.withOpacity(0.7),
+                  color: Colors.red.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
               ).animate().fadeIn(delay: 300.ms),

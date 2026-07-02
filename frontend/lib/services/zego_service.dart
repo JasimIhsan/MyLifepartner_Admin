@@ -12,6 +12,9 @@ class ZegoService {
   final _messageController = StreamController<ZegoZIMMessage>.broadcast();
   Stream<ZegoZIMMessage> get onMessageReceived => _messageController.stream;
 
+  final _userStatusController = StreamController<List<ZIMUserStatus>>.broadcast();
+  Stream<List<ZIMUserStatus>> get onUserStatusUpdated => _userStatusController.stream;
+
   bool _isInitialized = false;
   bool _isLoggedIn = false;
 
@@ -64,10 +67,15 @@ class ZegoService {
           content = msg.message;
         } else if (msg is ZIMMediaMessage) {
           content = msg.fileDownloadUrl;
-          if (msg is ZIMImageMessage) messageType = 'IMAGE';
-          else if (msg is ZIMAudioMessage) messageType = 'AUDIO';
-          else if (msg is ZIMVideoMessage) messageType = 'VIDEO';
-          else messageType = 'FILE';
+          if (msg is ZIMImageMessage) {
+            messageType = 'IMAGE';
+          } else if (msg is ZIMAudioMessage) {
+            messageType = 'AUDIO';
+          } else if (msg is ZIMVideoMessage) {
+            messageType = 'VIDEO';
+          } else {
+            messageType = 'FILE';
+          }
         }
 
         _messageController.add(ZegoZIMMessage(
@@ -78,6 +86,13 @@ class ZegoService {
           timestamp: msg.timestamp,
         ));
       }
+    };
+
+    ZIMEventHandler.onUserStatusUpdated = (
+      ZIM zim,
+      List<ZIMUserStatus> userStatusList,
+    ) {
+      _userStatusController.add(userStatusList);
     };
   }
 
@@ -151,6 +166,7 @@ class ZegoService {
     final sendConfig = ZIMMessageSendConfig();
 
     try {
+      // ignore: deprecated_member_use
       final result = await zim.sendMediaMessage(
         mediaMessage,
         toUserId,
@@ -214,6 +230,7 @@ class ZegoService {
 
   void destroy() {
     _messageController.close();
+    _userStatusController.close();
     ZIM.getInstance()?.destroy();
     _isInitialized = false;
     _isLoggedIn = false;

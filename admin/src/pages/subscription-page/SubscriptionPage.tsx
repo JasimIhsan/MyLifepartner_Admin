@@ -1,5 +1,5 @@
 import { ConfirmationModal } from "@/components/confirmation-modal";
-import { deletePlan, getPlans, updatePlan, type SubscriptionPlan } from "@/api/subscription.service";
+import { deletePlan, getPlans, updatePlan, getGlobalFeatures, type SubscriptionPlan, type GlobalFeature } from "@/api/subscription.service";
 import { Button } from "@/components/ui/button";
 import type { AxiosError } from "axios";
 import { Plus } from "lucide-react";
@@ -11,6 +11,7 @@ import PlanCard from "./components/PlanCard";
 
 export default function SubscriptionPage() {
    const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+   const [globalFeatures, setGlobalFeatures] = useState<GlobalFeature[]>([]);
    const [loading, setLoading] = useState(true);
 
    // Modal state
@@ -49,6 +50,15 @@ export default function SubscriptionPage() {
 
    useEffect(() => {
       loadPlans();
+      const loadGlobalFeatures = async () => {
+         try {
+            const res = await getGlobalFeatures();
+            setGlobalFeatures(res.data);
+         } catch (err) {
+            console.error("Failed to load global features", err);
+         }
+      };
+      loadGlobalFeatures();
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
@@ -146,6 +156,7 @@ export default function SubscriptionPage() {
                   <PlanCard
                      key={plan.id}
                      plan={plan}
+                     globalFeatures={globalFeatures}
                      onEdit={handleOpenEdit}
                      onToggleActive={handleToggleActive}
                      onToggleMostPopular={handleToggleMostPopular}

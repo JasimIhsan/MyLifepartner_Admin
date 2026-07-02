@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   static const Color black = Color(0xFF000000);
+  static const Color white = Colors.white;
 
   // Primary Brand Colors - Solid Red
   static const Color primary = Color(0xFFFF3F3F);
-  static const Color primaryDark = Color(0xFFD63434); // Adjusted for contrast if needed
+  static const Color primaryDark = Color(
+    0xFFD63434,
+  ); // Adjusted for contrast if needed
   static const Color primaryLight = Color(0xFFFF7A7A);
 
   // Accent Colors

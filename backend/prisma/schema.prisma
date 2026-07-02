@@ -44,9 +44,7 @@ model Profile {
   dateOfBirth   DateTime?
   maritalStatus MaritalStatus?
   heightCm      Int?
-
-  religion     String?
-  motherTongue String?
+  motherTongue  String?
 
   city    String?
   state   String?
@@ -57,7 +55,6 @@ model Profile {
 
   highestEducation String?
   occupation       String?
-  annualIncome     Int?
   bio              String?
 
   languages String[]
@@ -96,12 +93,9 @@ model PartnerPreference {
   heightFrom       Int?
   heightTo         Int?
   maritalStatus    MaritalStatus[]
-  religion         String[]
   motherTongue     String[]
   highestEducation String[]
   occupation       String[]
-  annualIncomeFrom Int?
-  annualIncomeTo   Int?
 
   @@map("partner_preferences")
 }
@@ -192,6 +186,7 @@ model Admins {
 model SubscriptionPlan {
   id                Int                @id @default(autoincrement())
   name              String             @unique // FREE, PREMIUM, GOLD
+  description       String?            // User understandable explanation of the plan
   price             Int // price in paise (₹1 = 100 paise)
   durationDays      Int
   isActive          Boolean            @default(true)
@@ -206,32 +201,43 @@ model SubscriptionPlan {
 }
 
 model PlanFeature {
-  id         Int              @id @default(autoincrement())
-  planId     Int
-  plan       SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  featureKey String
-  limit      String // e.g. "50", "UNLIMITED", "true"
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  id          Int              @id @default(autoincrement())
+  planId      Int
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  featureKey  String
+  description String?          // User understandable feature explanation for the plan card
+  limit       String // e.g. "50", "UNLIMITED", "true"
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@unique([planId, featureKey]) // one limit per feature per plan
   @@map("plan_features")
 }
 
 model UserSubscription {
-  id        Int                @id @default(autoincrement())
-  userId    Int
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId    Int
-  plan      SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
-  startDate DateTime           @default(now())
-  endDate   DateTime
-  status    SubscriptionStatus @default(ACTIVE)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id                  Int                @id @default(autoincrement())
+  userId              Int
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId              Int
+  plan                SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  startDate           DateTime           @default(now())
+  endDate             DateTime
+  status              SubscriptionStatus @default(ACTIVE)
+  willRenew           Boolean            @default(true)
+  nextPlanId          Int?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   @@index([userId, status])
   @@map("user_subscriptions")
+}
+
+model ProcessedRevenueCatEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+
+  @@map("processed_revenuecat_events")
 }
 
 model UserFeature {
@@ -240,9 +246,6 @@ model UserFeature {
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Boolean Features
-  canAudioCall         Boolean @default(false)
-  canVideoCall         Boolean @default(false)
-  canSendMessage       Boolean @default(false)
   isProfileBlurEnabled Boolean @default(false)
 
   // Interest Limits
@@ -427,4 +430,17 @@ model ChatMessage {
 
   @@index([conversationId, createdAt])
   @@map("chat_messages")
+}
+
+model Guide {
+  id           Int      @id @default(autoincrement())
+  question     String   @unique
+  answer       String
+  categoryId   Int      // 1 = About LPA, 2 = Safety & Privacy, 3 = Verification & Account, 4 = Membership & Subscription
+  bullets      String[] @default([])
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("guides")
 }

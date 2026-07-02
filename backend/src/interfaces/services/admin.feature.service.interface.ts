@@ -4,6 +4,7 @@ export interface Feature {
    id: number;
    key: FeatureKey;
    name: string;
+   boolean: boolean;
    description?: string | null;
 }
 

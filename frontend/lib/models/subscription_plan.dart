@@ -26,14 +26,16 @@ class Feature {
 class PlanFeature {
   final int id;
   final String limit;
+  final String? description;
   final Feature feature;
 
-  PlanFeature({required this.id, required this.limit, required this.feature});
+  PlanFeature({required this.id, required this.limit, this.description, required this.feature});
 
   factory PlanFeature.fromJson(Map<String, dynamic> json) {
     return PlanFeature(
       id: json['id'] ?? 0,
       limit: json['limit']?.toString() ?? '0',
+      description: json['description'],
       feature: json['feature'] != null
           ? Feature.fromJson(json['feature'])
           : Feature(
@@ -52,11 +54,13 @@ class SubscriptionPlan {
   final int durationDays;
   final bool isActive;
   final bool isMostPopular;
+  final String? identifier;
   final List<PlanFeature> features;
 
   // 🔥 NEW (RevenueCat overrides)
   final String? rcDisplayPrice;
   final double? rcPrice;
+  final String? rcDurationTitle;
 
   SubscriptionPlan({
     required this.id,
@@ -65,9 +69,11 @@ class SubscriptionPlan {
     required this.durationDays,
     required this.isActive,
     required this.isMostPopular,
+    this.identifier,
     required this.features,
     this.rcDisplayPrice,
     this.rcPrice,
+    this.rcDurationTitle,
   });
   SubscriptionPlan copyWith({
     String? name,
@@ -75,9 +81,11 @@ class SubscriptionPlan {
     int? durationDays,
     bool? isActive,
     bool? isMostPopular,
+    String? identifier,
     List<PlanFeature>? features,
     String? rcDisplayPrice,
     double? rcPrice,
+    String? rcDurationTitle,
   }) {
     return SubscriptionPlan(
       id: id,
@@ -86,9 +94,11 @@ class SubscriptionPlan {
       durationDays: durationDays ?? this.durationDays,
       isActive: isActive ?? this.isActive,
       isMostPopular: isMostPopular ?? this.isMostPopular,
+      identifier: identifier ?? this.identifier,
       features: features ?? this.features,
       rcDisplayPrice: rcDisplayPrice ?? this.rcDisplayPrice,
       rcPrice: rcPrice ?? this.rcPrice,
+      rcDurationTitle: rcDurationTitle ?? this.rcDurationTitle,
     );
   }
 
@@ -100,6 +110,7 @@ class SubscriptionPlan {
       durationDays: json['durationDays'] ?? 0,
       isActive: json['isActive'] ?? true,
       isMostPopular: json['isMostPopular'] ?? false,
+      identifier: json['identifier'],
       features:
           (json['features'] as List?)
               ?.map((e) => PlanFeature.fromJson(e))
@@ -118,7 +129,9 @@ class SubscriptionPlan {
 
   /// Helper to get a simple string list of feature descriptions for the UI
   List<String> get featureDescriptions {
-    return features.map((pf) => pf.feature.name).toList();
+    return features
+        .map((pf) => pf.description ?? pf.feature.description ?? pf.feature.name)
+        .toList();
   }
 }
 
@@ -129,6 +142,7 @@ class UserSubscription {
   final DateTime startDate;
   final DateTime endDate;
   final String status;
+  final String? message;
 
   UserSubscription({
     required this.id,
@@ -137,6 +151,7 @@ class UserSubscription {
     required this.startDate,
     required this.endDate,
     required this.status,
+    this.message,
   });
 
   factory UserSubscription.fromJson(Map<String, dynamic> json) {
@@ -149,6 +164,7 @@ class UserSubscription {
       startDate: DateTime.parse(json['startDate']),
       endDate: DateTime.parse(json['endDate']),
       status: json['status'],
+      message: json['message'],
     );
   }
 

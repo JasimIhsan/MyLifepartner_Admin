@@ -15,6 +15,8 @@ export const createPlanSchema = z.object({
       .number({ message: "Duration must be a positive integer (days)" })
       .int("Duration must be an integer")
       .min(1, "Duration must be at least 1 day"),
+   identifier: z.string().min(1, "Identifier is required"),
+   description: z.string().optional(),
 });
 
 // ── Update Plan ──────────────────────────────────────────────────────────────
@@ -24,6 +26,8 @@ export const updatePlanSchema = z
       durationDays: z.number().int("Duration must be an integer").min(1, "Duration must be at least 1 day").optional(),
       isActive: z.boolean().optional(),
       isMostPopular: z.boolean().optional(),
+      identifier: z.string().min(1, "Identifier is required").optional(),
+      description: z.string().optional(),
    })
    .refine((v) => Object.keys(v).length > 0, { message: "At least one field must be provided for update" });
 
@@ -37,6 +41,7 @@ export const addFeaturesSchema = z
             .max(100, "Feature key must be at most 100 characters")
             .regex(/^[a-z0-9_]+$/, "Feature key must be lowercase letters, numbers, or underscores"),
          limit: z.string().min(1, "Feature limit is required").max(255, "Feature limit must be at most 255 characters"),
+         description: z.string().optional(),
       })
    )
    .min(1, "At least one feature is required");
@@ -44,7 +49,8 @@ export const addFeaturesSchema = z
 
 // ── Update Feature ────────────────────────────────────────────────────────────
 export const updateFeatureSchema = z.object({
-   limit: z.string().min(1, "Feature limit is required").max(255, "Feature limit must be at most 255 characters"),
+   limit: z.string().min(1, "Feature limit is required").max(255, "Feature limit must be at most 255 characters").optional(),
+   description: z.string().optional(),
 });
 
 export type CreatePlanInput = z.infer<typeof createPlanSchema>;

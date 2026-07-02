@@ -6,11 +6,11 @@ class Env {
   // Environment flags
   // isProduction => Siraj
   // !isProduction => Jasim
-  static const bool isProduction = true;
+  static const bool isProduction = false;
 
   // ZEGOCLOUD — populate from https://console.zegocloud.com/
-  static const int zegoAppId = 1140904980; // Replace with your AppID
+  static const int zegoAppId = 1331651742; // Replace with your AppID
   static const String zegoAppSign =
-      '97127e2582e92a5ce87a8f6609d81acbe72199e6a33ee7978a0430facd2fa12a'; // Replace with your AppSign
-  static const String revenueCatApiKey = 'test_vBnEvvHVEOnnFHgDzKRoEqSNCdb';
+      '64d06b939f5431ce808c6236114075869ee1082ee1d44bc1e0f5030b254f6438'; // Replace with your AppSign
+  static const String revenueCatApiKey = 'test_XpBpMyOCaRGpgYiYdlQzzfVGWQP';
 }

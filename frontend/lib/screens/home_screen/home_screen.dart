@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/screens/notification_screen/notification_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/providers/call_provider.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
+import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_screen.dart';
 import 'package:mylifepartner/screens/discover_screen/discover_screen.dart';
 import 'package:mylifepartner/screens/likes_screen/likes_screen.dart';
+import 'package:mylifepartner/screens/lpa_guide_screen/lpa_guide_screen.dart';
+import 'package:mylifepartner/screens/notification_screen/notification_screen.dart';
 import 'package:mylifepartner/screens/profile_screen/profile_screen.dart';
-import 'package:mylifepartner/screens/questionaire_screen/questionaire_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
 import 'package:mylifepartner/services/user_repository.dart';
 import 'package:mylifepartner/services/zego_service.dart';
-import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_bottom_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_bottom_sheet.dart';
+import 'package:mylifepartner/widgets/custom_app_bar.dart';
+import 'package:mylifepartner/widgets/custom_bottom_bar.dart';
+import 'package:mylifepartner/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,10 +27,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
-  final ProfileRepository _profileRepository = ProfileRepository();
-  bool _isSheetShowing = false;
-  bool _isCheckingProfile = false;
   bool _showNotifications = false;
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +57,9 @@ class _HomePageState extends State<HomePage> {
       }
 
       if (!ZegoService.instance.isLoggedIn) {
+        debugPrint(
+          "😂 ZegoService.instance.isLoggedIn ${ZegoService.instance.isLoggedIn}",
+        );
         await ZegoService.instance.login(userIdStr, userName);
       }
 
@@ -77,81 +78,12 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _checkProfileCompletion() async {
-    if (!mounted || _isSheetShowing || _isCheckingProfile) return;
-
-    _isCheckingProfile = true;
-
-    try {
-      final status = await _profileRepository.getCompletionStatus();
-
-      if (!mounted) return;
-
-      if (status['isCompleted'] == false) {
-        _isSheetShowing = true;
-
-        await CustomBottomSheet.show(
-          context: context,
-          type: BottomSheetType.info,
-          isScrollControlled: true,
-          isDismissible: false,
-          title: "Complete Your Profile",
-          message:
-              "You have pending profile questions. Complete them to find better matches.",
-          primaryButtonText: "Continue",
-          onPrimaryPressed: () {
-            Navigator.of(context).pop();
-
-            Navigator.of(context)
-                .push(
-                  MaterialPageRoute(
-                    builder: (_) => QuestionaireScreen(
-                      isPrimaryFlow: false,
-                      initialSectionOrder: status['nextPendingSectionOrder'],
-                    ),
-                  ),
-                )
-                .then((_) {
-                  if (mounted) {
-                    //_checkProfileCompletion();
-                  }
-                });
-          },
-          secondaryButtonText: "Later",
-          onSecondaryPressed: () {
-            Navigator.of(context).pop();
-          },
-        );
-
-        _isSheetShowing = false;
-      }
-    } catch (e) {
-      debugPrint("Error checking profile completion: $e");
-    } finally {
-      _isCheckingProfile = false;
-    }
-  }
-
   // ─── Navigation helpers ────────────────────────────────────────────────────
-
-  // Future<void> _logout() async {
-  //   final sharedPrefs = await SharedPreferences.getInstance();
-  //   sharedPrefs.clear();
-  //   if (mounted) {
-  //     Navigator.pushAndRemoveUntil(
-  //       context,
-  //       MaterialPageRoute(builder: (context) => const LoginPage()),
-  //       ModalRoute.withName('/'),
-  //     );
-  //   }
-  // }
 
   void _onTabTapped(int index) {
     setState(() => _selectedIndex = index);
-    _showNotifications = false; // 🔥 THIS is what you missed
+    _showNotifications = false;
     if (index == 0) {
-      //_checkProfileCompletion();
-
       final provider = context.read<MatchProvider>();
       if (provider.profiles.isEmpty) {
         provider.loadRecommendations();
@@ -159,15 +91,55 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _handleBackPress() async {
+    if (_showNotifications) {
+      setState(() {
+        _showNotifications = false;
+      });
+      return;
+    }
+    if (_selectedIndex != 0) {
+      setState(() {
+        _selectedIndex = 0;
+      });
+      return;
+    }
+
+    if (!mounted) return;
+
+    await CustomBottomSheet.show(
+      context: context,
+      type: BottomSheetType.confirmation,
+      title: 'Exit App',
+      message: 'Are you sure you want to exit the app?',
+      primaryButtonText: 'Exit',
+      onPrimaryPressed: () {
+        SystemNavigator.pop();
+      },
+      secondaryButtonText: 'Cancel',
+      onSecondaryPressed: () {
+        Navigator.of(context).pop();
+      },
+      imagePath: 'assets/images/illustrations/exit.png',
+    );
+  }
+
   // ─── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: _buildAppBar(),
-      body: SafeArea(child: _buildBody()),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(),
+        body: SafeArea(child: _buildBody()),
+        bottomNavigationBar: _buildBottomNavigationBar(),
+      ),
     );
   }
 
@@ -181,8 +153,25 @@ class _HomePageState extends State<HomePage> {
       showLeading: false,
       actions: [
         IconButton(
+          icon: Image.asset(
+            'assets/icons/lpa_assist.png',
+            width: 24,
+            height: 24,
+          ),
+          tooltip: 'LPA Assist',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    const Scaffold(body: SafeArea(child: LpaGuideScreen())),
+              ),
+            );
+          },
+        ),
+        IconButton(
           icon: const Icon(
-            Icons.notifications_outlined,
+            Icons.notifications_active_outlined,
             color: AppColors.textPrimary,
           ),
           onPressed: () {
@@ -191,13 +180,6 @@ class _HomePageState extends State<HomePage> {
             });
           },
         ),
-        // IconButton(
-        //   icon: const Icon(
-        //     Icons.exit_to_app_outlined,
-        //     color: AppColors.textPrimary,
-        //   ),
-        //   onPressed: _logout,
-        // ),
       ],
     );
   }

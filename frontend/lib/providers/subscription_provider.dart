@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mylifepartner/config/env.dart';
+import 'package:mylifepartner/models/subscription_plan.dart';
 import 'package:mylifepartner/services/subscription_service.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-import 'package:mylifepartner/models/subscription_plan.dart';
-import 'package:mylifepartner/config/env.dart';
 
 class SubscriptionProvider extends ChangeNotifier {
   bool isLoading = false;
@@ -12,10 +13,11 @@ class SubscriptionProvider extends ChangeNotifier {
   SubscriptionPlan? currentSubscription;
 
   List<Package> _rcPackages = [];
+  UserSubscription? _mySubscription;
 
   bool _isPurchasing = false;
   bool _isInitialized = false;
-  SubscriptionService _subscriptionService = SubscriptionService();
+  final SubscriptionService _subscriptionService = SubscriptionService();
 
   /// =========================
   /// INIT (call once)
@@ -34,7 +36,7 @@ class SubscriptionProvider extends ChangeNotifier {
 
       _isInitialized = true;
     } catch (e) {
-      error = e.toString();
+      error = _getReadableError(e);
       notifyListeners();
     }
   }
@@ -54,11 +56,15 @@ class SubscriptionProvider extends ChangeNotifier {
         _fetchBackendPlans(),
         _fetchRevenueCatPlans(),
         _fetchCustomerInfo(),
+        _subscriptionService.getMySubscription(),
       ]);
+
+      debugPrint("👉 results: $results");
 
       final backendPlans = results[0] as List<SubscriptionPlan>;
       final rcPackages = results[1] as List<Package>;
       final customerInfo = results[2] as CustomerInfo;
+      _mySubscription = results[3] as UserSubscription?;
 
       _rcPackages = rcPackages;
 
@@ -66,7 +72,7 @@ class SubscriptionProvider extends ChangeNotifier {
 
       _setCurrentSubscription(customerInfo);
     } catch (e) {
-      error = e.toString();
+      error = _getReadableError(e);
     } finally {
       isLoading = false;
       notifyListeners();
@@ -96,18 +102,19 @@ class SubscriptionProvider extends ChangeNotifier {
   /// FETCH: RevenueCat
   /// =========================
   Future<List<Package>> _fetchRevenueCatPlans() async {
-    final offerings = await Purchases.getOfferings();
-    final current = offerings.current;
+    try {
+      final offerings = await Purchases.getOfferings();
 
-    debugPrint("🔥 Offerings object: $offerings");
-    debugPrint("🔥 Current offering: ${offerings.current}");
-    debugPrint("🔥 All offerings: ${offerings.all}");
+      final packages = offerings.all.values
+          .expand((e) => e.availablePackages)
+          .toList();
 
-    if (current == null) {
-      throw Exception("No offerings configured in RevenueCat");
+      return packages;
+    } catch (e, stack) {
+      debugPrint("❌ Error fetching RevenueCat plans: $e");
+      debugPrint("$stack");
+      return [];
     }
-
-    return current.availablePackages;
   }
 
   /// =========================
@@ -131,15 +138,21 @@ class SubscriptionProvider extends ChangeNotifier {
     }
 
     if (rcPackages.isEmpty) {
-      error = "Subscription service is currently unavailable.";
-      plans = [];
-      return;
+      debugPrint(
+        "⚠️ Subscription service (RevenueCat) is currently unavailable, falling back to backend prices.",
+      );
     }
 
     final List<SubscriptionPlan> merged = [];
 
     for (final plan in backendPlans) {
-      final productId = plan.id.toString();
+      if (plan.price == 0) {
+        // Free plan, no RevenueCat product expected
+        merged.add(plan);
+        continue;
+      }
+
+      final productId = plan.identifier ?? plan.id.toString();
 
       final match = rcPackages.where(
         (pkg) => pkg.storeProduct.identifier == productId,
@@ -147,24 +160,20 @@ class SubscriptionProvider extends ChangeNotifier {
 
       if (match.isEmpty) {
         debugPrint(
-          "❌ CRITICAL: No match for backend plan ${plan.id} with productId=$productId",
+          "⚠️ No match for backend plan ${plan.id} with productId=$productId. Falling back to backend price.",
         );
-
-        // 🔥 HARD FAIL — stop everything
-        error =
-            "We are facing issues loading subscription plans. Please try again later.";
-
-        plans = [];
-        notifyListeners();
-        return;
+        merged.add(plan);
+        continue;
       }
 
-      final product = match.first.storeProduct;
+      final package = match.first;
+      final product = package.storeProduct;
 
       merged.add(
         plan.copyWith(
           rcDisplayPrice: product.priceString,
           rcPrice: product.price,
+          rcDurationTitle: _getDurationString(package.packageType),
         ),
       );
     }
@@ -172,10 +181,45 @@ class SubscriptionProvider extends ChangeNotifier {
     plans = merged;
   }
 
+  String? _getDurationString(PackageType type) {
+    switch (type) {
+      case PackageType.annual:
+        return '365 days';
+      case PackageType.sixMonth:
+        return '180 days';
+      case PackageType.threeMonth:
+        return '90 days';
+      case PackageType.twoMonth:
+        return '60 days';
+      case PackageType.monthly:
+        return '30 days';
+      case PackageType.weekly:
+        return '7 days';
+      case PackageType.lifetime:
+        return 'Lifetime';
+      default:
+        return null;
+    }
+  }
+
   /// =========================
   /// CURRENT SUBSCRIPTION
   /// =========================
   void _setCurrentSubscription(CustomerInfo info) {
+    if (_mySubscription != null &&
+        _mySubscription!.isActive &&
+        _mySubscription!.plan != null) {
+      // Find the matched plan in the local list so we have the merged data (like RC price)
+      final match = plans.where((p) => p.id == _mySubscription!.plan!.id);
+      currentSubscription = match.isNotEmpty
+          ? match.first
+          : _mySubscription!.plan!;
+      debugPrint(
+        "👉 currentSubscription from DB: ${currentSubscription?.name}",
+      );
+      return;
+    }
+
     final active = info.entitlements.active;
 
     if (active.isEmpty) {
@@ -185,11 +229,28 @@ class SubscriptionProvider extends ChangeNotifier {
 
     final entitlement = active.values.first;
 
-    currentSubscription = plans.firstWhere(
-      (p) => p.id == entitlement.productIdentifier,
-      orElse: () =>
-          plans.isNotEmpty ? plans.first : throw Exception("No plans"),
+    final match = plans.where(
+      (p) => (p.identifier ?? p.id.toString()) == entitlement.productIdentifier,
     );
+
+    if (match.isNotEmpty) {
+      currentSubscription = match.first;
+    } else {
+      // Try matching by name or identifier against entitlement identifier
+      final fallbackMatch = plans.where(
+        (p) => p.name.toLowerCase() == entitlement.identifier.toLowerCase(),
+      );
+      if (fallbackMatch.isNotEmpty) {
+        currentSubscription = fallbackMatch.first;
+      } else {
+        currentSubscription = null;
+        debugPrint(
+          "⚠️ Could not match RevenueCat entitlement ${entitlement.identifier} to any backend plan.",
+        );
+      }
+    }
+
+    debugPrint("👉 currentSubscription from RC: ${currentSubscription?.name}");
   }
 
   /// =========================
@@ -198,19 +259,55 @@ class SubscriptionProvider extends ChangeNotifier {
   Future<bool> subscribeToPlan(String id) async {
     if (_isPurchasing) return false;
 
+    debugPrint("🔥 id: $id");
+
     try {
       _isPurchasing = true;
       notifyListeners();
 
-      final package = _rcPackages.firstWhere((p) => p.identifier == id);
+      final backendPlan = plans.firstWhere(
+        (p) => (p.identifier ?? p.id.toString()) == id,
+      );
 
+      // If it's a Free plan (price == 0), skip RevenueCat purchase and just tell backend to subscribe (downgrade)
+      if (backendPlan.price == 0) {
+        final sub = await _subscriptionService.subscribe(backendPlan.id);
+        _mySubscription = sub;
+
+        // Also fetch CustomerInfo just to keep it in sync, but we don't purchase anything
+        try {
+          final customerInfo = await Purchases.getCustomerInfo();
+          _handleCustomerInfoUpdate(customerInfo);
+
+          if (customerInfo.entitlements.active.isNotEmpty) {
+            error =
+                "Plan downgraded! Please remember to also cancel your active subscription in your App Store / Play Store settings so you aren't charged.";
+            // We return false just to show the error snackbar with the instructions, but the DB was updated!
+            return false;
+          }
+        } catch (_) {}
+
+        return true;
+      }
+
+      final package = _rcPackages.firstWhere(
+        (p) => p.storeProduct.identifier == id,
+      );
+
+      // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);
+
+      // Trigger verification and sync with the backend
+      final syncedSub = await _subscriptionService.syncSubscription();
+      if (syncedSub != null) {
+        _mySubscription = syncedSub;
+      }
 
       _handleCustomerInfoUpdate(result.customerInfo);
 
       return true;
     } catch (e) {
-      error = e.toString();
+      error = _getReadableError(e);
       return false;
     } finally {
       _isPurchasing = false;
@@ -229,31 +326,48 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
   /// UTILS
   /// =========================
-  int _parseDuration(Period? period) {
-    if (period == null) return 0;
-
-    switch (period.unit) {
-      case PeriodUnit.day:
-        return period.value;
-      case PeriodUnit.week:
-        return period.value * 7;
-      case PeriodUnit.month:
-        return period.value * 30;
-      case PeriodUnit.year:
-        return period.value * 365;
-      default:
-        return 0;
-    }
-  }
 
   Future<void> fetchMySubscription() async {
+    if (!_isInitialized) {
+      debugPrint(
+        "⚠️ fetchMySubscription called but Purchases not initialized yet.",
+      );
+      return;
+    }
     try {
       final customerInfo = await Purchases.getCustomerInfo();
+      
+      // Perform backend sync to verify subscription with RevenueCat directly
+      final syncedSub = await _subscriptionService.syncSubscription();
+      if (syncedSub != null) {
+        _mySubscription = syncedSub;
+      }
 
       _handleCustomerInfoUpdate(customerInfo);
     } catch (e) {
-      error = e.toString();
+      error = _getReadableError(e);
       notifyListeners();
     }
+  }
+
+  String? get currentSubscriptionMessage => _mySubscription?.message;
+
+  String _getReadableError(dynamic e) {
+    if (e is PlatformException) {
+      try {
+        final errorCode = PurchasesErrorHelper.getErrorCode(e);
+        if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+          return "Purchase was cancelled.";
+        }
+      } catch (_) {
+        // If parsing the error code fails (e.g. FormatException), fallback to generic message.
+      }
+      return e.message ?? "A payment service error occurred. Please try again.";
+    }
+    final raw = e.toString();
+    if (raw.startsWith('Exception: ')) {
+      return raw.substring(11);
+    }
+    return "An unexpected error occurred. Please try again later.";
   }
 }

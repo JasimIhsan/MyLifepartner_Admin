@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/home_screen/home_screen.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
@@ -77,6 +77,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
     }
 
     try {
+      await HapticFeedback.mediumImpact();
       final image = await _cameraController!.takePicture();
       setState(() {
         if (_currentStep == 0) {

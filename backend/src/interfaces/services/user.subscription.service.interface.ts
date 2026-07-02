@@ -10,4 +10,6 @@ export interface IUserSubscriptionService {
    getMySubscription(userId: number): Promise<EnrichedUserSubscription | null>;
    subscribe(userId: number, planId: number): Promise<EnrichedUserSubscription>;
    getUserFeatures(userId: number): Promise<UserFeature | null>;
+   syncSubscription(userId: number): Promise<any>;
+   handleWebhook(payload: any, signatureHeader?: string): Promise<void>;
 }

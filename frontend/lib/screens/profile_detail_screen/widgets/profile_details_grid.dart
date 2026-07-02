@@ -81,11 +81,7 @@ class ProfileDetailsGrid extends StatelessWidget {
     final p = profile;
     final items = <DetailItem>[];
 
-    // if (p['religion'] != null) {
-    //   items.add(
-    //     DetailItem(Icons.auto_awesome_outlined, 'Religion', p['religion']),
-    //   );
-    // }
+
     if (p['motherTongue'] != null) {
       items.add(
         DetailItem(Icons.translate_rounded, 'Language', p['motherTongue']),
@@ -119,15 +115,7 @@ class ProfileDetailsGrid extends StatelessWidget {
         DetailItem(Icons.work_outline_rounded, 'Occupation', p['occupation']),
       );
     }
-    // if (p['annualIncome'] != null) {
-    //   items.add(
-    //     DetailItem(
-    //       Icons.account_balance_wallet_outlined,
-    //       'Annual Income',
-    //       '₹${_formatIncome(p['annualIncome'])}',
-    //     ),
-    //   );
-    // }
+
     if (p['gender'] != null) {
       items.add(
         DetailItem(
@@ -161,14 +149,5 @@ class ProfileDetailsGrid extends StatelessWidget {
         .join(' ');
   }
 
-  // String _formatIncome(int amount) {
-  //   if (amount >= 10000000) {
-  //     return '${(amount / 10000000).toStringAsFixed(1)} Cr';
-  //   }
-  //   if (amount >= 100000) {
-  //     return '${(amount / 100000).toStringAsFixed(1)} L';
-  //   }
-  //   if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)} K';
-  //   return amount.toString();
-  // }
+
 }

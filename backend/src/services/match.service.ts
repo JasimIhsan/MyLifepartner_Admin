@@ -50,12 +50,12 @@ export class MatchService implements IMatchService {
 
             scored.push({
                id: candidate.id,
+               userId: candidate.userId,
                name: candidate.name ?? "Unknown",
                age,
                heightCm: candidate.heightCm,
                city: candidate.city,
                country: candidate.country,
-               religion: candidate.religion,
                isVerified: candidate.isVerified,
                occupation: candidate.occupation,
                maritalStatus: candidate.maritalStatus,
@@ -107,6 +107,7 @@ export class MatchService implements IMatchService {
 
       return {
          id: candidate.id,
+         userId: candidate.userId,
          name: candidate.name ?? "Unknown",
          age,
          gender: candidate.gender,
@@ -115,11 +116,9 @@ export class MatchService implements IMatchService {
          city: candidate.city,
          state: candidate.state,
          country: candidate.country,
-         religion: candidate.religion,
          motherTongue: candidate.motherTongue,
          highestEducation: candidate.highestEducation,
          occupation: candidate.occupation,
-         annualIncome: candidate.annualIncome,
          bio: candidate.bio,
          matchPercentage: Math.round(totalScore),
          compatibilityHighlights: highlights,
@@ -164,13 +163,13 @@ export class MatchService implements IMatchService {
 
          result.push({
             id: candidate.id,
+            userId: candidate.userId,
             name: candidate.name ?? "Unknown",
             age,
             heightCm: candidate.heightCm,
             city: candidate.city,
             country: candidate.country,
             isVerified: candidate.isVerified,
-            religion: candidate.religion,
             occupation: candidate.occupation,
             maritalStatus: candidate.maritalStatus,
             matchPercentage: Math.round(totalScore),
@@ -209,14 +208,6 @@ export class MatchService implements IMatchService {
          totalScore += 10;
       }
 
-      // Religion (10 pts)
-      if (candidate.religion && pref.religion.length > 0) {
-         if (pref.religion.includes(candidate.religion)) {
-            totalScore += 10;
-            highlights.push("✔ Same Religion");
-         }
-      }
-
       // Mother tongue (10 pts)
       if (candidate.motherTongue && pref.motherTongue.length > 0) {
          if (pref.motherTongue.includes(candidate.motherTongue)) {
@@ -240,20 +231,15 @@ export class MatchService implements IMatchService {
          }
       }
 
-      // Income (10 pts)
-      if (candidate.annualIncome !== null && pref.annualIncomeFrom !== null && pref.annualIncomeTo !== null && candidate.annualIncome >= pref.annualIncomeFrom && candidate.annualIncome <= pref.annualIncomeTo) {
-         totalScore += 10;
-      }
-
       // Location (10 pts)
       // We give 10 points based on presence of city data for now
       if (candidate.city) {
          totalScore += 10;
       }
 
-      // Max score without personality based on the 8 criteria above is 80 (8 * 10)
+      // Max score without personality based on the 6 criteria above is 60 (6 * 10)
       // We normalize it to 100 for the percentage
-      totalScore = Math.round((totalScore / 80) * 100);
+      totalScore = Math.round((totalScore / 60) * 100);
 
       // Personality / Answer compatibility (10 pts)
       // const personalityScore = this.calculatePersonalityScore(candidate.answers, userAnswers);

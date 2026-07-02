@@ -6,6 +6,7 @@ export interface GlobalFeature {
    id: number;
    key: string;
    name: string;
+   boolean: boolean;
    description?: string;
    createdAt: string;
 }
@@ -14,6 +15,7 @@ export interface PlanFeature {
    id: number;
    planId: number;
    featureKey: string;
+   description?: string;
    limit: string;
    createdAt: string;
 }
@@ -21,10 +23,12 @@ export interface PlanFeature {
 export interface SubscriptionPlan {
    id: number;
    name: string;
+   description?: string;
    price: number; // in paise
    durationDays: number;
    isActive: boolean;
    isMostPopular: boolean;
+   identifier?: string;
    features: PlanFeature[];
    createdAt: string;
    updatedAt: string;
@@ -46,12 +50,12 @@ export const getPlans = async () => {
    return res.data; // { success, data, message }
 };
 
-export const createPlan = async (data: { name: string; price: number; durationDays: number }) => {
+export const createPlan = async (data: { name: string; description?: string; price: number; durationDays: number; identifier: string }) => {
    const res = await axiosInstance.post("/admin/plans", data);
    return res.data;
 };
 
-export const updatePlan = async (planId: number, data: { price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean }) => {
+export const updatePlan = async (planId: number, data: { description?: string; price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean; identifier?: string }) => {
    const res = await axiosInstance.patch(`/admin/plans/${planId}`, data);
    return res.data;
 };
@@ -63,13 +67,13 @@ export const deletePlan = async (planId: number) => {
 
 // ─── Plan Feature Mapping APIs ────────────────────────────────────────────────
 
-export const addFeaturesToPlan = async (planId: number, features: { featureKey: string; limit: string }[]) => {
+export const addFeaturesToPlan = async (planId: number, features: { featureKey: string; limit: string; description?: string }[]) => {
    const res = await axiosInstance.post(`/admin/plans/${planId}/features`, features);
    return res.data;
 };
 
-export const updatePlanFeature = async (planId: number, planFeatureId: number, limit: string) => {
-   const res = await axiosInstance.patch(`/admin/plans/${planId}/features/${planFeatureId}`, { limit });
+export const updatePlanFeature = async (planId: number, planFeatureId: number, data: { limit?: string; description?: string }) => {
+   const res = await axiosInstance.patch(`/admin/plans/${planId}/features/${planFeatureId}`, data);
    return res.data;
 };
 

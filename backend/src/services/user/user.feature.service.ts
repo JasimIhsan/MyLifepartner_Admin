@@ -2,6 +2,7 @@ import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.r
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { SwipeAction, UserFeature } from "@prisma/client";
+import { hasFeature, hasReachedLimit, UserFeatureMaxKey, UserFeatureUsageKey } from "@/utils/feature.utils";
 
 export class UserFeatureService implements IUserFeatureService {
    constructor(private userFeatureRepository: IUserFeatureRepository) {}
@@ -56,10 +57,10 @@ export class UserFeatureService implements IUserFeatureService {
       const features = await this.userFeatureRepository.findByUserId(userId);
       console.log("features:", features);
 
-      if (!features) return false;
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_INTERESTS)) return false;
 
       if (action === SwipeAction.RIGHT || action === SwipeAction.LEFT) {
-         return features.interests < features.maxInterests;
+         return !hasReachedLimit(features, UserFeatureMaxKey.MAX_INTERESTS, UserFeatureUsageKey.INTERESTS);
       }
 
       return false;
@@ -70,11 +71,11 @@ export class UserFeatureService implements IUserFeatureService {
 
       const features = await this.userFeatureRepository.findByUserId(userId);
 
-      if (!features) {
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_INTERESTS)) {
          throw new ApiError(404, "User features not found");
       }
 
-      if (features.interests >= features.maxInterests) {
+      if (hasReachedLimit(features, UserFeatureMaxKey.MAX_INTERESTS, UserFeatureUsageKey.INTERESTS)) {
          throw new ApiError(402, "You have reached your interest limit. Upgrade your plan to send more interests!");
       }
 
@@ -83,16 +84,17 @@ export class UserFeatureService implements IUserFeatureService {
 
    async checkMessageAccess(userId: number): Promise<boolean> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      if (!features || !features.canSendMessage) return false;
-      return features.messages < features.maxMessages;
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_MESSAGES)) return false;
+      return !hasReachedLimit(features, UserFeatureMaxKey.MAX_MESSAGES, UserFeatureUsageKey.MESSAGES);
    }
 
    async consumeMessage(userId: number): Promise<void> {
       const features = await this.userFeatureRepository.findByUserId(userId);
-      if (!features || !features.canSendMessage) {
+      console.log("👉 features:", features);
+      if (!features || !hasFeature(features, UserFeatureMaxKey.MAX_MESSAGES)) {
          throw new ApiError(402, "Message feature not available in your plan.");
       }
-      if (features.messages >= features.maxMessages) {
+      if (hasReachedLimit(features, UserFeatureMaxKey.MAX_MESSAGES, UserFeatureUsageKey.MESSAGES)) {
          throw new ApiError(402, "You have reached your message limit. Upgrade your plan to send more messages.");
       }
       await this.updateMessages(userId, 1);
@@ -107,4 +109,34 @@ export class UserFeatureService implements IUserFeatureService {
          await this.updateVideoCallMinutes(userId, durationSeconds);
       }
    }
+
+   async checkCallAccess(userId: number, type: "audio" | "video", consumeSeconds?: number, targetUserId?: number): Promise<void> {
+      const checkUserId = targetUserId ? targetUserId : userId;
+
+      if (!targetUserId && consumeSeconds && typeof consumeSeconds === 'number' && consumeSeconds > 0) {
+         await this.consumeCallDuration(userId, type, consumeSeconds);
+      }
+
+      const features = await this.getUserFeatures(checkUserId);
+      if (!features) {
+         throw new ApiError(402, targetUserId ? "Recipient's plan does not support calls at this time." : "Call feature not available in your plan.");
+      }
+
+      if (type === 'video') {
+         if (!hasFeature(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient's plan does not support video calls." : "Video call not available in your plan.");
+         }
+         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES, UserFeatureUsageKey.VIDEO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient is temporarily unavailable for video calls." : "Video call limit exhausted.");
+         }
+      } else {
+         if (!hasFeature(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient's plan does not support audio calls." : "Audio call not available in your plan.");
+         }
+         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES, UserFeatureUsageKey.AUDIO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient is temporarily unavailable for audio calls." : "Audio call limit exhausted.");
+         }
+      }
+   }
 }
+

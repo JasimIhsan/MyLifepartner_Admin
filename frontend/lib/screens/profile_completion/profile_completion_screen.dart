@@ -3,8 +3,8 @@ import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_app_bar.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/multi_select_dialog.dart';
@@ -28,35 +28,15 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   DateTime? _dob;
   int? _heightCm;
   String? _maritalStatus;
-  List<String> _religion = [];
   List<String> _motherTongue = [];
   String? _city;
   String? _state;
   String? _country;
   List<String> _highestEducation = [];
   List<String> _occupation = [];
-  int? _annualIncome;
   String? _bio;
 
   // Options for predefined multi-select fields:
-  final List<String> _religionOptions = [
-    'Christianity (Catholic)',
-    'Christianity (Protestant)',
-    'Christianity (Orthodox)',
-    'Islam (Sunni)',
-    'Islam (Shia)',
-    'Hinduism',
-    'Buddhism',
-    'Judaism',
-    'Sikhism',
-    'Jainism',
-    'Shinto',
-    'Baha\'i',
-    'Spiritual',
-    'Atheist / Agnostic',
-    'No Religion',
-    'Other',
-  ];
   final List<String> _motherTongueOptions = [
     'English',
     'Spanish',
@@ -116,14 +96,14 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final userName = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'.trim();
+      final userName = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'
+          .trim();
       await _profileRepo.updateBasicProfile({
         'name': userName.isEmpty ? null : userName,
         'gender': _gender,
         'dateOfBirth': _dob != null ? '${_dob!.toIso8601String()}Z' : null,
         'heightCm': _heightCm,
         'maritalStatus': _maritalStatus,
-        'religion': _religion.isEmpty ? null : _religion.join(', '),
         'motherTongue': _motherTongue.isEmpty ? null : _motherTongue.join(', '),
         'city': _city,
         'state': _state,
@@ -132,7 +112,6 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
             ? null
             : _highestEducation.join(', '),
         'occupation': _occupation.isEmpty ? null : _occupation.join(', '),
-        'annualIncome': _annualIncome,
         'bio': _bio,
       });
 
@@ -321,50 +300,6 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // Religion
-                const Text(
-                  'Religion *',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                FormField<List<String>>(
-                  initialValue: _religion,
-                  validator: (val) =>
-                      val == null || val.isEmpty ? 'Required' : null,
-                  builder: (FormFieldState<List<String>> state) {
-                    return InkWell(
-                      onTap: () async {
-                        final result = await showDialog<List<String>>(
-                          context: context,
-                          builder: (ctx) => MultiSelectDialog(
-                            options: _religionOptions,
-                            selectedOptions: _religion,
-                            title: 'Select Religion',
-                          ),
-                        );
-                        if (result != null) {
-                          setState(() {
-                            _religion = result;
-                          });
-                          state.didChange(result);
-                        }
-                      },
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          border: const OutlineInputBorder(),
-                          errorText: state.errorText,
-                        ),
-                        child: Text(
-                          _religion.isEmpty
-                              ? 'Select Religion'
-                              : _religion.join(', '),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-
                 // Mother Tongue
                 const Text(
                   'Mother Tongue *',
@@ -529,33 +464,6 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                           : _occupation.join(', '),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-
-                // Annual Income
-                TextFormField(
-                  decoration: const InputDecoration(
-                    labelText: 'Annual Income',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return null; // Optional field, but validated if present
-                    }
-                    final parsed = int.tryParse(val.trim());
-                    if (parsed == null) {
-                      return 'Must be a valid number';
-                    }
-                    if (parsed < 0) {
-                      return 'Income cannot be negative';
-                    }
-                    return null;
-                  },
-                  onSaved: (val) =>
-                      _annualIncome = (val != null && val.trim().isNotEmpty)
-                      ? int.tryParse(val.trim())
-                      : null,
                 ),
                 const SizedBox(height: 16),
 

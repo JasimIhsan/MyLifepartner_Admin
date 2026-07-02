@@ -35,7 +35,9 @@ export const subscriptionRepository = new SubscriptionRepository();
 export const matchRepository = new MatchRepository();
 
 import { ChatRepository } from "@/repositories/chat.repository";
+import { GuideRepository } from "@/repositories/guide.repository";
 export const chatRepository = new ChatRepository();
+export const guideRepository = new GuideRepository();
 
 // ... (Infrastucture Svcs)
 import { CacheService } from "@/services/cache.service";
@@ -70,7 +72,9 @@ import { AdminSubscriptionService } from "@/services/admin/admin.subscription.se
 export const adminSubscriptionService = new AdminSubscriptionService(subscriptionRepository);
 
 import { AdminFeatureService } from "@/services/admin/admin.feature.service";
+import { GuideService } from "@/services/guide.service";
 export const adminFeatureService = new AdminFeatureService();
+export const guideService = new GuideService(guideRepository);
 
 // ... (Other services remain the same)
 // User services
@@ -113,7 +117,9 @@ import { AdminSubscriptionController } from "@/controllers/admin/admin.subscript
 export const adminSubscriptionController = new AdminSubscriptionController(adminSubscriptionService);
 
 import { AdminFeatureController } from "@/controllers/admin/admin.feature.controller"; // New
+import { GuideController } from "@/controllers/guide.controller";
 export const adminFeatureController = new AdminFeatureController(adminFeatureService); // New
+export const guideController = new GuideController(guideService);
 
 // User controllers
 export const authController = new AuthController(authService, userService);
@@ -125,7 +131,7 @@ import { MatchController } from "@/controllers/user/match.controller";
 export const matchController = new MatchController(matchService);
 
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
-export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService);
+export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService, userFeatureService);
 
 import { ChatController } from "@/controllers/user/chat.controller";
 export const chatController = new ChatController(chatService, userFeatureService);

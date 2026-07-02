@@ -26,8 +26,11 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
    }
 
-   async getPlanByName(name: string): Promise<SubscriptionPlan | null> {
-      return prisma.subscriptionPlan.findUnique({ where: { name } });
+   async getPlanByName(name: string): Promise<(SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] }) | null> {
+      return prisma.subscriptionPlan.findUnique({
+         where: { name },
+         include: { features: { orderBy: { createdAt: "asc" } } },
+      });
    }
 
    async updatePlan(id: number, data: Prisma.SubscriptionPlanUpdateInput): Promise<SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] }> {
@@ -56,11 +59,12 @@ export class SubscriptionRepository implements ISubscriptionRepository {
    // Features (Plan mapping)
    // ══════════════════════════════════════════════
 
-   async addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string }[]): Promise<import("@prisma/client").PlanFeature[]> {
+   async addFeaturesToPlan(planId: number, featureData: { featureKey: string; limit: string; description?: string }[]): Promise<import("@prisma/client").PlanFeature[]> {
       const data = featureData.map((f) => ({
          planId,
          featureKey: f.featureKey,
          limit: f.limit,
+         description: f.description,
       }));
 
       // Create many
@@ -88,10 +92,10 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
    }
 
-   async updatePlanFeature(id: number, limit: string): Promise<import("@prisma/client").PlanFeature> {
+   async updatePlanFeature(id: number, data: { limit?: string; description?: string }): Promise<import("@prisma/client").PlanFeature> {
       return await prisma.planFeature.update({
          where: { id },
-         data: { limit },
+         data,
       });
    }
 
@@ -124,6 +128,34 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       return prisma.userSubscription.updateMany({
          where: { userId, status: "ACTIVE" },
          data: { status: "EXPIRED" },
+      });
+   }
+
+   async updateUserSubscription(id: number, data: Prisma.UserSubscriptionUpdateInput): Promise<any> {
+      return prisma.userSubscription.update({
+         where: { id },
+         data,
+         include: { plan: { include: { features: true } } },
+      });
+   }
+
+   async findPlanByIdentifier(identifier: string): Promise<(SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] }) | null> {
+      return prisma.subscriptionPlan.findUnique({
+         where: { identifier },
+         include: { features: { orderBy: { createdAt: "asc" } } },
+      });
+   }
+
+   async hasProcessedEvent(eventId: string): Promise<boolean> {
+      const event = await prisma.processedRevenueCatEvent.findUnique({
+         where: { id: eventId },
+      });
+      return !!event;
+   }
+
+   async markEventProcessed(eventId: string, type: string): Promise<void> {
+      await prisma.processedRevenueCatEvent.create({
+         data: { id: eventId, type },
       });
    }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
@@ -210,7 +209,10 @@ class DatingProfileCard extends StatelessWidget {
                       if (_isNewProfile(profile.createdAt))
                         Container(
                           margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary,
                             borderRadius: BorderRadius.circular(12),
@@ -268,31 +270,6 @@ class DatingProfileCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                  ],
-
-                  if (profile.religion != null) ...[
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star_border_rounded,
-                          size: 14,
-                          color: Colors.white70,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            profile.religion!,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white70,
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     const SizedBox(height: 4),

@@ -2,9 +2,9 @@ class UserFeature {
   final int id;
   final int userId;
 
-  final bool canAudioCall;
-  final bool canVideoCall;
-  final bool canSendMessage;
+  bool get canAudioCall => maxAudioCallMinutes > 0;
+  bool get canVideoCall => maxVideoCallMinutes > 0;
+  bool get canSendMessage => maxMessages > 0;
   final bool isProfileBlurEnabled;
 
   final int maxInterests;
@@ -22,9 +22,7 @@ class UserFeature {
   UserFeature({
     required this.id,
     required this.userId,
-    required this.canAudioCall,
-    required this.canVideoCall,
-    required this.canSendMessage,
+
     required this.isProfileBlurEnabled,
     required this.maxInterests,
     required this.remainingInterests,
@@ -40,9 +38,7 @@ class UserFeature {
     return UserFeature(
       id: json['id'] ?? 0,
       userId: json['userId'] ?? 0,
-      canAudioCall: json['canAudioCall'] ?? false,
-      canVideoCall: json['canVideoCall'] ?? false,
-      canSendMessage: json['canSendMessage'] ?? false,
+
       isProfileBlurEnabled: json['isProfileBlurEnabled'] ?? false,
       maxInterests: json['maxInterests'] ?? 0,
       remainingInterests: (json['maxInterests'] ?? 0) - (json['interests'] ?? 0),

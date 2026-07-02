@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
+import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/chat_detail_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatPlaceholderScreen extends StatefulWidget {
   const ChatPlaceholderScreen({super.key});
@@ -20,9 +19,21 @@ class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MatchProvider>().loadMutualMatches();
-      context.read<ChatProvider>().loadConversations();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final matchProvider = context.read<MatchProvider>();
+      final chatProvider = context.read<ChatProvider>();
+
+      await matchProvider.loadMutualMatches();
+      await chatProvider.loadConversations();
+
+      if (mounted) {
+        final userIds = matchProvider.mutualMatches
+            .map((m) => m.userId)
+            .toList();
+        if (userIds.isNotEmpty) {
+          chatProvider.subscribeToUsersStatus(userIds);
+        }
+      }
     });
   }
 
@@ -38,14 +49,9 @@ class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> {
             pinned: true,
             centerTitle: false,
             expandedHeight: 100,
-            leading: Navigator.canPop(context)
-                ? IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                        color: AppColors.textPrimary, size: 22),
-                    onPressed: () => Navigator.pop(context),
-                  )
-                : null,
+            automaticallyImplyLeading: false,
             flexibleSpace: const FlexibleSpaceBar(
+              centerTitle: false,
               titlePadding: EdgeInsets.only(left: 20, bottom: 16),
               title: Text(
                 'Messages',
@@ -114,7 +120,11 @@ class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> {
               size: 48,
               color: AppColors.primary,
             ),
-          ).animate().scale(delay: 200.ms, duration: 400.ms, curve: Curves.easeOutBack),
+          ).animate().scale(
+            delay: 200.ms,
+            duration: 400.ms,
+            curve: Curves.easeOutBack,
+          ),
           const SizedBox(height: 24),
           const Text(
             'No messages yet',
@@ -157,16 +167,24 @@ class _ChatListTileState extends State<_ChatListTile> {
   String? get _imageUrl {
     final primary = widget.profile.images.where((img) => img.isPrimary);
     if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (widget.profile.images.isNotEmpty) return widget.profile.images.first.imageUrl;
+    if (widget.profile.images.isNotEmpty) {
+      return widget.profile.images.first.imageUrl;
+    }
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
-    final conversation = chatProvider.conversations.where((c) => c.otherUserId == widget.profile.id).firstOrNull;
-    final lastMessageStr = conversation?.displayLastMessage ?? 'Tap to start chatting';
-    final hasUnread = chatProvider.hasUnreadNudge(widget.profile.id);
+    final conversation = chatProvider.conversations
+        .where((c) => c.otherUserId == widget.profile.userId)
+        .firstOrNull;
+    final lastMessageStr = chatProvider.isUserTyping(widget.profile.userId)
+        ? 'typing...'
+        : (conversation?.displayLastMessage ?? 'Tap to start chatting');
+    final hasUnread = chatProvider.hasUnreadNudge(widget.profile.userId);
+    final isOnline = chatProvider.isUserOnline(widget.profile.userId);
+    final isTyping = chatProvider.isUserTyping(widget.profile.userId);
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isTapped = true),
@@ -186,131 +204,186 @@ class _ChatListTileState extends State<_ChatListTile> {
           ),
         );
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        color: _isTapped ? AppColors.divider.withValues(alpha: 0.5) : Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        child: Row(
-          children: [
-            _buildAvatar(),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.profile.name,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            letterSpacing: -0.3,
+      child:
+          AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                color: _isTapped
+                    ? AppColors.divider.withValues(alpha: 0.5)
+                    : Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    _buildAvatar(isOnline),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  widget.profile.name,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              if (hasUnread)
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                )
+                              else if (conversation == null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'NEW',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              if (lastMessageStr == 'Attachment' ||
+                                  lastMessageStr.toLowerCase().contains(
+                                    'video call',
+                                  ) ||
+                                  lastMessageStr.toLowerCase().contains(
+                                    'audio call',
+                                  )) ...[
+                                Icon(
+                                  lastMessageStr == 'Attachment'
+                                      ? Icons.attachment_rounded
+                                      : lastMessageStr.toLowerCase().contains(
+                                          'video call',
+                                        )
+                                      ? Icons.videocam_rounded
+                                      : Icons.call_rounded,
+                                  size: 14,
+                                  color: lastMessageStr.startsWith('Missed')
+                                      ? Colors.red
+                                      : (hasUnread
+                                            ? AppColors.textPrimary
+                                            : AppColors.textSecondary),
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  lastMessageStr,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: isTyping
+                                        ? AppColors.primary
+                                        : (lastMessageStr.startsWith('Missed')
+                                              ? Colors.red
+                                              : (conversation == null
+                                                    ? AppColors.textSecondary
+                                                    : (hasUnread
+                                                          ? AppColors
+                                                                .textPrimary
+                                                          : AppColors
+                                                                .textSecondary))),
+                                    fontWeight: isTyping || hasUnread
+                                        ? FontWeight.w600
+                                        : (conversation == null
+                                              ? FontWeight.normal
+                                              : FontWeight.w400),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      if (hasUnread)
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        )
-                      else if (conversation == null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'NEW',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (lastMessageStr.toLowerCase().contains('video call') || lastMessageStr.toLowerCase().contains('audio call')) ...[
-                        Icon(
-                          lastMessageStr.toLowerCase().contains('video call') ? Icons.videocam_rounded : Icons.call_rounded,
-                          size: 14,
-                          color: lastMessageStr.startsWith('Missed') ? Colors.red : (hasUnread ? AppColors.textPrimary : AppColors.textSecondary),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      Expanded(
-                        child: Text(
-                          lastMessageStr,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: lastMessageStr.startsWith('Missed') ? Colors.red : (conversation == null
-                                ? AppColors.textSecondary
-                                : (hasUnread ? AppColors.textPrimary : AppColors.textSecondary)),
-                            fontWeight: conversation == null
-                                ? FontWeight.normal
-                                : (hasUnread ? FontWeight.w600 : FontWeight.w400),
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ).animate().fadeIn(delay: widget.delay, duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
+                    ),
+                  ],
+                ),
+              )
+              .animate()
+              .fadeIn(delay: widget.delay, duration: 400.ms)
+              .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
     );
   }
 
-  Widget _buildAvatar() {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  Widget _buildAvatar(bool isOnline) {
+    return Stack(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(color: Colors.white, width: 2),
           ),
-        ],
-        border: Border.all(
-          color: Colors.white,
-          width: 2,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(32),
+            child: _imageUrl != null
+                ? Image.network(
+                    _imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildFallbackAvatar(),
+                  )
+                : _buildFallbackAvatar(),
+          ),
         ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: _imageUrl != null
-            ? Image.network(
-                _imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildFallbackAvatar(),
-              )
-            : _buildFallbackAvatar(),
-      ),
+        if (isOnline)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -319,7 +392,9 @@ class _ChatListTileState extends State<_ChatListTile> {
       color: AppColors.primary.withValues(alpha: 0.1),
       child: Center(
         child: Text(
-          widget.profile.name.isNotEmpty ? widget.profile.name[0].toUpperCase() : '?',
+          widget.profile.name.isNotEmpty
+              ? widget.profile.name[0].toUpperCase()
+              : '?',
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,

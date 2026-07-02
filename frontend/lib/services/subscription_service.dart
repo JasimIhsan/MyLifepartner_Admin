@@ -58,4 +58,17 @@ class SubscriptionService {
       throw Exception('Failed to load user features: $e');
     }
   }
+
+  Future<UserSubscription?> syncSubscription() async {
+    try {
+      final response = await _apiService.dio.post('/user/subscriptions/sync');
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        if (response.data['data'] == null) return null;
+        return UserSubscription.fromJson(response.data['data']);
+      }
+      throw Exception(response.data['message'] ?? 'Failed to sync subscription');
+    } catch (e) {
+      throw Exception('Failed to sync subscription: $e');
+    }
+  }
 }

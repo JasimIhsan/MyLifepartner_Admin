@@ -1,10 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/auth_response.dart';
+import 'package:mylifepartner/screens/profile_screen/manage_profile_pictures_screen.dart';
+import 'package:mylifepartner/screens/profile_screen/widgets/edit_profile_ui_helpers.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/header_waves_background.dart';
 import 'package:mylifepartner/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,8 +31,11 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   late TextEditingController _cityController;
 
   bool _isLoading = false;
+  bool _loadingImage = false;
+  String? _primaryImageUrl;
   String? _country;
   DateTime? _dateOfBirth;
+  bool _isDirty = false;
 
   @override
   void initState() {
@@ -43,17 +48,70 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     _emailController = TextEditingController(text: widget.user.email ?? '');
     _cityController = TextEditingController(text: widget.user.city ?? '');
     _country = widget.user.country;
+
+    _nameController.addListener(_checkIfDirty);
+    _cityController.addListener(_checkIfDirty);
+
+    _fetchPrimaryImage();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _nameController.removeListener(_checkIfDirty);
+    _cityController.removeListener(_checkIfDirty);
     _nameController.dispose();
     _ageController.dispose();
     _dateController.dispose();
     _emailController.dispose();
     _cityController.dispose();
     super.dispose();
+  }
+
+  void _checkIfDirty() {
+    final dirty = _hasUnsavedChanges();
+    if (dirty != _isDirty) {
+      setState(() {
+        _isDirty = dirty;
+      });
+    }
+  }
+
+  Future<void> _fetchPrimaryImage() async {
+    if (!mounted) return;
+    setState(() => _loadingImage = true);
+    try {
+      final images = await _profileRepository.getUserImages();
+      if (images.isNotEmpty) {
+        final primary = images.firstWhere(
+          (img) => img.isPrimary,
+          orElse: () => images.first,
+        );
+        if (mounted) {
+          setState(() {
+            _primaryImageUrl = primary.imageUrl;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching primary image: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _loadingImage = false);
+      }
+    }
+  }
+
+  Future<void> _navigateToManagePictures() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ManageProfilePicturesScreen(),
+      ),
+    );
+    if (result == true) {
+      _fetchPrimaryImage();
+    }
   }
 
   String _formatDate(DateTime? value) {
@@ -78,6 +136,112 @@ class _EditProfileScreenState extends State<EditProfileScreen>
     }
 
     return age.toString();
+  }
+
+  bool _hasUnsavedChanges() {
+    final originalName = widget.user.name ?? '';
+    final originalCity = widget.user.city ?? '';
+    final originalCountry = widget.user.country;
+    final originalDob = widget.user.dateOfBirth;
+
+    final isNameChanged = _nameController.text.trim() != originalName;
+    final isCityChanged = _cityController.text.trim() != originalCity;
+    final isCountryChanged = _country != originalCountry;
+    final isDobChanged =
+        (_dateOfBirth?.year != originalDob?.year) ||
+        (_dateOfBirth?.month != originalDob?.month) ||
+        (_dateOfBirth?.day != originalDob?.day);
+
+    return isNameChanged || isCityChanged || isCountryChanged || isDobChanged;
+  }
+
+  void _showDiscardBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.borderColor,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Discard Changes?',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'You have unsaved changes. Are you sure you want to discard them?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: const BorderSide(color: AppColors.borderColor),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Keep Editing',
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Pop sheet
+                        Navigator.pop(context); // Pop screen
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Discard',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _saveProfile() async {
@@ -149,226 +313,651 @@ class _EditProfileScreenState extends State<EditProfileScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(
-          'Edit Profile Info',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLabel('Name'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _nameController,
-                hintText: 'Enter your name',
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildLabel('Age'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _ageController,
-                hintText: 'Age',
-                enabled: false,
-              ),
-              const SizedBox(height: 20),
-              _buildLabel('Date of Birth'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _dateController,
-                hintText: 'Date of birth',
-                readOnly: true,
-                onTap: () async {
-                  final now = DateTime.now();
-                  final eighteenYearsAgo =
-                      DateTime(now.year - 18, now.month, now.day);
-                  final DateTime? picked = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        _dateOfBirth != null &&
-                                _dateOfBirth!.isBefore(eighteenYearsAgo)
-                            ? _dateOfBirth!
-                            : eighteenYearsAgo,
-                    firstDate: DateTime(1900),
-                    lastDate: eighteenYearsAgo,
-                    builder: (context, child) {
-                      return Theme(
-                        data: Theme.of(context).copyWith(
-                          colorScheme: const ColorScheme.light(
-                            primary: AppColors.primary,
-                            onPrimary: Colors.white,
-                            onSurface: AppColors.textPrimary,
+    return PopScope(
+      canPop: !_isDirty,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _showDiscardBottomSheet(context);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF7FAFD),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Stack(
+                    children: [
+                      // Header waves background painted with Flutter
+                      const HeaderWavesBackground(),
+
+                      Column(
+                        children: [
+                          // App Bar Row
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: MediaQuery.of(context).padding.top + 8,
+                              left: 8,
+                              right: 8,
+                            ),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: IconButton(
+                                    icon: const Icon(
+                                      Icons.arrow_back_ios_new_rounded,
+                                      color: Colors.black,
+                                      size: 20,
+                                    ),
+                                    onPressed: () async {
+                                      final shouldPop = !_isDirty;
+                                      if (shouldPop) {
+                                        Navigator.pop(context);
+                                      } else {
+                                        _showDiscardBottomSheet(context);
+                                      }
+                                    },
+                                  ),
+                                ),
+                                const Text(
+                                  'Profile',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        child: child!,
-                      );
-                    },
-                  );
-                  if (picked != null && picked != _dateOfBirth) {
-                    setState(() {
-                      _dateOfBirth = picked;
-                      _dateController.text = _formatDate(picked);
-                      _ageController.text = _calculateAge(picked);
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: 20),
-              _buildLabel('Email'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _emailController,
-                hintText: 'Email address',
-                keyboardType: TextInputType.emailAddress,
-                enabled: false,
-              ),
-              const SizedBox(height: 20),
-              _buildLabel('Country'),
-              const SizedBox(height: 8),
-              _buildCountryPicker(),
-              const SizedBox(height: 20),
-              _buildLabel('City'),
-              const SizedBox(height: 8),
-              _buildTextField(
-                controller: _cityController,
-                hintText: 'Enter your city',
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter your city';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  text: 'Save Changes',
-                  onPressed: _saveProfile,
-                  isLoading: _isLoading,
+
+                          const SizedBox(height: 16),
+
+                          // Avatar Section
+                          GestureDetector(
+                            onTap: _navigateToManagePictures,
+                            child: Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 3,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.08,
+                                        ),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 6),
+                                      ),
+                                    ],
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 54,
+                                    backgroundColor: Colors.grey[100],
+                                    backgroundImage:
+                                        _primaryImageUrl != null &&
+                                            _primaryImageUrl!.isNotEmpty
+                                        ? CachedNetworkImageProvider(
+                                            _primaryImageUrl!,
+                                          )
+                                        : null,
+                                    child: _loadingImage
+                                        ? const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: AppColors.primary,
+                                            ),
+                                          )
+                                        : (_primaryImageUrl == null ||
+                                                  _primaryImageUrl!.isEmpty
+                                              ? const Icon(
+                                                  Icons.person,
+                                                  size: 54,
+                                                  color: Colors.grey,
+                                                )
+                                              : null),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt_rounded,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 14),
+
+                          // User Info
+                          Text(
+                            widget.user.name ?? '',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            widget.user.email ?? '',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 14,
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Floating Rounded Card
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                left: 20,
+                                right: 20,
+                                bottom: 20,
+                              ),
+                              child: Container(
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.03,
+                                      ),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                padding: EdgeInsets.only(
+                                  left: 20,
+                                  right: 20,
+                                  top: 24,
+                                  bottom:
+                                      MediaQuery.of(context).padding.bottom > 0
+                                      ? MediaQuery.of(context).padding.bottom
+                                      : 24,
+                                ),
+                                child: Form(
+                                  key: _formKey,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Section Header: Personal Details
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.person_outline_rounded,
+                                            color: AppColors.primary,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'PERSONAL DETAILS',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey[700],
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      MinimalTextField(
+                                        controller: _nameController,
+                                        label: 'Display Name',
+                                        hintText: 'Enter your name',
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.trim().isEmpty) {
+                                            return 'Please enter your name';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: MinimalTextField(
+                                              controller: _dateController,
+                                              label: 'Date of Birth',
+                                              hintText: 'Select date',
+                                              readOnly: true,
+                                              onTap: () async {
+                                                final now = DateTime.now();
+                                                final eighteenYearsAgo =
+                                                    DateTime(
+                                                      now.year - 18,
+                                                      now.month,
+                                                      now.day,
+                                                    );
+                                                final DateTime?
+                                                picked = await showDatePicker(
+                                                  context: context,
+                                                  initialDate:
+                                                      _dateOfBirth != null &&
+                                                          _dateOfBirth!.isBefore(
+                                                            eighteenYearsAgo,
+                                                          )
+                                                      ? _dateOfBirth!
+                                                      : eighteenYearsAgo,
+                                                  firstDate: DateTime(1900),
+                                                  lastDate: eighteenYearsAgo,
+                                                  builder: (context, child) {
+                                                    return Theme(
+                                                      data: Theme.of(context).copyWith(
+                                                        colorScheme:
+                                                            const ColorScheme.light(
+                                                              primary: AppColors
+                                                                  .primary,
+                                                              onPrimary:
+                                                                  Colors.white,
+                                                              onSurface: AppColors
+                                                                  .textPrimary,
+                                                            ),
+                                                      ),
+                                                      child: child!,
+                                                    );
+                                                  },
+                                                );
+                                                if (picked != null &&
+                                                    picked != _dateOfBirth) {
+                                                  setState(() {
+                                                    _dateOfBirth = picked;
+                                                    _dateController.text =
+                                                        _formatDate(picked);
+                                                    _ageController.text =
+                                                        _calculateAge(picked);
+                                                  });
+                                                  _checkIfDirty();
+                                                }
+                                              },
+                                            ),
+                                          ),
+                                          const SizedBox(width: 24),
+                                          Expanded(
+                                            child: MinimalTextField(
+                                              controller: _ageController,
+                                              label: 'Calculated Age',
+                                              hintText: '--',
+                                              enabled: false,
+                                              readOnly: true,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+
+                                      const SizedBox(height: 24),
+
+                                      // Section Header: Location Information
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on_outlined,
+                                            color: AppColors.primary,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'LOCATION SETTINGS',
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey[700],
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+
+                                      MinimalCountryPicker(
+                                        country: _country,
+                                        onChanged: (val) {
+                                          setState(() {
+                                            _country = val;
+                                          });
+                                          _checkIfDirty();
+                                        },
+                                      ),
+
+                                      MinimalTextField(
+                                        controller: _cityController,
+                                        label: 'City',
+                                        hintText: 'Enter city name',
+                                        validator: (value) {
+                                          if (value == null ||
+                                              value.trim().isEmpty) {
+                                            return 'Please enter your city';
+                                          }
+                                          return null;
+                                        },
+                                      ),
+                                      const Spacer(),
+                                      const SizedBox(height: 24),
+
+                                      // Save Button Container at the very bottom
+                                      SizedBox(
+                                        width: double.infinity,
+                                        height: 54,
+                                        child: ElevatedButton(
+                                          onPressed: (_isDirty && !_isLoading)
+                                              ? _saveProfile
+                                              : null,
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: AppColors.primary,
+                                            foregroundColor: Colors.white,
+                                            disabledBackgroundColor: AppColors
+                                                .primary
+                                                .withValues(alpha: 0.5),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                            elevation: 0,
+                                          ),
+                                          child: _isLoading
+                                              ? const SizedBox(
+                                                  height: 24,
+                                                  width: 24,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                        strokeWidth: 2.5,
+                                                      ),
+                                                )
+                                              : Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.save_outlined,
+                                                      color: Colors.white,
+                                                      size: 22,
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Container(
+                                                      width: 1,
+                                                      height: 20,
+                                                      color: Colors.white
+                                                          .withValues(
+                                                            alpha: 0.35,
+                                                          ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    const Text(
+                                                      'Save Changes',
+                                                      style: TextStyle(
+                                                        fontSize: 16,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: Colors.white,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Minimal Custom Inputs ──────────────────────────────────────────────────
+
+class MinimalTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hintText;
+  final bool enabled;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final String? Function(String?)? validator;
+
+  const MinimalTextField({
+    super.key,
+    required this.controller,
+    required this.label,
+    required this.hintText,
+    this.enabled = true,
+    this.readOnly = false,
+    this.onTap,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          TextFormField(
+            controller: controller,
+            enabled: enabled,
+            readOnly: readOnly,
+            onTap: onTap,
+            validator: validator,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: enabled ? AppColors.textPrimary : AppColors.textLight,
+            ),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: const TextStyle(
+                color: AppColors.textLight,
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 6),
+              border: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderColor),
+              ),
+              enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderColor),
+              ),
+              disabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderColor),
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+              errorBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.error),
+              ),
+              focusedErrorBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.error, width: 1.5),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MinimalReadOnlyField extends StatelessWidget {
+  final String label;
+  final String value;
+  final String lockedReason;
+
+  const MinimalReadOnlyField({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.lockedReason,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const Icon(
+                Icons.lock_outline_rounded,
+                size: 14,
+                color: AppColors.textLight,
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: AppColors.textPrimary,
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-    bool enabled = true,
-    bool readOnly = false,
-    VoidCallback? onTap,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      validator: validator,
-      enabled: enabled,
-      readOnly: readOnly,
-      onTap: onTap,
-      style: TextStyle(
-        color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(color: AppColors.textSecondary),
-        filled: true,
-        fillColor: enabled
-            ? AppColors.surface
-            : AppColors.surface.withValues(alpha: 0.65),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 16,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCountryPicker() {
-    final hasCountry = _country != null && _country!.trim().isNotEmpty;
-
-    return GestureDetector(
-      onTap: () async {
-        final selected = await showModalBottomSheet<String>(
-          context: context,
-          isScrollControlled: true,
-          backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textLight,
+            ),
           ),
-          builder: (_) => _CountryPickerSheet(selected: _country),
-        );
-
-        if (selected != null) {
-          setState(() {
-            _country = selected;
-          });
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: hasCountry ? AppColors.primary : AppColors.borderColor,
-            width: hasCountry ? 1.5 : 1,
+          const SizedBox(height: 2),
+          Text(
+            lockedReason,
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.textLight,
+              fontStyle: FontStyle.italic,
+            ),
           ),
-        ),
-        child: Row(
+          const SizedBox(height: 8),
+          const Divider(height: 1, thickness: 1, color: AppColors.divider),
+        ],
+      ),
+    );
+  }
+}
+
+class MinimalCountryPicker extends StatelessWidget {
+  final String? country;
+  final ValueChanged<String> onChanged;
+
+  const MinimalCountryPicker({
+    super.key,
+    required this.country,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCountry = country != null && country!.trim().isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: GestureDetector(
+        onTap: () async {
+          final selected = await showModalBottomSheet<String>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            builder: (_) => EditProfileCountryPickerSheet(selected: country),
+          );
+
+          if (selected != null) {
+            onChanged(selected);
+          }
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Text(
-                hasCountry ? _country! : 'Select your country',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: hasCountry
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
-                ),
+            const Text(
+              'Country',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
               ),
             ),
-            const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textSecondary,
-              size: 22,
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  hasCountry ? country! : 'Select your country',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: hasCountry
+                        ? AppColors.textPrimary
+                        : AppColors.textLight,
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textLight,
+                  size: 20,
+                ),
+              ],
             ),
+            const SizedBox(height: 6),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
           ],
         ),
       ),
@@ -376,340 +965,22 @@ class _EditProfileScreenState extends State<EditProfileScreen>
   }
 }
 
-class _CountryPickerSheet extends StatefulWidget {
-  final String? selected;
+// ─── Custom Painters ────────────────────────────────────────────────────────
 
-  const _CountryPickerSheet({this.selected});
+class DotGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dotPaint = Paint()
+      ..color = const Color(0xFFE2ECF7)
+      ..style = PaintingStyle.fill;
+
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 5; j++) {
+        canvas.drawCircle(Offset(i * 8.0, j * 8.0), 1.5, dotPaint);
+      }
+    }
+  }
 
   @override
-  State<_CountryPickerSheet> createState() => _CountryPickerSheetState();
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
-class _CountryPickerSheetState extends State<_CountryPickerSheet> {
-  final TextEditingController _searchController = TextEditingController();
-  List<String> _filteredCountries = _kCountries;
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _onSearch(String query) {
-    setState(() {
-      _filteredCountries = query.isEmpty
-          ? _kCountries
-          : _kCountries
-                .where(
-                  (country) =>
-                      country.toLowerCase().contains(query.toLowerCase()),
-                )
-                .toList();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (_, scrollController) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-          child: Column(
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.borderColor,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Select Country',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: _searchController,
-                onChanged: _onSearch,
-                autofocus: true,
-                style: TextStyle(fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  hintStyle: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.borderColor),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.borderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: _filteredCountries.length,
-                  itemBuilder: (_, index) {
-                    final country = _filteredCountries[index];
-                    final isSelected = country == widget.selected;
-                    return ListTile(
-                      dense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
-                      title: Text(
-                        country,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: isSelected
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.textPrimary,
-                        ),
-                      ),
-                      trailing: isSelected
-                          ? const Icon(
-                              Icons.check,
-                              color: AppColors.primary,
-                              size: 18,
-                            )
-                          : null,
-                      onTap: () => Navigator.pop(context, country),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-const List<String> _kCountries = [
-  'Afghanistan',
-  'Albania',
-  'Algeria',
-  'Andorra',
-  'Angola',
-  'Antigua and Barbuda',
-  'Argentina',
-  'Armenia',
-  'Australia',
-  'Austria',
-  'Azerbaijan',
-  'Bahamas',
-  'Bahrain',
-  'Bangladesh',
-  'Barbados',
-  'Belarus',
-  'Belgium',
-  'Belize',
-  'Benin',
-  'Bhutan',
-  'Bolivia',
-  'Bosnia and Herzegovina',
-  'Botswana',
-  'Brazil',
-  'Brunei',
-  'Bulgaria',
-  'Burkina Faso',
-  'Burundi',
-  'Cambodia',
-  'Cameroon',
-  'Canada',
-  'Cape Verde',
-  'Central African Republic',
-  'Chad',
-  'Chile',
-  'China',
-  'Colombia',
-  'Comoros',
-  'Congo',
-  'Costa Rica',
-  'Croatia',
-  'Cuba',
-  'Cyprus',
-  'Czech Republic',
-  'Denmark',
-  'Djibouti',
-  'Dominica',
-  'Dominican Republic',
-  'Ecuador',
-  'Egypt',
-  'El Salvador',
-  'Equatorial Guinea',
-  'Eritrea',
-  'Estonia',
-  'Eswatini',
-  'Ethiopia',
-  'Fiji',
-  'Finland',
-  'France',
-  'Gabon',
-  'Gambia',
-  'Georgia',
-  'Germany',
-  'Ghana',
-  'Greece',
-  'Grenada',
-  'Guatemala',
-  'Guinea',
-  'Guinea-Bissau',
-  'Guyana',
-  'Haiti',
-  'Honduras',
-  'Hungary',
-  'Iceland',
-  'India',
-  'Indonesia',
-  'Iran',
-  'Iraq',
-  'Ireland',
-  'Israel',
-  'Italy',
-  'Jamaica',
-  'Japan',
-  'Jordan',
-  'Kazakhstan',
-  'Kenya',
-  'Kiribati',
-  'Kuwait',
-  'Kyrgyzstan',
-  'Laos',
-  'Latvia',
-  'Lebanon',
-  'Lesotho',
-  'Liberia',
-  'Libya',
-  'Liechtenstein',
-  'Lithuania',
-  'Luxembourg',
-  'Madagascar',
-  'Malawi',
-  'Malaysia',
-  'Maldives',
-  'Mali',
-  'Malta',
-  'Marshall Islands',
-  'Mauritania',
-  'Mauritius',
-  'Mexico',
-  'Micronesia',
-  'Moldova',
-  'Monaco',
-  'Mongolia',
-  'Montenegro',
-  'Morocco',
-  'Mozambique',
-  'Myanmar',
-  'Namibia',
-  'Nauru',
-  'Nepal',
-  'Netherlands',
-  'New Zealand',
-  'Nicaragua',
-  'Niger',
-  'Nigeria',
-  'North Korea',
-  'North Macedonia',
-  'Norway',
-  'Oman',
-  'Pakistan',
-  'Palau',
-  'Palestine',
-  'Panama',
-  'Papua New Guinea',
-  'Paraguay',
-  'Peru',
-  'Philippines',
-  'Poland',
-  'Portugal',
-  'Qatar',
-  'Romania',
-  'Russia',
-  'Rwanda',
-  'Saint Kitts and Nevis',
-  'Saint Lucia',
-  'Saint Vincent and the Grenadines',
-  'Samoa',
-  'San Marino',
-  'Sao Tome and Principe',
-  'Saudi Arabia',
-  'Senegal',
-  'Serbia',
-  'Seychelles',
-  'Sierra Leone',
-  'Singapore',
-  'Slovakia',
-  'Slovenia',
-  'Solomon Islands',
-  'Somalia',
-  'South Africa',
-  'South Korea',
-  'South Sudan',
-  'Spain',
-  'Sri Lanka',
-  'Sudan',
-  'Suriname',
-  'Sweden',
-  'Switzerland',
-  'Syria',
-  'Taiwan',
-  'Tajikistan',
-  'Tanzania',
-  'Thailand',
-  'Timor-Leste',
-  'Togo',
-  'Tonga',
-  'Trinidad and Tobago',
-  'Tunisia',
-  'Turkey',
-  'Turkmenistan',
-  'Tuvalu',
-  'Uganda',
-  'Ukraine',
-  'United Arab Emirates',
-  'United Kingdom',
-  'United States',
-  'Uruguay',
-  'Uzbekistan',
-  'Vanuatu',
-  'Vatican City',
-  'Venezuela',
-  'Vietnam',
-  'Yemen',
-  'Zambia',
-  'Zimbabwe',
-];

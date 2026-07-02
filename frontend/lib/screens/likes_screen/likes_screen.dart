@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
@@ -80,7 +79,7 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -302,30 +301,69 @@ class _MatchesListState extends State<_MatchesList> {
         }
 
         if (profiles.isEmpty) {
+          final String title;
+          final String subtitle;
+
+          if (widget.tabIndex == 0) {
+            title = 'No Matches Yet';
+            subtitle =
+                "When you like someone and they like you back, they will appear here.";
+          } else if (widget.tabIndex == 1) {
+            title = 'No Likes Received';
+            subtitle =
+                "Profiles of people who liked you will be shown here. Keep your profile updated!";
+          } else {
+            title = 'No Likes Sent';
+            subtitle =
+                "You haven't liked anyone yet. Discover profiles to find your perfect partner!";
+          }
+
           return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  widget.tabIndex == 0
-                      ? Icons.favorite_border_rounded
-                      : widget.tabIndex == 1
-                      ? Icons.mark_email_unread_outlined
-                      : Icons.send_outlined,
-                  size: 48,
-                  color: AppColors.textSecondary.withValues(alpha: 0.5),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'No profiles found',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/images/illustrations/empty_profile.png',
+                    height: 200,
+                    fit: BoxFit.contain,
+                  ).animate().scale(
+                    begin: const Offset(0.7, 0.7),
+                    end: const Offset(1.0, 1.0),
+                    duration: 500.ms,
+                    curve: Curves.easeOutBack,
                   ),
-                ),
-              ],
-            ).animate().fadeIn(duration: 400.ms),
+                  // const SizedBox(height: 10),
+                  Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -0.5,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 150.ms, duration: 450.ms)
+                      .slideY(begin: 0.2, end: 0.0, curve: Curves.easeOutQuad),
+                  const SizedBox(height: 12),
+                  Text(
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 300.ms, duration: 450.ms)
+                      .slideY(begin: 0.2, end: 0.0, curve: Curves.easeOutQuad),
+                ],
+              ),
+            ),
           );
         }
 
@@ -392,7 +430,7 @@ class _ConnectionCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: AppColors.surface,
+              color: AppColors.white,
               boxShadow: [
                 BoxShadow(
                   color: AppColors.black.withValues(alpha: 0.04),

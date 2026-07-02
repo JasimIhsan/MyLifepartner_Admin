@@ -5,6 +5,7 @@ import { EnrichedSubscriptionPlan } from "./user.subscription.service.interface"
 export interface AddFeaturesInput {
    featureKey: string;
    limit: string;
+   description?: string;
 }
 
 export interface IAdminSubscriptionService {
@@ -15,6 +16,6 @@ export interface IAdminSubscriptionService {
    deletePlan(planId: number): Promise<SubscriptionPlan>;
 
    addFeatures(planId: number, features: AddFeaturesInput[]): Promise<PlanFeature[]>;
-   updatePlanFeature(planFeatureId: number, limit: string): Promise<PlanFeature>;
+   updatePlanFeature(planFeatureId: number, data: { limit?: string; description?: string }): Promise<PlanFeature>;
    deletePlanFeature(planFeatureId: number): Promise<void>;
 }

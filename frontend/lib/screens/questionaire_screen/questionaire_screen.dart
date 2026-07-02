@@ -7,8 +7,8 @@ import 'package:mylifepartner/screens/login_screen/login_screen.dart';
 import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:mylifepartner/screens/questionaire_screen/widgets/question_widget.dart';
 import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/shared/widgets/custom_app_bar.dart';
-import 'package:mylifepartner/shared/widgets/custom_button.dart';
+import 'package:mylifepartner/widgets/custom_app_bar.dart';
+import 'package:mylifepartner/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuestionaireScreen extends StatefulWidget {

@@ -1,18 +1,18 @@
 import 'dart:ui';
 
+import 'package:country_flags/country_flags.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mylifepartner/core/app_colors.dart';
+import 'package:mylifepartner/core/country_helper.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
 import 'package:mylifepartner/providers/match_provider.dart';
 import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
-import 'package:mylifepartner/shared/widgets/verified_profile_bottom_sheet.dart';
+import 'package:mylifepartner/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:mylifepartner/services/match_service.dart';
+import 'package:mylifepartner/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
-import 'package:country_flags/country_flags.dart';
-import 'package:mylifepartner/core/country_helper.dart';
 
 /// Discover screen refactored into a modern profile browser UI.
 /// Each profile is displayed as a large hero card with floating navigation and interaction buttons.
@@ -28,19 +28,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   final Set<int> _actionedProfileIds = {};
   List<MatchRecommendation> _localProfiles = [];
   int _currentIndex = 0;
+  String? _loadingAction;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        final provider = context.read<MatchProvider>();
-        if (provider.state == MatchLoadState.idle ||
-            provider.profiles.isEmpty) {
-          provider.loadRecommendations().then((_) => _syncWithProvider());
-        } else {
-          _syncWithProvider();
-        }
+        context.read<MatchProvider>().loadRecommendations().then((_) => _syncWithProvider());
       }
     });
   }
@@ -56,7 +51,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final provider = context.read<MatchProvider>();
     setState(() {
       _localProfiles = List.from(provider.profiles);
+      _currentIndex = 0;
     });
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(0);
+    }
   }
 
   void _goToNext() {
@@ -83,31 +82,40 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     MatchRecommendation profile,
     String action,
   ) async {
-    if (_actionedProfileIds.contains(profile.id)) return;
+    if (_actionedProfileIds.contains(profile.id) || _loadingAction != null) return;
 
     setState(() {
-      _actionedProfileIds.add(profile.id);
+      _loadingAction = action;
     });
-
-    // Animate to next profile smoothly
-    _goToNext();
 
     try {
       // Backend integration: 'RIGHT' for interest, 'LEFT' for not interested
       await MatchService.swipe(targetProfileId: profile.id, action: action);
+      
+      if (mounted) {
+        setState(() {
+          _actionedProfileIds.add(profile.id);
+          _loadingAction = null;
+        });
+        // Animate to next profile smoothly only after success
+        _goToNext();
+      }
     } catch (e) {
       debugPrint("Action Failed: $e");
+      if (mounted) {
+        setState(() {
+          _loadingAction = null;
+        });
+      }
+      
       if (mounted && e is DioException && e.response?.statusCode == 402) {
-        showModalBottomSheet(
-          context: context,
-          backgroundColor: Colors.transparent,
-          isScrollControlled: true,
-          builder: (_) => InterestLimitBottomSheet(
-            message:
-                e.response?.data?['message'] ??
-                'You have reached your interest limit. Upgrade your plan to send more interests!',
-          ),
-        );
+        FeatureExhaustedModal.show(context, featureType: 'Interest');
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to perform action. Please try again.')),
+          );
+        }
       }
     }
   }
@@ -148,12 +156,35 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                         itemCount: _localProfiles.length,
                         itemBuilder: (context, index) {
                           final profile = _localProfiles[index];
-                          return _ProfileBrowserCard(
-                            profile: profile,
-                            onInterest: () =>
-                                _handleInteraction(profile, 'RIGHT'),
-                            onNotInterested: () =>
-                                _handleInteraction(profile, 'LEFT'),
+                          return RefreshIndicator(
+                            color: AppColors.primary,
+                            onRefresh: () async {
+                              await context.read<MatchProvider>().loadRecommendations();
+                              _syncWithProvider();
+                            },
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return SingleChildScrollView(
+                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  child: SizedBox(
+                                    height: constraints.maxHeight,
+                                    child: _ProfileBrowserCard(
+                                      profile: profile,
+                                      onInterest: () =>
+                                          _handleInteraction(profile, 'RIGHT'),
+                                      onNotInterested: () =>
+                                          _handleInteraction(profile, 'LEFT'),
+                                      onReturnFromDetail: () {
+                                        context.read<MatchProvider>().loadRecommendations().then((_) => _syncWithProvider());
+                                      },
+                                      isActioning: _currentIndex == index && _loadingAction != null,
+                                      loadingAction: _currentIndex == index ? _loadingAction : null,
+                                      isActioned: _actionedProfileIds.contains(profile.id),
+                                    ),
+                                  ),
+                                );
+                              }
+                            ),
                           );
                         },
                       ),
@@ -326,11 +357,19 @@ class _ProfileBrowserCard extends StatelessWidget {
   final MatchRecommendation profile;
   final VoidCallback onInterest;
   final VoidCallback onNotInterested;
+  final VoidCallback? onReturnFromDetail;
+  final bool isActioning;
+  final String? loadingAction;
+  final bool isActioned;
 
   const _ProfileBrowserCard({
     required this.profile,
     required this.onInterest,
     required this.onNotInterested,
+    this.onReturnFromDetail,
+    this.isActioning = false,
+    this.loadingAction,
+    this.isActioned = false,
   });
 
   String? get _imageUrl {
@@ -400,7 +439,7 @@ class _ProfileBrowserCard extends StatelessWidget {
               ),
             ),
           ),
-          if (_isNewProfile(profile.createdAt?.toString() ?? ''))
+          if (_isNewProfile(profile.createdAt.toString()))
             Positioned(
               top: 24,
               left: 20,
@@ -446,6 +485,9 @@ class _ProfileBrowserCard extends StatelessWidget {
                         _ActionButtonsRow(
                           onInterest: onInterest,
                           onNotInterested: onNotInterested,
+                          isActioning: isActioning,
+                          loadingAction: loadingAction,
+                          isActioned: isActioned,
                         ),
                       ],
                     )
@@ -458,15 +500,20 @@ class _ProfileBrowserCard extends StatelessWidget {
           Positioned.fill(
             bottom: 300,
             child: GestureDetector(
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ProfileDetailScreen(
-                    profileId: profile.id,
-                    profileName: profile.name,
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfileDetailScreen(
+                      profileId: profile.id,
+                      profileName: profile.name,
+                    ),
                   ),
-                ),
-              ),
+                );
+                if (onReturnFromDetail != null) {
+                  onReturnFromDetail!();
+                }
+              },
               child: Container(color: Colors.transparent),
             ),
           ),
@@ -610,25 +657,28 @@ class _SideNavigationButton extends StatelessWidget {
       child:
           Container(
                 margin: EdgeInsets.only(
-                  left: isLeft ? 16 : 0,
-                  right: !isLeft ? 16 : 0,
+                  left: isLeft ? 25 : 0,
+                  right: !isLeft ? 25 : 0,
                 ),
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white.withValues(alpha: 0.95),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                      spreadRadius: 2,
+                width: 55,
+                height: 55,
+                child: ClipOval(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.4),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(icon, color: Colors.white, size: 24),
+                      ),
                     ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(icon, color: AppColors.textPrimary, size: 28),
+                  ),
                 ),
               )
               .animate()
@@ -646,10 +696,16 @@ class _SideNavigationButton extends StatelessWidget {
 class _ActionButtonsRow extends StatelessWidget {
   final VoidCallback onInterest;
   final VoidCallback onNotInterested;
+  final bool isActioning;
+  final String? loadingAction;
+  final bool isActioned;
 
   const _ActionButtonsRow({
     required this.onInterest,
     required this.onNotInterested,
+    this.isActioning = false,
+    this.loadingAction,
+    this.isActioned = false,
   });
 
   @override
@@ -660,8 +716,10 @@ class _ActionButtonsRow extends StatelessWidget {
           child: _ActionButton(
             label: '',
             icon: Icons.close,
-            onTap: onNotInterested,
+            onTap: (isActioning || isActioned) ? () {} : onNotInterested,
             primary: false,
+            isLoading: isActioning && loadingAction == 'LEFT',
+            isDisabled: isActioned,
           ),
         ),
         const SizedBox(width: 16),
@@ -669,8 +727,10 @@ class _ActionButtonsRow extends StatelessWidget {
           child: _ActionButton(
             label: '',
             icon: Icons.favorite_rounded,
-            onTap: onInterest,
+            onTap: (isActioning || isActioned) ? () {} : onInterest,
             primary: true,
+            isLoading: isActioning && loadingAction == 'RIGHT',
+            isDisabled: isActioned,
           ),
         ),
       ],
@@ -683,50 +743,74 @@ class _ActionButton extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool primary;
+  final bool isLoading;
+  final bool isDisabled;
 
   const _ActionButton({
     required this.label,
     required this.icon,
     required this.onTap,
     required this.primary,
+    this.isLoading = false,
+    this.isDisabled = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final Color buttonColor = isDisabled
+        ? Colors.grey.shade400
+        : (primary ? AppColors.primary : Colors.transparent);
+
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: primary ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(100),
-          border: primary
-              ? null
-              : Border.all(color: Colors.white30, width: 1.5),
-          boxShadow: primary
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
+      onTap: (isLoading || isDisabled) ? null : onTap,
+      child: Opacity(
+        opacity: (isLoading || isDisabled) ? 0.6 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: buttonColor,
+            borderRadius: BorderRadius.circular(100),
+            border: (primary || isDisabled)
+                ? null
+                : Border.all(color: Colors.white30, width: 1.5),
+            boxShadow: (primary && !isDisabled && !isLoading)
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
                   ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, color: Colors.white, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-                fontSize: 14,
-              ),
-            ),
-          ],
+                )
+              else ...[
+                Icon(icon, color: Colors.white, size: 20),
+                if (label.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ],
+            ],
+          ),
         ),
       ),
     );

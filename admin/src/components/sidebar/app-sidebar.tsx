@@ -4,7 +4,7 @@ import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { RootState } from "@/store";
-import { Command, CreditCard, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
+import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { NavMain } from "./nav-main";
@@ -35,6 +35,11 @@ const data = {
          title: "Image Assets",
          url: "/image-assets",
          icon: Command,
+      },
+      {
+         title: "LPA Guide",
+         url: "/lpa-guide",
+         icon: BookOpen,
       },
       {
          title: "Subscriptions",

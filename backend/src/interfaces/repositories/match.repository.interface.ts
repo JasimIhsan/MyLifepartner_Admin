@@ -26,11 +26,9 @@ export interface CandidateProfile {
    city: string | null;
    state: string | null;
    country: string | null;
-   religion: string | null;
    motherTongue: string | null;
    highestEducation: string | null;
    occupation: string | null;
-   annualIncome: number | null;
    bio: string | null;
    gender: string | null;
    images: Array<{ imageUrl: string; isPrimary: boolean }>;
@@ -44,12 +42,9 @@ export interface UserPreferenceData {
    ageTo: number | null;
    heightFrom: number | null;
    heightTo: number | null;
-   religion: string[];
    motherTongue: string[];
    highestEducation: string[];
    occupation: string[];
-   annualIncomeFrom: number | null;
-   annualIncomeTo: number | null;
 }
 
 export interface UserAnswerData {

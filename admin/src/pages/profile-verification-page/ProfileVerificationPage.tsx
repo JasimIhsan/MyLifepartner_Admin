@@ -81,7 +81,6 @@ const ProfileVerificationPage = () => {
    };
 
    const handleApprove = async (id: number) => {
-      if (!confirm("Are you sure you want to approve this profile?")) return;
       try {
          await axiosInstance.patch(`/admin/users/${id}/verify-profile`);
          toast.success("Profile verified successfully");

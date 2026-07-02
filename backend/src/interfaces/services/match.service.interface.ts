@@ -9,13 +9,13 @@ export enum InteractionState {
 
 export interface MatchRecommendationItem {
    id: number;
+   userId: number;
    name: string;
    age: number;
    isVerified: boolean;
    heightCm: number | null;
    city: string | null;
    country: string | null;
-   religion: string | null;
    occupation: string | null;
    maritalStatus: string | null;
    matchPercentage: number;
@@ -34,6 +34,7 @@ export interface SwipeInput {
 
 export interface ProfileDetail {
    id: number;
+   userId: number;
    name: string;
    age: number;
    gender: string | null;
@@ -42,11 +43,9 @@ export interface ProfileDetail {
    city: string | null;
    state: string | null;
    country: string | null;
-   religion: string | null;
    motherTongue: string | null;
    highestEducation: string | null;
    occupation: string | null;
-   annualIncome: number | null;
    bio: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
