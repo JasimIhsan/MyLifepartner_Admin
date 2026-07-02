@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mylifepartner/core/app_colors.dart';
 import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/models/match_recommendation.dart';
@@ -13,7 +12,6 @@ import 'package:mylifepartner/providers/subscription_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:mylifepartner/services/chat_service.dart';
 import 'package:mylifepartner/widgets/feature_exhausted_modal.dart';
-import 'package:mylifepartner/widgets/inline_video_player.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
@@ -21,6 +19,9 @@ import 'package:record/record.dart';
 import 'package:mylifepartner/screens/chat_screen/widgets/chat_detail_app_bar.dart';
 import 'package:mylifepartner/screens/chat_screen/widgets/chat_message_bubble.dart';
 import 'package:mylifepartner/screens/chat_screen/widgets/chat_input_area.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_empty_state.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/attachment_bottom_sheet.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/media_preview_screen.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final MatchRecommendation profile;
@@ -50,13 +51,53 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   Duration _recordingDuration = Duration.zero;
 
   late final ChatProvider _chatProvider;
+  Timer? _typingDebounce;
+  Timer? _typingHeartbeatTimer;
+  bool _isCurrentlyTyping = false;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    _msgController.addListener(_onTextChanged);
     _chatProvider = context.read<ChatProvider>();
     _initChat();
+  }
+
+  void _onTextChanged() {
+    final text = _msgController.text.trim();
+    final isTyping = text.isNotEmpty;
+
+    if (isTyping != _isCurrentlyTyping) {
+      _isCurrentlyTyping = isTyping;
+      _chatProvider.sendTypingStatus(widget.profile.userId, _isCurrentlyTyping);
+
+      if (_isCurrentlyTyping) {
+        _typingHeartbeatTimer?.cancel();
+        _typingHeartbeatTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+          if (mounted && _isCurrentlyTyping) {
+            _chatProvider.sendTypingStatus(widget.profile.userId, true);
+          }
+        });
+      } else {
+        _typingHeartbeatTimer?.cancel();
+        _typingHeartbeatTimer = null;
+      }
+    }
+
+    if (isTyping) {
+      _typingDebounce?.cancel();
+      _typingDebounce = Timer(const Duration(seconds: 2), () {
+        if (mounted && _isCurrentlyTyping) {
+          setState(() {
+            _isCurrentlyTyping = false;
+          });
+          _typingHeartbeatTimer?.cancel();
+          _typingHeartbeatTimer = null;
+          _chatProvider.sendTypingStatus(widget.profile.userId, false);
+        }
+      });
+    }
   }
 
   void _onScroll() {
@@ -75,11 +116,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _initChat() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       final chatProvider = context.read<ChatProvider>();
+      chatProvider.setCurrentUserId(widget.currentUserId);
+      await chatProvider.ensureZegoLogin(widget.currentUserId);
+      
+      if (!mounted) return;
       chatProvider.setActiveUserId(widget.profile.userId);
       chatProvider.clearUnreadNudge(widget.profile.userId);
+      chatProvider.subscribeToUserStatus(widget.profile.userId);
 
       // Ensure features are loaded for limit checks
       context.read<SubscriptionProvider>().fetchMySubscription();
@@ -101,6 +147,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   void dispose() {
     _chatProvider.setActiveUserId(null);
+    _chatProvider.unsubscribeFromUserStatus(widget.profile.userId);
+    if (_isCurrentlyTyping) {
+      _chatProvider.sendTypingStatus(widget.profile.userId, false);
+    }
+    _typingDebounce?.cancel();
+    _typingHeartbeatTimer?.cancel();
+    _msgController.removeListener(_onTextChanged);
     _recordingTimer?.cancel();
     _audioRecorder.dispose();
     _msgController.dispose();
@@ -113,6 +166,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (text.isEmpty) return;
 
     _msgController.clear();
+    
+    _typingDebounce?.cancel();
+    _typingHeartbeatTimer?.cancel();
+    _typingHeartbeatTimer = null;
+    if (_isCurrentlyTyping) {
+      _isCurrentlyTyping = false;
+      _chatProvider.sendTypingStatus(widget.profile.userId, false);
+    }
 
     final chatProvider = context.read<ChatProvider>();
     final convoId = context
@@ -321,88 +382,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return Container(
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    margin: const EdgeInsets.only(bottom: 24),
-                    decoration: BoxDecoration(
-                      color: AppColors.divider,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildAttachmentOption(
-                        icon: Icons.image_rounded,
-                        label: 'Photo',
-                        color: Colors.purple.shade400,
-                        onTap: () async {
-                          Navigator.pop(context);
-                          final picker = ImagePicker();
-                          final file = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
-                          if (file != null) {
-                            _previewAndSendMedia(file.path, 'IMAGE');
-                          }
-                        },
-                      ),
-                      _buildAttachmentOption(
-                        icon: Icons.video_collection_rounded,
-                        label: 'Video',
-                        color: Colors.orange.shade400,
-                        onTap: () async {
-                          Navigator.pop(context);
-                          final picker = ImagePicker();
-                          final file = await picker.pickVideo(
-                            source: ImageSource.gallery,
-                          );
-                          if (file != null) {
-                            _previewAndSendMedia(file.path, 'VIDEO');
-                          }
-                        },
-                      ),
-                      _buildAttachmentOption(
-                        icon: Icons.camera_alt_rounded,
-                        label: 'Camera',
-                        color: Colors.blue.shade400,
-                        onTap: () async {
-                          Navigator.pop(context);
-                          final picker = ImagePicker();
-                          final file = await picker.pickImage(
-                            source: ImageSource.camera,
-                          );
-                          if (file != null) {
-                            _previewAndSendMedia(file.path, 'IMAGE');
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
+        return AttachmentBottomSheet(
+          onMediaSelected: (path, type) {
+            _previewAndSendMedia(path, type);
+          },
         );
       },
     );
@@ -412,104 +395,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => Scaffold(
-          backgroundColor: Colors.black,
-          appBar: AppBar(
-            backgroundColor: Colors.black,
-            iconTheme: const IconThemeData(color: Colors.white),
-            leading: IconButton(
-              icon: const Icon(Icons.close_rounded),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: type == 'IMAGE'
-                        ? Image.file(File(path), fit: BoxFit.contain)
-                        : InlineVideoPlayer(source: path, isMe: true),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                          _sendMediaMsg(path, type);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.send_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+        builder: (_) => MediaPreviewScreen(
+          path: path,
+          type: type,
+          onSend: () => _sendMediaMsg(path, type),
         ),
-      ),
-    );
-  }
-
-  Widget _buildAttachmentOption({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            height: 60,
-            width: 60,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: color, size: 28),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -579,6 +469,10 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final chatProvider = context.watch<ChatProvider>();
+    final isOnline = chatProvider.isUserOnline(widget.profile.userId);
+    final isTyping = chatProvider.isUserTyping(widget.profile.userId);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: ChatDetailAppBar(
@@ -586,6 +480,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         profileImageUrl: _profileImageUrl,
         onAudioCall: () => _startCall(isVideo: false),
         onVideoCall: () => _startCall(isVideo: true),
+        isOnline: isOnline,
+        isTyping: isTyping,
       ),
       body: SafeArea(
         child: Column(
@@ -597,37 +493,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ? provider.getMessages(_conversationId!)
                       : <ChatMessage>[];
 
-                  if (messages.isEmpty) {
-                    return const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.waving_hand_rounded,
-                            color: Colors.orangeAccent,
-                            size: 48,
-                          ),
-                          SizedBox(height: 16),
-                          Text(
-                            'Say hi!',
-                            style: TextStyle(
-                              color: AppColors.textPrimary,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Don\'t be shy, start the conversation.',
-                            style: TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                  if (messages.isEmpty && !isTyping) {
+                    return const ChatEmptyState();
                   }
+
+                  final showTypingIndicator = isTyping;
+                  final count = messages.length +
+                      (provider.isLoadingMore(_conversationId!) ? 1 : 0) +
+                      (showTypingIndicator ? 1 : 0);
 
                   return ListView.builder(
                     controller: _scrollController,
@@ -638,11 +511,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       left: 16,
                       right: 16,
                     ),
-                    itemCount:
-                        messages.length +
-                        (provider.isLoadingMore(_conversationId!) ? 1 : 0),
+                    itemCount: count,
                     itemBuilder: (context, index) {
-                      if (index == messages.length) {
+                      if (showTypingIndicator && index == 0) {
+                        return const BouncingDotsIndicator();
+                      }
+
+                      final msgIndex = showTypingIndicator ? index - 1 : index;
+
+                      if (msgIndex == messages.length) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: Center(
@@ -658,16 +535,16 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                         );
                       }
 
-                      final msg = messages[messages.length - 1 - index];
+                      final msg = messages[messages.length - 1 - msgIndex];
                       final isMe = msg.senderId == widget.currentUserId;
 
                       // Calculate if we need extra spacing (e.g., messages are far apart in time or different sender)
                       bool needsMoreSpace = false;
-                      if (index < messages.length - 1) {
+                      if (msgIndex < messages.length - 1) {
                         final nextMsgToRender =
                             messages[messages.length -
                                 1 -
-                                (index +
+                                (msgIndex +
                                     1)]; // actually older msg visually above it
                         if (nextMsgToRender.senderId != msg.senderId) {
                           needsMoreSpace = true;
@@ -700,6 +577,98 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               onStopRecording: _stopAndPreviewRecording,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class BouncingDotsIndicator extends StatefulWidget {
+  const BouncingDotsIndicator({super.key});
+
+  @override
+  State<BouncingDotsIndicator> createState() => _BouncingDotsIndicatorState();
+}
+
+class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
+    with TickerProviderStateMixin {
+  late List<AnimationController> _controllers;
+  late List<Animation<double>> _animations;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(3, (index) {
+      return AnimationController(
+        vsync: this,
+        duration: const Duration(milliseconds: 300),
+      );
+    });
+
+    _animations = _controllers.map((controller) {
+      return Tween<double>(begin: 0, end: -8).animate(
+        CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+      );
+    }).toList();
+
+    _startAnimations();
+  }
+
+  void _startAnimations() async {
+    for (int i = 0; i < 3; i++) {
+      if (!mounted) return;
+      await Future.delayed(const Duration(milliseconds: 120));
+      if (!mounted) return;
+      _controllers[i].repeat(reverse: true);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8, top: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFECECEC),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+            bottomRight: Radius.circular(16),
+            bottomLeft: Radius.circular(4),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (index) {
+            return AnimatedBuilder(
+              animation: _animations[index],
+              builder: (context, child) {
+                return Transform.translate(
+                  offset: Offset(0, _animations[index].value),
+                  child: child,
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                width: 7,
+                height: 7,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF9E9E9E),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            );
+          }),
         ),
       ),
     );

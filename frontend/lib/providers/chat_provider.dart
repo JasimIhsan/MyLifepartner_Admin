@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mylifepartner/models/chat_message.dart';
 import 'package:mylifepartner/services/chat_service.dart';
 import 'package:mylifepartner/services/zego_service.dart';
+import 'package:mylifepartner/services/user_repository.dart';
 import 'package:zego_zim/zego_zim.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -16,10 +18,24 @@ class ChatProvider extends ChangeNotifier {
   bool _isLoading = false;
   int? _currentUserId;
   StreamSubscription? _zimSubscription;
+  StreamSubscription? _userStatusSubscription;
 
   int? _activeUserId;
   final Set<int> _unreadUserIds = {};
   final Set<int> _downloadedMedia = {};
+
+  final Map<int, ZIMUserOnlineStatus> _onlineStatusByUser = {};
+  final Map<int, bool> _typingUsers = {};
+  final Map<int, Timer> _typingTimers = {};
+  Timer? _statusTimer;
+  final Set<int> _subscribedUserIds = {};
+  final Map<int, DateTime> _lastSeenByUser = {};
+  Timer? _presenceHeartbeatTimer;
+  Timer? _presenceCleanupTimer;
+
+  bool isUserOnline(int userId) => _onlineStatusByUser[userId] == ZIMUserOnlineStatus.online;
+  ZIMUserOnlineStatus getUserStatus(int userId) => _onlineStatusByUser[userId] ?? ZIMUserOnlineStatus.offline;
+  bool isUserTyping(int userId) => _typingUsers[userId] ?? false;
 
   List<ChatConversation> get conversations => _conversations;
   bool get isLoading => _isLoading;
@@ -58,22 +74,321 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  /// Ensure ZIM is logged in and listening to messages
+  Future<void> ensureZegoLogin(int userId) async {
+    if (ZegoService.instance.isLoggedIn) {
+      // Ensure we are listening even if already logged in
+      startListening();
+      return;
+    }
+    try {
+      String userName = 'User $userId';
+      try {
+        final profile = await UserRepository().getUser();
+        if (profile.name != null && profile.name!.trim().isNotEmpty) {
+          userName = profile.name!;
+        }
+      } catch (_) {}
+      await ZegoService.instance.login(userId.toString(), userName);
+      startListening();
+    } catch (e) {
+      debugPrint('[ChatProvider] ensureZegoLogin failed: $e');
+    }
+  }
+
   /// Start listening for incoming ZIM messages
   void startListening() {
     _zimSubscription?.cancel();
     _zimSubscription = ZegoService.instance.onMessageReceived.listen((msg) {
       _handleIncomingMessage(msg);
     });
+
+    _userStatusSubscription?.cancel();
+    _userStatusSubscription = ZegoService.instance.onUserStatusUpdated.listen((statusList) {
+      for (final status in statusList) {
+        final uId = int.tryParse(status.userID);
+        if (uId != null) {
+          _onlineStatusByUser[uId] = status.onlineStatus;
+        }
+      }
+      notifyListeners();
+    });
+
+    // Automatically trigger subscriptions for any queued IDs now that login is ready
+    if (_subscribedUserIds.isNotEmpty && ZegoService.instance.isLoggedIn) {
+      subscribeToUsersStatus(_subscribedUserIds.toList());
+    }
+
+    _startPresenceSystem();
+  }
+
+  void _setTypingState(int userId, bool isTyping) {
+    _typingTimers[userId]?.cancel();
+    _typingTimers.remove(userId);
+
+    if (isTyping) {
+      _typingUsers[userId] = true;
+      // Timeout after 8 seconds of inactivity
+      _typingTimers[userId] = Timer(const Duration(seconds: 8), () {
+        _typingUsers[userId] = false;
+        notifyListeners();
+      });
+    } else {
+      _typingUsers[userId] = false;
+    }
+    notifyListeners();
+  }
+
+  Future<void> sendTypingStatus(int receiverId, bool isTyping) async {
+    if (_currentUserId == null) {
+      debugPrint('[ChatProvider] Cannot send typing status: _currentUserId is null');
+      return;
+    }
+    final payload = jsonEncode({
+      'type': 'typing',
+      'senderId': _currentUserId.toString(),
+      'receiverId': receiverId.toString(),
+      'isTyping': isTyping,
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+    debugPrint('[ChatProvider] Sending typing status to $receiverId: isTyping=$isTyping');
+    ZegoService.instance
+        .sendMessage(receiverId.toString(), payload)
+        .then((result) {
+          debugPrint('[ChatProvider] Sent typing status successfully to $receiverId');
+        })
+        .catchError((e) {
+          debugPrint('[ChatProvider] sendTypingStatus failed: $e');
+          return null;
+        });
+  }
+
+  void _startStatusTimer() {
+    _startPresenceSystem();
+  }
+
+  void _stopStatusTimer() {
+    _stopPresenceSystem();
+  }
+
+  void _startPresenceSystem() {
+    _presenceHeartbeatTimer?.cancel();
+    _presenceHeartbeatTimer = Timer.periodic(const Duration(seconds: 15), (timer) {
+      _sendPresenceHeartbeat();
+    });
+
+    _presenceCleanupTimer?.cancel();
+    _presenceCleanupTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _cleanupOfflineUsers();
+    });
+    
+    _sendPresenceHeartbeat();
+  }
+
+  void _stopPresenceSystem() {
+    _presenceHeartbeatTimer?.cancel();
+    _presenceHeartbeatTimer = null;
+    _presenceCleanupTimer?.cancel();
+    _presenceCleanupTimer = null;
+  }
+
+  void _sendPresenceHeartbeat() {
+    if (!ZegoService.instance.isLoggedIn || _currentUserId == null) return;
+    
+    final Set<int> targetUserIds = {};
+    for (final convo in _conversations) {
+      targetUserIds.add(convo.otherUserId);
+    }
+    targetUserIds.addAll(_subscribedUserIds);
+    
+    if (targetUserIds.isEmpty) return;
+    
+    final payload = jsonEncode({
+      'type': 'presence',
+      'senderId': _currentUserId.toString(),
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+    
+    for (final uId in targetUserIds) {
+      ZegoService.instance
+          .sendMessage(uId.toString(), payload)
+          .catchError((e) => null);
+    }
+  }
+
+  void _cleanupOfflineUsers() {
+    final now = DateTime.now();
+    bool changed = false;
+    _lastSeenByUser.forEach((uId, lastSeen) {
+      if (_onlineStatusByUser[uId] == ZIMUserOnlineStatus.online) {
+        if (now.difference(lastSeen).inSeconds > 40) {
+          _onlineStatusByUser[uId] = ZIMUserOnlineStatus.offline;
+          changed = true;
+          debugPrint('[ChatProvider] User $uId marked offline due to heartbeat timeout');
+        }
+      }
+    });
+    if (changed) {
+      notifyListeners();
+    }
+  }
+
+
+
+  Future<void> subscribeToUserStatus(int userId) async {
+    _subscribedUserIds.add(userId);
+    _startStatusTimer();
+    if (!ZegoService.instance.isLoggedIn) {
+      debugPrint('[ChatProvider] subscribeToUserStatus: ZIM not logged in yet. Queued status subscription for $userId.');
+      return;
+    }
+    try {
+      final config = ZIMUserStatusSubscribeConfig();
+      debugPrint('[ChatProvider] Subscribing to user status: $userId');
+      final result = await ZIM.getInstance()?.subscribeUsersStatus([userId.toString()], config);
+      debugPrint('[ChatProvider] Subscribed successfully to $userId, result: $result');
+    } catch (e) {
+      debugPrint('[ChatProvider] subscribeToUserStatus error: $e');
+    }
+    await _queryUserStatus(userId);
+  }
+
+  Future<void> subscribeToUsersStatus(List<int> userIds) async {
+    if (userIds.isEmpty) return;
+    _subscribedUserIds.addAll(userIds);
+    _startStatusTimer();
+    if (!ZegoService.instance.isLoggedIn) {
+      debugPrint('[ChatProvider] subscribeToUsersStatus: ZIM not logged in yet. Queued status subscriptions.');
+      return;
+    }
+    try {
+      final config = ZIMUserStatusSubscribeConfig();
+      final idsStr = userIds.map((id) => id.toString()).toList();
+      debugPrint('[ChatProvider] Subscribing to user statuses: $idsStr');
+      final result = await ZIM.getInstance()?.subscribeUsersStatus(idsStr, config);
+      debugPrint('[ChatProvider] Subscribed successfully to $idsStr, result: $result');
+    } catch (e) {
+      debugPrint('[ChatProvider] subscribeToUsersStatus error: $e');
+    }
+    
+    try {
+      final idsStr = userIds.map((id) => id.toString()).toList();
+      debugPrint('[ChatProvider] Batch querying user statuses: $idsStr');
+      final result = await ZIM.getInstance()?.queryUsersStatus(idsStr);
+      if (result != null) {
+        debugPrint('[ChatProvider] Batch query result count: ${result.userStatusList.length}');
+        for (final status in result.userStatusList) {
+          final uId = int.tryParse(status.userID);
+          if (uId != null) {
+            debugPrint('[ChatProvider] User $uId status is ${status.onlineStatus}');
+            _onlineStatusByUser[uId] = status.onlineStatus;
+          }
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('[ChatProvider] queryUsersStatus batch error: $e');
+    }
+  }
+
+  Future<void> _queryUserStatus(int userId) async {
+    try {
+      debugPrint('[ChatProvider] Querying user status: $userId');
+      final result = await ZIM.getInstance()?.queryUsersStatus([userId.toString()]);
+      if (result != null) {
+        debugPrint('[ChatProvider] Query result count for $userId: ${result.userStatusList.length}');
+        for (final status in result.userStatusList) {
+          final uId = int.tryParse(status.userID);
+          if (uId != null) {
+            debugPrint('[ChatProvider] User $uId status is ${status.onlineStatus}');
+            _onlineStatusByUser[uId] = status.onlineStatus;
+          }
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('[ChatProvider] queryUsersStatus error: $e');
+    }
+  }
+
+  Future<void> unsubscribeFromUserStatus(int userId) async {
+    _subscribedUserIds.remove(userId);
+    if (_subscribedUserIds.isEmpty) {
+      _stopStatusTimer();
+    }
+    try {
+      await ZIM.getInstance()?.unsubscribeUsersStatus([userId.toString()]);
+    } catch (e) {
+      debugPrint('[ChatProvider] unsubscribeFromUserStatus error: $e');
+    }
+  }
+
+  Future<void> subscribeToAllConversationsStatus() async {
+    if (_conversations.isEmpty) return;
+    final userIds = _conversations.map((c) => c.otherUserId.toString()).toList();
+    try {
+      final config = ZIMUserStatusSubscribeConfig();
+      await ZIM.getInstance()?.subscribeUsersStatus(userIds, config);
+    } catch (e) {
+      debugPrint('[ChatProvider] subscribeToAllConversationsStatus error: $e');
+    }
+    await _queryAllConversationsStatus();
+  }
+
+  Future<void> _queryAllConversationsStatus() async {
+    if (_conversations.isEmpty) return;
+    final userIds = _conversations.map((c) => c.otherUserId.toString()).toList();
+    try {
+      final result = await ZIM.getInstance()?.queryUsersStatus(userIds);
+      if (result != null) {
+        for (final status in result.userStatusList) {
+          final uId = int.tryParse(status.userID);
+          if (uId != null) {
+            _onlineStatusByUser[uId] = status.onlineStatus;
+          }
+        }
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('[ChatProvider] _queryAllConversationsStatus error: $e');
+    }
   }
 
   void _handleIncomingMessage(ZegoZIMMessage msg) {
-    // Skip JSON call-signaling messages — handled by CallProvider.
-    if (msg.content.startsWith('{')) return;
-
-    // Do NOT persist to backend here, the sender is responsible for that.
-    // Instead, we just show it up locally or show an unread nudge.
+    debugPrint('[ChatProvider] Received ZIM message from ${msg.fromUserId}, content: ${msg.content}');
     final senderId = int.tryParse(msg.fromUserId);
-    if (senderId == null || _currentUserId == null) return;
+    if (senderId == null || _currentUserId == null) {
+      debugPrint('[ChatProvider] early return parsing msg: senderId=$senderId, _currentUserId=$_currentUserId');
+      return;
+    }
+
+    // Since they sent us a message, they must be online
+    _onlineStatusByUser[senderId] = ZIMUserOnlineStatus.online;
+    _lastSeenByUser[senderId] = DateTime.now();
+
+    if (msg.content.startsWith('{')) {
+      try {
+        final data = jsonDecode(msg.content) as Map<String, dynamic>;
+        debugPrint('[ChatProvider] Parsed incoming ZIM JSON type: ${data['type']}');
+        if (data['type'] == 'presence') {
+          debugPrint('[ChatProvider] Received presence heartbeat from $senderId');
+          _onlineStatusByUser[senderId] = ZIMUserOnlineStatus.online;
+          _lastSeenByUser[senderId] = DateTime.now();
+          notifyListeners();
+        } else if (data['type'] == 'typing' || data['type'] == 'typing_status') {
+          final isTyping = data['isTyping'] as bool? ?? false;
+          debugPrint('[ChatProvider] Setting typing status for $senderId to $isTyping');
+          _setTypingState(senderId, isTyping);
+          if (isTyping) {
+            _onlineStatusByUser[senderId] = ZIMUserOnlineStatus.online;
+            _lastSeenByUser[senderId] = DateTime.now();
+          }
+        }
+      } catch (e) {
+        debugPrint('[ChatProvider] failed to parse ZIM JSON msg: $e');
+      }
+      return;
+    }
 
     // Vibrate the phone
     HapticFeedback.vibrate();
@@ -130,6 +445,7 @@ class ChatProvider extends ChangeNotifier {
             ),
           )
           .toList();
+      subscribeToAllConversationsStatus();
     } catch (e) {
       debugPrint('[ChatProvider] Failed to load conversations: $e');
     } finally {
@@ -289,6 +605,12 @@ class ChatProvider extends ChangeNotifier {
   @override
   void dispose() {
     _zimSubscription?.cancel();
+    _userStatusSubscription?.cancel();
+    _statusTimer?.cancel();
+    _stopPresenceSystem();
+    for (final timer in _typingTimers.values) {
+      timer.cancel();
+    }
     super.dispose();
   }
 }

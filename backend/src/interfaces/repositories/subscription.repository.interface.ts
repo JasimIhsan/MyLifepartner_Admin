@@ -3,7 +3,7 @@ import { PlanFeature, Prisma, SubscriptionPlan } from "@prisma/client";
 export interface ISubscriptionRepository {
    // -- Plans --
    createPlan(data: Prisma.SubscriptionPlanCreateInput): Promise<SubscriptionPlan & { features: PlanFeature[] }>;
-   getPlanByName(name: string): Promise<SubscriptionPlan | null>;
+   getPlanByName(name: string): Promise<(SubscriptionPlan & { features: PlanFeature[] }) | null>;
    getAllPlansWithFeatures(): Promise<(SubscriptionPlan & { features: PlanFeature[] })[]>;
    getPlanById(id: number): Promise<(SubscriptionPlan & { features: PlanFeature[] }) | null>;
    updatePlan(id: number, data: Prisma.SubscriptionPlanUpdateInput): Promise<SubscriptionPlan & { features: PlanFeature[] }>;
@@ -22,7 +22,7 @@ export interface ISubscriptionRepository {
    findActiveSubscriptionByUserId(userId: number): Promise<(import("@prisma/client").UserSubscription & { plan: import("@prisma/client").SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] } }) | null>;
    deactivateUserSubscriptions(userId: number): Promise<Prisma.BatchPayload>;
    updateUserSubscription(id: number, data: Prisma.UserSubscriptionUpdateInput): Promise<any>;
-   findPlanByIdentifier(identifier: string): Promise<SubscriptionPlan | null>;
+   findPlanByIdentifier(identifier: string): Promise<(SubscriptionPlan & { features: PlanFeature[] }) | null>;
    hasProcessedEvent(eventId: string): Promise<boolean>;
    markEventProcessed(eventId: string, type: string): Promise<void>;
 }

@@ -19,9 +19,21 @@ class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MatchProvider>().loadMutualMatches();
-      context.read<ChatProvider>().loadConversations();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final matchProvider = context.read<MatchProvider>();
+      final chatProvider = context.read<ChatProvider>();
+
+      await matchProvider.loadMutualMatches();
+      await chatProvider.loadConversations();
+
+      if (mounted) {
+        final userIds = matchProvider.mutualMatches
+            .map((m) => m.userId)
+            .toList();
+        if (userIds.isNotEmpty) {
+          chatProvider.subscribeToUsersStatus(userIds);
+        }
+      }
     });
   }
 
@@ -48,6 +60,7 @@ class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> {
                   )
                 : null,
             flexibleSpace: const FlexibleSpaceBar(
+              centerTitle: false,
               titlePadding: EdgeInsets.only(left: 20, bottom: 16),
               title: Text(
                 'Messages',
@@ -175,9 +188,12 @@ class _ChatListTileState extends State<_ChatListTile> {
     final conversation = chatProvider.conversations
         .where((c) => c.otherUserId == widget.profile.userId)
         .firstOrNull;
-    final lastMessageStr =
-        conversation?.displayLastMessage ?? 'Tap to start chatting';
+    final lastMessageStr = chatProvider.isUserTyping(widget.profile.userId)
+        ? 'typing...'
+        : (conversation?.displayLastMessage ?? 'Tap to start chatting');
     final hasUnread = chatProvider.hasUnreadNudge(widget.profile.userId);
+    final isOnline = chatProvider.isUserOnline(widget.profile.userId);
+    final isTyping = chatProvider.isUserTyping(widget.profile.userId);
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isTapped = true),
@@ -209,7 +225,7 @@ class _ChatListTileState extends State<_ChatListTile> {
                 ),
                 child: Row(
                   children: [
-                    _buildAvatar(),
+                    _buildAvatar(isOnline),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -298,17 +314,21 @@ class _ChatListTileState extends State<_ChatListTile> {
                                   lastMessageStr,
                                   style: TextStyle(
                                     fontSize: 15,
-                                    color: lastMessageStr.startsWith('Missed')
-                                        ? Colors.red
+                                    color: isTyping
+                                        ? AppColors.primary
+                                        : (lastMessageStr.startsWith('Missed')
+                                              ? Colors.red
+                                              : (conversation == null
+                                                    ? AppColors.textSecondary
+                                                    : (hasUnread
+                                                          ? AppColors
+                                                                .textPrimary
+                                                          : AppColors
+                                                                .textSecondary))),
+                                    fontWeight: isTyping || hasUnread
+                                        ? FontWeight.w600
                                         : (conversation == null
-                                              ? AppColors.textSecondary
-                                              : (hasUnread
-                                                    ? AppColors.textPrimary
-                                                    : AppColors.textSecondary)),
-                                    fontWeight: conversation == null
-                                        ? FontWeight.normal
-                                        : (hasUnread
-                                              ? FontWeight.w600
+                                              ? FontWeight.normal
                                               : FontWeight.w400),
                                   ),
                                   maxLines: 2,
@@ -329,32 +349,50 @@ class _ChatListTileState extends State<_ChatListTile> {
     );
   }
 
-  Widget _buildAvatar() {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  Widget _buildAvatar(bool isOnline) {
+    return Stack(
+      children: [
+        Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: AppColors.surface,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(color: Colors.white, width: 2),
           ),
-        ],
-        border: Border.all(color: Colors.white, width: 2),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(32),
-        child: _imageUrl != null
-            ? Image.network(
-                _imageUrl!,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildFallbackAvatar(),
-              )
-            : _buildFallbackAvatar(),
-      ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(32),
+            child: _imageUrl != null
+                ? Image.network(
+                    _imageUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => _buildFallbackAvatar(),
+                  )
+                : _buildFallbackAvatar(),
+          ),
+        ),
+        if (isOnline)
+          Positioned(
+            right: 0,
+            bottom: 0,
+            child: Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Colors.green,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 2),
+              ),
+            ),
+          ),
+      ],
     );
   }
 

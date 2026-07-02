@@ -26,8 +26,11 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
    }
 
-   async getPlanByName(name: string): Promise<SubscriptionPlan | null> {
-      return prisma.subscriptionPlan.findUnique({ where: { name } });
+   async getPlanByName(name: string): Promise<(SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] }) | null> {
+      return prisma.subscriptionPlan.findUnique({
+         where: { name },
+         include: { features: { orderBy: { createdAt: "asc" } } },
+      });
    }
 
    async updatePlan(id: number, data: Prisma.SubscriptionPlanUpdateInput): Promise<SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] }> {
@@ -136,9 +139,10 @@ export class SubscriptionRepository implements ISubscriptionRepository {
       });
    }
 
-   async findPlanByIdentifier(identifier: string): Promise<SubscriptionPlan | null> {
+   async findPlanByIdentifier(identifier: string): Promise<(SubscriptionPlan & { features: import("@prisma/client").PlanFeature[] }) | null> {
       return prisma.subscriptionPlan.findUnique({
          where: { identifier },
+         include: { features: { orderBy: { createdAt: "asc" } } },
       });
    }
 

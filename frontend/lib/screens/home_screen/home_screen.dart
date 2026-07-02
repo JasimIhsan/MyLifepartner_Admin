@@ -28,7 +28,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   bool _showNotifications = false;
-  DateTime? _lastBackPressed;
 
   @override
   void initState() {
@@ -106,43 +105,23 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    final now = DateTime.now();
-    final backButtonHasNotBeenPressedOrExpired =
-        _lastBackPressed == null ||
-        now.difference(_lastBackPressed!) > const Duration(seconds: 2);
+    if (!mounted) return;
 
-    if (backButtonHasNotBeenPressedOrExpired) {
-      _lastBackPressed = now;
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Press back again to exit'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-    } else {
-      _lastBackPressed = null;
-      if (!mounted) return;
-
-      // Clear SnackBar
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-      await CustomBottomSheet.show(
-        context: context,
-        type: BottomSheetType.confirmation,
-        title: 'Exit App',
-        message: 'Are you sure you want to exit the app?',
-        primaryButtonText: 'Exit',
-        onPrimaryPressed: () {
-          SystemNavigator.pop();
-        },
-        secondaryButtonText: 'Cancel',
-        onSecondaryPressed: () {
-          Navigator.of(context).pop();
-        },
-        imagePath: 'assets/images/illustrations/exit.png',
-      );
-    }
+    await CustomBottomSheet.show(
+      context: context,
+      type: BottomSheetType.confirmation,
+      title: 'Exit App',
+      message: 'Are you sure you want to exit the app?',
+      primaryButtonText: 'Exit',
+      onPrimaryPressed: () {
+        SystemNavigator.pop();
+      },
+      secondaryButtonText: 'Cancel',
+      onSecondaryPressed: () {
+        Navigator.of(context).pop();
+      },
+      imagePath: 'assets/images/illustrations/exit.png',
+    );
   }
 
   // ─── Build ─────────────────────────────────────────────────────────────────
@@ -174,11 +153,12 @@ class _HomePageState extends State<HomePage> {
       showLeading: false,
       actions: [
         IconButton(
-          icon: const Icon(
-            Icons.support_agent_rounded,
-            color: AppColors.textPrimary,
+          icon: Image.asset(
+            'assets/icons/lpa_assist.png',
+            width: 24,
+            height: 24,
           ),
-          tooltip: 'LPA Guide',
+          tooltip: 'LPA Assist',
           onPressed: () {
             Navigator.push(
               context,

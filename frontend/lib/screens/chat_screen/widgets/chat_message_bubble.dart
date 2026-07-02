@@ -58,7 +58,7 @@ class ChatMessageBubble extends StatelessWidget {
               : null,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             if (msg.messageType == 'IMAGE' || msg.messageType == 'VIDEO')
               _buildDownloadableMedia(msg, isMe, context)
@@ -67,6 +67,7 @@ class ChatMessageBubble extends StatelessWidget {
             else
               Text(
                 msg.content,
+                textAlign: TextAlign.start,
                 style: TextStyle(
                   color: isMe ? Colors.white : AppColors.textPrimary,
                   fontSize: 16,

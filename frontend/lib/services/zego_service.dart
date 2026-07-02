@@ -12,6 +12,9 @@ class ZegoService {
   final _messageController = StreamController<ZegoZIMMessage>.broadcast();
   Stream<ZegoZIMMessage> get onMessageReceived => _messageController.stream;
 
+  final _userStatusController = StreamController<List<ZIMUserStatus>>.broadcast();
+  Stream<List<ZIMUserStatus>> get onUserStatusUpdated => _userStatusController.stream;
+
   bool _isInitialized = false;
   bool _isLoggedIn = false;
 
@@ -83,6 +86,13 @@ class ZegoService {
           timestamp: msg.timestamp,
         ));
       }
+    };
+
+    ZIMEventHandler.onUserStatusUpdated = (
+      ZIM zim,
+      List<ZIMUserStatus> userStatusList,
+    ) {
+      _userStatusController.add(userStatusList);
     };
   }
 
@@ -220,6 +230,7 @@ class ZegoService {
 
   void destroy() {
     _messageController.close();
+    _userStatusController.close();
     ZIM.getInstance()?.destroy();
     _isInitialized = false;
     _isLoggedIn = false;
