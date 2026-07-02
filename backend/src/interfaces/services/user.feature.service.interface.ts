@@ -12,4 +12,5 @@ export interface IUserFeatureService {
    checkMessageAccess(userId: number): Promise<boolean>;
    consumeMessage(userId: number): Promise<void>;
    consumeCallDuration(userId: number, type: "audio" | "video", durationSeconds: number): Promise<void>;
+   checkCallAccess(userId: number, type: "audio" | "video", consumeSeconds?: number, targetUserId?: number): Promise<void>;
 }

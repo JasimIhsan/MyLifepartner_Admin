@@ -30,7 +30,8 @@ export class ChatController {
             const callType = payload.callType;
             const duration = payload.duration;
             if (callType && typeof duration === "number") {
-               await this.userFeatureService.consumeCallDuration(senderId, callType, duration);
+               // Call duration is now consumed dynamically in real-time during the call via polling
+               // await this.userFeatureService.consumeCallDuration(senderId, callType, duration);
             }
          } catch (e) {
             // ignore JSON parse error

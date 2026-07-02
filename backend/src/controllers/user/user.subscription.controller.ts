@@ -1,12 +1,15 @@
 import { Request, Response } from "express";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { ApiResponse } from "@/utils/ApiResponse";
-import { ApiError } from "@/utils/ApiError";
 import { IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
-import { hasFeature, hasReachedLimit, UserFeatureMaxKey, UserFeatureUsageKey } from "@/utils/feature.utils";
+import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 
 export class UserSubscriptionController {
-   constructor(private userSubscriptionService: IUserSubscriptionService) {}
+
+   constructor(
+      private userSubscriptionService: IUserSubscriptionService,
+      private userFeatureService: IUserFeatureService
+   ) {}
 
    /** GET /user/subscriptions/plans */
    getPlans = asyncHandler(async (req: Request, res: Response) => {
@@ -42,27 +45,14 @@ export class UserSubscriptionController {
       res.status(201).json(new ApiResponse(201, subscription, "Subscribed successfully"));
    });
 
-    /** POST /user/subscriptions/check-call-access */
+     /** POST /user/subscriptions/check-call-access */
    checkCallAccess = asyncHandler(async (req: Request, res: Response) => {
       const userId = req.user!.id;
-      const { type } = req.body; // "audio" | "video"
+      const { type, consumeSeconds, targetUserId } = req.body; // "audio" | "video", optional consumeSeconds, optional targetUserId
       
-      const features = await this.userSubscriptionService.getUserFeatures(userId);
-      if (!features) {
-         throw new ApiError(402, "Call feature not available in your plan.");
-      }
+      const targetUserIdParsed = targetUserId ? parseInt(targetUserId) : undefined;
 
-      if (type === 'video') {
-         if (!hasFeature(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES)) throw new ApiError(402, "Video call not available in your plan.");
-         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES, UserFeatureUsageKey.VIDEO_CALL_MINUTES)) {
-            throw new ApiError(402, "Video call limit exhausted.");
-         }
-      } else {
-         if (!hasFeature(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES)) throw new ApiError(402, "Audio call not available in your plan.");
-         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES, UserFeatureUsageKey.AUDIO_CALL_MINUTES)) {
-            throw new ApiError(402, "Audio call limit exhausted.");
-         }
-      }
+      await this.userFeatureService.checkCallAccess(userId, type, consumeSeconds, targetUserIdParsed);
       
       res.status(200).json(new ApiResponse(200, null, "Call allowed"));
    });

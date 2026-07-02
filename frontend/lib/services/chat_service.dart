@@ -48,7 +48,18 @@ class ChatApiService {
   // }
 
   /// Verify via backend if current user can initiate an audio or video call
-  static Future<void> checkCallAccess({required String type}) async {
-    await _dio.post('/user/subscriptions/check-call', data: {'type': type});
+  static Future<void> checkCallAccess({
+    required String type,
+    int? consumeSeconds,
+    String? targetUserId,
+  }) async {
+    await _dio.post(
+      '/user/subscriptions/check-call',
+      data: {
+        'type': type,
+        if (consumeSeconds != null) 'consumeSeconds': consumeSeconds,
+        if (targetUserId != null) 'targetUserId': targetUserId,
+      },
+    );
   }
 }

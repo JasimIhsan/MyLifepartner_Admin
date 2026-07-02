@@ -10,18 +10,17 @@ import 'package:mylifepartner/providers/call_provider.dart';
 import 'package:mylifepartner/providers/chat_provider.dart';
 import 'package:mylifepartner/providers/subscription_provider.dart';
 import 'package:mylifepartner/screens/chat_screen/outgoing_call_screen.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/attachment_bottom_sheet.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_detail_app_bar.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_empty_state.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_input_area.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/chat_message_bubble.dart';
+import 'package:mylifepartner/screens/chat_screen/widgets/media_preview_screen.dart';
 import 'package:mylifepartner/services/chat_service.dart';
 import 'package:mylifepartner/widgets/feature_exhausted_modal.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
-
-import 'package:mylifepartner/screens/chat_screen/widgets/chat_detail_app_bar.dart';
-import 'package:mylifepartner/screens/chat_screen/widgets/chat_message_bubble.dart';
-import 'package:mylifepartner/screens/chat_screen/widgets/chat_input_area.dart';
-import 'package:mylifepartner/screens/chat_screen/widgets/chat_empty_state.dart';
-import 'package:mylifepartner/screens/chat_screen/widgets/attachment_bottom_sheet.dart';
-import 'package:mylifepartner/screens/chat_screen/widgets/media_preview_screen.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final MatchRecommendation profile;
@@ -74,7 +73,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
       if (_isCurrentlyTyping) {
         _typingHeartbeatTimer?.cancel();
-        _typingHeartbeatTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        _typingHeartbeatTimer = Timer.periodic(const Duration(seconds: 5), (
+          timer,
+        ) {
           if (mounted && _isCurrentlyTyping) {
             _chatProvider.sendTypingStatus(widget.profile.userId, true);
           }
@@ -121,7 +122,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       final chatProvider = context.read<ChatProvider>();
       chatProvider.setCurrentUserId(widget.currentUserId);
       await chatProvider.ensureZegoLogin(widget.currentUserId);
-      
+
       if (!mounted) return;
       chatProvider.setActiveUserId(widget.profile.userId);
       chatProvider.clearUnreadNudge(widget.profile.userId);
@@ -166,7 +167,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     if (text.isEmpty) return;
 
     _msgController.clear();
-    
+
     _typingDebounce?.cancel();
     _typingHeartbeatTimer?.cancel();
     _typingHeartbeatTimer = null;
@@ -210,11 +211,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     } catch (e) {
       if (mounted) {
         if (e is DioException && e.response?.statusCode == 402) {
-          showDialog(
-            context: context,
-            builder: (_) =>
-                const FeatureExhaustedModal(featureType: 'Chat Messages'),
-          );
+          FeatureExhaustedModal.show(context, featureType: 'Chat Messages');
         } else {
           String errorMsg = 'Failed to send message. Try again.';
           if (e is DioException &&
@@ -258,11 +255,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     } catch (e) {
       if (mounted) {
         if (e is DioException && e.response?.statusCode == 402) {
-          showDialog(
-            context: context,
-            builder: (_) =>
-                const FeatureExhaustedModal(featureType: 'Chat Messages'),
-          );
+          FeatureExhaustedModal.show(context, featureType: 'Chat Messages');
         } else {
           String errorMsg = 'Failed to send media msg.';
           if (e is DioException &&
@@ -405,17 +398,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _startCall({required bool isVideo}) async {
-    // Check with the backend directly if call is allowed
+    final otherUserId = widget.profile.userId.toString();
+    final callType = isVideo ? 'video' : 'audio';
+
+    // Check with the backend directly if caller has access
     try {
-      await ChatApiService.checkCallAccess(type: isVideo ? 'video' : 'audio');
+      await ChatApiService.checkCallAccess(type: callType);
     } catch (e) {
       if (mounted) {
         if (e is DioException && e.response?.statusCode == 402) {
-          showDialog(
-            context: context,
-            builder: (_) => FeatureExhaustedModal(
-              featureType: isVideo ? 'Video Call' : 'Audio Call',
-            ),
+          FeatureExhaustedModal.show(
+            context,
+            featureType: isVideo ? 'Video Call' : 'Audio Call',
           );
         } else {
           String errorMsg = 'Failed to verify call access. Try again.';
@@ -434,8 +428,33 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     if (!mounted) return;
 
+    // Check if recipient has access/allowance
+    try {
+      await ChatApiService.checkCallAccess(
+        type: callType,
+        targetUserId: otherUserId,
+      );
+    } catch (e) {
+      if (mounted) {
+        String errorMsg = 'The recipient is temporarily unavailable for calls.';
+        if (e is DioException &&
+            e.response?.data != null &&
+            e.response?.data is Map) {
+          errorMsg = e.response?.data['message'] ?? errorMsg;
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMsg),
+            backgroundColor: Colors.orangeAccent,
+          ),
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
     final callProvider = context.read<CallProvider>();
-    final otherUserId = widget.profile.userId.toString();
 
     // Send invitation signal and track outgoing call state
     callProvider.initiateCall(
@@ -498,7 +517,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   }
 
                   final showTypingIndicator = isTyping;
-                  final count = messages.length +
+                  final count =
+                      messages.length +
                       (provider.isLoadingMore(_conversationId!) ? 1 : 0) +
                       (showTypingIndicator ? 1 : 0);
 
@@ -606,9 +626,10 @@ class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
     });
 
     _animations = _controllers.map((controller) {
-      return Tween<double>(begin: 0, end: -8).animate(
-        CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-      );
+      return Tween<double>(
+        begin: 0,
+        end: -8,
+      ).animate(CurvedAnimation(parent: controller, curve: Curves.easeInOut));
     }).toList();
 
     _startAnimations();

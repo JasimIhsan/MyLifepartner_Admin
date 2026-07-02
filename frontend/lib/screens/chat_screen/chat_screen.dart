@@ -49,16 +49,7 @@ class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> {
             pinned: true,
             centerTitle: false,
             expandedHeight: 100,
-            leading: Navigator.canPop(context)
-                ? IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      color: AppColors.textPrimary,
-                      size: 22,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  )
-                : null,
+            automaticallyImplyLeading: false,
             flexibleSpace: const FlexibleSpaceBar(
               centerTitle: false,
               titlePadding: EdgeInsets.only(left: 20, bottom: 16),

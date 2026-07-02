@@ -109,4 +109,34 @@ export class UserFeatureService implements IUserFeatureService {
          await this.updateVideoCallMinutes(userId, durationSeconds);
       }
    }
+
+   async checkCallAccess(userId: number, type: "audio" | "video", consumeSeconds?: number, targetUserId?: number): Promise<void> {
+      const checkUserId = targetUserId ? targetUserId : userId;
+
+      if (!targetUserId && consumeSeconds && typeof consumeSeconds === 'number' && consumeSeconds > 0) {
+         await this.consumeCallDuration(userId, type, consumeSeconds);
+      }
+
+      const features = await this.getUserFeatures(checkUserId);
+      if (!features) {
+         throw new ApiError(402, targetUserId ? "Recipient's plan does not support calls at this time." : "Call feature not available in your plan.");
+      }
+
+      if (type === 'video') {
+         if (!hasFeature(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient's plan does not support video calls." : "Video call not available in your plan.");
+         }
+         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_VIDEO_CALL_MINUTES, UserFeatureUsageKey.VIDEO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient is temporarily unavailable for video calls." : "Video call limit exhausted.");
+         }
+      } else {
+         if (!hasFeature(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient's plan does not support audio calls." : "Audio call not available in your plan.");
+         }
+         if (hasReachedLimit(features, UserFeatureMaxKey.MAX_AUDIO_CALL_MINUTES, UserFeatureUsageKey.AUDIO_CALL_MINUTES)) {
+            throw new ApiError(402, targetUserId ? "Recipient is temporarily unavailable for audio calls." : "Audio call limit exhausted.");
+         }
+      }
+   }
 }
+

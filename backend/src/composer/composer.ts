@@ -131,7 +131,7 @@ import { MatchController } from "@/controllers/user/match.controller";
 export const matchController = new MatchController(matchService);
 
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
-export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService);
+export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService, userFeatureService);
 
 import { ChatController } from "@/controllers/user/chat.controller";
 export const chatController = new ChatController(chatService, userFeatureService);
