@@ -58,7 +58,9 @@ class ChatMessageBubble extends StatelessWidget {
               : null,
         ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             if (msg.messageType == 'IMAGE' || msg.messageType == 'VIDEO')
               _buildDownloadableMedia(msg, isMe, context)
@@ -89,15 +91,15 @@ class ChatMessageBubble extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                if (isMe) ...[
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons
-                        .done_all_rounded, // or any read receipt icon you prefer
-                    size: 14,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                ],
+                // if (isMe) ...[
+                //   const SizedBox(width: 4),
+                //   Icon(
+                //     Icons
+                //         .done_all_rounded, // or any read receipt icon you prefer
+                //     size: 14,
+                //     color: Colors.white.withValues(alpha: 0.7),
+                //   ),
+                // ],
               ],
             ),
           ],
