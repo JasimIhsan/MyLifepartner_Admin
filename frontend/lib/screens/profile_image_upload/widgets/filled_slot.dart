@@ -3,8 +3,8 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/user_image.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/user_image.dart';
 
 class FilledSlot extends StatefulWidget {
   final UserImage image;

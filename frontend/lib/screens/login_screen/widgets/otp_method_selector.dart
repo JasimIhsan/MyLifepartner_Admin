@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 
 class OtpMethodSelector {
   static void show(

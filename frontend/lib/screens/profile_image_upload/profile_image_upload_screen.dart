@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/user_image.dart';
-import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/screens/login_screen/login_screen.dart';
+import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'widgets/empty_slot.dart';
 import 'widgets/filled_slot.dart';

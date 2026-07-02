@@ -4,9 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/providers/image_asset_provider.dart';
-import 'package:mylifepartner/widgets/custom_button.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 
 import '../splash_screen/splash_screen.dart';

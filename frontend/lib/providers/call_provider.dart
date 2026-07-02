@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/services/zego_service.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:life_partner_again/services/zego_service.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
 
 /// Represents an incoming call invitation.
 class IncomingCall {

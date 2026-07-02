@@ -4,14 +4,14 @@ import 'package:country_flags/country_flags.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/core/country_helper.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
-import 'package:mylifepartner/widgets/bottomsheet/feature_exhausted_modal.dart';
-import 'package:mylifepartner/services/match_service.dart';
-import 'package:mylifepartner/widgets/verified_profile_bottom_sheet.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/country_helper.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
+import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
+import 'package:life_partner_again/services/match_service.dart';
+import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 /// Discover screen refactored into a modern profile browser UI.

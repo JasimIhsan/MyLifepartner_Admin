@@ -1,5 +1,5 @@
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/services/api_service.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/services/api_service.dart';
 
 class MatchService {
   static final _client = ApiService.client;

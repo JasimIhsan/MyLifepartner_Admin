@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/login_screen/login_screen.dart';
+import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PartnerPreferenceScreen extends StatefulWidget {

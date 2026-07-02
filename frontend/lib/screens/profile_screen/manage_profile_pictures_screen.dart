@@ -2,10 +2,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/user_image.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/widgets/custom_app_bar.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/widgets/custom_app_bar.dart';
 
 import '../profile_image_upload/widgets/dashed_border_painter.dart';
 import '../profile_image_upload/widgets/image_options_sheet.dart';

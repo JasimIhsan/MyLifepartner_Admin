@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/user_image.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/user_image.dart';
 
 class ImageOptionsBottomSheet extends StatelessWidget {
   final UserImage image;

@@ -3,9 +3,9 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/config/env.dart';
-import 'package:mylifepartner/providers/chat_provider.dart';
-import 'package:mylifepartner/services/chat_service.dart';
+import 'package:life_partner_again/config/env.dart';
+import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:life_partner_again/services/chat_service.dart';
 import 'package:provider/provider.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 

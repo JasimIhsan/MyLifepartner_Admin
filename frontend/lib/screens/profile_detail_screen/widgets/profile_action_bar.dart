@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/chat_screen/chat_detail_screen.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

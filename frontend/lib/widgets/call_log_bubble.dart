@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/chat_message.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/chat_message.dart';
 
 class CallLogBubble extends StatelessWidget {
   final ChatMessage msg;

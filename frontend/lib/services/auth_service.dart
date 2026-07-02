@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:mylifepartner/models/onboarding_status.dart';
-import 'package:mylifepartner/services/auth_repository.dart';
-import 'package:mylifepartner/services/token_service.dart';
+import 'package:life_partner_again/models/onboarding_status.dart';
+import 'package:life_partner_again/services/auth_repository.dart';
+import 'package:life_partner_again/services/token_service.dart';
 
 class AuthService {
   AuthService({AuthRepository? authRepository})

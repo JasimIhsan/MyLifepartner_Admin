@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/widgets/inline_video_player.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/inline_video_player.dart';
 
 class MediaPreviewScreen extends StatelessWidget {
   final String path;

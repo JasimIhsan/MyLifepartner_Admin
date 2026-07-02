@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
 
 class ProfileImageCarousel extends StatefulWidget {
   final List<MatchImage> images;

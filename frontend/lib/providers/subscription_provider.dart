@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mylifepartner/config/env.dart';
-import 'package:mylifepartner/models/subscription_plan.dart';
-import 'package:mylifepartner/services/subscription_service.dart';
+import 'package:life_partner_again/config/env.dart';
+import 'package:life_partner_again/models/subscription_plan.dart';
+import 'package:life_partner_again/services/subscription_service.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
 class SubscriptionProvider extends ChangeNotifier {

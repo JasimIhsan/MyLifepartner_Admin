@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:mylifepartner/models/auth_response.dart';
+import 'package:life_partner_again/models/auth_response.dart';
 
-import 'package:mylifepartner/models/onboarding_status.dart';
-import 'package:mylifepartner/services/api_service.dart';
-import 'package:mylifepartner/services/token_service.dart';
+import 'package:life_partner_again/models/onboarding_status.dart';
+import 'package:life_partner_again/services/api_service.dart';
+import 'package:life_partner_again/services/token_service.dart';
 
 class AuthRepository {
   final Dio _dio = ApiService.client;

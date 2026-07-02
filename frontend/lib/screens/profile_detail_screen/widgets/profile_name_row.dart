@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/widgets/verified_profile_bottom_sheet.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 
 class ProfileNameRow extends StatelessWidget {
   final Map<String, dynamic> profile;

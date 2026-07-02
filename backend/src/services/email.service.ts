@@ -20,9 +20,9 @@ export class EmailService implements IEmailService {
    public async sendOtpEmail(to: string, otp: string) {
       try {
          const info = await this.transporter.sendMail({
-            from: `"MyLifePartner" <${env.SMTP_FROM || env.SMTP_USER}>`,
+            from: `"Life Partner Again" <${env.SMTP_FROM || env.SMTP_USER}>`,
             to,
-            subject: "Your OTP - MyLifePartner",
+            subject: "Your OTP - Life Partner Again",
             html: this.getOtpEmailHtml(otp),
          });
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/widgets/inline_audio_player.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/inline_audio_player.dart';
 
 class ChatInputArea extends StatelessWidget {
   final bool isRecording;

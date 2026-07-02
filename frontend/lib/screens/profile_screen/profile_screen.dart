@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/auth_response.dart';
-import 'package:mylifepartner/models/user_image.dart';
-import 'package:mylifepartner/screens/profile_screen/edit_profile_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/services/user_repository.dart';
-// import 'package:mylifepartner/shared/widgets/header_waves_background.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/auth_response.dart';
+import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/screens/profile_screen/edit_profile_screen.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/services/user_repository.dart';
+// import 'package:life_partner_again/shared/widgets/header_waves_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/custom_button.dart';

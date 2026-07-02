@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 
 class DatingProfileCard extends StatelessWidget {
   final MatchRecommendation profile;

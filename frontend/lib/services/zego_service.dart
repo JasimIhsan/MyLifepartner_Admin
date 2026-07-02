@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:zego_zim/zego_zim.dart';
-import 'package:mylifepartner/config/env.dart';
+import 'package:life_partner_again/config/env.dart';
 
 /// Singleton service to manage ZEGOCLOUD ZIM (In-app Messaging) lifecycle.
 class ZegoService {

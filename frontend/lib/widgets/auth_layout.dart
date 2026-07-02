@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/providers/image_asset_provider.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:provider/provider.dart';
 
 class AuthLayout extends StatelessWidget {

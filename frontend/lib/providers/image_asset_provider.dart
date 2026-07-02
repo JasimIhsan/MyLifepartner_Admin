@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:mylifepartner/models/image_asset.dart';
-import 'package:mylifepartner/services/image_asset_service.dart';
+import 'package:life_partner_again/models/image_asset.dart';
+import 'package:life_partner_again/services/image_asset_service.dart';
 
 enum ImageAssetLoadState { idle, loading, loaded, error }
 

@@ -5,11 +5,11 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/home_screen/home_screen.dart';
-import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/selfie_verification/widgets/face_direction_overlay.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/home_screen/home_screen.dart';
+import 'package:life_partner_again/screens/login_screen/login_screen.dart';
+import 'package:life_partner_again/screens/selfie_verification/widgets/face_direction_overlay.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {

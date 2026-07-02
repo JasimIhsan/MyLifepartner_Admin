@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/providers/image_asset_provider.dart';
-import 'package:mylifepartner/services/auth_repository.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:life_partner_again/services/auth_repository.dart';
+import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/auth_layout.dart';

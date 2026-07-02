@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 
 class DetailItem {
   final IconData icon;

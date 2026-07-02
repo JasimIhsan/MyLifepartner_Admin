@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/widgets/custom_button.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:pinput/pinput.dart';
 
 class OtpForm extends StatelessWidget {

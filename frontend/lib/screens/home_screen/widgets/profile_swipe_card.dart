@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/screens/home_screen/widgets/match_percentage_badge.dart';
-import 'package:mylifepartner/screens/home_screen/widgets/profile_image_carousel.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/screens/home_screen/widgets/match_percentage_badge.dart';
+import 'package:life_partner_again/screens/home_screen/widgets/profile_image_carousel.dart';
 
 class ProfileSwipeCard extends StatelessWidget {
   final MatchRecommendation profile;

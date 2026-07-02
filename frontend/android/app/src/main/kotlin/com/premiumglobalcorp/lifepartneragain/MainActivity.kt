@@ -1,4 +1,4 @@
-package com.ciltriq.mylifepartner
+package com.premiumglobalcorp.lifepartneragain
 
 import io.flutter.embedding.android.FlutterActivity
 

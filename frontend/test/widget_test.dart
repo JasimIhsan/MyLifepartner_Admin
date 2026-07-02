@@ -6,7 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mylifepartner/main.dart';
+import 'package:life_partner_again/main.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
@@ -18,3 +18,4 @@ void main() {
     expect(find.byType(MyApp), findsOneWidget);
   });
 }
+// Premium Global Corp

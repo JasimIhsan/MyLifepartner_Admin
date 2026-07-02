@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/login_screen/login_screen.dart';
-import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/widgets/custom_app_bar.dart';
-import 'package:mylifepartner/widgets/custom_button.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/login_screen/login_screen.dart';
+import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/widgets/custom_app_bar.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/multi_select_dialog.dart';

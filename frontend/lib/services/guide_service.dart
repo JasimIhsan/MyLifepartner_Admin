@@ -1,5 +1,5 @@
-import 'package:mylifepartner/services/api_service.dart';
-import 'package:mylifepartner/models/guide_item.dart';
+import 'package:life_partner_again/services/api_service.dart';
+import 'package:life_partner_again/models/guide_item.dart';
 
 class GuideService {
   static final _client = ApiService.client;

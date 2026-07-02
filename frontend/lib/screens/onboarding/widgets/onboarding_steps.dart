@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/onboarding/widgets/onboarding_ui_helpers.dart';
-import 'package:mylifepartner/screens/onboarding/widgets/country_picker_sheet.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/country_picker_sheet.dart';
 import 'package:country_flags/country_flags.dart';
 
 class BasicInfoStep extends StatelessWidget {

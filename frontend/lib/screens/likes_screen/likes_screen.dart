@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/profile_detail_screen.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 class LikedMatchesScreen extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/subscription_screen/subscription_screen.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 
 class InterestLimitBottomSheet extends StatelessWidget {
   final String message;

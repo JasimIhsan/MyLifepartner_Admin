@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/providers/call_provider.dart';
-import 'package:mylifepartner/providers/chat_provider.dart';
-import 'package:mylifepartner/screens/chat_screen/call_screen.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/providers/call_provider.dart';
+import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 
 /// Screen shown to the caller while waiting for the callee to accept/decline.
 class OutgoingCallScreen extends StatefulWidget {

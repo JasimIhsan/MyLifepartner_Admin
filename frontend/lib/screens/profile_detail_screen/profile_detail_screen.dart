@@ -1,15 +1,15 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/core/country_helper.dart';
-import 'package:mylifepartner/services/match_service.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_details_grid.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_skeleton.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_name_row.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/header_carousel.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/body_photo_carousel.dart';
-import 'package:mylifepartner/screens/profile_detail_screen/widgets/profile_action_bar.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/country_helper.dart';
+import 'package:life_partner_again/services/match_service.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_details_grid.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/body_photo_carousel.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_action_bar.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final int profileId;

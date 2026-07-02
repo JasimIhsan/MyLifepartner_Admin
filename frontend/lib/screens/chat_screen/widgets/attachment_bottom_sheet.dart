@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mylifepartner/core/app_colors.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 
 class AttachmentBottomSheet extends StatelessWidget {
   final Function(String path, String type) onMediaSelected;

@@ -1,6 +1,6 @@
-import 'package:mylifepartner/models/subscription_plan.dart';
-import 'package:mylifepartner/models/user_feature.dart';
-import 'package:mylifepartner/services/api_service.dart';
+import 'package:life_partner_again/models/subscription_plan.dart';
+import 'package:life_partner_again/models/user_feature.dart';
+import 'package:life_partner_again/services/api_service.dart';
 
 class SubscriptionService {
   final _apiService = ApiService();

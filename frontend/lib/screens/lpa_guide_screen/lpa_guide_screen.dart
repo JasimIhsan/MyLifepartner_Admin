@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/guide_item.dart';
-import 'package:mylifepartner/services/guide_service.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/guide_item.dart';
+import 'package:life_partner_again/services/guide_service.dart';
 
 enum MessageSender { assistant, user }
 

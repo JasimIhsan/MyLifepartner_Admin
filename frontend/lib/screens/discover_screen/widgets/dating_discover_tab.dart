@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:mylifepartner/screens/discover_screen/widgets/dating_profile_card.dart';
-import 'package:mylifepartner/services/match_service.dart';
-import 'package:mylifepartner/main.dart'; // Make sure to import main.dart
+import 'package:life_partner_again/screens/discover_screen/widgets/dating_profile_card.dart';
+import 'package:life_partner_again/services/match_service.dart';
+import 'package:life_partner_again/main.dart'; // Make sure to import main.dart
 
 class DatingDiscoverTab extends StatefulWidget {
   final String title;

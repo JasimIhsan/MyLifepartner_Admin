@@ -1,18 +1,18 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/providers/image_asset_provider.dart';
-import 'package:mylifepartner/screens/home_screen/home_screen.dart';
-import 'package:mylifepartner/screens/onboarding/onboarding_flow_screen.dart';
-import 'package:mylifepartner/screens/otp_screen/otp_screen.dart';
-import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
-import 'package:mylifepartner/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:mylifepartner/screens/selfie_verification/selfie_verification_screen.dart';
-import 'package:mylifepartner/services/auth_repository.dart';
-import 'package:mylifepartner/widgets/auth_layout.dart';
-import 'package:mylifepartner/widgets/custom_button.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:life_partner_again/screens/home_screen/home_screen.dart';
+import 'package:life_partner_again/screens/onboarding/onboarding_flow_screen.dart';
+import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
+import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
+import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
+import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
+import 'package:life_partner_again/services/auth_repository.dart';
+import 'package:life_partner_again/widgets/auth_layout.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

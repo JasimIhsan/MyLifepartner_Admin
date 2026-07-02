@@ -1,13 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/auth_response.dart';
-import 'package:mylifepartner/screens/profile_screen/manage_profile_pictures_screen.dart';
-import 'package:mylifepartner/screens/profile_screen/widgets/edit_profile_ui_helpers.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/widgets/header_waves_background.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/auth_response.dart';
+import 'package:life_partner_again/screens/profile_screen/manage_profile_pictures_screen.dart';
+import 'package:life_partner_again/screens/profile_screen/widgets/edit_profile_ui_helpers.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/widgets/header_waves_background.dart';
+import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class EditProfileScreen extends StatefulWidget {

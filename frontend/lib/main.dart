@@ -3,16 +3,16 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/providers/call_provider.dart';
-import 'package:mylifepartner/providers/chat_provider.dart';
-import 'package:mylifepartner/providers/match_provider.dart';
-import 'package:mylifepartner/screens/landing_screen/landing_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
-import 'package:mylifepartner/providers/subscription_provider.dart';
-import 'package:mylifepartner/providers/image_asset_provider.dart';
-import 'package:mylifepartner/services/zego_service.dart';
-import 'package:mylifepartner/widgets/incoming_call_overlay.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/providers/call_provider.dart';
+import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/screens/landing_screen/landing_screen.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/providers/subscription_provider.dart';
+import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:life_partner_again/services/zego_service.dart';
+import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
 import 'package:provider/provider.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =

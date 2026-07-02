@@ -1,5 +1,5 @@
-import 'package:mylifepartner/services/api_service.dart';
-import 'package:mylifepartner/models/image_asset.dart';
+import 'package:life_partner_again/services/api_service.dart';
+import 'package:life_partner_again/models/image_asset.dart';
 
 class ImageAssetService {
   static final _client = ApiService.client;

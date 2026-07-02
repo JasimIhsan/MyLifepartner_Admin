@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:mylifepartner/config/env.dart';
-import 'package:mylifepartner/services/token_service.dart';
+import 'package:life_partner_again/config/env.dart';
+import 'package:life_partner_again/services/token_service.dart';
 
 /// Service class for handling API requests using the Dio package.
 /// This class is implemented as a Singleton to ensure only one instance

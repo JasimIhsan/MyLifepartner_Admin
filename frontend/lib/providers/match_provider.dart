@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:mylifepartner/models/match_recommendation.dart';
-import 'package:mylifepartner/services/match_service.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/services/match_service.dart';
+import 'package:life_partner_again/utils/dio_error_helper.dart';
 
 enum MatchLoadState { idle, loading, loaded, error }
 

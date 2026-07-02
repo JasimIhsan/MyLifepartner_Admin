@@ -1,11 +1,11 @@
 
-import 'package:mylifepartner/screens/onboarding/widgets/onboarding_steps.dart';
-import 'package:mylifepartner/screens/onboarding/widgets/onboarding_ui_helpers.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/onboarding_steps.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/screens/partner_preference/partner_preference_screen.dart';
-import 'package:mylifepartner/services/profile_repository.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingFlowScreen extends StatefulWidget {

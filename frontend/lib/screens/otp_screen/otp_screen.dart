@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/providers/image_asset_provider.dart';
-import 'package:mylifepartner/screens/otp_screen/widgets/otp_header.dart';
-import 'package:mylifepartner/screens/password_screen/password_screen.dart';
-import 'package:mylifepartner/services/auth_repository.dart';
-import 'package:mylifepartner/widgets/auth_layout.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:life_partner_again/screens/otp_screen/widgets/otp_header.dart';
+import 'package:life_partner_again/screens/password_screen/password_screen.dart';
+import 'package:life_partner_again/services/auth_repository.dart';
+import 'package:life_partner_again/widgets/auth_layout.dart';
+import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 
 import 'widgets/otp_form.dart';

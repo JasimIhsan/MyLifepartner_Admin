@@ -3,10 +3,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mylifepartner/models/chat_message.dart';
-import 'package:mylifepartner/services/chat_service.dart';
-import 'package:mylifepartner/services/zego_service.dart';
-import 'package:mylifepartner/services/user_repository.dart';
+import 'package:life_partner_again/models/chat_message.dart';
+import 'package:life_partner_again/services/chat_service.dart';
+import 'package:life_partner_again/services/zego_service.dart';
+import 'package:life_partner_again/services/user_repository.dart';
 import 'package:zego_zim/zego_zim.dart';
 
 class ChatProvider extends ChangeNotifier {

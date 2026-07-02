@@ -2,11 +2,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mylifepartner/models/profile_question.dart';
-import 'package:mylifepartner/models/profile_section.dart';
-import 'package:mylifepartner/models/user_image.dart';
-import 'package:mylifepartner/services/api_service.dart';
-import 'package:mylifepartner/utils/dio_error_helper.dart';
+import 'package:life_partner_again/models/profile_question.dart';
+import 'package:life_partner_again/models/profile_section.dart';
+import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/services/api_service.dart';
+import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileRepository {

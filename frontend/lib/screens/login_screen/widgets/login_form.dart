@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:mylifepartner/core/app_colors.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
 class LoginForm extends StatelessWidget {

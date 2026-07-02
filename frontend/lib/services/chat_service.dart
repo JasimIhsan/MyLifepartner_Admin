@@ -1,4 +1,4 @@
-import 'package:mylifepartner/services/api_service.dart';
+import 'package:life_partner_again/services/api_service.dart';
 
 class ChatApiService {
   static final _dio = ApiService.client;

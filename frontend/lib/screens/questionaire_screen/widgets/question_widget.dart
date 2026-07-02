@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mylifepartner/core/app_colors.dart';
-import 'package:mylifepartner/models/profile_question.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/profile_question.dart';
 
 class QuestionWidget extends StatefulWidget {
   final ProfileQuestion question;
