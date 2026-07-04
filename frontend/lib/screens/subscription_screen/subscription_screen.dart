@@ -275,7 +275,8 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                           horizontal: 24.0,
                                         ),
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
                                           children: [
                                             // Circular Logo with Glowing Ring & Floating Hearts
                                             SizedBox(
@@ -293,26 +294,44 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                                       color: Colors.white,
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                        color: AppColors.primary.withValues(alpha: 0.08),
+                                                        color: AppColors.primary
+                                                            .withValues(
+                                                              alpha: 0.08,
+                                                            ),
                                                         width: 6,
                                                       ),
                                                       boxShadow: [
                                                         BoxShadow(
-                                                          color: AppColors.primary.withValues(alpha: 0.12),
+                                                          color: AppColors
+                                                              .primary
+                                                              .withValues(
+                                                                alpha: 0.12,
+                                                              ),
                                                           blurRadius: 20,
                                                           spreadRadius: 2,
-                                                          offset: const Offset(0, 8),
+                                                          offset: const Offset(
+                                                            0,
+                                                            8,
+                                                          ),
                                                         ),
                                                       ],
                                                     ),
-                                                    padding: const EdgeInsets.all(18),
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                          18,
+                                                        ),
                                                     child: Image.asset(
                                                       'assets/icons/app_logo.png',
                                                       fit: BoxFit.contain,
-                                                      errorBuilder: (context, error, stackTrace) =>
-                                                          const Icon(
+                                                      errorBuilder:
+                                                          (
+                                                            context,
+                                                            error,
+                                                            stackTrace,
+                                                          ) => const Icon(
                                                             Icons.favorite,
-                                                            color: AppColors.primary,
+                                                            color: AppColors
+                                                                .primary,
                                                             size: 32,
                                                           ),
                                                     ),
@@ -323,7 +342,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                                     top: 40,
                                                     child: Icon(
                                                       Icons.favorite_rounded,
-                                                      color: Colors.redAccent.withValues(alpha: 0.6),
+                                                      color: Colors.redAccent
+                                                          .withValues(
+                                                            alpha: 0.6,
+                                                          ),
                                                       size: 18,
                                                     ),
                                                   ),
@@ -333,7 +355,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                                     top: 50,
                                                     child: Icon(
                                                       Icons.favorite_rounded,
-                                                      color: Colors.redAccent.withValues(alpha: 0.4),
+                                                      color: Colors.redAccent
+                                                          .withValues(
+                                                            alpha: 0.4,
+                                                          ),
                                                       size: 14,
                                                     ),
                                                   ),
@@ -353,13 +378,16 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                             ),
                                             const SizedBox(height: 10),
                                             const Padding(
-                                              padding: EdgeInsets.symmetric(horizontal: 24.0),
+                                              padding: EdgeInsets.symmetric(
+                                                horizontal: 24.0,
+                                              ),
                                               child: Text(
                                                 'Premium perks to help you find your perfect life partner.',
                                                 textAlign: TextAlign.center,
                                                 style: TextStyle(
                                                   fontSize: 14,
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                   fontWeight: FontWeight.w500,
                                                   height: 1.4,
                                                 ),
@@ -1048,7 +1076,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ),
                     ),
                     child: const Text(
-                      'Choose',
+                      'Subscribe',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -1079,7 +1107,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ),
                     ),
                     child: const Text(
-                      'Choose',
+                      'Subscribe',
                       style: TextStyle(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w800,
