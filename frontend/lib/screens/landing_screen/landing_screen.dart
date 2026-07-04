@@ -9,7 +9,7 @@ import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 
-import '../splash_screen/splash_screen.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 
 class LandingScreen extends StatefulWidget {
   const LandingScreen({super.key});
@@ -238,14 +238,9 @@ class _LandingScreenState extends State<LandingScreen> {
           type: CustomButtonType.primary,
           borderRadius: 50,
           onPressed: () {
-            Navigator.pushReplacement(
+            Navigator.pushReplacementNamed(
               context,
-              PageRouteBuilder(
-                pageBuilder: (_, animation, __) => const SplashScreen(),
-                transitionsBuilder: (_, animation, __, child) =>
-                    FadeTransition(opacity: animation, child: child),
-                transitionDuration: const Duration(milliseconds: 500),
-              ),
+              AppRoutes.splash,
             );
           },
         )

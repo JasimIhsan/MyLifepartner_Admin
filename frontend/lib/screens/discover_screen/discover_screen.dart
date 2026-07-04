@@ -12,6 +12,7 @@ import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_
 import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:life_partner_again/services/match_service.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:provider/provider.dart';
 
 /// Discover screen refactored into a modern profile browser UI.
@@ -23,7 +24,7 @@ class DiscoverScreen extends StatefulWidget {
   State<DiscoverScreen> createState() => _DiscoverScreenState();
 }
 
-class _DiscoverScreenState extends State<DiscoverScreen> {
+class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
   final PageController _pageController = PageController();
   final Set<int> _actionedProfileIds = {};
   List<MatchRecommendation> _localProfiles = [];
@@ -34,16 +35,32 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        context.read<MatchProvider>().loadRecommendations().then((_) => _syncWithProvider());
-      }
+      _fetchRecommendations();
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _fetchRecommendations();
+  }
+
+  void _fetchRecommendations() {
+    if (mounted) {
+      context.read<MatchProvider>().loadRecommendations().then((_) => _syncWithProvider());
+    }
   }
 
   void _syncWithProvider() {

@@ -7,6 +7,7 @@ import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:life_partner_again/main.dart';
 
 class ChatPlaceholderScreen extends StatefulWidget {
   const ChatPlaceholderScreen({super.key});
@@ -15,26 +16,48 @@ class ChatPlaceholderScreen extends StatefulWidget {
   State<ChatPlaceholderScreen> createState() => _ChatPlaceholderScreenState();
 }
 
-class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> {
+class _ChatPlaceholderScreenState extends State<ChatPlaceholderScreen> with RouteAware {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final matchProvider = context.read<MatchProvider>();
-      final chatProvider = context.read<ChatProvider>();
-
-      await matchProvider.loadMutualMatches();
-      await chatProvider.loadConversations();
-
-      if (mounted) {
-        final userIds = matchProvider.mutualMatches
-            .map((m) => m.userId)
-            .toList();
-        if (userIds.isNotEmpty) {
-          chatProvider.subscribeToUsersStatus(userIds);
-        }
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadChatData();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _loadChatData();
+  }
+
+  Future<void> _loadChatData() async {
+    if (!mounted) return;
+    final matchProvider = context.read<MatchProvider>();
+    final chatProvider = context.read<ChatProvider>();
+
+    await matchProvider.loadMutualMatches();
+    await chatProvider.loadConversations();
+
+    if (mounted) {
+      final userIds = matchProvider.mutualMatches
+          .map((m) => m.userId)
+          .toList();
+      if (userIds.isNotEmpty) {
+        chatProvider.subscribeToUsersStatus(userIds);
+      }
+    }
   }
 
   @override

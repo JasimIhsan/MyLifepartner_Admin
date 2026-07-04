@@ -7,7 +7,7 @@ import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/discover_screen.dart';
 import 'package:life_partner_again/screens/likes_screen/likes_screen.dart';
-import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/screens/notification_screen/notification_screen.dart';
 import 'package:life_partner_again/screens/profile_screen/profile_screen.dart';
 import 'package:life_partner_again/services/user_repository.dart';
@@ -160,12 +160,9 @@ class _HomePageState extends State<HomePage> {
           ),
           tooltip: 'LPA Assist',
           onPressed: () {
-            Navigator.push(
+            Navigator.pushNamed(
               context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    const Scaffold(body: SafeArea(child: LpaGuideScreen())),
-              ),
+              AppRoutes.lpaGuide,
             );
           },
         ),

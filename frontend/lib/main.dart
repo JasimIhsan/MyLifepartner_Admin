@@ -7,13 +7,14 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
-import 'package:life_partner_again/screens/landing_screen/landing_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
 import 'package:provider/provider.dart';
+
+import 'package:life_partner_again/core/app_routes.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -115,6 +116,8 @@ class _MyAppState extends State<MyApp> {
         scaffoldMessengerKey: scaffoldMessengerKey,
         navigatorKey: navigatorKey,
         navigatorObservers: [routeObserver],
+        initialRoute: AppRoutes.landing,
+        onGenerateRoute: AppRoutes.onGenerateRoute,
 
         theme: ThemeData(
           useMaterial3: true,
@@ -145,7 +148,6 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
 
-        home: const LandingScreen(),
         builder: (context, child) {
           return Stack(
             children: [

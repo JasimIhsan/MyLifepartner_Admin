@@ -15,6 +15,8 @@ import '../login_screen/login_screen.dart';
 import '../subscription_screen/subscription_screen.dart';
 import 'manage_profile_pictures_screen.dart';
 
+import 'package:life_partner_again/main.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -22,7 +24,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
   final UserRepository _userRepository = UserRepository();
   final ProfileRepository _profileRepository = ProfileRepository();
 
@@ -33,6 +35,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchProfileData();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
     _fetchProfileData();
   }
 

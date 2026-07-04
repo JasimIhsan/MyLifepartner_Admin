@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/screens/home_screen/home_screen.dart';
-import 'package:life_partner_again/screens/login_screen/login_screen.dart';
-import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
-import 'package:life_partner_again/screens/onboarding/onboarding_flow_screen.dart';
-import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/services/auth_service.dart';
 import 'package:life_partner_again/services/token_service.dart';
 
@@ -34,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (accessToken == null || accessToken.isEmpty) {
-      _goTo(const LoginPage());
+      _goTo(AppRoutes.login);
       return;
     }
 
@@ -43,29 +38,29 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
 
       if (!me.hasCompletedBasicDetails) {
-        _goTo(const OnboardingFlowScreen());
+        _goTo(AppRoutes.onboarding);
       } else if (!me.hasCompletedPartnerPreference) {
-        _goTo(const PartnerPreferenceScreen());
+        _goTo(AppRoutes.partnerPreference);
       } else if (!me.hasCompletedImageUpload) {
-        _goTo(const ProfileImageUploadScreen());
+        _goTo(AppRoutes.profileImageUpload);
       } else if (me.selfieStatus == null || me.selfieStatus == "NONE") {
-        _goTo(const SelfieVerificationScreen());
+        _goTo(AppRoutes.selfieVerification);
       } else {
-        _goTo(const HomePage());
+        _goTo(AppRoutes.home);
       }
     } catch (_) {
       // If access token is expired, ApiService interceptor will try refresh-token + retry.
       // If refresh fails, tokens are cleared; we fall back to login.
       await TokenService.clearTokens();
       if (!mounted) return;
-      _goTo(const LoginPage());
+      _goTo(AppRoutes.login);
     }
   }
 
-  void _goTo(Widget screen) {
-    Navigator.pushReplacement(
+  void _goTo(String routeName) {
+    Navigator.pushReplacementNamed(
       context,
-      MaterialPageRoute(builder: (_) => screen),
+      routeName,
     );
   }
 

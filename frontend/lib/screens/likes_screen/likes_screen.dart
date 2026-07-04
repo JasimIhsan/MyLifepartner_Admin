@@ -5,6 +5,7 @@ import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:life_partner_again/main.dart';
 
 class LikedMatchesScreen extends StatefulWidget {
   const LikedMatchesScreen({super.key});
@@ -14,7 +15,7 @@ class LikedMatchesScreen extends StatefulWidget {
 }
 
 class _LikedMatchesScreenState extends State<LikedMatchesScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, RouteAware {
   late TabController _tabController;
   late AnimationController _headerController;
   late Animation<double> _headerAnimation;
@@ -40,6 +41,17 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
     });
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+  }
+
+  @override
+  void didPopNext() {
+    _loadDataForCurrentTab();
+  }
+
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
       _loadDataForCurrentTab();
@@ -63,6 +75,7 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _tabController.dispose();
     _headerController.dispose();
     super.dispose();

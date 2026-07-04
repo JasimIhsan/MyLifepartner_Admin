@@ -41,12 +41,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       // If subscription exists but is expired, deactivate it
       if (sub && new Date() > sub.endDate) {
+         console.log(`[UserSubscriptionService] Active subscription expired for user ${userId}. Deactivating.`, { subId: sub.id, endDate: sub.endDate });
          await this.subscriptionRepository.deactivateUserSubscriptions(userId);
          sub = null;
       }
 
       // If no active subscription, fallback to FREE plan
       if (!sub) {
+         console.log(`[UserSubscriptionService] No active subscription for user ${userId}. Subscribing to FREE plan.`);
          const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
          if (freePlan) {
             sub = (await this.subscribe(userId, freePlan.id)) as any;
@@ -235,6 +237,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       if (!activeProductIdentifier) {
          // Fallback/Downgrade to FREE
+         console.log(`[UserSubscriptionService] syncSubscription: No active product identifier found for user ${userId} in RevenueCat. Falling back to FREE plan.`);
          const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
          if (!freePlan) {
             throw new ApiError(500, "FREE plan not found in database");
@@ -351,6 +354,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             break;
 
          case RevenueCatWebhookEvent.EXPIRATION:
+            console.log(`[UserSubscriptionService] handleWebhook: EXPIRATION event received for user ${appUserId}. Downgrading to FREE plan.`);
             const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
             if (freePlan) {
                await this.subscriptionRepository.deactivateUserSubscriptions(appUserId);
@@ -359,6 +363,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             break;
 
          case RevenueCatWebhookEvent.REFUND:
+            console.log(`[UserSubscriptionService] handleWebhook: REFUND event received for user ${appUserId}. Downgrading to FREE (inactive).`);
             const freePlanRefund = await this.subscriptionRepository.getPlanByName("FREE");
             if (freePlanRefund) {
                await this.subscriptionRepository.deactivateUserSubscriptions(appUserId);
