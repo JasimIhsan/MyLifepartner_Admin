@@ -3,7 +3,6 @@ import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
-import 'package:life_partner_again/screens/subscription_screen/connection_illustration.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_background_painter.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_error_widget.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
@@ -254,142 +253,218 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                       // Scrollable content area
                       Expanded(
-                        child: SingleChildScrollView(
-                          physics: const BouncingScrollPhysics(),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              const SizedBox(height: 12),
-
-                              // Intro Banner Section
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24.0,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
                                 ),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      flex: 3,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Better matches,\nmeaningful connections',
-                                            style: TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.w900,
-                                              color: AppColors.textPrimary,
-                                              height: 1.25,
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      const SizedBox(height: 12),
+
+                                      // Intro Banner Section (Variant 3)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 24.0,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            // Circular Logo with Glowing Ring & Floating Hearts
+                                            SizedBox(
+                                              width: 150,
+                                              height: 150,
+                                              child: Stack(
+                                                alignment: Alignment.center,
+                                                clipBehavior: Clip.none,
+                                                children: [
+                                                  // Inner circle with logo
+                                                  Container(
+                                                    width: 110,
+                                                    height: 110,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                        color: AppColors.primary.withValues(alpha: 0.08),
+                                                        width: 6,
+                                                      ),
+                                                      boxShadow: [
+                                                        BoxShadow(
+                                                          color: AppColors.primary.withValues(alpha: 0.12),
+                                                          blurRadius: 20,
+                                                          spreadRadius: 2,
+                                                          offset: const Offset(0, 8),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    padding: const EdgeInsets.all(18),
+                                                    child: Image.asset(
+                                                      'assets/icons/app_logo.png',
+                                                      fit: BoxFit.contain,
+                                                      errorBuilder: (context, error, stackTrace) =>
+                                                          const Icon(
+                                                            Icons.favorite,
+                                                            color: AppColors.primary,
+                                                            size: 32,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  // Left Floating Heart
+                                                  Positioned(
+                                                    left: 2,
+                                                    top: 40,
+                                                    child: Icon(
+                                                      Icons.favorite_rounded,
+                                                      color: Colors.redAccent.withValues(alpha: 0.6),
+                                                      size: 18,
+                                                    ),
+                                                  ),
+                                                  // Right Floating Heart
+                                                  Positioned(
+                                                    right: 6,
+                                                    top: 50,
+                                                    child: Icon(
+                                                      Icons.favorite_rounded,
+                                                      color: Colors.redAccent.withValues(alpha: 0.4),
+                                                      size: 14,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                          const SizedBox(height: 12),
-                                          const Text(
-                                            'Premium perks to help you find your perfect life partner.',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: AppColors.textSecondary,
-                                              fontWeight: FontWeight.w500,
-                                              height: 1.4,
+                                            const SizedBox(height: 16),
+                                            const Text(
+                                              'Unlock Premium Perks',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.w900,
+                                                color: AppColors.textPrimary,
+                                                height: 1.25,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                            const SizedBox(height: 10),
+                                            const Padding(
+                                              padding: EdgeInsets.symmetric(horizontal: 24.0),
+                                              child: Text(
+                                                'Premium perks to help you find your perfect life partner.',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors.textSecondary,
+                                                  fontWeight: FontWeight.w500,
+                                                  height: 1.4,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    const Expanded(
-                                      flex: 2,
-                                      child: ConnectionIllustration(),
-                                    ),
-                                  ],
+
+                                      const SizedBox(height: 24),
+
+                                      // Features Horizontal List
+                                      // _buildFeatureIconsRow(),
+                                      const SizedBox(height: 28),
+
+                                      if (plans.isNotEmpty) ...[
+                                        // PageView for plan cards
+                                        SizedBox(
+                                          height: 410,
+                                          child: PageView.builder(
+                                            controller: _pageController,
+                                            itemCount: plans.length,
+                                            onPageChanged: (page) {
+                                              setState(() {
+                                                _currentPage = page;
+                                              });
+                                            },
+                                            itemBuilder: (context, index) {
+                                              final plan = plans[index];
+                                              final isCurrentPlan =
+                                                  currentSub != null &&
+                                                  currentSub.id == plan.id;
+                                              final isSelectedPage =
+                                                  index == _currentPage;
+
+                                              return AnimatedScale(
+                                                scale: isSelectedPage
+                                                    ? 1.0
+                                                    : 0.94,
+                                                duration: const Duration(
+                                                  milliseconds: 300,
+                                                ),
+                                                curve: Curves.easeOutCubic,
+                                                child: _buildPlanCard(
+                                                  plan,
+                                                  isCurrentPlan,
+                                                  provider.isLoading,
+                                                  isSelectedPage,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+
+                                        // Indicators
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: List.generate(
+                                            plans.length,
+                                            (index) {
+                                              final isSelected =
+                                                  _currentPage == index;
+                                              return AnimatedContainer(
+                                                duration: const Duration(
+                                                  milliseconds: 250,
+                                                ),
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                    ),
+                                                width: isSelected ? 24 : 8,
+                                                height: 8,
+                                                decoration: BoxDecoration(
+                                                  color: isSelected
+                                                      ? AppColors.primary
+                                                      : const Color(0xFFE2E8F0),
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ] else ...[
+                                        const Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.all(40.0),
+                                            child: Text(
+                                              'No subscription plans available.',
+                                              style: TextStyle(
+                                                color: AppColors.textLight,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                      const SizedBox(height: 24),
+                                    ],
+                                  ),
                                 ),
                               ),
-
-                              const SizedBox(height: 24),
-
-                              // Features Horizontal List
-                              // _buildFeatureIconsRow(),
-                              const SizedBox(height: 28),
-
-                              if (plans.isNotEmpty) ...[
-                                // PageView for plan cards
-                                SizedBox(
-                                  height: 410,
-                                  child: PageView.builder(
-                                    controller: _pageController,
-                                    itemCount: plans.length,
-                                    onPageChanged: (page) {
-                                      setState(() {
-                                        _currentPage = page;
-                                      });
-                                    },
-                                    itemBuilder: (context, index) {
-                                      final plan = plans[index];
-                                      final isCurrentPlan =
-                                          currentSub != null &&
-                                          currentSub.id == plan.id;
-                                      final isSelectedPage =
-                                          index == _currentPage;
-
-                                      return AnimatedScale(
-                                        scale: isSelectedPage ? 1.0 : 0.94,
-                                        duration: const Duration(
-                                          milliseconds: 300,
-                                        ),
-                                        curve: Curves.easeOutCubic,
-                                        child: _buildPlanCard(
-                                          plan,
-                                          isCurrentPlan,
-                                          provider.isLoading,
-                                          isSelectedPage,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-
-                                // Indicators
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: List.generate(plans.length, (
-                                    index,
-                                  ) {
-                                    final isSelected = _currentPage == index;
-                                    return AnimatedContainer(
-                                      duration: const Duration(
-                                        milliseconds: 250,
-                                      ),
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 4,
-                                      ),
-                                      width: isSelected ? 24 : 8,
-                                      height: 8,
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? AppColors.primary
-                                            : const Color(0xFFE2E8F0),
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                    );
-                                  }),
-                                ),
-                              ] else ...[
-                                const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(40.0),
-                                    child: Text(
-                                      'No subscription plans available.',
-                                      style: TextStyle(
-                                        color: AppColors.textLight,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 24),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                       ),
 
@@ -621,19 +696,120 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               letterSpacing: 0.2,
             ),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Skip',
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
-              ),
-            ),
-          ),
+          const SizedBox(width: 48),
         ],
       ),
+    );
+  }
+
+  void _showPlanDetailsSheet(
+    BuildContext context,
+    model.SubscriptionPlan plan,
+    List<String> displayFeatures,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        final provider = context.read<SubscriptionProvider>();
+        return Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '${plan.name} Plan Details',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      provider.currentSubscriptionMessage ??
+                          'Your subscription is active.',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Price: ${plan.displayPrice}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Included Limits & Features:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              ...displayFeatures.map(
+                (feat) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4.0),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 16,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        feat,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -687,10 +863,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isSelectedPage
-                  ? visuals.borderColor
-                  : AppColors.borderColor,
-              width: isSelectedPage ? 2 : 1,
+              color: isCurrentPlan
+                  ? AppColors.primary
+                  : (isSelectedPage
+                        ? visuals.borderColor
+                        : AppColors.borderColor),
+              width: (isCurrentPlan || isSelectedPage) ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
@@ -782,142 +960,66 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
               // Dynamic selection button
               const SizedBox(height: 16),
               if (isCurrentPlan)
-                Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.2),
+                if (plan.price == 0)
+                  Container(
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        backgroundColor: AppColors.surface,
-                        shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(24),
-                          ),
-                        ),
-                        builder: (context) {
-                          final provider = context.read<SubscriptionProvider>();
-                          return Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '${plan.name} Plan Details',
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w800,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.close_rounded),
-                                      onPressed: () => Navigator.pop(context),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(
-                                      alpha: 0.05,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        provider.currentSubscriptionMessage ??
-                                            'Your subscription is active.',
-                                        style: const TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Price: ${plan.displayPrice}',
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                const Text(
-                                  'Included Limits & Features:',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                ...displayFeatures.map(
-                                  (feat) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 4.0,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.check_circle_outline_rounded,
-                                          size: 16,
-                                          color: AppColors.primary,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          feat,
-                                          style: const TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    },
                     child: const Text(
-                      'Details',
+                      'Active Plan',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: AppColors.textSecondary,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
                     ),
-                  ),
-                )
+                  )
+                else
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: TextButton(
+                      onPressed: () async {
+                        final provider = context.read<SubscriptionProvider>();
+                        final confirm = await showModalBottomSheet<bool>(
+                          context: context,
+                          backgroundColor: AppColors.surface,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24),
+                            ),
+                          ),
+                          builder: (context) => _buildCancelConfirmationSheet(),
+                        );
+
+                        if (confirm == true) {
+                          if (!mounted) return;
+                          final freePlan = provider.plans.firstWhere(
+                            (p) => p.price == 0,
+                          );
+                          _handleSubscribe(freePlan);
+                        }
+                      },
+                      child: const Text(
+                        'Cancel Subscription',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  )
               else if (visuals.isPopular)
                 Container(
                   height: 48,
@@ -989,6 +1091,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             ],
           ),
         ),
+
+        // Info button in the top right corner of the current plan card (only if not free plan)
+        if (isCurrentPlan && plan.price > 0)
+          Positioned(
+            top: 24,
+            right: 24,
+            child: GestureDetector(
+              onTap: () =>
+                  _showPlanDetailsSheet(context, plan, displayFeatures),
+              child: const Icon(
+                Icons.info_outline_rounded,
+                color: Colors.grey,
+                size: 22,
+              ),
+            ),
+          ),
 
         // Optional badge overlay (e.g. Most Popular, 40% OFF)
         if (visuals.badgeText != null)
