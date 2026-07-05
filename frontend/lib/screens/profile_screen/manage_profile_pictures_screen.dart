@@ -254,11 +254,11 @@ class _ManageProfilePicturesScreenState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const _TipCard()
-                    .animate()
-                    .fade(duration: 350.ms)
-                    .slideY(begin: -0.05),
-                const SizedBox(height: 24),
+                // const _TipCard()
+                //     .animate()
+                //     .fade(duration: 350.ms)
+                //     .slideY(begin: -0.05),
+                // const SizedBox(height: 24),
                 AspectRatio(
                   aspectRatio: 0.8,
                   child: _PrimaryImageSlot(

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/country_helper.dart';
-import 'package:life_partner_again/services/match_service.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_details_grid.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/body_photo_carousel.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_action_bar.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_details_grid.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
+import 'package:life_partner_again/services/match_service.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final int profileId;
@@ -83,7 +83,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                           ? Container(
                               color: AppColors.primaryLight,
                               child: const Center(
-                                child: Icon(Icons.person_rounded, size: 80, color: Color(0xFFCCCCCC)),
+                                child: Icon(
+                                  Icons.person_rounded,
+                                  size: 80,
+                                  color: Color(0xFFCCCCCC),
+                                ),
                               ),
                             )
                           : HeaderCarousel(images: images),
@@ -107,7 +111,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (p['bio'] != null && (p['bio'] as String).isNotEmpty) ...[
+                    const SizedBox(height: 25),
+                    if (p['bio'] != null &&
+                        (p['bio'] as String).isNotEmpty) ...[
                       const Text(
                         'About',
                         style: TextStyle(
@@ -209,7 +215,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
               ),
             ),
           ),
-        Positioned(bottom: 0, left: 0, right: 0, child: ProfileActionBar(profile: p)),
+        Positioned(
+          bottom: 0,
+          left: 0,
+          right: 0,
+          child: ProfileActionBar(profile: p),
+        ),
       ],
     );
   }

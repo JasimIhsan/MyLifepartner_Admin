@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 
 class FeatureExhaustedModal extends StatelessWidget {
   final String featureType;
 
   const FeatureExhaustedModal({super.key, required this.featureType});
 
-  static Future<void> show(BuildContext context, {required String featureType}) {
+  static Future<void> show(
+    BuildContext context, {
+    required String featureType,
+  }) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -47,6 +51,7 @@ class FeatureExhaustedModal extends StatelessWidget {
                 height: 140,
                 fit: BoxFit.contain,
               ),
+              // Icon(Icons.warning, size: 80, color: Colors.orange),
               const SizedBox(height: 20),
               Text(
                 '$featureType Limit Reached',
@@ -73,7 +78,12 @@ class FeatureExhaustedModal extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    // Optionally navigate to Subscription page here
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SubscriptionScreen(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -86,10 +96,7 @@ class FeatureExhaustedModal extends StatelessWidget {
                   ),
                   child: const Text(
                     'Upgrade Plan',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
