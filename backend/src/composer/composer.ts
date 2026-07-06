@@ -129,12 +129,12 @@ export const imageAssetService = new ImageAssetService(imageAssetRepository, s3S
 export const userService = new UserService(userRepository, s3Service);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
 export const authService = new AuthService(userRepository, otpService, jwtService, cacheService, subscriptionPlanRepository, userSubscriptionRepository);
-export const profileService = new ProfileService(profileRepository);
+export const profileService = new ProfileService(profileRepository, s3Service);
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);
-export const chatService = new ChatService(chatRepository);
+export const chatService = new ChatService(chatRepository, userFeatureService);
 export const matchService = new MatchService(matchRepository, s3Service, userFeatureService);
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -156,9 +156,9 @@ export const guideController = new GuideController(guideService);
 // User controllers
 export const authController = new AuthController(authService, userService);
 export const profileController = new ProfileController(profileService);
-export const profileImageController = new ProfileImageController(profileService, s3Service);
+export const profileImageController = new ProfileImageController(profileService);
 export const userController = new UserController(userService);
 export const matchController = new MatchController(matchService);
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService, userFeatureService);
-export const chatController = new ChatController(chatService, userFeatureService);
+export const chatController = new ChatController(chatService);
 export const zegoController = new ZegoController(zegoService);
