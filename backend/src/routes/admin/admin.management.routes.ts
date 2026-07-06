@@ -1,11 +1,10 @@
 import { adminManagementController } from "@/composer/composer";
 import { Router } from "express";
-import { verifyJWT } from "../../middlewares/auth.middleware";
 import { isSuperAdmin } from "../../middlewares/superAdmin.middleware";
 
 const adminManagementRoute = Router();
 
-adminManagementRoute.use(verifyJWT, isSuperAdmin);
+adminManagementRoute.use(isSuperAdmin);
 
 /**
  * @route   GET /api/v1/admin/management

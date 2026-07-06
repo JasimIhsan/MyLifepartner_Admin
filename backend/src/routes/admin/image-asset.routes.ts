@@ -1,5 +1,4 @@
 import { imageAssetController } from "@/composer/composer";
-import { authenticateAdmin } from "@/middlewares/admin.auth.middleware";
 import { Router } from "express";
 import multer from "multer";
 
@@ -8,8 +7,6 @@ const router = Router();
 const upload = multer({
    storage: multer.memoryStorage(),
 });
-
-router.use(authenticateAdmin);
 
 /**
  * @route GET /api/v1/admin/image-assets

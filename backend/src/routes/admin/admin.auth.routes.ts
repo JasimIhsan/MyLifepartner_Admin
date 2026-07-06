@@ -1,6 +1,6 @@
 import { adminAuthController } from "@/composer/composer";
 import { Router } from "express";
-import { verifyJWT } from "../../middlewares/auth.middleware";
+import { authenticateAdmin } from "../../middlewares/admin.auth.middleware";
 
 const adminAuthRoute = Router();
 
@@ -9,7 +9,7 @@ const adminAuthRoute = Router();
  * @desc    Get current admin profile
  * @access  Private (Admin)
  */
-adminAuthRoute.get("/me", verifyJWT, adminAuthController.getMe);
+adminAuthRoute.get("/me", authenticateAdmin, adminAuthController.getMe);
 
 /**
  * @route   POST /api/v1/admin/auth/login
@@ -30,6 +30,6 @@ adminAuthRoute.post("/refresh", adminAuthController.refresh);
  * @desc    Admin logout
  * @access  Private (Admin)
  */
-adminAuthRoute.post("/logout", verifyJWT, adminAuthController.logout);
+adminAuthRoute.post("/logout", authenticateAdmin, adminAuthController.logout);
 
 export default adminAuthRoute;
