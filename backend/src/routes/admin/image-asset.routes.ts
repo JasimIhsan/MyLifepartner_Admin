@@ -1,37 +1,43 @@
+import { imageAssetController } from "@/composer/composer";
+import { authenticateAdmin } from "@/middlewares/admin.auth.middleware";
 import { Router } from "express";
 import multer from "multer";
-import { imageAssetController } from "@/composer/composer";
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
-// Admin Asset Management
+const upload = multer({
+   storage: multer.memoryStorage(),
+});
+
+router.use(authenticateAdmin);
 
 /**
- * @route   GET /api/v1/admin/image-assets
- * @desc    Get all image assets
- * @access  Admin
+ * @route GET /api/v1/admin/image-assets
+ * @purpose Fetches all image assets.
  */
 router.get("/", imageAssetController.getAllAssets);
 
 /**
- * @route   POST /api/v1/admin/image-assets
- * @desc    Upload/create a new image asset
- * @access  Admin
+ * @route GET /api/v1/admin/image-assets/section/:section
+ * @purpose Fetches image assets by section.
+ */
+router.get("/section/:section", imageAssetController.getAssetsBySection);
+
+/**
+ * @route POST /api/v1/admin/image-assets
+ * @purpose Creates a new image asset.
  */
 router.post("/", upload.single("file"), imageAssetController.createAsset);
 
 /**
- * @route   PUT /api/v1/admin/image-assets/:id
- * @desc    Update an image asset by ID
- * @access  Admin
+ * @route PUT /api/v1/admin/image-assets/:id
+ * @purpose Updates an image asset by ID.
  */
 router.put("/:id", upload.single("file"), imageAssetController.updateAsset);
 
 /**
- * @route   DELETE /api/v1/admin/image-assets/:id
- * @desc    Delete an image asset by ID
- * @access  Admin
+ * @route DELETE /api/v1/admin/image-assets/:id
+ * @purpose Deletes an image asset by ID.
  */
 router.delete("/:id", imageAssetController.deleteAsset);
 

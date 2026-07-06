@@ -2,9 +2,8 @@ import { JwtPayload } from "jsonwebtoken";
 
 export interface UserJwtPayload extends JwtPayload {
    id: number;
-   role?: string;
-   mobileNumber?: string;
-   username?: string;
+   email: string | null;
+   role: string;
 }
 
 declare global {
@@ -14,3 +13,5 @@ declare global {
       }
    }
 }
+
+export {};

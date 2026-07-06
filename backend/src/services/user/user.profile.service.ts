@@ -2,9 +2,9 @@ import { ImageUploadStatusDto, toImageUploadStatusDto, toUserImageDto, UserImage
 import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto, UserAnswerDto } from "@/dtos/profile.dto";
 import { CreatePartnerPreferenceDto, UpdateProfileDto } from "@/dtos/profile.input.dto";
 import { IProfileRepository } from "@/interfaces/repositories/profile.repository.interface";
-import { IProfileService } from "@/interfaces/services/user.profile.service.interface";
+import { IS3Service } from "@/interfaces/services/s3.service.interface";
+import { IProfileService, PartnerPreference, Profile, ProfileStatus } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { PartnerPreference, Profile, ProfileStatus } from "@/interfaces/services/user.profile.service.interface";
 
 type ProfileCompletionStatus = {
    isCompleted: boolean;
@@ -19,7 +19,10 @@ const MAX_USER_IMAGES = 4;
 const DEFAULT_NEXT_PENDING_SECTION_ORDER = 1;
 
 export class ProfileService implements IProfileService {
-   constructor(private readonly profileRepository: IProfileRepository) {}
+   constructor(
+      private readonly profileRepository: IProfileRepository,
+      private readonly s3Service: IS3Service
+   ) {}
 
    /**
     * Gets profile structure.
@@ -161,8 +164,15 @@ export class ProfileService implements IProfileService {
     */
    async getUserImages(userId: number): Promise<UserImageDto[]> {
       const images = await this.profileRepository.getUserImages(userId);
-
-      return images.map(toUserImageDto);
+      const imagesWithPresignedUrls = await Promise.all(
+         images.map(async (image) => {
+            if (image.imageUrl) {
+               image.imageUrl = await this.s3Service.getPresignedUrl(image.imageUrl);
+            }
+            return image;
+         })
+      );
+      return imagesWithPresignedUrls.map(toUserImageDto);
    }
 
    /**
@@ -172,17 +182,25 @@ export class ProfileService implements IProfileService {
     * @param imageUrl - Image URL.
     * @returns Uploaded user image.
     */
-   async uploadUserImage(userId: number, imageUrl: string): Promise<UserImageDto> {
+   async uploadUserImage(userId: number, file: Express.Multer.File): Promise<UserImageDto> {
       const currentCount = await this.profileRepository.getUserImagesCount(userId);
 
       if (currentCount >= MAX_USER_IMAGES) {
          throw new ApiError(400, "Maximum of 4 images allowed");
       }
 
-      const isPrimary = currentCount === 0;
-      const image = await this.profileRepository.saveUserImage(userId, imageUrl, isPrimary);
+      const s3Url = await this.s3Service.uploadToS3(file, `${userId}/profile`);
 
-      return toUserImageDto(image);
+      try {
+         const isPrimary = currentCount === 0;
+         const image = await this.profileRepository.saveUserImage(userId, s3Url, isPrimary);
+
+         image.imageUrl = await this.s3Service.getPresignedUrl(image.imageUrl);
+         return toUserImageDto(image);
+      } catch (error) {
+         await this.s3Service.deleteFromS3(s3Url);
+         throw error;
+      }
    }
 
    /**
@@ -194,6 +212,10 @@ export class ProfileService implements IProfileService {
     */
    async deleteUserImage(userId: number, imageId: number): Promise<DeleteImageResponse> {
       const image = await this.getOwnedUserImage(userId, imageId);
+
+      if (image.imageUrl) {
+         await this.s3Service.deleteFromS3(image.imageUrl);
+      }
 
       await this.profileRepository.deleteUserImage(image.id);
 
@@ -254,12 +276,33 @@ export class ProfileService implements IProfileService {
     * @param longitude - Optional longitude.
     * @returns Updated selfie data.
     */
-   async uploadSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number) {
-      const result = await this.profileRepository.saveSelfie(userId, frontUrl, leftUrl, rightUrl, latitude, longitude);
-      return {
-         ...result,
-         user: result.user as unknown as Profile,
-      };
+   async uploadSelfie(userId: number, frontFile: Express.Multer.File, leftFile: Express.Multer.File, rightFile: Express.Multer.File, latitude?: number, longitude?: number) {
+      const [frontS3Url, leftS3Url, rightS3Url] = await Promise.all([this.s3Service.uploadToS3(frontFile, `${userId}/selfie_front`), this.s3Service.uploadToS3(leftFile, `${userId}/selfie_left`), this.s3Service.uploadToS3(rightFile, `${userId}/selfie_right`)]);
+
+      try {
+         const result = await this.profileRepository.saveSelfie(userId, frontS3Url, leftS3Url, rightS3Url, latitude, longitude);
+
+         const deleteOldSelfiePromises: Promise<void>[] = [];
+
+         if (result.oldSelfieUrls.front) {
+            deleteOldSelfiePromises.push(this.s3Service.deleteFromS3(result.oldSelfieUrls.front));
+         }
+         if (result.oldSelfieUrls.left) {
+            deleteOldSelfiePromises.push(this.s3Service.deleteFromS3(result.oldSelfieUrls.left));
+         }
+         if (result.oldSelfieUrls.right) {
+            deleteOldSelfiePromises.push(this.s3Service.deleteFromS3(result.oldSelfieUrls.right));
+         }
+
+         await Promise.all(deleteOldSelfiePromises);
+
+         return {
+            user: result.user as unknown as Profile,
+         };
+      } catch (error) {
+         await Promise.all([this.s3Service.deleteFromS3(frontS3Url), this.s3Service.deleteFromS3(leftS3Url), this.s3Service.deleteFromS3(rightS3Url)]);
+         throw error;
+      }
    }
 
    /**

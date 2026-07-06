@@ -1,55 +1,93 @@
+import { UpdateUserDto } from "@/dtos/user.input.dto";
 import { IUserService } from "@/interfaces/services/user.service.interface";
+import { AuthRequest } from "@/types/AuthRequest";
+import { ApiError } from "@/utils/ApiError";
+import { ApiResponse } from "@/utils/ApiResponse";
+import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
-import { ApiResponse } from "../../utils/ApiResponse";
-import { asyncHandler } from "../../utils/asyncHandler";
-import { UpdateUserDto } from "@/dtos/user.input.dto";
 
 export class UserController {
-   constructor(private userService: IUserService) {}
+   constructor(private readonly userService: IUserService) {}
 
    /**
-    * @route   GET /api/v1/user
-    * @desc    Get all users
-    * @access  Private/Admin
+    * @route GET /api/v1/user
+    * @purpose Fetches all users.
     */
-   public getUsers = asyncHandler(async (req: Request, res: Response) => {
-      const findAllUsersData = await this.userService.getUsers();
-      res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, findAllUsersData, "findAll"));
+   public getUsers = asyncHandler(async (_req: Request, res: Response) => {
+      const users = await this.userService.getUsers();
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, users, "Users fetched successfully"));
    });
 
    /**
-    * @route   GET /api/v1/user/:id
-    * @desc    Get user by id
-    * @access  Private
+    * @route GET /api/v1/user/:id
+    * @purpose Fetches user details by ID.
     */
-   public getUserById = asyncHandler(async (req: Request, res: Response) => {
+   public getUserById = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const authUserId = this.getAuthenticatedUserId(req);
       const userId = Number(req.params.id);
-      const findOneUserData = await this.userService.getUserById(userId);
-      res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, findOneUserData, "findOne"));
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      this.ensureUserOwnsResource(userId, authUserId);
+
+      const user = await this.userService.getUserById(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, user, "User fetched successfully"));
    });
 
    /**
-    * @route   POST /api/v1/user
-    * @desc    Create a new user
-    * @access  Private/Admin
+    * @route POST /api/v1/user
+    * @purpose Creates a new user.
     */
    public createUser = asyncHandler(async (req: Request, res: Response) => {
-      const userData = req.body;
-      const createUserData = await this.userService.createUser(userData);
-      res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, createUserData, "created"));
+      const user = await this.userService.createUser(req.body);
+
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, user, "User created successfully"));
    });
 
    /**
-    * @route   PATCH /api/v1/user/:id
-    * @desc    Update a user
-    * @access  Private
+    * @route PATCH /api/v1/user/:id
+    * @purpose Updates user details by ID.
     */
-   public updateUser = asyncHandler(async (req: Request, res: Response) => {
+   public updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const authUserId = this.getAuthenticatedUserId(req);
       const userId = Number(req.params.id);
       const updatePayload: UpdateUserDto = req.body;
 
-      const updatedUserData = await this.userService.updateUser(userId, updatePayload);
-      res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedUserData, "updated"));
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      this.ensureUserOwnsResource(userId, authUserId);
+
+      const updatedUser = await this.userService.updateUser(userId, updatePayload);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedUser, "User updated successfully"));
    });
+
+   /**
+    * Extracts and validates authenticated user ID.
+    */
+   private getAuthenticatedUserId(req: AuthRequest): number {
+      const userId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+      }
+
+      return userId;
+   }
+
+   /**
+    * Ensures authenticated user owns the requested resource.
+    */
+   private ensureUserOwnsResource(resourceUserId: number, authUserId: number): void {
+      if (resourceUserId !== authUserId) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Forbidden");
+      }
+   }
 }

@@ -67,9 +67,9 @@ export interface IProfileService {
    updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile>;
    updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference>;
    getUserImages(userId: number): Promise<UserImageDto[]>;
-   uploadUserImage(userId: number, imageUrl: string): Promise<UserImageDto>;
+   uploadUserImage(userId: number, file: Express.Multer.File): Promise<UserImageDto>;
    deleteUserImage(userId: number, imageId: number): Promise<{ success: boolean }>;
    setPrimaryImage(userId: number, imageId: number): Promise<UserImageDto>;
    completeImageUpload(userId: number): Promise<ImageUploadStatusDto>;
-   uploadSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number): Promise<{ user: Profile; oldSelfieUrls: { front: string | null; left: string | null; right: string | null } }>;
+   uploadSelfie(userId: number, frontFile: Express.Multer.File, leftFile: Express.Multer.File, rightFile: Express.Multer.File, latitude?: number, longitude?: number): Promise<{ user: Profile }>;
 }

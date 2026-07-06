@@ -1,106 +1,148 @@
+import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { AuthRequest } from "@/types/AuthRequest";
+import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Response } from "express";
-import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
 
 export class AdminUsersController {
-   constructor(private userService: IUserService) { }
+   constructor(private readonly userService: IUserService) {}
 
    /**
-    * @route   GET /api/v1/admin/users
-    * @desc    Get all users with filtering
-    * @access  Private/Admin
+    * @route GET /api/v1/admin/users
+    * @purpose Fetches all users with pagination and filters.
     */
-   getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const { search, page, limit, selfieStatus } = req.query;
-      const pageNumber = page ? parseInt(page as string) : undefined;
-      const limitNumber = limit ? parseInt(limit as string) : undefined;
+   public getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const search = typeof req.query.search === "string" ? req.query.search.trim() : undefined;
+      const selfieStatus = typeof req.query.selfieStatus === "string" ? req.query.selfieStatus.trim() : undefined;
 
-      const { data, total } = await this.userService.getUsers(search as string | undefined, pageNumber, limitNumber, selfieStatus as string | undefined);
+      const pageNumber = req.query.page ? Number(req.query.page) : undefined;
+      const limitNumber = req.query.limit ? Number(req.query.limit) : undefined;
+
+      if (pageNumber !== undefined && (!Number.isInteger(pageNumber) || pageNumber <= 0)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid page number");
+      }
+
+      if (limitNumber !== undefined && (!Number.isInteger(limitNumber) || limitNumber <= 0 || limitNumber > 100)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid limit number");
+      }
+
+      const { data, total } = await this.userService.getUsers(search, pageNumber, limitNumber, selfieStatus);
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "Users fetched successfully"));
    });
 
    /**
-    * @route   POST /api/v1/admin/users
-    * @desc    Create a new user
-    * @access  Private/Admin
+    * @route POST /api/v1/admin/users
+    * @purpose Creates a new user.
     */
-   createUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+   public createUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const createPayload: CreateUserDto = req.body;
+
       const result = await this.userService.createUser(createPayload);
+
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, result, "User created successfully"));
    });
 
    /**
-    * @route   PATCH /api/v1/admin/users/:id
-    * @desc    Update a user
-    * @access  Private/Admin
+    * @route PUT /api/v1/admin/users/:id
+    * @purpose Updates a user by ID.
     */
-   updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = parseInt(req.params.id as string);
+   public updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
       const updatePayload: UpdateUserDto = req.body;
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
       const result = await this.userService.updateUser(userId, updatePayload);
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User updated successfully"));
    });
 
    /**
-    * @route   PATCH /api/v1/admin/users/:id/block
-    * @desc    Toggle block status of a user
-    * @access  Private/Admin
+    * @route PATCH /api/v1/admin/users/:id/block-status
+    * @purpose Blocks or unblocks a user.
     */
-   toggleBlockUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = parseInt(req.params.id as string);
+   public toggleBlockUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
       const result = await this.userService.toggleBlockUser(userId);
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User block status toggled successfully"));
    });
 
    /**
-    * @route   DELETE /api/v1/admin/users/:id
-    * @desc    Delete a user
-    * @access  Private/Admin
+    * @route DELETE /api/v1/admin/users/:id
+    * @purpose Deletes a user by ID.
     */
-   deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = parseInt(req.params.id as string);
+   public deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
       await this.userService.deleteUser(userId);
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "User deleted successfully"));
    });
 
    /**
-    * @route   GET /api/v1/admin/users/:id/selfie
-    * @desc    Get user selfie details
-    * @access  Private/Admin
+    * @route GET /api/v1/admin/users/:id/selfie-url
+    * @purpose Fetches user selfie verification data.
     */
-   getSelfieUrl = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = parseInt(req.params.id as string);
+   public getSelfieUrl = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
       const data = await this.userService.getUserSelfieData(userId);
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, data, "Selfie data fetched successfully"));
    });
 
    /**
-    * @route   GET /api/v1/admin/users/:id/images
-    * @desc    Get user uploaded images
-    * @access  Private/Admin
+    * @route GET /api/v1/admin/users/:id/images
+    * @purpose Fetches uploaded profile images of a user.
     */
-   getUserImages = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = parseInt(req.params.id as string);
+   public getUserImages = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
       const data = await this.userService.getUserImagesData(userId);
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, data, "Images fetched successfully"));
    });
 
    /**
-    * @route   PATCH /api/v1/admin/users/:id/verify
-    * @desc    Verify user profile and selfie
-    * @access  Private/Admin
+    * @route PATCH /api/v1/admin/users/:id/verify-profile
+    * @purpose Verifies user profile and selfie.
     */
-   verifyProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = parseInt(req.params.id as string);
+   public verifyProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
       const result = await this.userService.updateUser(userId, {
          isVerified: true,
          selfieStatus: "APPROVED",
       });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User profile verified successfully"));
    });
 }

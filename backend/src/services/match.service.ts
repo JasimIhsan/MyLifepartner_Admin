@@ -53,6 +53,12 @@ export class MatchService implements IMatchService {
     * @returns Nothing.
     */
    async swipeProfile(input: SwipeInput): Promise<void> {
+      const { userId, targetProfileId, action } = input;
+
+      if (userId === targetProfileId) {
+         throw new ApiError(400, "You cannot swipe your own profile");
+      }
+
       const isAllowed = await this.userFeatureService.checkSwipeAccess(input.userId, input.action);
 
       if (!isAllowed) {

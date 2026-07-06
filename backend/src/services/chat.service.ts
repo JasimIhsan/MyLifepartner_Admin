@@ -1,3 +1,4 @@
+import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ChatRepository } from "@/repositories/chat.repository";
 import { ApiError } from "@/utils/ApiError";
 import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
@@ -6,7 +7,10 @@ const DEFAULT_MESSAGES_PAGE = 1;
 const DEFAULT_MESSAGES_LIMIT = 50;
 
 export class ChatService {
-   constructor(private readonly chatRepository: ChatRepository) {}
+   constructor(
+      private readonly chatRepository: ChatRepository,
+      private readonly userFeatureService: IUserFeatureService
+   ) {}
 
    /**
     * Sends a chat message.
@@ -19,10 +23,20 @@ export class ChatService {
     * @returns Created chat message.
     */
    async sendMessage(senderId: number, receiverId: number, content: string, messageType: MessageType = MessageType.TEXT, zegoMessageId?: string): Promise<ChatMessage> {
+      if (senderId === receiverId) {
+         throw new ApiError(400, "You cannot send message to yourself");
+      }
+
       const messageContent = content.trim();
 
       if (!messageContent) {
          throw new ApiError(400, "Message content cannot be empty");
+      }
+
+      if (messageType === MessageType.CALL_LOG) {
+         this.validateCallLogContent(messageContent);
+      } else {
+         await this.userFeatureService.consumeMessage(senderId);
       }
 
       const conversation = await this.chatRepository.findOrCreateConversation(senderId, receiverId);
@@ -68,5 +82,36 @@ export class ChatService {
       if (!hasAccess) {
          throw new ApiError(403, "You do not have access to this conversation");
       }
+   }
+
+   /**
+    * Validates call log message content.
+    */
+   private validateCallLogContent(content: string): void {
+      try {
+         const payload: unknown = JSON.parse(content);
+
+         if (!this.isCallLogPayload(payload)) {
+            throw new ApiError(400, "Invalid call log content");
+         }
+      } catch {
+         throw new ApiError(400, "Invalid call log content");
+      }
+   }
+
+   /**
+    * Checks whether the parsed payload is a valid call log payload.
+    */
+   private isCallLogPayload(payload: unknown): payload is {
+      callType: string;
+      duration: number;
+   } {
+      if (!payload || typeof payload !== "object") {
+         return false;
+      }
+
+      const callLogPayload = payload as Record<string, unknown>;
+
+      return typeof callLogPayload.callType === "string" && callLogPayload.callType.trim().length > 0 && typeof callLogPayload.duration === "number" && callLogPayload.duration >= 0;
    }
 }

@@ -191,6 +191,10 @@ export class UserFeatureService implements IUserFeatureService {
     * @returns Nothing.
     */
    async checkCallAccess(userId: number, type: CallType, consumeSeconds?: number, targetUserId?: number): Promise<void> {
+      if (targetUserId !== undefined && targetUserId === userId) {
+         throw new ApiError(400, "You cannot call yourself");
+      }
+
       if (!targetUserId && consumeSeconds && consumeSeconds > 0) {
          await this.consumeCallDuration(userId, type, consumeSeconds);
       }

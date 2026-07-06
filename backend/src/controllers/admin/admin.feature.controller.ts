@@ -1,13 +1,19 @@
+import { IAdminFeatureService } from "@/interfaces/services/admin.feature.service.interface";
+import { ApiResponse } from "@/utils/ApiResponse";
+import { asyncHandler } from "@/utils/asyncHandler";
+import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
-import { IAdminFeatureService } from "../../interfaces/services/admin.feature.service.interface";
-import { ApiResponse } from "../../utils/ApiResponse";
-import { asyncHandler } from "../../utils/asyncHandler";
 
 export class AdminFeatureController {
-   constructor(private adminFeatureService: IAdminFeatureService) {}
+   constructor(private readonly adminFeatureService: IAdminFeatureService) {}
 
-   getAllFeatures = asyncHandler(async (_req: Request, res: Response) => {
+   /**
+    * @route GET /api/v1/admin/features
+    * @purpose Fetches all available features.
+    */
+   public getAllFeatures = asyncHandler(async (_req: Request, res: Response) => {
       const features = await this.adminFeatureService.getAllFeatures();
-      res.status(200).json(new ApiResponse(200, features, "Features fetched successfully"));
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, features, "Features fetched successfully"));
    });
 }

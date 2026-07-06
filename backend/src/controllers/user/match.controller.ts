@@ -1,143 +1,137 @@
 import { IMatchService, SwipeAction } from "@/interfaces/services/match.service.interface";
-import { NextFunction, Request, Response } from "express";
+import { ApiError } from "@/utils/ApiError";
+import { ApiResponse } from "@/utils/ApiResponse";
+import { asyncHandler } from "@/utils/asyncHandler";
+import { HTTP_STATUS } from "@/utils/constants";
+import { Request, Response } from "express";
 
 export class MatchController {
    constructor(private readonly matchService: IMatchService) {}
 
-   getRecommendations = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-         const userId = req.user?.id;
-         if (!userId) {
-            res.status(401).json({ success: false, message: "Unauthorized" });
-            return;
-         }
+   /**
+    * @route GET /api/v1/user/match/recommendations
+    * @purpose Fetches recommended match profiles for the authenticated user.
+    */
+   public getRecommendations = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
 
-         const recommendations = await this.matchService.getRecommendations(userId);
-         res.status(200).json({
-            success: true,
-            data: recommendations,
-         });
-      } catch (err) {
-         next(err);
+      const recommendations = await this.matchService.getRecommendations(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, recommendations, "Recommendations fetched successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/user/match/interests/sent
+    * @purpose Fetches profiles where the authenticated user sent interest.
+    */
+   public getSentInterests = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+
+      const sentInterests = await this.matchService.getSentInterests(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, sentInterests, "Sent interests fetched successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/user/match/interests/received
+    * @purpose Fetches profiles that sent interest to the authenticated user.
+    */
+   public getReceivedInterests = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+
+      const receivedInterests = await this.matchService.getReceivedInterests(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, receivedInterests, "Received interests fetched successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/user/match/mutual-matches
+    * @purpose Fetches mutual matches for the authenticated user.
+    */
+   public getMutualMatches = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+
+      const mutualMatches = await this.matchService.getMutualMatches(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, mutualMatches, "Mutual matches fetched successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/user/match/profile/:profileId
+    * @purpose Fetches match candidate profile details.
+    */
+   public getProfileDetail = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+      const profileId = this.getRequiredPositiveNumber(req.params.profileId, "Invalid profile ID");
+
+      const detail = await this.matchService.getProfileDetail(userId, profileId);
+
+      if (!detail) {
+         throw new ApiError(HTTP_STATUS.NOT_FOUND, "Profile not found");
       }
-   };
 
-   swipeProfile = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-         const userId = req.user?.id;
-         if (!userId) {
-            res.status(401).json({ success: false, message: "Unauthorized" });
-            return;
-         }
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, detail, "Profile detail fetched successfully"));
+   });
 
-         const { targetProfileId, action } = req.body as {
-            targetProfileId: number;
-            action: string;
-         };
+   /**
+    * @route POST /api/v1/user/match/swipe
+    * @purpose Records a swipe action on another profile.
+    */
+   public swipeProfile = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+      const targetProfileId = this.getRequiredPositiveNumber(req.body.targetProfileId, "Target profile ID is required");
+      const action = this.getSwipeAction(req.body.action);
 
-         if (!targetProfileId || !action) {
-            res.status(400).json({ success: false, message: "targetProfileId and action are required" });
-            return;
-         }
 
-         const validActions: SwipeAction[] = [SwipeAction.LEFT, SwipeAction.RIGHT, SwipeAction.UP];
-         if (!validActions.includes(action as SwipeAction)) {
-            res.status(400).json({
-               success: false,
-               message: `action must be one of: ${validActions.join(", ")}`,
-            });
-            return;
-         }
+      await this.matchService.swipeProfile({
+         userId,
+         targetProfileId,
+         action,
+      });
 
-         await this.matchService.swipeProfile({
-            userId,
-            targetProfileId: Number(targetProfileId),
-            action: action as SwipeAction,
-         });
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Swipe recorded successfully"));
+   });
 
-         res.status(200).json({ success: true, message: "Swipe recorded" });
-      } catch (err) {
-         next(err);
+   /**
+    * Extracts and validates authenticated user ID.
+    */
+   private getAuthenticatedUserId(req: Request): number {
+      const userId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
       }
-   };
 
-   getProfileDetail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-         const userId = req.user?.id;
-         if (!userId) {
-            res.status(401).json({ success: false, message: "Unauthorized" });
-            return;
-         }
+      return userId;
+   }
 
-         const profileId = Number(req.params.profileId);
-         if (isNaN(profileId)) {
-            res.status(400).json({ success: false, message: "Invalid profileId" });
-            return;
-         }
+   /**
+    * Extracts and validates a positive number.
+    */
+   private getRequiredPositiveNumber(value: unknown, errorMessage: string): number {
+      const numberValue = Number(value);
 
-         const detail = await this.matchService.getProfileDetail(userId, profileId);
-         if (!detail) {
-            res.status(404).json({ success: false, message: "Profile not found" });
-            return;
-         }
-
-         res.status(200).json({ success: true, data: detail });
-      } catch (err) {
-         next(err);
+      if (!Number.isInteger(numberValue) || numberValue <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, errorMessage);
       }
-   };
 
-   getSentInterests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-         const userId = req.user?.id;
-         if (!userId) {
-            res.status(401).json({ success: false, message: "Unauthorized" });
-            return;
-         }
+      return numberValue;
+   }
 
-         const sentInterests = await this.matchService.getSentInterests(userId);
-         res.status(200).json({
-            success: true,
-            data: sentInterests,
-         });
-      } catch (err) {
-         next(err);
+   /**
+    * Extracts and validates swipe action.
+    */
+   private getSwipeAction(value: unknown): SwipeAction {
+      if (typeof value !== "string") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Swipe action is required");
       }
-   };
 
-   getReceivedInterests = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-         const userId = req.user?.id;
-         if (!userId) {
-            res.status(401).json({ success: false, message: "Unauthorized" });
-            return;
-         }
+      const validActions: SwipeAction[] = [SwipeAction.LEFT, SwipeAction.RIGHT, SwipeAction.UP];
 
-         const receivedInterests = await this.matchService.getReceivedInterests(userId);
-         res.status(200).json({
-            success: true,
-            data: receivedInterests,
-         });
-      } catch (err) {
-         next(err);
+      if (!validActions.includes(value as SwipeAction)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, `Swipe action must be one of: ${validActions.join(", ")}`);
       }
-   };
 
-   getMutualMatches = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-      try {
-         const userId = req.user?.id;
-         if (!userId) {
-            res.status(401).json({ success: false, message: "Unauthorized" });
-            return;
-         }
-
-         const mutualMatches = await this.matchService.getMutualMatches(userId);
-         res.status(200).json({
-            success: true,
-            data: mutualMatches,
-         });
-      } catch (err) {
-         next(err);
-      }
-   };
+      return value as SwipeAction;
+   }
 }

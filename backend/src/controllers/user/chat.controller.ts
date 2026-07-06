@@ -1,70 +1,149 @@
+import { MessageType } from "@/interfaces/services/chat.service.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ChatService } from "@/services/chat.service";
+import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
+import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
 
 export class ChatController {
    constructor(
-      private readonly chatService: ChatService,
-      private readonly userFeatureService: IUserFeatureService
+      private readonly chatService: ChatService
    ) {}
 
    /**
-    * POST /chat/messages
-    * Body: { receiverId: number, content: string, messageType?: string, zegoMessageId?: string }
+    * @route POST /api/v1/user/chat/messages
+    * @purpose Sends a new chat message to another user.
     */
-   sendMessage = asyncHandler(async (req: Request, res: Response) => {
-      const senderId = req.user!.id;
-      const { receiverId, content, messageType, zegoMessageId } = req.body;
-
-      console.log("😂 ✅ [ChatController] sendMessage:", req.body);
-
-      if (!receiverId || !content) {
-         return res.status(400).json(new ApiResponse(400, null, "receiverId and content are required"));
-      }
-
-      if (messageType === "CALL_LOG") {
-         try {
-            const payload = JSON.parse(content);
-            const callType = payload.callType;
-            const duration = payload.duration;
-            if (callType && typeof duration === "number") {
-               // Call duration is now consumed dynamically in real-time during the call via polling
-               // await this.userFeatureService.consumeCallDuration(senderId, callType, duration);
-            }
-         } catch (e) {
-            // ignore JSON parse error
-         }
-      } else {
-         await this.userFeatureService.consumeMessage(senderId);
-      }
+   public sendMessage = asyncHandler(async (req: Request, res: Response) => {
+      const senderId = this.getAuthenticatedUserId(req);
+      const receiverId = this.getRequiredPositiveNumber(req.body.receiverId, "Receiver ID is required");
+      const content = this.getRequiredString(req.body.content, "Message content is required");
+      const messageType = this.getMessageType(req.body.messageType);
+      const zegoMessageId = this.getOptionalString(req.body.zegoMessageId);
 
       const message = await this.chatService.sendMessage(senderId, receiverId, content, messageType, zegoMessageId);
 
-      res.status(201).json(new ApiResponse(201, message, "Message sent"));
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, message, "Message sent successfully"));
    });
 
    /**
-    * GET /chat/conversations
+    * @route GET /api/v1/user/chat/conversations
+    * @purpose Fetches all chat conversations of the authenticated user.
     */
-   getConversations = asyncHandler(async (req: Request, res: Response) => {
-      const userId = req.user!.id;
+   public getConversations = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+
       const conversations = await this.chatService.getConversations(userId);
-      res.status(200).json(new ApiResponse(200, conversations, "Conversations retrieved"));
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, conversations, "Conversations retrieved successfully"));
    });
 
    /**
-    * GET /chat/conversations/:conversationId/messages?page=1&limit=50
+    * @route GET /api/v1/user/chat/conversations/:conversationId/messages
+    * @purpose Fetches paginated messages from a conversation.
     */
-   getMessages = asyncHandler(async (req: Request, res: Response) => {
-      const userId = req.user!.id;
-      const conversationId = Number(req.params.conversationId);
-      const page = Number(req.query.page) || 1;
-      const limit = Math.min(Number(req.query.limit) || 50, 100);
+   public getMessages = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+      const conversationId = this.getRequiredPositiveNumber(req.params.conversationId, "Invalid conversation ID");
+
+      const page = this.getPaginationNumber(req.query.page, 1, 1, 100000);
+      const limit = this.getPaginationNumber(req.query.limit, 50, 1, 100);
 
       const result = await this.chatService.getMessages(userId, conversationId, page, limit);
 
-      res.status(200).json(new ApiResponse(200, result, "Messages retrieved"));
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Messages retrieved successfully"));
    });
+
+   /**
+    * Extracts and validates authenticated user ID.
+    */
+   private getAuthenticatedUserId(req: Request): number {
+      const userId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+      }
+
+      return userId;
+   }
+
+   /**
+    * Extracts and validates required string input.
+    */
+   private getRequiredString(value: unknown, errorMessage: string): string {
+      if (typeof value !== "string" || value.trim().length === 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, errorMessage);
+      }
+
+      return value.trim();
+   }
+
+   /**
+    * Extracts optional string input.
+    */
+   private getOptionalString(value: unknown): string | undefined {
+      if (value === undefined || value === null) {
+         return undefined;
+      }
+
+      if (typeof value !== "string") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid request value");
+      }
+
+      const trimmedValue = value.trim();
+
+      return trimmedValue.length > 0 ? trimmedValue : undefined;
+   }
+
+   /**
+    * Extracts and validates message type.
+    */
+   private getMessageType(value: unknown): MessageType | undefined {
+      const messageType = this.getOptionalString(value);
+
+      if (!messageType) {
+         return undefined;
+      }
+
+      const validMessageTypes = Object.values(MessageType) as string[];
+
+      if (!validMessageTypes.includes(messageType)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, `Message type must be one of: ${validMessageTypes.join(", ")}`);
+      }
+
+      return messageType as MessageType;
+   }
+
+   /**
+    * Extracts and validates a positive number.
+    */
+   private getRequiredPositiveNumber(value: unknown, errorMessage: string): number {
+      const numberValue = Number(value);
+
+      if (!Number.isInteger(numberValue) || numberValue <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, errorMessage);
+      }
+
+      return numberValue;
+   }
+
+   /**
+    * Extracts and validates pagination values.
+    */
+   private getPaginationNumber(value: unknown, defaultValue: number, minValue: number, maxValue: number): number {
+      if (value === undefined || value === null || value === "") {
+         return defaultValue;
+      }
+
+      const numberValue = Number(value);
+
+      if (!Number.isInteger(numberValue) || numberValue < minValue) {
+         return defaultValue;
+      }
+
+      return Math.min(numberValue, maxValue);
+   }
+
 }

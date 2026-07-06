@@ -19,7 +19,7 @@ export class GuideService implements IGuideService {
     * @param filters - Filtering criteria (e.g., categoryId, search, pagination)
     * @returns An object containing the list of guides and total count
     */
-   async getAllGuides(filters: GuideFilters): Promise<{ guides: Guide[]; total: number }> {
+   async getAllGuides(filters: GuideFilters): Promise<{ guides: Guide[]; total: number; categories: { id: number; name: string }[] }> {
       const { page, limit } = filters;
       let skip: number | undefined;
       let take: number | undefined;
@@ -31,6 +31,12 @@ export class GuideService implements IGuideService {
       return {
          guides: result.guides as unknown as Guide[],
          total: result.total,
+         categories: [
+            { id: 1, name: "About LPA" },
+            { id: 2, name: "Safety & Privacy" },
+            { id: 3, name: "Account & Trust" },
+            { id: 4, name: "Membership" },
+         ],
       };
    }
 

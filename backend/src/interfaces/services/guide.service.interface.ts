@@ -20,7 +20,7 @@ export interface GuideFilters {
 
 export interface IGuideService {
    createGuide(data: CreateGuideDto): Promise<Guide>;
-   getAllGuides(filters: GuideFilters): Promise<{ guides: Guide[]; total: number }>;
+   getAllGuides(filters: GuideFilters): Promise<{ guides: Guide[]; total: number; categories: { id: number; name: string }[] }>;
    getGuideById(id: number): Promise<Guide | null>;
    updateGuide(id: number, data: UpdateGuideDto): Promise<Guide>;
    deleteGuide(id: number): Promise<Guide>;

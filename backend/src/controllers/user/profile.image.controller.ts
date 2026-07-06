@@ -4,145 +4,182 @@ import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
+import { HTTP_STATUS } from "@/utils/constants";
 import { Response } from "express";
 
 export class ProfileImageController {
    constructor(
-      private profileService: ProfileService,
-      private s3Service: S3Service
+      private readonly profileService: ProfileService
    ) {}
 
+   /**
+    * @route POST /api/v1/user/profile/upload-image/:userId
+    * @purpose Uploads a profile image for the authenticated user.
+    */
    public uploadImage = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = req.params.userId || req.user.id;
-      if (!userId) throw new ApiError(401, "Unauthorized");
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      this.ensureUserOwnsResource(userId, authUserId);
 
       if (!req.file) {
-         throw new ApiError(400, "No image file provided");
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No image file provided");
       }
 
-      // 1. Upload to S3
-      const s3Url = await this.s3Service.uploadToS3(req.file, `${userId}/profile`);
+      const newImage = await this.profileService.uploadUserImage(userId, req.file);
 
-      // 2. Save to DB
-      try {
-         const newImage = await this.profileService.uploadUserImage(Number(userId), s3Url);
-
-         // Generate presigned URL for immediate response
-         newImage.imageUrl = await this.s3Service.getPresignedUrl(newImage.imageUrl);
-
-         res.status(201).json(new ApiResponse(201, newImage, "Image uploaded successfully"));
-      } catch (error) {
-         // Rollback S3 upload if DB fails
-         await this.s3Service.deleteFromS3(s3Url);
-         throw error;
-      }
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, newImage, "Image uploaded successfully"));
    });
 
+   /**
+    * @route DELETE /api/v1/user/profile/remove-image/:userId/:imageId
+    * @purpose Removes a profile image for the authenticated user.
+    */
    public removeImage = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = req.params.userId || req.user.id;
-      const imageId = req.params.imageId;
-      if (!userId) throw new ApiError(401, "Unauthorized");
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
+      const imageId = Number(req.params.imageId);
 
-      const images = await this.profileService.getUserImages(Number(userId));
-      const imageToDelete = images.find((img) => img.id === Number(imageId));
-
-      if (!imageToDelete) {
-         throw new ApiError(404, "Image not found");
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
       }
 
-      // Delete from S3
-      if (imageToDelete.imageUrl) {
-         await this.s3Service.deleteFromS3(imageToDelete.imageUrl);
+      if (!Number.isInteger(imageId) || imageId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid image ID");
       }
 
-      // Delete from DB
-      await this.profileService.deleteUserImage(Number(userId), Number(imageId));
+      this.ensureUserOwnsResource(userId, authUserId);
 
-      res.status(200).json(new ApiResponse(200, null, "Image removed successfully"));
+      await this.profileService.deleteUserImage(userId, imageId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Image removed successfully"));
    });
 
+   /**
+    * @route PATCH /api/v1/user/profile/set-primary/:userId/:imageId
+    * @purpose Sets a profile image as the primary image.
+    */
    public setPrimaryImage = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = req.params.userId || req.user.id;
-      const imageId = req.params.imageId;
-      if (!userId) throw new ApiError(401, "Unauthorized");
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
+      const imageId = Number(req.params.imageId);
 
-      const updatedImage = await this.profileService.setPrimaryImage(Number(userId), Number(imageId));
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
 
-      res.status(200).json(new ApiResponse(200, updatedImage, "Primary image set successfully"));
+      if (!Number.isInteger(imageId) || imageId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid image ID");
+      }
+
+      this.ensureUserOwnsResource(userId, authUserId);
+
+      const updatedImage = await this.profileService.setPrimaryImage(userId, imageId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedImage, "Primary image set successfully"));
    });
 
+   /**
+    * @route GET /api/v1/user/profile/images/:userId
+    * @purpose Fetches profile images for the authenticated user.
+    */
    public getImages = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = req.params.userId || req.user.id;
-      if (!userId) throw new ApiError(401, "Unauthorized");
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
 
-      const images = await this.profileService.getUserImages(Number(userId));
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
 
-      // Generate presigned URLs for each image
-      const imagesWithPresignedUrls = await Promise.all(
-         images.map(async (img) => {
-            if (img.imageUrl) {
-               img.imageUrl = await this.s3Service.getPresignedUrl(img.imageUrl);
-            }
-            return img;
-         })
-      );
+      this.ensureUserOwnsResource(userId, authUserId);
 
-      console.log("👉 images with presigned urls: ", imagesWithPresignedUrls);
-      res.status(200).json(new ApiResponse(200, imagesWithPresignedUrls, "User images fetched successfully"));
+      const images = await this.profileService.getUserImages(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, images, "User images fetched successfully"));
    });
 
+   /**
+    * @route POST /api/v1/user/profile/complete-image-upload/:userId
+    * @purpose Marks profile image upload step as complete.
+    */
    public completeImageUpload = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = req.params.userId || req.user.id;
-      if (!userId) throw new ApiError(401, "Unauthorized");
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
 
-      const result = await this.profileService.completeImageUpload(Number(userId));
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
 
-      res.status(200).json(new ApiResponse(200, result, "Image upload phase completed successfully"));
+      this.ensureUserOwnsResource(userId, authUserId);
+
+      const result = await this.profileService.completeImageUpload(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Image upload phase completed successfully"));
    });
 
+   /**
+    * @route POST /api/v1/user/profile/upload-selfie/:userId
+    * @purpose Uploads selfie images for profile verification.
+    */
    public uploadSelfie = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = req.params.userId || req.user.id;
-      if (!userId) throw new ApiError(401, "Unauthorized");
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      this.ensureUserOwnsResource(userId, authUserId);
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
-      if (!files || !files.frontImage || !files.leftImage || !files.rightImage) {
-         throw new ApiError(400, "All three selfie images (front, left, right) are required");
+
+      if (!files?.frontImage?.[0] || !files?.leftImage?.[0] || !files?.rightImage?.[0]) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "All three selfie images (front, left, right) are required");
+      }
+
+      const latitude = req.body.latitude ? Number(req.body.latitude) : undefined;
+      const longitude = req.body.longitude ? Number(req.body.longitude) : undefined;
+
+      if (latitude !== undefined && Number.isNaN(latitude)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid latitude");
+      }
+
+      if (longitude !== undefined && Number.isNaN(longitude)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid longitude");
       }
 
       const frontFile = files.frontImage[0];
       const leftFile = files.leftImage[0];
       const rightFile = files.rightImage[0];
 
-      const latitude = req.body.latitude ? parseFloat(req.body.latitude) : undefined;
-      const longitude = req.body.longitude ? parseFloat(req.body.longitude) : undefined;
+      const { user } = await this.profileService.uploadSelfie(userId, frontFile, leftFile, rightFile, latitude, longitude);
 
-      // 1. Upload to S3
-      const [frontS3Url, leftS3Url, rightS3Url] = await Promise.all([
-         this.s3Service.uploadToS3(frontFile, `${userId}/selfie_front`),
-         this.s3Service.uploadToS3(leftFile, `${userId}/selfie_left`),
-         this.s3Service.uploadToS3(rightFile, `${userId}/selfie_right`),
-      ]);
-
-      // 2. Save to DB
-      try {
-         const { user, oldSelfieUrls } = await this.profileService.uploadSelfie(Number(userId), frontS3Url, leftS3Url, rightS3Url, latitude, longitude);
-
-         // Delete old selfies from S3 if they exist
-         const deletePromises: Promise<void>[] = [];
-         if (oldSelfieUrls.front) deletePromises.push(this.s3Service.deleteFromS3(oldSelfieUrls.front));
-         if (oldSelfieUrls.left) deletePromises.push(this.s3Service.deleteFromS3(oldSelfieUrls.left));
-         if (oldSelfieUrls.right) deletePromises.push(this.s3Service.deleteFromS3(oldSelfieUrls.right));
-         await Promise.all(deletePromises);
-
-         res.status(201).json(new ApiResponse(201, { selfieStatus: user.selfieStatus }, "Selfies uploaded successfully. Awaiting review."));
-      } catch (error) {
-         // Rollback S3 uploads if DB fails
-         await Promise.all([
-            this.s3Service.deleteFromS3(frontS3Url),
-            this.s3Service.deleteFromS3(leftS3Url),
-            this.s3Service.deleteFromS3(rightS3Url),
-         ]);
-         throw error;
-      }
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, { selfieStatus: user.selfieStatus }, "Selfies uploaded successfully. Awaiting review."));
    });
+
+   /**
+    * Extracts and validates authenticated user ID.
+    */
+   private getAuthenticatedUserId(req: AuthRequest): number {
+      const userId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");
+      }
+
+      return userId;
+   }
+
+   /**
+    * Ensures authenticated user owns the requested resource.
+    */
+   private ensureUserOwnsResource(resourceUserId: number, authUserId: number): void {
+      if (resourceUserId !== authUserId) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Forbidden");
+      }
+   }
 }
