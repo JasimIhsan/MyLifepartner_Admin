@@ -1,4 +1,6 @@
-import { ISubscriptionRepository } from "@/interfaces/repositories/subscription.repository.interface";
+import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
+import { IUserSubscriptionRepository } from "@/interfaces/repositories/user-subscription.repository.interface";
+import { IProcessedRevenueCatEventRepository } from "@/interfaces/repositories/processed-revenuecat-event.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
 import { EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
@@ -9,12 +11,14 @@ import { RevenueCatWebhookEvent } from "../../enums/revenuecat-event.enum";
 
 export class UserSubscriptionService implements IUserSubscriptionService {
    constructor(
-      private subscriptionRepository: ISubscriptionRepository,
+      private subscriptionPlanRepository: ISubscriptionPlanRepository,
+      private userSubscriptionRepository: IUserSubscriptionRepository,
+      private processedRevenueCatEventRepository: IProcessedRevenueCatEventRepository,
       private userFeatureRepository: IUserFeatureRepository
    ) {}
 
    async getPlans(): Promise<EnrichedSubscriptionPlan[]> {
-      const plans = await this.subscriptionRepository.getAllPlansWithFeatures();
+      const plans = await this.subscriptionPlanRepository.getAllPlansWithFeatures();
 
       // Ensure FREE plan is always first, then sort by price
       const sortedPlans = [...plans].sort((a, b) => {
@@ -37,19 +41,19 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    async getMySubscription(userId: number): Promise<EnrichedUserSubscription | null> {
-      let sub = await this.subscriptionRepository.findActiveSubscriptionByUserId(userId);
+      let sub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
 
       // If subscription exists but is expired, deactivate it
       if (sub && new Date() > sub.endDate) {
          console.log(`[UserSubscriptionService] Active subscription expired for user ${userId}. Deactivating.`, { subId: sub.id, endDate: sub.endDate });
-         await this.subscriptionRepository.deactivateUserSubscriptions(userId);
+         await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
          sub = null;
       }
 
       // If no active subscription, fallback to FREE plan
       if (!sub) {
          console.log(`[UserSubscriptionService] No active subscription for user ${userId}. Subscribing to FREE plan.`);
-         const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
+         const freePlan = await this.subscriptionPlanRepository.getPlanByName("FREE");
          if (freePlan) {
             sub = (await this.subscribe(userId, freePlan.id)) as any;
          }
@@ -62,7 +66,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       if (sub.status !== SubscriptionStatus.ACTIVE) {
          message = "Your subscription is currently inactive.";
       } else if (sub.nextPlanId) {
-         const nextPlan = await this.subscriptionRepository.getPlanById(sub.nextPlanId);
+         const nextPlan = await this.subscriptionPlanRepository.getPlanById(sub.nextPlanId);
          if (nextPlan) {
             const currentPlanPrice = sub.plan?.price || 0;
             const action = nextPlan.price < currentPlanPrice ? "downgrade" : "change";
@@ -98,7 +102,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    async subscribe(userId: number, planId: number): Promise<EnrichedUserSubscription> {
-      const plan = await this.subscriptionRepository.getPlanById(planId);
+      const plan = await this.subscriptionPlanRepository.getPlanById(planId);
 
       if (!plan) {
          throw new ApiError(404, "Subscription plan not found");
@@ -109,14 +113,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       // Deactivate any existing active subscriptions
-      await this.subscriptionRepository.deactivateUserSubscriptions(userId);
+      await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
 
       // Create new subscription
       const startDate = new Date();
       const endDate = new Date();
       endDate.setDate(startDate.getDate() + plan.durationDays);
 
-      const userSubscription = await this.subscriptionRepository.createUserSubscription({
+      const userSubscription = await this.userSubscriptionRepository.createUserSubscription({
          user: { connect: { id: userId } },
          plan: { connect: { id: planId } },
          status: SubscriptionStatus.ACTIVE,
@@ -238,28 +242,28 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       if (!activeProductIdentifier) {
          // Fallback/Downgrade to FREE
          console.log(`[UserSubscriptionService] syncSubscription: No active product identifier found for user ${userId} in RevenueCat. Falling back to FREE plan.`);
-         const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
+         const freePlan = await this.subscriptionPlanRepository.getPlanByName("FREE");
          if (!freePlan) {
             throw new ApiError(500, "FREE plan not found in database");
          }
-         await this.subscriptionRepository.deactivateUserSubscriptions(userId);
+         await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
          const sub = await this.subscribe(userId, freePlan.id);
          return sub;
       }
 
       // Find the plan mapping dynamically using the RevenueCat identifier
-      const targetPlan = await this.subscriptionRepository.findPlanByIdentifier(activeProductIdentifier);
+      const targetPlan = await this.subscriptionPlanRepository.findPlanByIdentifier(activeProductIdentifier);
       if (!targetPlan) {
          throw new ApiError(404, `Plan mapping for product identifier '${activeProductIdentifier}' not found on backend`);
       }
 
-      const currentSub = await this.subscriptionRepository.findActiveSubscriptionByUserId(userId);
+      const currentSub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
       const endsAt = expiryTime ? new Date(expiryTime) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-      if (!currentSub || currentSub.planId === (await this.subscriptionRepository.getPlanByName("FREE"))?.id) {
+      if (!currentSub || currentSub.planId === (await this.subscriptionPlanRepository.getPlanByName("FREE"))?.id) {
          // Immediate Upgrade / Initial activation
-         await this.subscriptionRepository.deactivateUserSubscriptions(userId);
-         const newSub = await this.subscriptionRepository.createUserSubscription({
+         await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
+         const newSub = await this.userSubscriptionRepository.createUserSubscription({
             user: { connect: { id: userId } },
             plan: { connect: { id: targetPlan.id } },
             status: SubscriptionStatus.ACTIVE,
@@ -274,12 +278,12 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       // If already active plan, see if it is a change
       if (currentSub.planId !== targetPlan.id) {
          // Check pricing/levels or dynamic upgrades
-         const currentPlan = await this.subscriptionRepository.getPlanById(currentSub.planId);
+         const currentPlan = await this.subscriptionPlanRepository.getPlanById(currentSub.planId);
          if (currentPlan) {
             if (targetPlan.price >= currentPlan.price) {
                // Immediate upgrade
-               await this.subscriptionRepository.deactivateUserSubscriptions(userId);
-               const newSub = await this.subscriptionRepository.createUserSubscription({
+               await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
+               const newSub = await this.userSubscriptionRepository.createUserSubscription({
                   user: { connect: { id: userId } },
                   plan: { connect: { id: targetPlan.id } },
                   status: SubscriptionStatus.ACTIVE,
@@ -290,7 +294,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                await this.applyFeaturesForPlan(userId, targetPlan);
             } else {
                // Scheduled downgrade
-               await this.subscriptionRepository.updateUserSubscription(currentSub.id, {
+               await this.userSubscriptionRepository.updateUserSubscription(currentSub.id, {
                   nextPlanId: targetPlan.id,
                   willRenew: false, // Don't auto-renew the old high plan
                });
@@ -298,7 +302,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          }
       } else {
          // Renewal / date / willRenew updates
-         await this.subscriptionRepository.updateUserSubscription(currentSub.id, {
+         await this.userSubscriptionRepository.updateUserSubscription(currentSub.id, {
             endDate: endsAt,
             willRenew,
             nextPlanId: null, // Clear any pending downgrade if they renewed the same plan
@@ -327,13 +331,13 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       // Idempotency check
-      const alreadyProcessed = await this.subscriptionRepository.hasProcessedEvent(eventId);
+      const alreadyProcessed = await this.processedRevenueCatEventRepository.hasProcessedEvent(eventId);
       if (alreadyProcessed) {
          return;
       }
 
       // Save processed event ID
-      await this.subscriptionRepository.markEventProcessed(eventId, eventType);
+      await this.processedRevenueCatEventRepository.markEventProcessed(eventId, eventType);
 
       // Handle specific webhook actions
       switch (eventType) {
@@ -345,9 +349,9 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             break;
 
          case RevenueCatWebhookEvent.CANCELLATION:
-            const activeSub = await this.subscriptionRepository.findActiveSubscriptionByUserId(appUserId);
+            const activeSub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(appUserId);
             if (activeSub) {
-               await this.subscriptionRepository.updateUserSubscription(activeSub.id, {
+               await this.userSubscriptionRepository.updateUserSubscription(activeSub.id, {
                   willRenew: false,
                });
             }
@@ -355,20 +359,20 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
          case RevenueCatWebhookEvent.EXPIRATION:
             console.log(`[UserSubscriptionService] handleWebhook: EXPIRATION event received for user ${appUserId}. Downgrading to FREE plan.`);
-            const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
+            const freePlan = await this.subscriptionPlanRepository.getPlanByName("FREE");
             if (freePlan) {
-               await this.subscriptionRepository.deactivateUserSubscriptions(appUserId);
+               await this.userSubscriptionRepository.deactivateUserSubscriptions(appUserId);
                await this.subscribe(appUserId, freePlan.id);
             }
             break;
 
          case RevenueCatWebhookEvent.REFUND:
             console.log(`[UserSubscriptionService] handleWebhook: REFUND event received for user ${appUserId}. Downgrading to FREE (inactive).`);
-            const freePlanRefund = await this.subscriptionRepository.getPlanByName("FREE");
+            const freePlanRefund = await this.subscriptionPlanRepository.getPlanByName("FREE");
             if (freePlanRefund) {
-               await this.subscriptionRepository.deactivateUserSubscriptions(appUserId);
+               await this.userSubscriptionRepository.deactivateUserSubscriptions(appUserId);
                const sub = await this.subscribe(appUserId, freePlanRefund.id);
-               await this.subscriptionRepository.updateUserSubscription(sub.id, {
+               await this.userSubscriptionRepository.updateUserSubscription(sub.id, {
                   status: SubscriptionStatus.INACTIVE, // mark refunded plan details accordingly
                });
             }

@@ -1,9 +1,11 @@
-import { Guide, Prisma } from "@prisma/client";
+import { Guide } from "@prisma/client";
+import { CreateGuideDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
+import { GuideFilters } from "@/interfaces/services/guide.service.interface";
 
 export interface IGuideRepository {
-   create(data: Prisma.GuideCreateInput): Promise<Guide>;
-   findAll(where?: Prisma.GuideWhereInput, skip?: number, take?: number): Promise<{ guides: Guide[]; total: number }>;
+   create(data: CreateGuideDto): Promise<Guide>;
+   findAll(filters?: GuideFilters, skip?: number, take?: number): Promise<{ guides: Guide[]; total: number }>;
    findById(id: number): Promise<Guide | null>;
-   update(id: number, data: Prisma.GuideUpdateInput): Promise<Guide>;
+   update(id: number, data: UpdateGuideDto): Promise<Guide>;
    delete(id: number): Promise<Guide>;
 }

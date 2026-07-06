@@ -4,10 +4,16 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Response } from "express";
+import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
 
 export class AdminUsersController {
    constructor(private userService: IUserService) { }
 
+   /**
+    * @route   GET /api/v1/admin/users
+    * @desc    Get all users with filtering
+    * @access  Private/Admin
+    */
    getAllUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
       const { search, page, limit, selfieStatus } = req.query;
       const pageNumber = page ? parseInt(page as string) : undefined;
@@ -17,114 +23,83 @@ export class AdminUsersController {
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "Users fetched successfully"));
    });
 
+   /**
+    * @route   POST /api/v1/admin/users
+    * @desc    Create a new user
+    * @access  Private/Admin
+    */
    createUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const { name, ...restData } = req.body;
-      const createPayload: import("@prisma/client").Prisma.UserCreateInput = { ...restData };
-      if (name !== undefined) {
-         createPayload.profile = {
-            create: { name } as import("@prisma/client").Prisma.ProfileCreateWithoutUserInput,
-         };
-      }
+      const createPayload: CreateUserDto = req.body;
       const result = await this.userService.createUser(createPayload);
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, result, "User created successfully"));
    });
 
+   /**
+    * @route   PATCH /api/v1/admin/users/:id
+    * @desc    Update a user
+    * @access  Private/Admin
+    */
    updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
-      const { name, ...restData } = req.body;
-      const updatePayload: import("@prisma/client").Prisma.UserUpdateInput = { ...restData };
-      if (name !== undefined) {
-         updatePayload.profile = {
-            update: { name } as import("@prisma/client").Prisma.ProfileUpdateWithoutUserInput,
-         };
-      }
+      const updatePayload: UpdateUserDto = req.body;
       const result = await this.userService.updateUser(userId, updatePayload);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User updated successfully"));
    });
 
+   /**
+    * @route   PATCH /api/v1/admin/users/:id/block
+    * @desc    Toggle block status of a user
+    * @access  Private/Admin
+    */
    toggleBlockUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
       const result = await this.userService.toggleBlockUser(userId);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User block status toggled successfully"));
    });
 
+   /**
+    * @route   DELETE /api/v1/admin/users/:id
+    * @desc    Delete a user
+    * @access  Private/Admin
+    */
    deleteUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
       await this.userService.deleteUser(userId);
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "User deleted successfully"));
    });
 
+   /**
+    * @route   GET /api/v1/admin/users/:id/selfie
+    * @desc    Get user selfie details
+    * @access  Private/Admin
+    */
    getSelfieUrl = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
-      const { prisma } = await import("@/config/prisma");
-
-      const profile = await prisma.profile.findUnique({
-         where: { userId },
-         select: {
-            selfieUrl: true,
-            leftSelfieUrl: true,
-            rightSelfieUrl: true,
-            lastLocationLat: true,
-            lastLocationLng: true,
-         }
-      });
-
-      if (!profile) {
-         return res.status(HTTP_STATUS.NOT_FOUND).json(new ApiResponse(HTTP_STATUS.NOT_FOUND, null, "User profile not found"));
-      }
-
-      const { S3Service } = await import("@/services/s3.service");
-      const s3Service = new S3Service();
-      
-      const url = profile.selfieUrl ? await s3Service.getPresignedUrl(profile.selfieUrl, 3600) : null;
-      const leftUrl = profile.leftSelfieUrl ? await s3Service.getPresignedUrl(profile.leftSelfieUrl, 3600) : null;
-      const rightUrl = profile.rightSelfieUrl ? await s3Service.getPresignedUrl(profile.rightSelfieUrl, 3600) : null;
-
-      if (!url && !leftUrl && !rightUrl) {
-         return res.status(HTTP_STATUS.NOT_FOUND).json(new ApiResponse(HTTP_STATUS.NOT_FOUND, null, "User has no uploaded selfies"));
-      }
-
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { 
-         url, 
-         leftUrl, 
-         rightUrl, 
-         locationLat: profile.lastLocationLat, 
-         locationLng: profile.lastLocationLng 
-      }, "Selfie data fetched successfully"));
+      const data = await this.userService.getUserSelfieData(userId);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, data, "Selfie data fetched successfully"));
    });
 
+   /**
+    * @route   GET /api/v1/admin/users/:id/images
+    * @desc    Get user uploaded images
+    * @access  Private/Admin
+    */
    getUserImages = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
-      const { prisma } = await import("@/config/prisma");
-
-      const profile = await prisma.profile.findUnique({
-         where: { userId },
-         include: { images: true }
-      });
-
-      if (!profile || !profile.images || profile.images.length === 0) {
-         return res.status(HTTP_STATUS.NOT_FOUND).json(new ApiResponse(HTTP_STATUS.NOT_FOUND, [], "User has no uploaded images"));
-      }
-
-      const { S3Service } = await import("@/services/s3.service");
-      const s3Service = new S3Service();
-
-      const imagesWithUrls = await Promise.all(
-         profile.images.map(async (img) => ({
-            ...img,
-            url: await s3Service.getPresignedUrl(img.imageUrl, 3600)
-         }))
-      );
-
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, imagesWithUrls, "Images fetched successfully"));
+      const data = await this.userService.getUserImagesData(userId);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, data, "Images fetched successfully"));
    });
 
+   /**
+    * @route   PATCH /api/v1/admin/users/:id/verify
+    * @desc    Verify user profile and selfie
+    * @access  Private/Admin
+    */
    verifyProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = parseInt(req.params.id as string);
-      const { SelfieStatus } = await import("@prisma/client");
       const result = await this.userService.updateUser(userId, {
          isVerified: true,
-         profile: { update: { selfieStatus: SelfieStatus.APPROVED } },
+         selfieStatus: "APPROVED",
       });
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User profile verified successfully"));
    });

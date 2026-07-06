@@ -5,7 +5,8 @@ import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS, HTTP_STATUS, RATE_LIMIT_CONFIG } from "@/utils/constants";
 import bcrypt from "bcrypt";
 
-import { ISubscriptionRepository } from "@/interfaces/repositories/subscription.repository.interface";
+import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
+import { IUserSubscriptionRepository } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
@@ -22,7 +23,8 @@ export class AuthService implements IUserAuthService {
       private jwtService: IJwtService,
       private cacheService: ICacheService,
       private userFeatureService: IUserFeatureService,
-      private subscriptionRepository: ISubscriptionRepository
+      private subscriptionPlanRepository: ISubscriptionPlanRepository,
+      private userSubscriptionRepository: IUserSubscriptionRepository
    ) {}
 
    async initiateAuth(email: string, ip: string, purpose: string = "auth") {
@@ -116,23 +118,22 @@ export class AuthService implements IUserAuthService {
       const user = await this.userRepository.create({
          email,
          password: hashedPassword,
-         userFeature: {
-            create: {}, // Defaults handled in repository
-         },
       });
 
-      const freePlan = await this.subscriptionRepository.getPlanByName("FREE");
-      if (freePlan) {
-         const startDate = new Date();
-         const endDate = new Date();
-         endDate.setDate(startDate.getDate() + freePlan.durationDays);
+      const freePlan = await this.subscriptionPlanRepository.getPlanByName("FREE");
 
-         await this.subscriptionRepository.createUserSubscription({
+      if (freePlan) {
+         // Create a user subscription spanning 100 years
+         const endDate = new Date();
+         endDate.setFullYear(endDate.getFullYear() + 100);
+
+         await this.userSubscriptionRepository.createUserSubscription({
             user: { connect: { id: user.id } },
             plan: { connect: { id: freePlan.id } },
+            startDate: new Date(),
+            endDate: endDate,
             status: "ACTIVE",
-            startDate,
-            endDate,
+            willRenew: false,
          });
       }
 

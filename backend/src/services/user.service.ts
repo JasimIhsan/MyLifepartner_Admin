@@ -1,14 +1,15 @@
-import { UserDto, toUserDto } from "@/dtos/user.dto";
 import { UserOnboardingStatusDto } from "@/dtos/auth.me.dto";
+import { UserDto, toUserDto } from "@/dtos/user.dto";
 import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { Prisma, ProfileStatus, User } from "@prisma/client";
+import { ProfileStatus, User } from "@prisma/client";
+import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
 
 export class UserService implements IUserService {
    constructor(private userRepository: IUserRepository) {}
 
-   async createUser(userData: Prisma.UserCreateInput): Promise<UserDto> {
+   async createUser(userData: CreateUserDto): Promise<UserDto> {
       if (userData.email && (await this.userRepository.findByEmail(userData.email))) {
          throw new ApiError(409, `User with email ${userData.email} already exists`);
       }
@@ -33,20 +34,10 @@ export class UserService implements IUserService {
    }
 
    async getUsers(searchQuery?: string, page?: number, limit?: number, selfieStatus?: string): Promise<{ data: UserDto[]; total: number }> {
-      const where: Prisma.UserWhereInput = { isDeleted: false };
-
-      if (selfieStatus) {
-         where.profile = { selfieStatus: selfieStatus as import("@prisma/client").SelfieStatus };
-      }
-
-      if (searchQuery) {
-         where.OR = [{ profile: { name: { contains: searchQuery, mode: "insensitive" } } }, { email: { contains: searchQuery, mode: "insensitive" } }, { mobileNumber: { contains: searchQuery, mode: "insensitive" } }];
-      }
-
       const skip = page && limit ? (page - 1) * limit : undefined;
       const take = limit ? limit : undefined;
 
-      const { users, total } = await this.userRepository.findAll(where, skip, take, { profile: { include: { images: true } } });
+      const { users, total } = await this.userRepository.findAll({ searchQuery, selfieStatus }, skip, take);
       return { data: users.map((u: User) => toUserDto(u)), total };
    }
 
@@ -74,7 +65,7 @@ export class UserService implements IUserService {
       };
    }
 
-   async updateUser(userId: number, updateData: Prisma.UserUpdateInput): Promise<UserDto> {
+   async updateUser(userId: number, updateData: UpdateUserDto): Promise<UserDto> {
       console.log(`👉 updateData : `, updateData);
       const user = await this.userRepository.findById(userId);
       if (!user || user.isDeleted) {
@@ -107,5 +98,56 @@ export class UserService implements IUserService {
          throw new ApiError(404, "User not found");
       }
       await this.userRepository.update(userId, { isDeleted: true });
+   }
+
+   async getUserSelfieData(userId: number): Promise<any> {
+      const user = await this.userRepository.findById(userId);
+      if (!user || user.isDeleted || !user.profile) {
+         throw new ApiError(404, "User profile not found");
+      }
+      
+      const profile = user.profile;
+      const { S3Service } = await import("@/services/s3.service");
+      const s3Service = new S3Service();
+      
+      const url = profile.selfieUrl ? await s3Service.getPresignedUrl(profile.selfieUrl, 3600) : null;
+      const leftUrl = profile.leftSelfieUrl ? await s3Service.getPresignedUrl(profile.leftSelfieUrl, 3600) : null;
+      const rightUrl = profile.rightSelfieUrl ? await s3Service.getPresignedUrl(profile.rightSelfieUrl, 3600) : null;
+
+      if (!url && !leftUrl && !rightUrl) {
+         throw new ApiError(404, "User has no uploaded selfies");
+      }
+
+      return { 
+         url, 
+         leftUrl, 
+         rightUrl, 
+         locationLat: profile.lastLocationLat, 
+         locationLng: profile.lastLocationLng 
+      };
+   }
+
+   async getUserImagesData(userId: number): Promise<any> {
+      const user = await this.userRepository.findById(userId);
+      if (!user || user.isDeleted || !user.profile) {
+         throw new ApiError(404, "User profile not found");
+      }
+      
+      const images = user.profile.images;
+      if (!images || images.length === 0) {
+         throw new ApiError(404, "User has no uploaded images");
+      }
+
+      const { S3Service } = await import("@/services/s3.service");
+      const s3Service = new S3Service();
+
+      const imagesWithUrls = await Promise.all(
+         images.map(async (img) => ({
+            ...img,
+            url: await s3Service.getPresignedUrl(img.imageUrl, 3600)
+         }))
+      );
+
+      return imagesWithUrls;
    }
 }

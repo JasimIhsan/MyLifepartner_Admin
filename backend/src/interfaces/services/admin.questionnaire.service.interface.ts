@@ -1,4 +1,4 @@
-import { AnswerType, Prisma, ProfileQuestion, ProfileSection } from "@prisma/client";
+import { AnswerType, ProfileQuestion, ProfileSection } from "@prisma/client";
 
 export interface IAdminQuestionnaireService {
    // Sections
@@ -9,8 +9,8 @@ export interface IAdminQuestionnaireService {
    reorderSections(orderedIds: number[]): Promise<ProfileSection[]>;
 
    // Questions
-   createQuestion(sectionId: number, data: { question: string; answerType: AnswerType; options?: Prisma.InputJsonValue; minWords?: number; weight?: number; isRequired?: boolean; orderNo?: number; isActive?: boolean }): Promise<ProfileQuestion>;
-   updateQuestion(id: number, data: { question?: string; answerType?: AnswerType; options?: Prisma.InputJsonValue; minWords?: number; weight?: number; isRequired?: boolean }): Promise<ProfileQuestion>;
+   createQuestion(sectionId: number, data: { question: string; answerType: AnswerType; options?: unknown; minWords?: number; weight?: number; isRequired?: boolean; orderNo?: number; isActive?: boolean }): Promise<ProfileQuestion>;
+   updateQuestion(id: number, data: { question?: string; answerType?: AnswerType; options?: unknown; minWords?: number; weight?: number; isRequired?: boolean }): Promise<ProfileQuestion>;
    toggleQuestionActive(id: number): Promise<ProfileQuestion>;
    deleteQuestion(id: number): Promise<ProfileQuestion>;
    reorderQuestions(sectionId: number, orderedIds: number[]): Promise<ProfileQuestion[]>;

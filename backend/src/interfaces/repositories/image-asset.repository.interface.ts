@@ -1,10 +1,11 @@
-import { ImageAssets, ImageAssetsSection, Prisma } from "@prisma/client";
+import { ImageAssets, ImageAssetsSection } from "@prisma/client";
+import { CreateImageAssetDto, UpdateImageAssetDto, ImageAssetFilters } from "@/dtos/image-asset.dto";
 
 export interface IImageAssetRepository {
-   create(data: Prisma.ImageAssetsCreateInput): Promise<ImageAssets>;
-   findAll(where?: Prisma.ImageAssetsWhereInput, skip?: number, take?: number): Promise<{ assets: ImageAssets[]; total: number }>;
+   create(data: CreateImageAssetDto): Promise<ImageAssets>;
+   findAll(filters?: ImageAssetFilters, skip?: number, take?: number): Promise<{ assets: ImageAssets[]; total: number }>;
    findById(id: number): Promise<ImageAssets | null>;
    findBySection(section: ImageAssetsSection, isActive?: boolean): Promise<ImageAssets[]>;
-   update(id: number, data: Prisma.ImageAssetsUpdateInput): Promise<ImageAssets>;
+   update(id: number, data: UpdateImageAssetDto): Promise<ImageAssets>;
    delete(id: number): Promise<ImageAssets>;
 }

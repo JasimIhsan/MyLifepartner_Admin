@@ -1,30 +1,52 @@
-import { PartnerPreference, Prisma, Profile, User, UserFeature } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, UserFeature } from "@prisma/client";
 
-export type UserWithProfile = User & { 
-   profile: (Profile & { images: { id: number; imageUrl: string; isPrimary: boolean }[] }) | null;
+import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
+
+export type ProfileImageDto = {
+   id: number;
+   imageUrl: string;
+   isPrimary: boolean;
+};
+
+export type ProfileWithImages = Profile & {
+   images: ProfileImageDto[];
+};
+
+export type UserWithProfile = User & {
+   profile: ProfileWithImages | null;
    partnerPreference?: PartnerPreference | null;
    userFeature?: UserFeature | null;
 };
 
+export type UserListFilters = {
+   searchQuery?: string;
+   selfieStatus?: string;
+};
+
+export type PaginatedUsersResult = {
+   users: User[];
+   total: number;
+};
+
+export type UserOnboardingStatus = {
+   id: number;
+   isDeleted: boolean;
+   profile: {
+      profileStatus: ProfileStatus;
+      hasCompletedBasicDetails: boolean;
+      hasCompletedImageUpload: boolean;
+      hasCompletedPartnerPreference: boolean;
+      selfieStatus: SelfieStatus | null;
+   } | null;
+};
+
 export interface IUserRepository {
-   create(data: Prisma.UserCreateInput): Promise<UserWithProfile>;
-   findAll(where?: Prisma.UserWhereInput, skip?: number, take?: number, include?: Prisma.UserInclude): Promise<{ users: User[]; total: number }>;
+   create(data: CreateUserDto): Promise<UserWithProfile>;
+   findAll(filters?: UserListFilters, skip?: number, take?: number): Promise<PaginatedUsersResult>;
    findById(id: number): Promise<UserWithProfile | null>;
-   findOnboardingStatusById(
-      id: number
-   ): Promise<{
-      id: number;
-      isDeleted: boolean;
-      profile: {
-         profileStatus: import("@prisma/client").ProfileStatus;
-         hasCompletedBasicDetails: boolean;
-         hasCompletedImageUpload: boolean;
-         hasCompletedPartnerPreference: boolean;
-         selfieStatus: import("@prisma/client").SelfieStatus | null;
-      } | null;
-   } | null>;
+   findOnboardingStatusById(id: number): Promise<UserOnboardingStatus | null>;
    findByEmail(email: string): Promise<UserWithProfile | null>;
    findByMobileNumber(mobileNumber: string): Promise<UserWithProfile | null>;
-   update(id: number, data: Prisma.UserUpdateInput): Promise<UserWithProfile>;
+   update(id: number, data: UpdateUserDto): Promise<UserWithProfile>;
    delete(id: number): Promise<User>;
 }

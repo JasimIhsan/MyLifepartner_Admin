@@ -5,11 +5,11 @@ import jwt from "jsonwebtoken";
 
 export class JwtService implements IJwtService {
    signAccess(payload: object, expiresIn: string | number = "15m"): string {
-      return jwt.sign(payload, env.JWT_SECRET, { expiresIn: expiresIn as any });
+      return jwt.sign(payload, env.JWT_SECRET, { expiresIn: expiresIn as jwt.SignOptions["expiresIn"] });
    }
 
    signRefresh(payload: object, expiresIn: string | number = "7d"): string {
-      return jwt.sign(payload, env.JWT_REFRESH_SECRET, { expiresIn: expiresIn as any });
+      return jwt.sign(payload, env.JWT_REFRESH_SECRET, { expiresIn: expiresIn as jwt.SignOptions["expiresIn"] });
    }
 
    verifyAccess(token: string): UserJwtPayload {

@@ -4,11 +4,17 @@ import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, UserAnswerDto,
 import { IProfileRepository } from "@/interfaces/repositories/profile.repository.interface";
 import { IProfileService } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { PartnerPreference, Prisma, Profile, ProfileStatus } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus } from "@prisma/client";
+import { UpdateProfileDto, CreatePartnerPreferenceDto } from "@/dtos/profile.input.dto";
 
 export class ProfileService implements IProfileService {
    constructor(private profileRepository: IProfileRepository) {}
 
+   /**
+    * Retrieves the structure of the profile, including sections and questions
+    * @param userId - The ID of the user
+    * @returns Array of profile sections mapped to DTOs
+    */
    async getProfileStructure(userId: number): Promise<ProfileSectionDto[]> {
       const sections = await this.profileRepository.getProfileStructure();
       const userAnswers = await this.profileRepository.getUserAnswers(userId);
@@ -20,22 +26,45 @@ export class ProfileService implements IProfileService {
       return sections.map((s) => toProfileSectionDto(s));
    }
 
+   /**
+    * Retrieves all profile sections
+    * @param isPrimary - Optional flag to filter primary sections
+    * @returns Array of profile sections mapped to DTOs
+    */
    async getSections(isPrimary?: boolean): Promise<ProfileSectionDto[]> {
       const sections = await this.profileRepository.getSections(isPrimary);
       return sections.map((s) => toProfileSectionDto(s));
    }
 
+   /**
+    * Retrieves questions for a specific section order
+    * @param sectionOrder - The order number of the section
+    * @param userId - The ID of the user
+    * @returns Array of profile questions mapped to DTOs
+    */
    async getQuestionsBySectionOrder(sectionOrder: number, userId: number): Promise<ProfileQuestionDto[]> {
       const questions = await this.profileRepository.getQuestionsBySectionByOrder(sectionOrder, userId);
       return questions.map((q) => toProfileQuestionDto(q));
    }
 
+   /**
+    * Retrieves all answers submitted by a user
+    * @param userId - The ID of the user
+    * @returns Array of user answers mapped to DTOs
+    */
    async getUserAnswers(userId: number): Promise<UserAnswerDto[]> {
       const answers = await this.profileRepository.getUserAnswers(userId);
       return answers.map((a) => toUserAnswerDto(a));
    }
 
-   async saveAnswer(userId: number, questionId: number, answer: import("@prisma/client").Prisma.InputJsonValue): Promise<UserAnswerDto> {
+   /**
+    * Saves an answer to a specific profile question
+    * @param userId - The ID of the user
+    * @param questionId - The ID of the question
+    * @param answer - The answer content
+    * @returns The saved answer mapped to a DTO
+    */
+   async saveAnswer(userId: number, questionId: number, answer: unknown): Promise<UserAnswerDto> {
       // Validate question exists and answer format if needed
       // For now, straight to DB
 
@@ -52,6 +81,12 @@ export class ProfileService implements IProfileService {
       return toUserAnswerDto(savedAnswer);
    }
 
+   /**
+    * Marks the user's profile as completed if all mandatory questions are answered
+    * @param userId - The ID of the user
+    * @returns The updated profile status DTO
+    * @throws ApiError if mandatory primary questions are not fully answered
+    */
    async completeProfile(userId: number): Promise<ProfileStatusDto> {
       const primaryRequiredCount = await this.profileRepository.getRequiredQuestionsCount(true);
       const primaryAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId, true);
@@ -71,6 +106,11 @@ export class ProfileService implements IProfileService {
       return toProfileStatusDto(newStatus, "logout");
    }
 
+   /**
+    * Retrieves the user's profile completion status
+    * @param userId - The ID of the user
+    * @returns An object indicating if the profile is complete and the next pending section order
+    */
    async getProfileCompletionStatus(userId: number) {
       const totalRequiredCount = await this.profileRepository.getRequiredQuestionsCount();
       const totalAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId);
@@ -96,11 +136,23 @@ export class ProfileService implements IProfileService {
       };
    }
 
-   async updateBasicProfile(userId: number, data: Prisma.ProfileUpdateInput): Promise<Profile> {
+   /**
+    * Updates basic profile details of a user
+    * @param userId - The ID of the user
+    * @param data - The DTO containing the basic details to update
+    * @returns The updated Profile object
+    */
+   async updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile> {
       return this.profileRepository.updateBasicProfile(userId, data);
    }
 
-   async updatePartnerPreference(userId: number, data: Omit<Prisma.PartnerPreferenceCreateInput, "user">): Promise<PartnerPreference> {
+   /**
+    * Updates the partner preferences for a user
+    * @param userId - The ID of the user
+    * @param data - The DTO containing the partner preferences
+    * @returns The updated PartnerPreference object
+    */
+   async updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference> {
       return this.profileRepository.updatePartnerPreference(userId, data);
    }
 

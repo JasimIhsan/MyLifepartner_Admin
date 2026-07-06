@@ -1,4 +1,5 @@
-import { Guide, Prisma } from "@prisma/client";
+import { Guide } from "@prisma/client";
+import { CreateGuideDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
 
 export interface GuideFilters {
    categoryId?: number;
@@ -8,9 +9,9 @@ export interface GuideFilters {
 }
 
 export interface IGuideService {
-   createGuide(data: Prisma.GuideCreateInput): Promise<Guide>;
+   createGuide(data: CreateGuideDto): Promise<Guide>;
    getAllGuides(filters: GuideFilters): Promise<{ guides: Guide[]; total: number }>;
    getGuideById(id: number): Promise<Guide | null>;
-   updateGuide(id: number, data: Prisma.GuideUpdateInput): Promise<Guide>;
+   updateGuide(id: number, data: UpdateGuideDto): Promise<Guide>;
    deleteGuide(id: number): Promise<Guide>;
 }

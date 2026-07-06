@@ -1,66 +1,202 @@
 import prisma from "@/config/prisma";
-import { SwipeAction } from "@prisma/client";
+import { Prisma, SwipeAction, Gender } from "@prisma/client";
 import { CandidateProfile, IMatchRepository, SwipedProfile, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
 import { InteractionState } from "../interfaces/services/match.service.interface";
 
+const candidateProfileInclude = {
+   user: {
+      select: {
+         isVerified: true,
+         createdAt: true,
+         updatedAt: true,
+      },
+   },
+   images: {
+      orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+   },
+   answers: {
+      select: {
+         questionId: true,
+         answer: true,
+         score: true,
+      },
+   },
+} satisfies Prisma.ProfileInclude;
+
+type CandidateProfilePayload = Prisma.ProfileGetPayload<{
+   include: typeof candidateProfileInclude;
+}>;
+
+type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
+   include: {
+      images: {
+         orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }];
+      };
+      answers: {
+         select: {
+            questionId: true;
+            answer: true;
+            score: true;
+         };
+      };
+      swipesOnMe: {
+         where: {
+            userId: number;
+         };
+      };
+      user: {
+         select: {
+            profileSwipes: true;
+            isVerified: true;
+            createdAt: true;
+            updatedAt: true;
+         };
+      };
+   };
+}>;
+
+type SwipeWithUserProfile = Prisma.ProfileSwipeGetPayload<{
+   include: {
+      user: {
+         include: {
+            profile: {
+               include: typeof candidateProfileInclude;
+            };
+         };
+      };
+   };
+}>;
+
 export class MatchRepository implements IMatchRepository {
+   /**
+    * Gets user partner preference.
+    *
+    * @param userId - User ID.
+    * @returns User preference data, or null if not found.
+    */
    async getUserPreference(userId: number): Promise<UserPreferenceData | null> {
-      const pref = await prisma.partnerPreference.findUnique({ where: { userId } });
-      if (!pref) return null;
+      const preference = await prisma.partnerPreference.findUnique({
+         where: {
+            userId,
+         },
+      });
+
+      if (!preference) {
+         return null;
+      }
+
       return {
-         ageFrom: pref.ageFrom,
-         ageTo: pref.ageTo,
-         heightFrom: pref.heightFrom,
-         heightTo: pref.heightTo,
-         motherTongue: pref.motherTongue,
-         highestEducation: pref.highestEducation,
-         occupation: pref.occupation,
+         ageFrom: preference.ageFrom,
+         ageTo: preference.ageTo,
+         heightFrom: preference.heightFrom,
+         heightTo: preference.heightTo,
+         motherTongue: preference.motherTongue,
+         highestEducation: preference.highestEducation,
+         occupation: preference.occupation,
       };
    }
 
+   /**
+    * Gets user answers.
+    *
+    * @param userId - User ID.
+    * @returns User answers.
+    */
    async getUserAnswers(userId: number): Promise<UserAnswerData[]> {
-      const answers = await prisma.userAnswer.findMany({
-         where: { profile: { userId } },
-         select: { questionId: true, answer: true, score: true },
+      return prisma.userAnswer.findMany({
+         where: {
+            profile: {
+               userId,
+            },
+         },
+         select: {
+            questionId: true,
+            answer: true,
+            score: true,
+         },
       });
-      return answers;
    }
 
+   /**
+    * Gets swiped profile IDs of a user.
+    *
+    * @param userId - User ID.
+    * @returns Swiped profiles.
+    */
    async getSwipedProfileIds(userId: number): Promise<SwipedProfile[]> {
-      const swipes = await prisma.profileSwipe.findMany({
-         where: { userId },
-         select: { targetProfileId: true, action: true },
+      return prisma.profileSwipe.findMany({
+         where: {
+            userId,
+         },
+         select: {
+            targetProfileId: true,
+            action: true,
+         },
       });
-      return swipes;
    }
 
+   /**
+    * Gets candidate profiles for matching.
+    *
+    * @param currentUserId - Current user ID.
+    * @param excludedProfileIds - Profile IDs to exclude.
+    * @returns Candidate profiles.
+    */
    async getCandidateProfiles(currentUserId: number, excludedProfileIds: number[]): Promise<CandidateProfile[]> {
-      const currentUser = await prisma.user.findUnique({ where: { id: currentUserId }, include: { profile: true } });
-      const currentGender = currentUser?.profile?.gender;
+      const currentUser = await prisma.user.findUnique({
+         where: {
+            id: currentUserId,
+         },
+         include: {
+            profile: true,
+         },
+      });
 
-      // Target profiles should be of opposite gender (or OTHER)
-      const targetGender = currentGender === "MALE" ? { in: ["FEMALE", "OTHER"] } : currentGender === "FEMALE" ? { in: ["MALE", "OTHER"] } : undefined;
+      const targetGenderFilter = this.getTargetGenderFilter(currentUser?.profile?.gender);
 
       const profiles = await prisma.profile.findMany({
          where: {
-            // profileStatus: "COMPLETED",
             user: {
                isBlocked: false,
                isDeleted: false,
                isVerified: true,
-               id: { not: currentUserId },
+               id: {
+                  not: currentUserId,
+               },
             },
-            ...(targetGender && { gender: { in: targetGender.in as ("MALE" | "FEMALE" | "OTHER")[] } }),
-            id: { notIn: excludedProfileIds },
+            ...(targetGenderFilter && {
+               gender: targetGenderFilter,
+            }),
+            id: {
+               notIn: excludedProfileIds,
+            },
          },
          include: {
-            images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
-            answers: { select: { questionId: true, answer: true, score: true } },
-            swipesOnMe: { where: { userId: currentUserId } },
+            images: {
+               orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+            },
+            answers: {
+               select: {
+                  questionId: true,
+                  answer: true,
+                  score: true,
+               },
+            },
+            swipesOnMe: {
+               where: {
+                  userId: currentUserId,
+               },
+            },
             user: {
                select: {
                   profileSwipes: {
-                     where: currentUser?.profile?.id ? { targetProfileId: currentUser.profile.id } : { id: -1 },
+                     where: currentUser?.profile?.id
+                        ? {
+                             targetProfileId: currentUser.profile.id,
+                          }
+                        : {
+                             id: -1,
+                          },
                   },
                   isVerified: true,
                   createdAt: true,
@@ -70,247 +206,371 @@ export class MatchRepository implements IMatchRepository {
          },
       });
 
-      return profiles.map((p) => ({
-         id: p.id,
-         userId: p.userId,
-         name: p.name,
-         isVerified: p.user.isVerified,
-         dateOfBirth: p.dateOfBirth,
-         heightCm: p.heightCm,
-         maritalStatus: p.maritalStatus,
-         city: p.city,
-         state: p.state,
-         country: p.country,
-         motherTongue: p.motherTongue,
-         highestEducation: p.highestEducation,
-         occupation: p.occupation,
-         bio: p.bio,
-         gender: p.gender,
-         images: p.images.map((img) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
-         answers: p.answers,
-         interactionState: this.determineInteractionState(p.swipesOnMe, p.user.profileSwipes),
-         createdAt: p.user.createdAt,
-         lastLoginAt: p.user.updatedAt,
-      }));
+      return profiles.map((profile) => {
+         const interactionState = this.determineInteractionState(profile.swipesOnMe, profile.user.profileSwipes);
+
+         return this.mapToCandidateProfile(profile, interactionState);
+      });
    }
 
-   private determineInteractionState(swipesOnMe: Array<{ action: SwipeAction }>, theirSwipesOnMe: Array<{ action: SwipeAction }>): InteractionState {
-      const iSentInterest = swipesOnMe.some((s) => s.action === SwipeAction.RIGHT);
-      const theySentInterest = theirSwipesOnMe.some((s) => s.action === SwipeAction.RIGHT);
+   /**
+    * Records a user swipe.
+    *
+    * @param userId - User ID.
+    * @param targetProfileId - Target profile ID.
+    * @param action - Swipe action.
+    * @returns Nothing.
+    */
+   async recordSwipe(userId: number, targetProfileId: number, action: SwipeAction): Promise<void> {
+      const existingSwipe = await prisma.profileSwipe.findFirst({
+         where: {
+            userId,
+            targetProfileId,
+         },
+      });
 
-      if (iSentInterest && theySentInterest) return InteractionState.MATCHED;
-      if (iSentInterest) return InteractionState.INTEREST_SENT;
-      if (theySentInterest) return InteractionState.INTEREST_RECEIVED;
+      if (existingSwipe) {
+         await prisma.profileSwipe.update({
+            where: {
+               id: existingSwipe.id,
+            },
+            data: {
+               action,
+            },
+         });
+
+         return;
+      }
+
+      await prisma.profileSwipe.create({
+         data: {
+            userId,
+            targetProfileId,
+            action,
+         },
+      });
+   }
+
+   /**
+    * Gets liked profiles of a user.
+    *
+    * @param userId - User ID.
+    * @returns Liked candidate profiles.
+    */
+   async getLikedProfiles(userId: number): Promise<CandidateProfile[]> {
+      const swipes = await prisma.profileSwipe.findMany({
+         where: {
+            userId,
+            action: SwipeAction.RIGHT,
+         },
+         include: {
+            targetProfile: {
+               include: candidateProfileInclude,
+            },
+         },
+      });
+
+      return swipes.map((swipe) => this.mapToCandidateProfile(swipe.targetProfile));
+   }
+
+   /**
+    * Gets sent interests.
+    *
+    * @param userId - User ID.
+    * @returns Sent interest profiles.
+    */
+   async getSentInterests(userId: number): Promise<CandidateProfile[]> {
+      const currentProfile = await this.getUserProfile(userId);
+
+      if (!currentProfile) {
+         return [];
+      }
+
+      const swipes = await prisma.profileSwipe.findMany({
+         where: {
+            userId,
+            action: SwipeAction.RIGHT,
+         },
+         include: {
+            targetProfile: {
+               include: candidateProfileInclude,
+            },
+         },
+      });
+
+      const theirSwipesOnMe = await prisma.profileSwipe.findMany({
+         where: {
+            targetProfileId: currentProfile.id,
+         },
+         select: {
+            userId: true,
+         },
+      });
+
+      const theirSwipeUserIds = new Set(theirSwipesOnMe.map((swipe) => swipe.userId));
+
+      return swipes.filter((swipe) => !theirSwipeUserIds.has(swipe.targetProfile.userId)).map((swipe) => this.mapToCandidateProfile(swipe.targetProfile, InteractionState.INTEREST_SENT));
+   }
+
+   /**
+    * Gets received interests.
+    *
+    * @param userId - User ID.
+    * @returns Received interest profiles.
+    */
+   async getReceivedInterests(userId: number): Promise<CandidateProfile[]> {
+      const currentProfile = await this.getUserProfile(userId);
+
+      if (!currentProfile) {
+         return [];
+      }
+
+      const swipes = await prisma.profileSwipe.findMany({
+         where: {
+            targetProfileId: currentProfile.id,
+            action: SwipeAction.RIGHT,
+         },
+         include: {
+            user: {
+               include: {
+                  profile: {
+                     include: candidateProfileInclude,
+                  },
+               },
+            },
+         },
+      });
+
+      const mySwipes = await prisma.profileSwipe.findMany({
+         where: {
+            userId,
+         },
+         select: {
+            targetProfileId: true,
+         },
+      });
+
+      const mySwipedProfileIds = new Set(mySwipes.map((swipe) => swipe.targetProfileId));
+
+      return this.swipesToProfiles(swipes)
+         .filter((profile) => !mySwipedProfileIds.has(profile.id))
+         .map((profile) => this.mapToCandidateProfile(profile, InteractionState.INTEREST_RECEIVED));
+   }
+
+   /**
+    * Gets mutual matches.
+    *
+    * @param userId - User ID.
+    * @returns Mutual matched profiles.
+    */
+   async getMutualMatches(userId: number): Promise<CandidateProfile[]> {
+      const currentProfile = await this.getUserProfile(userId);
+
+      if (!currentProfile) {
+         return [];
+      }
+
+      const mySwipes = await prisma.profileSwipe.findMany({
+         where: {
+            userId,
+            action: SwipeAction.RIGHT,
+         },
+         select: {
+            targetProfileId: true,
+         },
+      });
+
+      const mySwipedProfileIds = new Set(mySwipes.map((swipe) => swipe.targetProfileId));
+
+      const theirSwipes = await prisma.profileSwipe.findMany({
+         where: {
+            targetProfileId: currentProfile.id,
+            action: SwipeAction.RIGHT,
+         },
+         include: {
+            user: {
+               include: {
+                  profile: {
+                     include: candidateProfileInclude,
+                  },
+               },
+            },
+         },
+      });
+
+      return this.swipesToProfiles(theirSwipes)
+         .filter((profile) => mySwipedProfileIds.has(profile.id))
+         .map((profile) => this.mapToCandidateProfile(profile, InteractionState.MATCHED));
+   }
+
+   /**
+    * Gets a profile by ID.
+    *
+    * @param currentUserId - Current user ID.
+    * @param profileId - Profile ID.
+    * @returns Candidate profile, or null if not found.
+    */
+   async getProfileById(currentUserId: number, profileId: number): Promise<CandidateProfile | null> {
+      const currentProfile = await this.getUserProfile(currentUserId);
+
+      const profile = await prisma.profile.findUnique({
+         where: {
+            id: profileId,
+         },
+         include: {
+            images: {
+               orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
+            },
+            answers: {
+               select: {
+                  questionId: true,
+                  answer: true,
+                  score: true,
+               },
+            },
+            swipesOnMe: {
+               where: {
+                  userId: currentUserId,
+               },
+            },
+            user: {
+               select: {
+                  profileSwipes: {
+                     where: currentProfile
+                        ? {
+                             targetProfileId: currentProfile.id,
+                          }
+                        : {
+                             id: -1,
+                          },
+                  },
+                  isVerified: true,
+                  createdAt: true,
+                  updatedAt: true,
+               },
+            },
+         },
+      });
+
+      if (!profile) {
+         return null;
+      }
+
+      const interactionState = this.determineInteractionState(profile.swipesOnMe, profile.user.profileSwipes);
+
+      return this.mapToCandidateProfile(profile, interactionState);
+   }
+
+   /**
+    * Gets user profile.
+    *
+    * @param userId - User ID.
+    * @returns User profile, or null if not found.
+    */
+   private async getUserProfile(userId: number) {
+      const user = await prisma.user.findUnique({
+         where: {
+            id: userId,
+         },
+         include: {
+            profile: true,
+         },
+      });
+
+      return user?.profile ?? null;
+   }
+
+   /**
+    * Gets target gender filter.
+    *
+    * @param gender - Current user gender.
+    * @returns Target gender filter, or undefined.
+    */
+   private getTargetGenderFilter(gender?: string | null) {
+      if (gender === "MALE") {
+         return {
+            in: [Gender.FEMALE, Gender.OTHER],
+         };
+      }
+
+      if (gender === "FEMALE") {
+         return {
+            in: [Gender.MALE, Gender.OTHER],
+         };
+      }
+
+      return undefined;
+   }
+
+   /**
+    * Gets interaction state between users.
+    *
+    * @param mySwipesOnProfile - Current user's swipes on target profile.
+    * @param theirSwipesOnMe - Target user's swipes on current user.
+    * @returns Interaction state.
+    */
+   private determineInteractionState(mySwipesOnProfile: Array<{ action: SwipeAction }>, theirSwipesOnMe: Array<{ action: SwipeAction }>): InteractionState {
+      const iSentInterest = mySwipesOnProfile.some((swipe) => swipe.action === SwipeAction.RIGHT);
+
+      const theySentInterest = theirSwipesOnMe.some((swipe) => swipe.action === SwipeAction.RIGHT);
+
+      if (iSentInterest && theySentInterest) {
+         return InteractionState.MATCHED;
+      }
+
+      if (iSentInterest) {
+         return InteractionState.INTEREST_SENT;
+      }
+
+      if (theySentInterest) {
+         return InteractionState.INTEREST_RECEIVED;
+      }
+
       return InteractionState.NONE;
    }
 
-   async recordSwipe(userId: number, targetProfileId: number, action: SwipeAction): Promise<void> {
-      const existing = await prisma.profileSwipe.findFirst({ where: { userId, targetProfileId } });
-      if (existing) {
-         await prisma.profileSwipe.update({ where: { id: existing.id }, data: { action } });
-      } else {
-         await prisma.profileSwipe.create({ data: { userId, targetProfileId, action } });
-      }
-   }
-   async getLikedProfiles(userId: number): Promise<CandidateProfile[]> {
-      const swipes = await prisma.profileSwipe.findMany({
-         where: { userId, action: SwipeAction.RIGHT },
-         include: {
-            targetProfile: {
-               include: {
-                  user: { select: { isVerified: true, createdAt: true, updatedAt: true } },
-                  images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
-                  answers: { select: { questionId: true, answer: true, score: true } },
-               },
-            },
-         },
-      });
-
-      return swipes.map((s) => ({
-         id: s.targetProfile.id,
-         userId: s.targetProfile.userId,
-         name: s.targetProfile.name,
-         isVerified: s.targetProfile.user.isVerified,
-         dateOfBirth: s.targetProfile.dateOfBirth,
-         heightCm: s.targetProfile.heightCm,
-         maritalStatus: s.targetProfile.maritalStatus,
-         city: s.targetProfile.city,
-         state: s.targetProfile.state,
-         country: s.targetProfile.country,
-         motherTongue: s.targetProfile.motherTongue,
-         highestEducation: s.targetProfile.highestEducation,
-         occupation: s.targetProfile.occupation,
-         bio: s.targetProfile.bio,
-         gender: s.targetProfile.gender,
-         images: s.targetProfile.images.map((img) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
-         answers: s.targetProfile.answers,
-         createdAt: s.targetProfile.user.createdAt,
-         lastLoginAt: s.targetProfile.user.updatedAt,
-      }));
-   }
-
-   async getSentInterests(userId: number): Promise<CandidateProfile[]> {
-      const currentUser = await prisma.user.findUnique({ where: { id: userId }, include: { profile: true } });
-      if (!currentUser?.profile?.id) return [];
-
-      const swipes = await prisma.profileSwipe.findMany({
-         where: { userId, action: SwipeAction.RIGHT },
-         include: {
-            targetProfile: {
-               include: {
-                  user: { select: { isVerified: true, createdAt: true, updatedAt: true } },
-                  images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
-                  answers: { select: { questionId: true, answer: true, score: true } },
-               },
-            },
-         },
-      });
-
-      // Find their swipes on me (either they matched or rejected me)
-      const theirSwipesOnMe = await prisma.profileSwipe.findMany({
-         where: { targetProfileId: currentUser.profile.id },
-         select: { userId: true },
-      });
-      const theirSwipeUserIdSet = new Set(theirSwipesOnMe.map((s) => s.userId));
-
-      // Filter out profiles that have swiped on me
-      const validSentInterests = swipes.filter((s) => !theirSwipeUserIdSet.has(s.targetProfile.userId));
-
-      return validSentInterests.map((s) => this.mapToCandidateProfile(s.targetProfile, InteractionState.INTEREST_SENT));
-   }
-
-   async getReceivedInterests(userId: number): Promise<CandidateProfile[]> {
-      const currentUser = await prisma.user.findUnique({ where: { id: userId }, include: { profile: true } });
-      if (!currentUser?.profile?.id) return [];
-
-      const swipes = await prisma.profileSwipe.findMany({
-         where: { targetProfileId: currentUser.profile.id, action: SwipeAction.RIGHT },
-         include: {
-            user: {
-               include: {
-                  profile: {
-                     include: {
-                        images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
-                        answers: { select: { questionId: true, answer: true, score: true } },
-                     },
-                  },
-               },
-            },
-         },
-      });
-
-      // Filter out received ones that we have already swiped on (whether RIGHT to match or LEFT to reject)
-      const mySwipes = await prisma.profileSwipe.findMany({
-         where: { userId },
-         select: { targetProfileId: true },
-      });
-      const mySwipeSet = new Set(mySwipes.map((s) => s.targetProfileId));
-
-      const profiles = sweepsToProfiles(swipes.filter((s) => s.user.profile && !mySwipeSet.has(s.user.profile.id)));
-
-      return profiles.map((p: any) => this.mapToCandidateProfile(p, InteractionState.INTEREST_RECEIVED));
-   }
-
-   async getMutualMatches(userId: number): Promise<CandidateProfile[]> {
-      const currentUser = await prisma.user.findUnique({ where: { id: userId }, include: { profile: true } });
-      if (!currentUser?.profile?.id) return [];
-
-      // Find my right swipes
-      const mySwipes = await prisma.profileSwipe.findMany({
-         where: { userId, action: SwipeAction.RIGHT },
-         select: { targetProfileId: true },
-      });
-      const mySwipeSet = new Set(mySwipes.map((s) => s.targetProfileId));
-
-      // Find their right swipes on me
-      const theirSwipes = await prisma.profileSwipe.findMany({
-         where: { targetProfileId: currentUser.profile.id, action: SwipeAction.RIGHT },
-         include: {
-            user: {
-               include: {
-                  profile: {
-                     include: {
-                        images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
-                        answers: { select: { questionId: true, answer: true, score: true } },
-                     },
-                  },
-               },
-            },
-         },
-      });
-
-      // The intersection
-      const matches = theirSwipes.filter((s) => s.user.profile && mySwipeSet.has(s.user.profile.id));
-      const profiles = sweepsToProfiles(matches);
-
-      return profiles.map((p: any) => this.mapToCandidateProfile(p, InteractionState.MATCHED));
-   }
-   async getProfileById(currentUserId: number, profileId: number): Promise<CandidateProfile | null> {
-      const currentUser = await prisma.user.findUnique({ where: { id: currentUserId }, include: { profile: true } });
-
-      const p = await prisma.profile.findUnique({
-         where: { id: profileId },
-         include: {
-            images: { orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }] },
-            answers: { select: { questionId: true, answer: true, score: true } },
-            swipesOnMe: { where: { userId: currentUserId } },
-            user: {
-               select: {
-                  profileSwipes: {
-                     where: currentUser?.profile?.id ? { targetProfileId: currentUser.profile.id } : { id: -1 },
-                  },
-                  isVerified: true,
-                  createdAt: true,
-                  updatedAt: true,
-               },
-            },
-         },
-      });
-      if (!p) return null;
-
-      const interactionState = this.determineInteractionState(p.swipesOnMe, p.user.profileSwipes);
-      return this.mapToCandidateProfile(p, interactionState);
-   }
-
-   private mapToCandidateProfile(p: any, interactionState?: InteractionState): CandidateProfile {
+   /**
+    * Maps profile data to candidate profile.
+    *
+    * @param profile - Profile data.
+    * @param interactionState - Optional interaction state.
+    * @returns Candidate profile.
+    */
+   private mapToCandidateProfile(profile: CandidateProfilePayload | ProfileWithInteractionData, interactionState?: InteractionState): CandidateProfile {
       return {
-         id: p.id,
-         userId: p.userId,
-         name: p.name,
-         isVerified: p.user?.isVerified ?? false,
-         dateOfBirth: p.dateOfBirth,
-         heightCm: p.heightCm,
-         maritalStatus: p.maritalStatus,
-         city: p.city,
-         state: p.state,
-         country: p.country,
-         motherTongue: p.motherTongue,
-         highestEducation: p.highestEducation,
-         occupation: p.occupation,
-         bio: p.bio,
-         gender: p.gender,
-         images: p.images.map((img: any) => ({ imageUrl: img.imageUrl, isPrimary: img.isPrimary })),
-         answers: p.answers,
+         id: profile.id,
+         userId: profile.userId,
+         name: profile.name,
+         isVerified: profile.user.isVerified,
+         dateOfBirth: profile.dateOfBirth,
+         heightCm: profile.heightCm,
+         maritalStatus: profile.maritalStatus,
+         city: profile.city,
+         state: profile.state,
+         country: profile.country,
+         motherTongue: profile.motherTongue,
+         highestEducation: profile.highestEducation,
+         occupation: profile.occupation,
+         bio: profile.bio,
+         gender: profile.gender,
+         images: profile.images.map((image) => ({
+            imageUrl: image.imageUrl,
+            isPrimary: image.isPrimary,
+         })),
+         answers: profile.answers,
          interactionState,
-         createdAt: p.user?.createdAt ?? new Date(),
-         lastLoginAt: p.user?.updatedAt ?? new Date(),
+         createdAt: profile.user.createdAt,
+         lastLoginAt: profile.user.updatedAt,
       };
    }
-}
 
-// helper to safely extract profiles from sweeps having a user with a profile
-function sweepsToProfiles(swipes: any[]) {
-   return swipes.reduce((acc, current) => {
-      if (current.user?.profile) {
-         acc.push({
-            ...current.user.profile,
-            user: { 
-               isVerified: current.user.isVerified,
-               createdAt: current.user.createdAt,
-               updatedAt: current.user.updatedAt,
-            },
-         });
-      }
-      return acc;
-   }, [] as any[]);
+   /**
+    * Extracts profiles from profile swipes.
+    *
+    * @param swipes - Profile swipes with user profile data.
+    * @returns Candidate profile payloads.
+    */
+   private swipesToProfiles(swipes: SwipeWithUserProfile[]): CandidateProfilePayload[] {
+      return swipes.map((swipe) => swipe.user.profile).filter((profile): profile is CandidateProfilePayload => Boolean(profile));
+   }
 }
