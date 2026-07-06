@@ -1,38 +1,47 @@
+import env from "@/config/env";
+import { ApiError } from "@/utils/ApiError";
+import logger from "@/utils/logger";
 import { NextFunction, Request, Response } from "express";
-import env from "../config/env";
-import { ApiError } from "../utils/ApiError";
-import logger from "../utils/logger";
 
-const errorMiddleware = (err: Error & { statusCode?: number; errors?: unknown[] }, req: Request, res: Response, next: NextFunction) => {
-   let error: ApiError;
+type ErrorWithStatus = Error & {
+   statusCode?: number;
+   errors?: unknown[];
+};
 
-   // Capture original error message for server logging
+const DEFAULT_ERROR_MESSAGE = "Something went wrong. Please try again later.";
+
+const errorMiddleware = (err: ErrorWithStatus, req: Request, res: Response, _next: NextFunction): Response => {
+   const error = normalizeError(err);
    const originalMessage = err.message || "Unknown error";
 
-   if (err instanceof ApiError) {
-      error = err;
-   } else {
-      const statusCode = err.statusCode || 500;
-      // Obfuscate the message sent to the client
-      const message = "Something went wrong. Please try again later.";
-      error = new ApiError(statusCode, message, err.errors || [], err.stack);
-   }
-
-   const response = {
-      ...error,
-      message: error.message,
-      success: false,
-      ...(env.NODE_ENV === "development" ? { stack: error.stack } : {}),
-   };
-
-   // Log the actual unhandled error message for debugging purposes
    logger.error(`[${req.method}] ${req.path} >> StatusCode:: ${error.statusCode}, Message:: ${originalMessage}`);
 
    if (!(err instanceof ApiError) && err.stack) {
       logger.error(`Unhandled Error Stack: ${err.stack}`);
    }
 
-   return res.status(error.statusCode).json(response);
+   return res.status(error.statusCode).json({
+      ...error,
+      message: error.message,
+      success: false,
+      ...(env.NODE_ENV === "development" && {
+         stack: error.stack,
+      }),
+   });
+};
+
+/**
+ * Normalizes thrown errors into ApiError.
+ *
+ * @param err - Thrown error.
+ * @returns Normalized API error.
+ */
+const normalizeError = (err: ErrorWithStatus): ApiError => {
+   if (err instanceof ApiError) {
+      return err;
+   }
+
+   return new ApiError(err.statusCode ?? 500, DEFAULT_ERROR_MESSAGE, err.errors ?? [], err.stack);
 };
 
 export default errorMiddleware;

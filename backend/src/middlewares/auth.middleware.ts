@@ -3,8 +3,8 @@ import { ApiError } from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { NextFunction, Request, Response } from "express";
 
-export const verifyJWT = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-   const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
+export const verifyJWT = asyncHandler(async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
+   const token = getAuthToken(req);
 
    if (!token) {
       throw new ApiError(401, "Unauthorized request");
@@ -12,9 +12,32 @@ export const verifyJWT = asyncHandler(async (req: Request, res: Response, next: 
 
    try {
       const decoded = jwtService.verifyAccess(token);
-      req.user = decoded; // Attach user payload (id, mobileNumber) to req
+
+      req.user = decoded;
       next();
-   } catch (error) {
+   } catch {
       throw new ApiError(401, "Invalid access token");
    }
 });
+
+/**
+ * Gets auth token from cookies or authorization header.
+ *
+ * @param req - Express request.
+ * @returns Auth token, or undefined if not found.
+ */
+const getAuthToken = (req: Request): string | undefined => {
+   const cookieToken = req.cookies?.accessToken;
+
+   if (cookieToken) {
+      return cookieToken;
+   }
+
+   const authHeader = req.header("Authorization");
+
+   if (!authHeader?.startsWith("Bearer ")) {
+      return undefined;
+   }
+
+   return authHeader.split(" ")[1];
+};
