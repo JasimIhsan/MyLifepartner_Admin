@@ -1,8 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 
-const asyncHandler = <T extends Request = Request>(requestHandler: (req: T, res: Response, next: NextFunction) => Promise<unknown>) => {
-   return (req: Request, res: Response, next: NextFunction) => {
-      Promise.resolve(requestHandler(req as unknown as T, res, next)).catch((err) => next(err));
+type AsyncRequestHandler<TRequest extends Request = Request> = (req: TRequest, res: Response, next: NextFunction) => Promise<unknown>;
+
+const asyncHandler = <TRequest extends Request = Request>(requestHandler: AsyncRequestHandler<TRequest>) => {
+   return (req: Request, res: Response, next: NextFunction): void => {
+      Promise.resolve(requestHandler(req as TRequest, res, next)).catch(next);
    };
 };
 

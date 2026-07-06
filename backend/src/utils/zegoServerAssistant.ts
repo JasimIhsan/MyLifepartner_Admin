@@ -1,119 +1,180 @@
+import { createCipheriv, randomBytes, randomInt } from "crypto";
+
+enum ZegoTokenErrorCode {
+   Success = 0,
+   AppIdInvalid = 1,
+   UserIdInvalid = 3,
+   SecretInvalid = 5,
+   EffectiveTimeInvalid = 6,
+}
+
+type ZegoTokenInfo = {
+   app_id: number;
+   user_id: string;
+   nonce: number;
+   ctime: number;
+   expire: number;
+   payload: string;
+};
+
+type ZegoTokenError = {
+   errorCode: ZegoTokenErrorCode;
+   errorMessage: string;
+};
+
+const TOKEN_VERSION = "04";
+const SECRET_LENGTH = 32;
+const IV_LENGTH = 16;
+const NONCE_MIN = -2_147_483_648;
+const NONCE_MAX = 2_147_483_647;
+
+const AES_ALGORITHMS_BY_KEY_LENGTH: Record<number, string> = {
+   16: "aes-128-cbc",
+   24: "aes-192-cbc",
+   32: "aes-256-cbc",
+};
+
 /**
- * ZEGOCLOUD Token Generation Utility
- * Source: https://github.com/ZEGOCLOUD/zego_server_assistant
- * Path: token/nodejs/server/zegoServerAssistant.ts
+ * Generates a ZEGOCLOUD token.
+ *
+ * @param appId - ZEGOCLOUD app ID.
+ * @param userId - User ID.
+ * @param secret - ZEGOCLOUD server secret.
+ * @param effectiveTimeInSeconds - Token validity time in seconds.
+ * @param payload - Optional token payload.
+ * @returns Generated ZEGOCLOUD token.
  */
+export function generateToken04(appId: number, userId: string, secret: string, effectiveTimeInSeconds: number, payload: string = ""): string {
+   validateTokenInput(appId, userId, secret, effectiveTimeInSeconds);
 
-import { createCipheriv } from 'crypto';
+   const createTime = Math.floor(Date.now() / 1000);
 
-enum ErrorCode {
-   success = 0,
-   appIDInvalid = 1,
-   userIDInvalid = 3,
-   secretInvalid = 5,
-   effectiveTimeInSecondsInvalid = 6,
-}
-
-function RndNum(a: number, b: number) {
-   return Math.ceil((a + (b - a)) * Math.random());
-}
-
-function makeNonce() {
-   return RndNum(-2147483648, 2147483647);
-}
-
-function makeRandomIv(): string {
-   const str = '0123456789abcdefghijklmnopqrstuvwxyz';
-   const result = [];
-   for (let i = 0; i < 16; i++) {
-      const r = Math.floor(Math.random() * str.length);
-      result.push(str.charAt(r));
-   }
-   return result.join('');
-}
-
-function getAlgorithm(keyBase64: string): string {
-   const key = Buffer.from(keyBase64);
-   switch (key.length) {
-      case 16:
-         return 'aes-128-cbc';
-      case 24:
-         return 'aes-192-cbc';
-      case 32:
-         return 'aes-256-cbc';
-   }
-   throw new Error('Invalid key length: ' + key.length);
-}
-
-function aesEncrypt(plainText: string, key: string, iv: string): ArrayBuffer {
-   const cipher = createCipheriv(getAlgorithm(key), key, iv);
-   cipher.setAutoPadding(true);
-   const encrypted = cipher.update(plainText);
-   const final = cipher.final();
-   const out = Buffer.concat([encrypted, final]);
-   return Uint8Array.from(out).buffer;
-}
-
-export function generateToken04(
-   appId: number,
-   userId: string,
-   secret: string,
-   effectiveTimeInSeconds: number,
-   payload?: string
-): string {
-   if (!appId || typeof appId !== 'number') {
-      throw {
-         errorCode: ErrorCode.appIDInvalid,
-         errorMessage: 'appID invalid',
-      };
-   }
-
-   if (!userId || typeof userId !== 'string') {
-      throw {
-         errorCode: ErrorCode.userIDInvalid,
-         errorMessage: 'userId invalid',
-      };
-   }
-
-   if (!secret || typeof secret !== 'string' || secret.length !== 32) {
-      throw {
-         errorCode: ErrorCode.secretInvalid,
-         errorMessage: 'secret must be a 32 byte string',
-      };
-   }
-
-   if (!effectiveTimeInSeconds || typeof effectiveTimeInSeconds !== 'number') {
-      throw {
-         errorCode: ErrorCode.effectiveTimeInSecondsInvalid,
-         errorMessage: 'effectiveTimeInSeconds invalid',
-      };
-   }
-
-   const createTime = Math.floor(new Date().getTime() / 1000);
-   const tokenInfo = {
+   const tokenInfo: ZegoTokenInfo = {
       app_id: appId,
       user_id: userId,
-      nonce: makeNonce(),
+      nonce: createNonce(),
       ctime: createTime,
       expire: createTime + effectiveTimeInSeconds,
-      payload: payload || '',
+      payload,
    };
 
-   const plaintText = JSON.stringify(tokenInfo);
-   const iv: string = makeRandomIv();
-   const encryptBuf = aesEncrypt(plaintText, secret, iv);
+   const plainText = JSON.stringify(tokenInfo);
+   const iv = createRandomIv();
+   const encryptedBuffer = aesEncrypt(plainText, secret, iv);
 
-   const [b1, b2, b3] = [new Uint8Array(8), new Uint8Array(2), new Uint8Array(2)];
-   new DataView(b1.buffer).setBigInt64(0, BigInt(tokenInfo.expire), false);
-   new DataView(b2.buffer).setUint16(0, iv.length, false);
-   new DataView(b3.buffer).setUint16(0, encryptBuf.byteLength, false);
-   const buf = Buffer.concat([
-      Buffer.from(b1),
-      Buffer.from(b2),
-      Buffer.from(iv),
-      Buffer.from(b3),
-      Buffer.from(encryptBuf),
-   ]);
-   const dv = new DataView(Uint8Array.from(buf).buffer);
-   return '04' + Buffer.from(dv.buffer).toString('base64');
+   return buildToken(tokenInfo.expire, iv, encryptedBuffer);
+}
+
+/**
+ * Validates token generation input.
+ *
+ * @param appId - ZEGOCLOUD app ID.
+ * @param userId - User ID.
+ * @param secret - ZEGOCLOUD server secret.
+ * @param effectiveTimeInSeconds - Token validity time in seconds.
+ * @returns Nothing.
+ */
+function validateTokenInput(appId: number, userId: string, secret: string, effectiveTimeInSeconds: number): void {
+   if (!Number.isFinite(appId) || appId <= 0) {
+      throw createZegoTokenError(ZegoTokenErrorCode.AppIdInvalid, "appId invalid");
+   }
+
+   if (!userId.trim()) {
+      throw createZegoTokenError(ZegoTokenErrorCode.UserIdInvalid, "userId invalid");
+   }
+
+   if (secret.length !== SECRET_LENGTH) {
+      throw createZegoTokenError(ZegoTokenErrorCode.SecretInvalid, "secret must be a 32 byte string");
+   }
+
+   if (!Number.isFinite(effectiveTimeInSeconds) || effectiveTimeInSeconds <= 0) {
+      throw createZegoTokenError(ZegoTokenErrorCode.EffectiveTimeInvalid, "effectiveTimeInSeconds invalid");
+   }
+}
+
+/**
+ * Creates a ZEGOCLOUD token error.
+ *
+ * @param errorCode - ZEGOCLOUD token error code.
+ * @param errorMessage - Error message.
+ * @returns ZEGOCLOUD token error.
+ */
+function createZegoTokenError(errorCode: ZegoTokenErrorCode, errorMessage: string): ZegoTokenError {
+   return {
+      errorCode,
+      errorMessage,
+   };
+}
+
+/**
+ * Creates a random nonce.
+ *
+ * @returns Random nonce.
+ */
+function createNonce(): number {
+   return randomInt(NONCE_MIN, NONCE_MAX);
+}
+
+/**
+ * Creates a random IV.
+ *
+ * @returns Random IV.
+ */
+function createRandomIv(): string {
+   return randomBytes(IV_LENGTH).toString("hex").slice(0, IV_LENGTH);
+}
+
+/**
+ * Gets AES algorithm by key length.
+ *
+ * @param key - Secret key.
+ * @returns AES algorithm name.
+ */
+function getAesAlgorithm(key: string): string {
+   const algorithm = AES_ALGORITHMS_BY_KEY_LENGTH[Buffer.byteLength(key)];
+
+   if (!algorithm) {
+      throw new Error(`Invalid key length: ${Buffer.byteLength(key)}`);
+   }
+
+   return algorithm;
+}
+
+/**
+ * Encrypts plain text using AES.
+ *
+ * @param plainText - Text to encrypt.
+ * @param key - Secret key.
+ * @param iv - Initialization vector.
+ * @returns Encrypted buffer.
+ */
+function aesEncrypt(plainText: string, key: string, iv: string): Buffer {
+   const cipher = createCipheriv(getAesAlgorithm(key), key, iv);
+
+   const encrypted = Buffer.concat([cipher.update(plainText, "utf8"), cipher.final()]);
+
+   return encrypted;
+}
+
+/**
+ * Builds final ZEGOCLOUD token.
+ *
+ * @param expireTime - Token expiry timestamp.
+ * @param iv - Initialization vector.
+ * @param encryptedBuffer - Encrypted token data.
+ * @returns Final token string.
+ */
+function buildToken(expireTime: number, iv: string, encryptedBuffer: Buffer): string {
+   const expireBuffer = Buffer.alloc(8);
+   expireBuffer.writeBigInt64BE(BigInt(expireTime));
+
+   const ivLengthBuffer = Buffer.alloc(2);
+   ivLengthBuffer.writeUInt16BE(Buffer.byteLength(iv));
+
+   const encryptedLengthBuffer = Buffer.alloc(2);
+   encryptedLengthBuffer.writeUInt16BE(encryptedBuffer.length);
+
+   const tokenBuffer = Buffer.concat([expireBuffer, ivLengthBuffer, Buffer.from(iv), encryptedLengthBuffer, encryptedBuffer]);
+
+   return `${TOKEN_VERSION}${tokenBuffer.toString("base64")}`;
 }

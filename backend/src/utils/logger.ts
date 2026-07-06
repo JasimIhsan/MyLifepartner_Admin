@@ -1,7 +1,7 @@
+import env from "@/config/env";
 import winston from "winston";
-import env from "../config/env";
 
-const levels = {
+const LOG_LEVELS = {
    error: 0,
    warn: 1,
    info: 2,
@@ -9,12 +9,7 @@ const levels = {
    debug: 4,
 };
 
-const level = () => {
-   const isDevelopment = env.NODE_ENV === "development";
-   return isDevelopment ? "debug" : "warn";
-};
-
-const colors = {
+const LOG_COLORS = {
    error: "red",
    warn: "yellow",
    info: "green",
@@ -22,21 +17,29 @@ const colors = {
    debug: "white",
 };
 
-winston.addColors(colors);
+const getLogLevel = (): string => {
+   return env.NODE_ENV === "development" ? "debug" : "warn";
+};
 
-const format = winston.format.combine(
-   winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss:ms" }),
-   winston.format.colorize({ all: true }),
-   winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
+winston.addColors(LOG_COLORS);
+
+const loggerFormat = winston.format.combine(
+   winston.format.timestamp({
+      format: "YYYY-MM-DD HH:mm:ss",
+   }),
+   winston.format.colorize({
+      all: true,
+   }),
+   winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} ${level}: ${message}`;
+   })
 );
 
-const transports = [new winston.transports.Console()];
-
 const logger = winston.createLogger({
-   level: level(),
-   levels,
-   format,
-   transports,
+   level: getLogLevel(),
+   levels: LOG_LEVELS,
+   format: loggerFormat,
+   transports: [new winston.transports.Console()],
 });
 
 export default logger;
