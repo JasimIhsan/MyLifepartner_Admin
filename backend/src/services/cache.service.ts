@@ -1,31 +1,75 @@
 import redis from "@/config/redis";
-import { ICacheService } from "../interfaces/services/cache.service.interface";
+import { ICacheService } from "@/interfaces/services/cache.service.interface";
+
+const DEFAULT_CACHE_TTL_SECONDS = 60 * 60 * 24;
 
 export class CacheService implements ICacheService {
-   setCache = async (key: string, value: string, ttl: number = 60 * 60 * 24) => {
+   /**
+    * Sets cache value.
+    *
+    * @param key - Cache key.
+    * @param value - Cache value.
+    * @param ttl - Cache expiry time in seconds.
+    * @returns Nothing.
+    */
+   async setCache(key: string, value: string, ttl: number = DEFAULT_CACHE_TTL_SECONDS): Promise<void> {
       await redis.set(key, value, "EX", ttl);
-   };
+   }
 
-   getCache = async (key: string) => {
-      return await redis.get(key);
-   };
+   /**
+    * Gets cache value.
+    *
+    * @param key - Cache key.
+    * @returns Cache value, or null if not found.
+    */
+   async getCache(key: string): Promise<string | null> {
+      return redis.get(key);
+   }
 
-   deleteCache = async (key: string) => {
+   /**
+    * Deletes cache value.
+    *
+    * @param key - Cache key.
+    * @returns Nothing.
+    */
+   async deleteCache(key: string): Promise<void> {
       await redis.del(key);
-   };
+   }
 
-   deleteCachePattern = async (pattern: string) => {
+   /**
+    * Deletes cache values by pattern.
+    *
+    * @param pattern - Cache key pattern.
+    * @returns Nothing.
+    */
+   async deleteCachePattern(pattern: string): Promise<void> {
       const keys = await redis.keys(pattern);
-      if (keys.length > 0) {
-         await redis.del(...keys);
+
+      if (keys.length === 0) {
+         return;
       }
-   };
 
-   incrCache = async (key: string): Promise<number> => {
-      return await redis.incr(key);
-   };
+      await redis.del(...keys);
+   }
 
-   expireCache = async (key: string, ttl: number): Promise<void> => {
+   /**
+    * Increments cache value.
+    *
+    * @param key - Cache key.
+    * @returns Incremented value.
+    */
+   async incrCache(key: string): Promise<number> {
+      return redis.incr(key);
+   }
+
+   /**
+    * Sets cache expiry time.
+    *
+    * @param key - Cache key.
+    * @param ttl - Cache expiry time in seconds.
+    * @returns Nothing.
+    */
+   async expireCache(key: string, ttl: number): Promise<void> {
       await redis.expire(key, ttl);
-   };
+   }
 }

@@ -1,9 +1,9 @@
 import env from "@/config/env";
 import { s3Client } from "@/config/s3.config";
+import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
-import { IS3Service } from "../interfaces/services/s3.service.interface";
 
 export class S3Service implements IS3Service {
    /**

@@ -1,5 +1,11 @@
 import { PlanFeature, Prisma, SubscriptionPlan, UserSubscription } from "@prisma/client";
 
+export enum SubscriptionStatus {
+   ACTIVE = "ACTIVE",
+   INACTIVE = "INACTIVE",
+   CANCELLED = "CANCELLED",
+   EXPIRED = "EXPIRED",
+}
 export type UserSubscriptionWithPlan = UserSubscription & {
    plan: SubscriptionPlan & {
       features: PlanFeature[];

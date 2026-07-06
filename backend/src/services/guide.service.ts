@@ -1,7 +1,6 @@
-import { Guide } from "@prisma/client";
+import { Guide, GuideFilters, IGuideService } from "@/interfaces/services/guide.service.interface";
 import { CreateGuideDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
-import { IGuideRepository } from "../interfaces/repositories/guide.repository.interface";
-import { GuideFilters, IGuideService } from "../interfaces/services/guide.service.interface";
+import { IGuideRepository } from "@/interfaces/repositories/guide.repository.interface";
 
 export class GuideService implements IGuideService {
    constructor(private readonly guideRepository: IGuideRepository) {}
@@ -12,7 +11,7 @@ export class GuideService implements IGuideService {
     * @returns The created Guide object
     */
    async createGuide(data: CreateGuideDto): Promise<Guide> {
-      return this.guideRepository.create(data);
+      return this.guideRepository.create(data) as unknown as Guide;
    }
 
    /**
@@ -28,7 +27,11 @@ export class GuideService implements IGuideService {
          skip = (page - 1) * limit;
          take = limit;
       }
-      return this.guideRepository.findAll(filters, skip, take);
+      const result = await this.guideRepository.findAll(filters, skip, take);
+      return {
+         guides: result.guides as unknown as Guide[],
+         total: result.total,
+      };
    }
 
    /**
@@ -37,7 +40,7 @@ export class GuideService implements IGuideService {
     * @returns The Guide object if found, otherwise null
     */
    async getGuideById(id: number): Promise<Guide | null> {
-      return this.guideRepository.findById(id);
+      return this.guideRepository.findById(id) as unknown as Guide | null;
    }
 
    /**
@@ -47,7 +50,7 @@ export class GuideService implements IGuideService {
     * @returns The updated Guide object
     */
    async updateGuide(id: number, data: UpdateGuideDto): Promise<Guide> {
-      return this.guideRepository.update(id, data);
+      return this.guideRepository.update(id, data) as unknown as Guide;
    }
 
    /**
@@ -56,6 +59,6 @@ export class GuideService implements IGuideService {
     * @returns The deleted Guide object
     */
    async deleteGuide(id: number): Promise<Guide> {
-      return this.guideRepository.delete(id);
+      return this.guideRepository.delete(id) as unknown as Guide;
    }
 }

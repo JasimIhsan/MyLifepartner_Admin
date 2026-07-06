@@ -1,11 +1,12 @@
-import { ProfileStatus, SelfieStatus } from "@prisma/client";
+export type ProfileStatusType = "INCOMPLETE" | "ONBOARDING_COMPLETED" | "COMPLETED";
+export type SelfieStatusType = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface UserOnboardingStatusDto {
    id: number;
    hasCompletedBasicDetails: boolean;
    hasCompletedPartnerPreference: boolean;
-   profileStatus: ProfileStatus;
+   profileStatus: ProfileStatusType;
    hasCompletedImageUpload: boolean;
-   selfieStatus: SelfieStatus | null;
+   selfieStatus: SelfieStatusType | null;
 }
 

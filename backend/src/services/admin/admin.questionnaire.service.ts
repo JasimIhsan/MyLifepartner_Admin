@@ -1,180 +1,230 @@
+import { IQuestionnaireRepository } from "@/interfaces/repositories/questionnaire.repository.interface";
+import { IAdminQuestionnaireService } from "@/interfaces/services/admin.questionnaire.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { AnswerType } from "@prisma/client";
-import { IQuestionnaireRepository } from "../../interfaces/repositories/questionnaire.repository.interface";
-import { IAdminQuestionnaireService } from "../../interfaces/services/admin.questionnaire.service.interface";
+import { AnswerType, ProfileQuestion, ProfileSection } from "@/interfaces/services/admin.questionnaire.service.interface";
+
+type CreateSectionData = {
+   key: string;
+   title: string;
+   orderNo?: number;
+   isPrimary?: boolean;
+};
+
+type UpdateSectionData = {
+   key?: string;
+   title?: string;
+   isPrimary?: boolean;
+};
+
+type CreateQuestionData = {
+   question: string;
+   answerType: AnswerType;
+   options?: unknown;
+   minWords?: number;
+   weight?: number;
+   isRequired?: boolean;
+   orderNo?: number;
+   isActive?: boolean;
+};
+
+type UpdateQuestionData = {
+   question?: string;
+   answerType?: AnswerType;
+   options?: unknown;
+   minWords?: number;
+   weight?: number;
+   isRequired?: boolean;
+};
 
 export class AdminQuestionnaireService implements IAdminQuestionnaireService {
-   constructor(private questionnaireRepository: IQuestionnaireRepository) {}
-
-   // ==========================================
-   // Sections
-   // ==========================================
+   constructor(private readonly questionnaireRepository: IQuestionnaireRepository) {}
 
    /**
-    * Creates a new questionnaire section
-    * @param data - The section data including key and title
-    * @returns The created section
-    * @throws ApiError if section key already exists
+    * Creates a questionnaire section.
+    *
+    * @param data - Section creation data.
+    * @returns Created section.
     */
-   async createSection(data: { key: string; title: string; orderNo?: number; isPrimary?: boolean }) {
-      const existing = await this.questionnaireRepository.getSectionByKey(data.key);
-      if (existing) {
-         throw new ApiError(409, `Section with key '${data.key}' already exists`);
-      }
-      return await this.questionnaireRepository.createSection(data);
+   async createSection(data: CreateSectionData): Promise<ProfileSection> {
+      await this.ensureSectionKeyIsAvailable(data.key);
+
+      return this.questionnaireRepository.createSection(data) as unknown as ProfileSection;
    }
 
    /**
-    * Retrieves all questionnaire sections with their associated questions
-    * @returns Array of sections with questions
+    * Gets questionnaire sections with questions.
+    *
+    * @returns Sections with questions.
     */
-   async getSections() {
-      return await this.questionnaireRepository.getSectionsWithQuestions();
+   async getSections(): Promise<(ProfileSection & { questions: ProfileQuestion[] })[]> {
+      return this.questionnaireRepository.getSectionsWithQuestions() as unknown as (ProfileSection & { questions: ProfileQuestion[] })[];
    }
 
    /**
-    * Updates an existing questionnaire section
-    * @param id - The ID of the section to update
-    * @param data - The fields to update
-    * @returns The updated section
-    * @throws ApiError if the new key already exists on another section
+    * Updates a questionnaire section.
+    *
+    * @param id - Section ID.
+    * @param data - Section update data.
+    * @returns Updated section.
     */
-   async updateSection(id: number, data: { key?: string; title?: string; isPrimary?: boolean }) {
+   async updateSection(id: number, data: UpdateSectionData): Promise<ProfileSection> {
       if (data.key) {
-         const existing = await this.questionnaireRepository.getSectionByKey(data.key);
-         if (existing && existing.id !== id) {
-            throw new ApiError(409, `Section with key '${data.key}' already exists`);
-         }
+         await this.ensureSectionKeyIsAvailable(data.key, id);
       }
-      return await this.questionnaireRepository.updateSection(id, data);
+
+      return this.questionnaireRepository.updateSection(id, data);
    }
 
    /**
-    * Deletes a questionnaire section
-    * @param id - The ID of the section to delete
-    * @returns The deleted section
-    * @throws ApiError if the section is not found or if it still contains questions
+    * Deletes a questionnaire section.
+    *
+    * @param id - Section ID.
+    * @returns Deleted section.
     */
-   async deleteSection(id: number) {
-      // Check if there are questions attached
+   async deleteSection(id: number): Promise<ProfileSection> {
       const section = await this.questionnaireRepository.getSectionById(id);
 
       if (!section) {
          throw new ApiError(404, "Section not found");
       }
 
-      if (section._count.questions > 0) {
-         throw new ApiError(400, "Cannot delete section because it contains questions. Delete them first.");
-      }
-
-      return await this.questionnaireRepository.deleteSection(id);
+      return this.questionnaireRepository.deleteSection(id);
    }
-
-   async reorderSections(orderedIds: number[]) {
-      return await this.questionnaireRepository.reorderSections(orderedIds);
-   }
-
-   // ==========================================
-   // Questions
-   // ==========================================
 
    /**
-    * Creates a new question in a specific section
-    * @param sectionId - The ID of the section
-    * @param data - The question details
-    * @returns The created question
-    * @throws ApiError if the section is not found
+    * Reorders questionnaire sections.
+    *
+    * @param orderedIds - Section IDs in new order.
+    * @returns Updated sections.
     */
-   async createQuestion(
-      sectionId: number,
-      data: {
-         question: string;
-         answerType: AnswerType;
-         options?: unknown;
-         minWords?: number;
-         weight?: number;
-         isRequired?: boolean;
-         orderNo?: number;
-         isActive?: boolean;
+   async reorderSections(orderedIds: number[]): Promise<ProfileSection[]> {
+      return this.questionnaireRepository.reorderSections(orderedIds) as unknown as ProfileSection[];
+   }
+
+   /**
+    * Creates a questionnaire question.
+    *
+    * @param sectionId - Section ID.
+    * @param data - Question creation data.
+    * @returns Created question.
+    */
+   async createQuestion(sectionId: number, data: CreateQuestionData): Promise<ProfileQuestion> {
+      await this.ensureSectionExists(sectionId);
+
+      return this.questionnaireRepository.createQuestion({
+         ...data,
+         sectionId,
+      } as unknown as Parameters<typeof this.questionnaireRepository.createQuestion>[0]) as unknown as ProfileQuestion;
+   }
+
+   /**
+    * Updates a questionnaire question.
+    *
+    * @param id - Question ID.
+    * @param data - Question update data.
+    * @returns Updated question.
+    */
+   async updateQuestion(id: number, data: UpdateQuestionData): Promise<ProfileQuestion> {
+      await this.ensureQuestionExists(id);
+
+      return this.questionnaireRepository.updateQuestion(id, data as unknown as Parameters<typeof this.questionnaireRepository.updateQuestion>[1]) as unknown as ProfileQuestion;
+   }
+
+   /**
+    * Toggles question active status.
+    *
+    * @param id - Question ID.
+    * @returns Updated question.
+    */
+   async toggleQuestionActive(id: number): Promise<ProfileQuestion> {
+      const question = await this.getRequiredQuestion(id);
+
+      return this.questionnaireRepository.updateQuestion(id, {
+         isActive: !question.isActive,
+      } as unknown as Parameters<typeof this.questionnaireRepository.updateQuestion>[1]) as unknown as ProfileQuestion;
+   }
+
+   /**
+    * Deletes a questionnaire question.
+    *
+    * @param id - Question ID.
+    * @returns Deleted question.
+    */
+   async deleteQuestion(id: number): Promise<ProfileQuestion> {
+      const question = await this.questionnaireRepository.getQuestionById(id);
+
+      if (!question) {
+         throw new ApiError(404, "Question not found");
       }
-   ) {
+
+      return this.questionnaireRepository.deleteQuestion(id) as unknown as ProfileQuestion;
+   }
+
+   /**
+    * Reorders questions inside a section.
+    *
+    * @param sectionId - Section ID.
+    * @param orderedIds - Question IDs in new order.
+    * @returns Updated questions.
+    */
+   async reorderQuestions(sectionId: number, orderedIds: number[]): Promise<ProfileQuestion[]> {
+      await this.ensureSectionExists(sectionId);
+
+      return this.questionnaireRepository.reorderQuestions(sectionId, orderedIds) as unknown as ProfileQuestion[];
+   }
+
+   /**
+    * Checks section key availability.
+    *
+    * @param key - Section key.
+    * @param ignoreSectionId - Optional section ID to ignore.
+    * @returns Nothing.
+    */
+   private async ensureSectionKeyIsAvailable(key: string, ignoreSectionId?: number): Promise<void> {
+      const existingSection = await this.questionnaireRepository.getSectionByKey(key);
+
+      if (existingSection && existingSection.id !== ignoreSectionId) {
+         throw new ApiError(409, `Section with key '${key}' already exists`);
+      }
+   }
+
+   /**
+    * Ensures section exists.
+    *
+    * @param sectionId - Section ID.
+    * @returns Nothing.
+    */
+   private async ensureSectionExists(sectionId: number): Promise<void> {
       const section = await this.questionnaireRepository.getSectionById(sectionId);
+
       if (!section) {
          throw new ApiError(404, "Section not found");
       }
-
-      return await this.questionnaireRepository.createQuestion({
-         ...data,
-         sectionId,
-         options: data.options !== undefined ? (data.options as import("@prisma/client").Prisma.InputJsonValue) : undefined,
-      });
    }
 
    /**
-    * Updates an existing question
-    * @param id - The ID of the question to update
-    * @param data - The fields to update
-    * @returns The updated question
-    * @throws ApiError if the question is not found
+    * Ensures question exists.
+    *
+    * @param questionId - Question ID.
+    * @returns Nothing.
     */
-   async updateQuestion(
-      id: number,
-      data: {
-         question?: string;
-         answerType?: AnswerType;
-         options?: unknown;
-         minWords?: number;
-         weight?: number;
-         isRequired?: boolean;
-      }
-   ) {
-      const question = await this.questionnaireRepository.getQuestionById(id);
-      if (!question) {
-         throw new ApiError(404, "Question not found");
-      }
-
-      return await this.questionnaireRepository.updateQuestion(id, {
-         ...data,
-         options: data.options !== undefined ? (data.options as import("@prisma/client").Prisma.InputJsonValue) : undefined,
-      });
+   private async ensureQuestionExists(questionId: number): Promise<void> {
+      await this.getRequiredQuestion(questionId);
    }
 
    /**
-    * Toggles the active status of a question
-    * @param id - The ID of the question
-    * @returns The updated question
-    * @throws ApiError if the question is not found
+    * Gets required question.
+    *
+    * @param questionId - Question ID.
+    * @returns Question.
     */
-   async toggleQuestionActive(id: number) {
-      const question = await this.questionnaireRepository.getQuestionById(id);
-      if (!question) {
-         throw new ApiError(404, "Question not found");
-      }
-
-      return await this.questionnaireRepository.updateQuestion(id, { isActive: !question.isActive });
-   }
-
-   /**
-    * Deletes a question
-    * @param id - The ID of the question to delete
-    * @returns The deleted question
-    * @throws ApiError if the question is not found or has associated user answers
-    */
-   async deleteQuestion(id: number) {
-      const question = await this.questionnaireRepository.getQuestionByIdWithAnswersCount(id);
+   private async getRequiredQuestion(questionId: number): Promise<ProfileQuestion> {
+      const question = await this.questionnaireRepository.getQuestionById(questionId);
 
       if (!question) {
          throw new ApiError(404, "Question not found");
       }
 
-      if (question._count.answers > 0) {
-         throw new ApiError(400, "Cannot delete question because it has associated user answers. Consider hiding it instead.");
-      }
-
-      return await this.questionnaireRepository.deleteQuestion(id);
-   }
-
-   async reorderQuestions(sectionId: number, orderedIds: number[]) {
-      return await this.questionnaireRepository.reorderQuestions(sectionId, orderedIds);
+      return question as unknown as ProfileQuestion;
    }
 }

@@ -1,134 +1,129 @@
-import { ImageUploadStatusDto, UserImageDto, toImageUploadStatusDto, toUserImageDto } from "@/dtos/image.dto";
-
-import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, UserAnswerDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto } from "@/dtos/profile.dto";
+import { ImageUploadStatusDto, toImageUploadStatusDto, toUserImageDto, UserImageDto } from "@/dtos/image.dto";
+import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto, UserAnswerDto } from "@/dtos/profile.dto";
+import { CreatePartnerPreferenceDto, UpdateProfileDto } from "@/dtos/profile.input.dto";
 import { IProfileRepository } from "@/interfaces/repositories/profile.repository.interface";
 import { IProfileService } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { PartnerPreference, Profile, ProfileStatus } from "@prisma/client";
-import { UpdateProfileDto, CreatePartnerPreferenceDto } from "@/dtos/profile.input.dto";
+import { PartnerPreference, Profile, ProfileStatus } from "@/interfaces/services/user.profile.service.interface";
+
+type ProfileCompletionStatus = {
+   isCompleted: boolean;
+   nextPendingSectionOrder: number;
+};
+
+type DeleteImageResponse = {
+   success: boolean;
+};
+
+const MAX_USER_IMAGES = 4;
+const DEFAULT_NEXT_PENDING_SECTION_ORDER = 1;
 
 export class ProfileService implements IProfileService {
-   constructor(private profileRepository: IProfileRepository) {}
+   constructor(private readonly profileRepository: IProfileRepository) {}
 
    /**
-    * Retrieves the structure of the profile, including sections and questions
-    * @param userId - The ID of the user
-    * @returns Array of profile sections mapped to DTOs
+    * Gets profile structure.
+    *
+    * @param userId - User ID.
+    * @returns Profile sections.
     */
-   async getProfileStructure(userId: number): Promise<ProfileSectionDto[]> {
+   async getProfileStructure(_userId: number): Promise<ProfileSectionDto[]> {
       const sections = await this.profileRepository.getProfileStructure();
-      const userAnswers = await this.profileRepository.getUserAnswers(userId);
 
-      // Map answers to questions for easier frontend consumption
-      // Or just return both and let frontend handle merging.
-      // The API design response 1 is just structure. Response 4 is answers.
-      // Let's stick to returning structure only for /questions API as designed.
-      return sections.map((s) => toProfileSectionDto(s));
+      return sections.map(toProfileSectionDto);
    }
 
    /**
-    * Retrieves all profile sections
-    * @param isPrimary - Optional flag to filter primary sections
-    * @returns Array of profile sections mapped to DTOs
+    * Gets profile sections.
+    *
+    * @param isPrimary - Optional primary section filter.
+    * @returns Profile sections.
     */
    async getSections(isPrimary?: boolean): Promise<ProfileSectionDto[]> {
       const sections = await this.profileRepository.getSections(isPrimary);
-      return sections.map((s) => toProfileSectionDto(s));
+
+      return sections.map(toProfileSectionDto);
    }
 
    /**
-    * Retrieves questions for a specific section order
-    * @param sectionOrder - The order number of the section
-    * @param userId - The ID of the user
-    * @returns Array of profile questions mapped to DTOs
+    * Gets questions by section order.
+    *
+    * @param sectionOrder - Section order number.
+    * @param userId - User ID.
+    * @returns Profile questions.
     */
    async getQuestionsBySectionOrder(sectionOrder: number, userId: number): Promise<ProfileQuestionDto[]> {
       const questions = await this.profileRepository.getQuestionsBySectionByOrder(sectionOrder, userId);
-      return questions.map((q) => toProfileQuestionDto(q));
+
+      return questions.map(toProfileQuestionDto);
    }
 
    /**
-    * Retrieves all answers submitted by a user
-    * @param userId - The ID of the user
-    * @returns Array of user answers mapped to DTOs
+    * Gets user answers.
+    *
+    * @param userId - User ID.
+    * @returns User answers.
     */
    async getUserAnswers(userId: number): Promise<UserAnswerDto[]> {
       const answers = await this.profileRepository.getUserAnswers(userId);
-      return answers.map((a) => toUserAnswerDto(a));
+
+      return answers.map(toUserAnswerDto);
    }
 
    /**
-    * Saves an answer to a specific profile question
-    * @param userId - The ID of the user
-    * @param questionId - The ID of the question
-    * @param answer - The answer content
-    * @returns The saved answer mapped to a DTO
+    * Saves a user answer.
+    *
+    * @param userId - User ID.
+    * @param questionId - Question ID.
+    * @param answer - User answer.
+    * @returns Saved user answer.
     */
    async saveAnswer(userId: number, questionId: number, answer: unknown): Promise<UserAnswerDto> {
-      // Validate question exists and answer format if needed
-      // For now, straight to DB
-
-      // Logic for scoring can be added here
-      let score = 0;
-      if (answer && typeof answer === "object" && !Array.isArray(answer) && "value" in answer) {
-         const answerObj = answer as { value?: unknown };
-         if (typeof answerObj.value === "number") {
-            score = answerObj.value; // Simple pass-through for rating
-         }
-      }
+      const score = this.extractAnswerScore(answer);
 
       const savedAnswer = await this.profileRepository.saveAnswer(userId, questionId, answer, score);
+
       return toUserAnswerDto(savedAnswer);
    }
 
    /**
-    * Marks the user's profile as completed if all mandatory questions are answered
-    * @param userId - The ID of the user
-    * @returns The updated profile status DTO
-    * @throws ApiError if mandatory primary questions are not fully answered
+    * Completes user profile.
+    *
+    * @param userId - User ID.
+    * @returns Profile status.
     */
    async completeProfile(userId: number): Promise<ProfileStatusDto> {
-      const primaryRequiredCount = await this.profileRepository.getRequiredQuestionsCount(true);
-      const primaryAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId, true);
+      await this.ensurePrimaryQuestionsAnswered(userId);
 
-      if (primaryAnsweredCount < primaryRequiredCount) {
-         throw new ApiError(400, "Please answer all mandatory primary questions before completing the profile.");
-      }
-
-      const totalRequiredCount = await this.profileRepository.getRequiredQuestionsCount();
-      const totalAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId);
+      const [totalRequiredCount, totalAnsweredCount] = await Promise.all([this.profileRepository.getRequiredQuestionsCount(), this.profileRepository.getUserAnsweredCount(userId)]);
 
       const isFullyCompleted = totalAnsweredCount >= totalRequiredCount;
-      const newStatus = isFullyCompleted ? ProfileStatus.COMPLETED : ProfileStatus.ONBOARDING_COMPLETED;
+      const profileStatus = isFullyCompleted ? ProfileStatus.COMPLETED : ProfileStatus.ONBOARDING_COMPLETED;
 
-      await this.profileRepository.updateProfileStatus(userId, newStatus);
+      await this.profileRepository.updateProfileStatus(userId, profileStatus);
 
-      return toProfileStatusDto(newStatus, "logout");
+      return toProfileStatusDto(profileStatus, "logout");
    }
 
    /**
-    * Retrieves the user's profile completion status
-    * @param userId - The ID of the user
-    * @returns An object indicating if the profile is complete and the next pending section order
+    * Gets profile completion status.
+    *
+    * @param userId - User ID.
+    * @returns Profile completion status.
     */
-   async getProfileCompletionStatus(userId: number) {
-      const totalRequiredCount = await this.profileRepository.getRequiredQuestionsCount();
-      const totalAnsweredCount = await this.profileRepository.getUserAnsweredCount(userId);
+   async getProfileCompletionStatus(userId: number): Promise<ProfileCompletionStatus> {
+      const [totalRequiredCount, totalAnsweredCount] = await Promise.all([this.profileRepository.getRequiredQuestionsCount(), this.profileRepository.getUserAnsweredCount(userId)]);
 
       const isCompleted = totalAnsweredCount >= totalRequiredCount;
-      let nextPendingSectionOrder = 1;
 
-      if (!isCompleted) {
-         const sections = await this.profileRepository.getSections();
-         for (const section of sections) {
-            const sectionQuestions = await this.profileRepository.getQuestionsBySectionByOrder(section.orderNo, userId);
-            const pendingQuestion = sectionQuestions.find((q) => q.isRequired && q.answers.length === 0);
-            if (pendingQuestion) {
-               nextPendingSectionOrder = section.orderNo;
-               break;
-            }
-         }
+      if (isCompleted) {
+         return {
+            isCompleted,
+            nextPendingSectionOrder: DEFAULT_NEXT_PENDING_SECTION_ORDER,
+         };
       }
+
+      const nextPendingSectionOrder = await this.findNextPendingSectionOrder(userId);
 
       return {
          isCompleted,
@@ -137,86 +132,210 @@ export class ProfileService implements IProfileService {
    }
 
    /**
-    * Updates basic profile details of a user
-    * @param userId - The ID of the user
-    * @param data - The DTO containing the basic details to update
-    * @returns The updated Profile object
+    * Updates basic profile.
+    *
+    * @param userId - User ID.
+    * @param data - Profile update data.
+    * @returns Updated profile.
     */
    async updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile> {
-      return this.profileRepository.updateBasicProfile(userId, data);
+      return this.profileRepository.updateBasicProfile(userId, data) as unknown as Profile;
    }
 
    /**
-    * Updates the partner preferences for a user
-    * @param userId - The ID of the user
-    * @param data - The DTO containing the partner preferences
-    * @returns The updated PartnerPreference object
+    * Updates partner preference.
+    *
+    * @param userId - User ID.
+    * @param data - Partner preference data.
+    * @returns Updated partner preference.
     */
    async updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference> {
-      return this.profileRepository.updatePartnerPreference(userId, data);
+      return this.profileRepository.updatePartnerPreference(userId, data) as unknown as PartnerPreference;
    }
 
+   /**
+    * Gets user images.
+    *
+    * @param userId - User ID.
+    * @returns User images.
+    */
    async getUserImages(userId: number): Promise<UserImageDto[]> {
       const images = await this.profileRepository.getUserImages(userId);
-      return images.map((img) => toUserImageDto(img));
+
+      return images.map(toUserImageDto);
    }
 
+   /**
+    * Uploads user image.
+    *
+    * @param userId - User ID.
+    * @param imageUrl - Image URL.
+    * @returns Uploaded user image.
+    */
    async uploadUserImage(userId: number, imageUrl: string): Promise<UserImageDto> {
       const currentCount = await this.profileRepository.getUserImagesCount(userId);
-      if (currentCount >= 4) {
+
+      if (currentCount >= MAX_USER_IMAGES) {
          throw new ApiError(400, "Maximum of 4 images allowed");
       }
 
-      // If it's the first image, make it primary automatically
       const isPrimary = currentCount === 0;
-
       const image = await this.profileRepository.saveUserImage(userId, imageUrl, isPrimary);
+
       return toUserImageDto(image);
    }
 
-   async deleteUserImage(userId: number, imageId: number): Promise<{ success: boolean }> {
-      const image = await this.profileRepository.getUserImageById(imageId);
-      if (!image) {
-         throw new ApiError(404, "Image not found");
-      }
-      if (image.profile?.userId !== userId) {
-         throw new ApiError(403, "Forbidden to delete this image");
-      }
+   /**
+    * Deletes user image.
+    *
+    * @param userId - User ID.
+    * @param imageId - Image ID.
+    * @returns Delete status.
+    */
+   async deleteUserImage(userId: number, imageId: number): Promise<DeleteImageResponse> {
+      const image = await this.getOwnedUserImage(userId, imageId);
 
-      await this.profileRepository.deleteUserImage(imageId);
-      return { success: true };
+      await this.profileRepository.deleteUserImage(image.id);
+
+      return {
+         success: true,
+      };
    }
 
+   /**
+    * Sets image as primary.
+    *
+    * @param userId - User ID.
+    * @param imageId - Image ID.
+    * @returns Updated user image.
+    */
    async setPrimaryImage(userId: number, imageId: number): Promise<UserImageDto> {
-      const image = await this.profileRepository.getUserImageById(imageId);
-      if (!image) {
-         throw new ApiError(404, "Image not found");
-      }
-      if (image.profile?.userId !== userId) {
-         throw new ApiError(403, "Forbidden to modify this image");
-      }
+      await this.getOwnedUserImage(userId, imageId);
 
       await this.profileRepository.unsetPrimaryImages(userId);
+
       const updatedImage = await this.profileRepository.setImageAsPrimary(imageId);
 
       return toUserImageDto(updatedImage);
    }
 
+   /**
+    * Completes image upload.
+    *
+    * @param userId - User ID.
+    * @returns Image upload status.
+    */
    async completeImageUpload(userId: number): Promise<ImageUploadStatusDto> {
       const images = await this.profileRepository.getUserImages(userId);
-      if (images.length !== 4) {
+
+      if (images.length !== MAX_USER_IMAGES) {
          throw new ApiError(400, "Exactly 4 images are required to proceed");
       }
-      const hasPrimary = images.some((img) => img.isPrimary);
-      if (!hasPrimary) {
+
+      const hasPrimaryImage = images.some((image) => image.isPrimary);
+
+      if (!hasPrimaryImage) {
          throw new ApiError(400, "One image must be selected as primary");
       }
 
       await this.profileRepository.completeImageUpload(userId);
+
       return toImageUploadStatusDto(true, true);
    }
 
+   /**
+    * Uploads user selfie.
+    *
+    * @param userId - User ID.
+    * @param frontUrl - Front selfie URL.
+    * @param leftUrl - Left selfie URL.
+    * @param rightUrl - Right selfie URL.
+    * @param latitude - Optional latitude.
+    * @param longitude - Optional longitude.
+    * @returns Updated selfie data.
+    */
    async uploadSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number) {
-      return await this.profileRepository.saveSelfie(userId, frontUrl, leftUrl, rightUrl, latitude, longitude);
+      const result = await this.profileRepository.saveSelfie(userId, frontUrl, leftUrl, rightUrl, latitude, longitude);
+      return {
+         ...result,
+         user: result.user as unknown as Profile,
+      };
+   }
+
+   /**
+    * Ensures primary questions are answered.
+    *
+    * @param userId - User ID.
+    * @returns Nothing.
+    */
+   private async ensurePrimaryQuestionsAnswered(userId: number): Promise<void> {
+      const [primaryRequiredCount, primaryAnsweredCount] = await Promise.all([this.profileRepository.getRequiredQuestionsCount(true), this.profileRepository.getUserAnsweredCount(userId, true)]);
+
+      if (primaryAnsweredCount < primaryRequiredCount) {
+         throw new ApiError(400, "Please answer all mandatory primary questions before completing the profile.");
+      }
+   }
+
+   /**
+    * Finds next pending section order.
+    *
+    * @param userId - User ID.
+    * @returns Next pending section order.
+    */
+   private async findNextPendingSectionOrder(userId: number): Promise<number> {
+      const sections = await this.profileRepository.getSections();
+
+      for (const section of sections) {
+         const questions = await this.profileRepository.getQuestionsBySectionByOrder(section.orderNo, userId);
+
+         const hasPendingQuestion = questions.some((question) => question.isRequired && question.answers.length === 0);
+
+         if (hasPendingQuestion) {
+            return section.orderNo;
+         }
+      }
+
+      return DEFAULT_NEXT_PENDING_SECTION_ORDER;
+   }
+
+   /**
+    * Gets owned user image.
+    *
+    * @param userId - User ID.
+    * @param imageId - Image ID.
+    * @returns User image.
+    */
+   private async getOwnedUserImage(userId: number, imageId: number) {
+      const image = await this.profileRepository.getUserImageById(imageId);
+
+      if (!image) {
+         throw new ApiError(404, "Image not found");
+      }
+
+      if (image.profile?.userId !== userId) {
+         throw new ApiError(403, "Forbidden to modify this image");
+      }
+
+      return image;
+   }
+
+   /**
+    * Extracts answer score.
+    *
+    * @param answer - User answer.
+    * @returns Answer score.
+    */
+   private extractAnswerScore(answer: unknown): number {
+      if (!answer || typeof answer !== "object" || Array.isArray(answer)) {
+         return 0;
+      }
+
+      if (!("value" in answer)) {
+         return 0;
+      }
+
+      const value = answer.value;
+
+      return typeof value === "number" ? value : 0;
    }
 }

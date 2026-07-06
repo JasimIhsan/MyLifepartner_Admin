@@ -1,6 +1,7 @@
 import prisma from "@/config/prisma";
 import { IUserSubscriptionRepository, UserSubscriptionWithPlan } from "@/interfaces/repositories/user-subscription.repository.interface";
-import { Prisma, SubscriptionStatus } from "@prisma/client";
+import { Prisma, SubscriptionStatus as PrismaSubscriptionStatus } from "@prisma/client";
+import { SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 
 const userSubscriptionIncludePlanAndFeatures = {
    plan: {
@@ -34,7 +35,7 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
       return prisma.userSubscription.findFirst({
          where: {
             userId,
-            status: SubscriptionStatus.ACTIVE,
+            status: SubscriptionStatus.ACTIVE as unknown as PrismaSubscriptionStatus,
          },
          include: userSubscriptionIncludePlanAndFeatures,
          orderBy: {
@@ -53,10 +54,10 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
       return prisma.userSubscription.updateMany({
          where: {
             userId,
-            status: SubscriptionStatus.ACTIVE,
+            status: SubscriptionStatus.ACTIVE as unknown as PrismaSubscriptionStatus,
          },
          data: {
-            status: SubscriptionStatus.EXPIRED,
+            status: SubscriptionStatus.EXPIRED as unknown as PrismaSubscriptionStatus,
          },
       });
    }

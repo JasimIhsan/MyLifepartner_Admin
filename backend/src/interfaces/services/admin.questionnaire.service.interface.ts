@@ -1,4 +1,31 @@
-import { AnswerType, ProfileQuestion, ProfileSection } from "@prisma/client";
+export enum AnswerType {
+   TEXT = "TEXT",
+   SINGLE_CHOICE = "SINGLE_CHOICE",
+   MULTI_CHOICE = "MULTI_CHOICE",
+   RATING = "RATING",
+   BOOLEAN = "BOOLEAN",
+}
+
+export interface ProfileSection {
+   id: number;
+   key: string;
+   title: string;
+   orderNo: number;
+   isPrimary: boolean;
+}
+
+export interface ProfileQuestion {
+   id: number;
+   sectionId: number;
+   question: string;
+   answerType: AnswerType;
+   options: unknown | null;
+   minWords: number | null;
+   weight: number;
+   isRequired: boolean;
+   orderNo: number;
+   isActive: boolean;
+}
 
 export interface IAdminQuestionnaireService {
    // Sections

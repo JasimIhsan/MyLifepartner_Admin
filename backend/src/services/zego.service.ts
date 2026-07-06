@@ -1,10 +1,11 @@
 import env from "@/config/env";
 import { generateToken04 } from "@/utils/zegoServerAssistant";
 
+const ZEGO_TOKEN_EXPIRY_SECONDS = 60 * 60;
+
 export class ZegoService {
    private readonly appId: number;
    private readonly serverSecret: string;
-   private readonly tokenExpirySeconds = 3600; // 1 hour
 
    constructor() {
       this.appId = env.ZEGO_APP_ID;
@@ -12,15 +13,12 @@ export class ZegoService {
    }
 
    /**
-    * Generate a ZEGOCLOUD access token for a given user.
-    * The userId here is the app's internal user ID cast to string.
+    * Generates a ZEGOCLOUD access token.
+    *
+    * @param userId - User ID.
+    * @returns ZEGOCLOUD access token.
     */
    generateToken(userId: string): string {
-      return generateToken04(
-         this.appId,
-         userId,
-         this.serverSecret,
-         this.tokenExpirySeconds,
-      );
+      return generateToken04(this.appId, userId, this.serverSecret, ZEGO_TOKEN_EXPIRY_SECONDS);
    }
 }

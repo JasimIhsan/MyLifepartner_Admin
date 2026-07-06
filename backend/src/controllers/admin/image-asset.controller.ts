@@ -1,4 +1,4 @@
-import { ImageAssetsSection } from "@prisma/client";
+import { ImageAssetsSection } from "@/interfaces/services/image-asset.service.interface";
 import { Request, Response } from "express";
 import { IImageAssetService } from "../../interfaces/services/image-asset.service.interface";
 

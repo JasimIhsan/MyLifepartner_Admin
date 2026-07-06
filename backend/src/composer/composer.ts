@@ -126,9 +126,9 @@ export const adminFeatureService = new AdminFeatureService();
 export const imageAssetService = new ImageAssetService(imageAssetRepository, s3Service);
 
 // User services
-export const userService = new UserService(userRepository);
+export const userService = new UserService(userRepository, s3Service);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
-export const authService = new AuthService(userRepository, userService, otpService, emailService, jwtService, cacheService, userFeatureService, subscriptionPlanRepository, userSubscriptionRepository);
+export const authService = new AuthService(userRepository, otpService, jwtService, cacheService, subscriptionPlanRepository, userSubscriptionRepository);
 export const profileService = new ProfileService(profileRepository);
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository);
 

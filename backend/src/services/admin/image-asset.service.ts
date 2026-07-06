@@ -1,8 +1,17 @@
-import { ImageAssets, ImageAssetsSection } from "@prisma/client";
-import { CreateImageAssetDto, UpdateImageAssetDto, ImageAssetFilters } from "@/dtos/image-asset.dto";
-import { IImageAssetRepository } from "../../interfaces/repositories/image-asset.repository.interface";
-import { IImageAssetService } from "../../interfaces/services/image-asset.service.interface";
-import { IS3Service } from "../../interfaces/services/s3.service.interface";
+import { CreateImageAssetDto, ImageAssetFilters, UpdateImageAssetDto } from "@/dtos/image-asset.dto";
+import { IImageAssetRepository } from "@/interfaces/repositories/image-asset.repository.interface";
+import { IImageAssetService } from "@/interfaces/services/image-asset.service.interface";
+import { IS3Service } from "@/interfaces/services/s3.service.interface";
+import { ApiError } from "@/utils/ApiError";
+import { ImageAssets, ImageAssetsSection } from "@/interfaces/services/image-asset.service.interface";
+
+type PaginatedImageAssets = {
+   assets: ImageAssets[];
+   total: number;
+};
+
+const DEFAULT_DISPLAY_ORDER = 0;
+const DEFAULT_IS_ACTIVE = true;
 
 export class ImageAssetService implements IImageAssetService {
    constructor(
@@ -11,134 +20,202 @@ export class ImageAssetService implements IImageAssetService {
    ) {}
 
    /**
-    * Creates a new image asset and optionally uploads a file to S3
-    * @param data - The DTO containing the image asset details
-    * @param file - Optional Multer file object for S3 upload
-    * @returns The created ImageAssets object
-    * @throws Error if imageUrl or file is not provided
+    * Creates an image asset.
+    *
+    * @param data - Image asset creation data.
+    * @param file - Optional image file.
+    * @returns Created image asset.
     */
    async createAsset(data: CreateImageAssetDto, file?: Express.Multer.File): Promise<ImageAssets> {
-      let imageUrl = data.imageUrl;
-
-      // Handle multipart form data strings (everything is a string in req.body when using form-data)
-      const displayOrder = data.displayOrder ? parseInt(data.displayOrder.toString()) : 0;
-      const isActive = data.isActive !== undefined ? ((data.isActive as any) === 'true' || data.isActive === true) : true;
-
-      if (file) {
-         imageUrl = await this.s3Service.uploadToS3(file, `assets/${data.section.toLowerCase()}`);
-      }
+      const imageUrl = file ? await this.s3Service.uploadToS3(file, this.getAssetUploadFolder(data.section as unknown as ImageAssetsSection)) : data.imageUrl;
 
       if (!imageUrl) {
-         throw new Error("Image URL or file is required");
+         throw new ApiError(400, "Image URL or file is required");
       }
 
       return this.imageAssetRepository.create({
          ...data,
-         displayOrder: isNaN(displayOrder) ? 0 : displayOrder,
-         isActive,
          imageUrl,
-      });
+         displayOrder: this.parseDisplayOrder(data.displayOrder),
+         isActive: this.parseBoolean(data.isActive, DEFAULT_IS_ACTIVE),
+      }) as unknown as ImageAssets;
    }
 
    /**
-    * Retrieves all image assets based on filters, converting S3 keys to presigned URLs
-    * @param filters - Filtering criteria (e.g., section, isActive)
-    * @param skip - Number of records to skip
-    * @param take - Number of records to take
-    * @returns Object containing the assets array and total count
+    * Gets image assets with filters and pagination.
+    *
+    * @param filters - Image asset filters.
+    * @param skip - Number of assets to skip.
+    * @param take - Number of assets to fetch.
+    * @returns Image assets and total matching count.
     */
-   async getAllAssets(filters?: ImageAssetFilters, skip?: number, take?: number): Promise<{ assets: ImageAssets[]; total: number }> {
-      const result = await this.imageAssetRepository.findAll(filters, skip, take);
+   async getAllAssets(filters?: ImageAssetFilters, skip?: number, take?: number): Promise<PaginatedImageAssets> {
+      const { assets, total } = await this.imageAssetRepository.findAll(filters, skip, take);
 
-      // Convert S3 keys to presigned URLs
-      const assetsWithUrls = await Promise.all(
-         result.assets.map(async (asset) => ({
-            ...asset,
-            imageUrl: await this.s3Service.getPresignedUrl(asset.imageUrl),
-         }))
-      );
-
-      return { assets: assetsWithUrls, total: result.total };
+      return {
+         assets: (await this.addPresignedUrls(assets as unknown as ImageAssets[])) as unknown as ImageAssets[],
+         total,
+      };
    }
 
    /**
-    * Retrieves an image asset by its ID, generating a presigned URL if found
-    * @param id - The ID of the asset
-    * @returns The ImageAssets object with a presigned URL, or null if not found
+    * Gets an image asset by ID.
+    *
+    * @param id - Image asset ID.
+    * @returns Image asset, or null if not found.
     */
    async getAssetById(id: number): Promise<ImageAssets | null> {
       const asset = await this.imageAssetRepository.findById(id);
-      if (asset) {
-         asset.imageUrl = await this.s3Service.getPresignedUrl(asset.imageUrl);
+
+      if (!asset) {
+         return null;
       }
-      return asset;
+
+      return this.addPresignedUrl(asset as unknown as ImageAssets);
    }
 
    /**
-    * Retrieves active image assets for a specific section, generating presigned URLs
-    * @param section - The section to filter by
-    * @returns Array of active ImageAssets with presigned URLs
+    * Gets active image assets by section.
+    *
+    * @param section - Image asset section.
+    * @returns Active image assets.
     */
    async getAssetsBySection(section: ImageAssetsSection): Promise<ImageAssets[]> {
       const assets = await this.imageAssetRepository.findBySection(section, true);
 
-      // Convert S3 keys to presigned URLs
-      return Promise.all(
-         assets.map(async (asset) => ({
-            ...asset,
-            imageUrl: await this.s3Service.getPresignedUrl(asset.imageUrl),
-         }))
-      );
+      return this.addPresignedUrls(assets as unknown as ImageAssets[]);
    }
 
    /**
-    * Updates an existing image asset, handling optional new file upload to S3
-    * @param id - The ID of the asset to update
-    * @param data - The DTO containing updated fields
-    * @param file - Optional Multer file object for a new S3 upload
-    * @returns The updated ImageAssets object
-    * @throws Error if the asset is not found
+    * Updates an image asset.
+    *
+    * @param id - Image asset ID.
+    * @param data - Image asset update data.
+    * @param file - Optional new image file.
+    * @returns Updated image asset.
     */
    async updateAsset(id: number, data: UpdateImageAssetDto, file?: Express.Multer.File): Promise<ImageAssets> {
-      const existingAsset = await this.imageAssetRepository.findById(id);
-      if (!existingAsset) {
-         throw new Error("Asset not found");
-      }
+      const existingAsset = await this.getRequiredAsset(id);
 
-      let imageUrl = data.imageUrl as string | undefined;
-
-      // Handle multipart form data strings
-      if (data.displayOrder !== undefined) {
-         const parsedOrder = parseInt(data.displayOrder.toString());
-         data.displayOrder = isNaN(parsedOrder) ? 0 : parsedOrder;
-      }
-      if (data.isActive !== undefined) {
-         data.isActive = (data.isActive as any) === 'true' || data.isActive === true;
-      }
+      const updateData = this.buildUpdateAssetData(data);
 
       if (file) {
-         // Delete old image from S3 if it exists and we're uploading a new one
-         if (existingAsset.imageUrl) {
-            await this.s3Service.deleteFromS3(existingAsset.imageUrl);
-         }
-         imageUrl = await this.s3Service.uploadToS3(file, `assets/${existingAsset.section.toLowerCase()}`);
+         await this.s3Service.deleteFromS3(existingAsset.imageUrl);
+
+         updateData.imageUrl = await this.s3Service.uploadToS3(file, this.getAssetUploadFolder(existingAsset.section));
       }
 
-      return this.imageAssetRepository.update(id, {
-         ...data,
-         imageUrl,
-      });
+      return this.imageAssetRepository.update(id, updateData) as unknown as ImageAssets;
    }
 
    /**
-    * Deletes an image asset and removes its corresponding file from S3 if it exists
-    * @param id - The ID of the asset to delete
+    * Deletes an image asset.
+    *
+    * @param id - Image asset ID.
+    * @returns Nothing.
     */
    async deleteAsset(id: number): Promise<void> {
+      const asset = await this.getRequiredAsset(id);
+
+      await this.s3Service.deleteFromS3(asset.imageUrl);
+      await this.imageAssetRepository.delete(id);
+   }
+
+   /**
+    * Gets required image asset.
+    *
+    * @param id - Image asset ID.
+    * @returns Image asset.
+    */
+   private async getRequiredAsset(id: number): Promise<ImageAssets> {
       const asset = await this.imageAssetRepository.findById(id);
-      if (asset) {
-         await this.s3Service.deleteFromS3(asset.imageUrl);
-         await this.imageAssetRepository.delete(id);
+
+      if (!asset) {
+         throw new ApiError(404, "Asset not found");
       }
+
+      return asset as unknown as ImageAssets;
+   }
+
+   /**
+    * Builds image asset update data.
+    *
+    * @param data - Image asset update data.
+    * @returns Normalized update data.
+    */
+   private buildUpdateAssetData(data: UpdateImageAssetDto): UpdateImageAssetDto {
+      return {
+         ...data,
+         ...(data.displayOrder !== undefined && {
+            displayOrder: this.parseDisplayOrder(data.displayOrder),
+         }),
+         ...(data.isActive !== undefined && {
+            isActive: this.parseBoolean(data.isActive),
+         }),
+      };
+   }
+
+   /**
+    * Adds presigned URLs to image assets.
+    *
+    * @param assets - Image assets.
+    * @returns Image assets with presigned URLs.
+    */
+   private async addPresignedUrls(assets: ImageAssets[]): Promise<ImageAssets[]> {
+      return Promise.all(assets.map((asset) => this.addPresignedUrl(asset)));
+   }
+
+   /**
+    * Adds presigned URL to image asset.
+    *
+    * @param asset - Image asset.
+    * @returns Image asset with presigned URL.
+    */
+   private async addPresignedUrl(asset: ImageAssets): Promise<ImageAssets> {
+      return {
+         ...asset,
+         imageUrl: await this.s3Service.getPresignedUrl(asset.imageUrl),
+      };
+   }
+
+   /**
+    * Gets asset upload folder.
+    *
+    * @param section - Image asset section.
+    * @returns Upload folder path.
+    */
+   private getAssetUploadFolder(section: ImageAssetsSection): string {
+      return `assets/${section.toLowerCase()}`;
+   }
+
+   /**
+    * Parses display order.
+    *
+    * @param value - Display order value.
+    * @returns Parsed display order.
+    */
+   private parseDisplayOrder(value: unknown): number {
+      const parsedValue = Number(value);
+
+      return Number.isNaN(parsedValue) ? DEFAULT_DISPLAY_ORDER : parsedValue;
+   }
+
+   /**
+    * Parses boolean value.
+    *
+    * @param value - Boolean-like value.
+    * @param defaultValue - Default boolean value.
+    * @returns Parsed boolean.
+    */
+   private parseBoolean(value: unknown, defaultValue: boolean = false): boolean {
+      if (value === undefined || value === null) {
+         return defaultValue;
+      }
+
+      if (typeof value === "boolean") {
+         return value;
+      }
+
+      return String(value).toLowerCase() === "true";
    }
 }

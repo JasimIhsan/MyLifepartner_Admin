@@ -1,6 +1,5 @@
 import { CreatePlanInput, UpdatePlanInput } from "@/validators/subscription.validator";
-import { PlanFeature, SubscriptionPlan } from "@prisma/client";
-import { EnrichedSubscriptionPlan } from "./user.subscription.service.interface";
+import { EnrichedSubscriptionPlan, PlanFeature, SubscriptionPlan } from "./user.subscription.service.interface";
 
 export interface AddFeaturesInput {
    featureKey: string;

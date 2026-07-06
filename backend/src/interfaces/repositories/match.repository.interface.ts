@@ -1,5 +1,4 @@
-import { SwipeAction } from "@prisma/client";
-import { InteractionState } from "../services/match.service.interface";
+import { InteractionState, SwipeAction } from "../services/match.service.interface";
 
 export interface IMatchRepository {
    getCandidateProfiles(currentUserId: number, excludedProfileIds: number[]): Promise<CandidateProfile[]>;

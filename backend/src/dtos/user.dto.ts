@@ -66,3 +66,18 @@ export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPri
    createdAt: user.createdAt,
    updatedAt: user.updatedAt,
 });
+
+export type UserSelfieDataDto = {
+   url: string | null;
+   leftUrl: string | null;
+   rightUrl: string | null;
+   locationLat: number | null;
+   locationLng: number | null;
+};
+
+export type UserImageDataDto = {
+   id: number;
+   imageUrl: string;
+   isPrimary: boolean;
+   url: string;
+};

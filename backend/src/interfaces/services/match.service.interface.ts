@@ -1,4 +1,8 @@
-import { SwipeAction } from "@prisma/client";
+export enum SwipeAction {
+   LEFT = "LEFT",
+   RIGHT = "RIGHT",
+   UP = "UP",
+}
 
 export enum InteractionState {
    NONE = "NONE",

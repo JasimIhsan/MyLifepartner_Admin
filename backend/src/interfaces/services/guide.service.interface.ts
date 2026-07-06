@@ -1,5 +1,15 @@
-import { Guide } from "@prisma/client";
 import { CreateGuideDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
+
+export interface Guide {
+   id: number;
+   question: string;
+   answer: string;
+   categoryId: number;
+   bullets: string[];
+   displayOrder: number;
+   createdAt: Date;
+   updatedAt: Date;
+}
 
 export interface GuideFilters {
    categoryId?: number;

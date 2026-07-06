@@ -1,6 +1,7 @@
 import { UserDto } from "@/dtos/user.dto";
 import { UserOnboardingStatusDto } from "@/dtos/auth.me.dto";
 import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
+import { UserSelfieDataDto, UserImageDataDto } from "@/dtos/user.dto";
 
 export interface IUserService {
    createUser(userData: CreateUserDto): Promise<UserDto>;
@@ -12,6 +13,6 @@ export interface IUserService {
    updateUser(userId: number, updateData: UpdateUserDto): Promise<UserDto>;
    toggleBlockUser(userId: number): Promise<UserDto>;
    deleteUser(userId: number): Promise<void>;
-   getUserSelfieData(userId: number): Promise<any>;
-   getUserImagesData(userId: number): Promise<any>;
+   getUserSelfieData(userId: number): Promise<UserSelfieDataDto>;
+   getUserImagesData(userId: number): Promise<UserImageDataDto[]>;
 }

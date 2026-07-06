@@ -1,5 +1,6 @@
 import prisma from "@/config/prisma";
-import { ChatMessage, Conversation, MessageType, Prisma } from "@prisma/client";
+import { Conversation, Prisma, MessageType as PrismaMessageType } from "@prisma/client";
+import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
 
 type PaginatedMessages = {
    messages: ChatMessage[];
@@ -68,10 +69,10 @@ export class ChatRepository {
             conversationId,
             senderId,
             content,
-            messageType,
+            messageType: messageType as unknown as PrismaMessageType,
             zegoMessageId,
          },
-      });
+      }) as unknown as ChatMessage;
    }
 
    /**
@@ -116,7 +117,7 @@ export class ChatRepository {
       ]);
 
       return {
-         messages: messages.reverse(),
+         messages: messages.reverse() as unknown as ChatMessage[],
          total,
          page,
          limit,

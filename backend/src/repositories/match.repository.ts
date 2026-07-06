@@ -1,7 +1,7 @@
 import prisma from "@/config/prisma";
-import { Prisma, SwipeAction, Gender } from "@prisma/client";
+import { Prisma, SwipeAction as PrismaSwipeAction, Gender } from "@prisma/client";
 import { CandidateProfile, IMatchRepository, SwipedProfile, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
-import { InteractionState } from "../interfaces/services/match.service.interface";
+import { InteractionState, SwipeAction } from "../interfaces/services/match.service.interface";
 
 const candidateProfileInclude = {
    user: {
@@ -124,7 +124,7 @@ export class MatchRepository implements IMatchRepository {
     * @returns Swiped profiles.
     */
    async getSwipedProfileIds(userId: number): Promise<SwipedProfile[]> {
-      return prisma.profileSwipe.findMany({
+      const swipes = await prisma.profileSwipe.findMany({
          where: {
             userId,
          },
@@ -133,6 +133,8 @@ export class MatchRepository implements IMatchRepository {
             action: true,
          },
       });
+
+      return swipes as unknown as SwipedProfile[];
    }
 
    /**
@@ -207,7 +209,10 @@ export class MatchRepository implements IMatchRepository {
       });
 
       return profiles.map((profile) => {
-         const interactionState = this.determineInteractionState(profile.swipesOnMe, profile.user.profileSwipes);
+         const interactionState = this.determineInteractionState(
+            profile.swipesOnMe as unknown as { action: SwipeAction }[], 
+            profile.user.profileSwipes as unknown as { action: SwipeAction }[]
+         );
 
          return this.mapToCandidateProfile(profile, interactionState);
       });
@@ -456,7 +461,10 @@ export class MatchRepository implements IMatchRepository {
          return null;
       }
 
-      const interactionState = this.determineInteractionState(profile.swipesOnMe, profile.user.profileSwipes);
+      const interactionState = this.determineInteractionState(
+         profile.swipesOnMe as unknown as { action: SwipeAction }[], 
+         profile.user.profileSwipes as unknown as { action: SwipeAction }[]
+      );
 
       return this.mapToCandidateProfile(profile, interactionState);
    }

@@ -1,4 +1,21 @@
-import { UserFeature, SwipeAction } from "@prisma/client";
+import { SwipeAction } from "./match.service.interface";
+
+export interface UserFeature {
+   id: number;
+   userId: number;
+   isProfileBlurEnabled: boolean;
+   maxInterests: number;
+   interests: number;
+   maxVideoCallMinutes: number;
+   videoCallMinutes: number;
+   maxAudioCallMinutes: number;
+   audioCallMinutes: number;
+   maxMessages: number;
+   messages: number;
+   createdAt: Date;
+   updatedAt: Date;
+}
+
 
 export interface IUserFeatureService {
    getUserFeatures(userId: number): Promise<UserFeature | null>;

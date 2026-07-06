@@ -1,5 +1,4 @@
-import { IMatchService } from "@/interfaces/services/match.service.interface";
-import { SwipeAction } from "@prisma/client";
+import { IMatchService, SwipeAction } from "@/interfaces/services/match.service.interface";
 import { NextFunction, Request, Response } from "express";
 
 export class MatchController {
