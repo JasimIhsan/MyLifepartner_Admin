@@ -1,5 +1,6 @@
 import { profileController, profileImageController } from "@/composer/composer";
 import { multerConfig } from "@/config/multer.config";
+import { verifyJWT } from "@/middlewares/auth.middleware";
 import { validate } from "@/middlewares/validate.middleware";
 import { basicProfileSchema, partnerPreferenceSchema } from "@/validators/profile.validator";
 import { Router } from "express";
@@ -90,7 +91,7 @@ router.patch("/set-primary/:userId/:imageId", profileImageController.setPrimaryI
  * @desc    Get all profile images of user
  * @access  Private
  */
-router.get("/images/:userId", profileImageController.getImages);
+router.get("/images/:userId", verifyJWT, profileImageController.getImages);
 
 /**
  * @route   POST /api/v1/user/profile/complete-image-upload/:userId

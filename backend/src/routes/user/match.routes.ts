@@ -33,7 +33,7 @@ router.get("/interests/received", matchController.getReceivedInterests);
  * @desc    Get matched profiles (mutual interest)
  * @access  Private
  */
-router.get("/mutual-matches", matchController.getMutualMatches);
+router.get("/mutual-match", matchController.getMutualMatches);
 
 /**
  * @route   GET /api/v1/user/match/profile/:profileId

@@ -5,7 +5,7 @@ class MatchService {
   static final _client = ApiService.client;
 
   static Future<List<MatchRecommendation>> getRecommendations() async {
-    final response = await _client.get('/matches/recommendations');
+    final response = await _client.get('/match/recommendations');
     final data = response.data;
     if (data['success'] == true) {
       final list = data['data'] as List<dynamic>;
@@ -21,13 +21,13 @@ class MatchService {
     required String action, // 'LEFT', 'RIGHT', 'UP'
   }) async {
     await _client.post(
-      '/matches/swipe',
+      '/match/swipe',
       data: {'targetProfileId': targetProfileId, 'action': action},
     );
   }
 
   static Future<Map<String, dynamic>?> getProfileDetail(int profileId) async {
-    final response = await _client.get('/matches/profile/$profileId');
+    final response = await _client.get('/match/profile/$profileId');
     final data = response.data;
     if (data['success'] == true) {
       return data['data'] as Map<String, dynamic>;
@@ -36,7 +36,7 @@ class MatchService {
   }
 
   static Future<List<MatchRecommendation>> getSentInterests() async {
-    final response = await _client.get('/matches/interests/sent');
+    final response = await _client.get('/match/interests/sent');
     final data = response.data;
     if (data['success'] == true) {
       final list = data['data'] as List<dynamic>;
@@ -48,7 +48,7 @@ class MatchService {
   }
 
   static Future<List<MatchRecommendation>> getReceivedInterests() async {
-    final response = await _client.get('/matches/interests/received');
+    final response = await _client.get('/match/interests/received');
     final data = response.data;
     if (data['success'] == true) {
       final list = data['data'] as List<dynamic>;
@@ -60,7 +60,7 @@ class MatchService {
   }
 
   static Future<List<MatchRecommendation>> getMutualMatches() async {
-    final response = await _client.get('/matches/mutual-matches');
+    final response = await _client.get('/match/mutual-match');
     final data = response.data;
     if (data['success'] == true) {
       final list = data['data'] as List<dynamic>;

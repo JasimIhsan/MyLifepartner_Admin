@@ -5,7 +5,7 @@ import 'package:life_partner_again/services/token_service.dart';
 
 class AuthService {
   AuthService({AuthRepository? authRepository})
-      : _authRepository = authRepository ?? AuthRepository();
+    : _authRepository = authRepository ?? AuthRepository();
 
   final AuthRepository _authRepository;
 
@@ -13,7 +13,7 @@ class AuthService {
     final res = await _authRepository.getMe();
     if (!res.success || res.data == null) {
       throw DioException(
-        requestOptions: RequestOptions(path: '/user/auth/me'),
+        requestOptions: RequestOptions(path: '/auth/me'),
         error: res.message,
       );
     }
@@ -24,4 +24,3 @@ class AuthService {
     await TokenService.clearTokens();
   }
 }
-

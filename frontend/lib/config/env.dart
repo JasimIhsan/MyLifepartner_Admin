@@ -1,7 +1,7 @@
 class Env {
   static const String baseUrl = Env.isProduction
-      ? 'https://api.lifepartneragain.ciltriq.com/api'
-      : 'https://nonindividualistic-dilutely-glory.ngrok-free.dev/api';
+      ? 'https://api.lifepartneragain.ciltriq.com/api/user'
+      : 'https://nonindividualistic-dilutely-glory.ngrok-free.dev/api/user';
 
   // Environment flags
   // isProduction => Siraj

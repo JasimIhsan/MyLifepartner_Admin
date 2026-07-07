@@ -1,7 +1,10 @@
 import { userController } from "@/composer/composer";
+import { verifyJWT } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 
 const router = Router();
+
+router.use(verifyJWT);
 
 /**
  * @route   GET /api/v1/user

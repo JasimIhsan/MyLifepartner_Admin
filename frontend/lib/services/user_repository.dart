@@ -15,7 +15,7 @@ class UserRepository {
       }
 
       final response = await ApiService.client.get(
-        '/user/$userId',
+        '/$userId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

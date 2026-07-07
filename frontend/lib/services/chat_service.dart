@@ -54,7 +54,7 @@ class ChatApiService {
     String? targetUserId,
   }) async {
     await _dio.post(
-      '/user/subscriptions/check-call',
+      '/subscriptions/check-call',
       data: {
         'type': type,
         if (consumeSeconds != null) 'consumeSeconds': consumeSeconds,

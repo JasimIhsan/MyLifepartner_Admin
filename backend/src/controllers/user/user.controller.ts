@@ -28,6 +28,9 @@ export class UserController {
       const authUserId = this.getAuthenticatedUserId(req);
       const userId = Number(req.params.id);
 
+      console.info("User ID: ", userId);
+      console.info("Auth User ID: ", authUserId);
+
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
       }
@@ -74,6 +77,7 @@ export class UserController {
     */
    private getAuthenticatedUserId(req: AuthRequest): number {
       const userId = Number(req.user?.id);
+      console.info("Auth User Id: ", userId);
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");

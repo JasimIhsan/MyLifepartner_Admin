@@ -10,7 +10,7 @@ class GuideService {
   }) async {
     try {
       final response = await _client.get(
-        '/user/guides',
+        '/guide',
         queryParameters: {
           if (categoryId != null && categoryId > 0) 'categoryId': categoryId,
           if (search != null && search.trim().isNotEmpty)
@@ -19,7 +19,7 @@ class GuideService {
       );
 
       if (response.data['success'] == true) {
-        final List<dynamic> data = response.data['data']['guides'];
+        final List<dynamic> data = response.data['data']['guide'];
         return data.map((json) => GuideItem.fromJson(json)).toList();
       }
       return [];
@@ -30,7 +30,7 @@ class GuideService {
 
   static Future<GuideItem?> getGuideById(int id) async {
     try {
-      final response = await _client.get('/user/guides/$id');
+      final response = await _client.get('/guide/$id');
       if (response.data['success'] == true) {
         return GuideItem.fromJson(response.data['data']);
       }

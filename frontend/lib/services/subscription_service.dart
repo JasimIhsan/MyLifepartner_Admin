@@ -7,7 +7,7 @@ class SubscriptionService {
 
   Future<List<SubscriptionPlan>> getPlans() async {
     try {
-      final response = await _apiService.dio.get('/user/subscriptions/plans');
+      final response = await _apiService.dio.get('/subscription/plans');
       if (response.statusCode == 200 && response.data['success'] == true) {
         final List data = response.data['data'];
         return data.map((json) => SubscriptionPlan.fromJson(json)).toList();
@@ -20,12 +20,16 @@ class SubscriptionService {
 
   Future<UserSubscription?> getMySubscription() async {
     try {
-      final response = await _apiService.dio.get('/user/subscriptions/my-subscription');
+      final response = await _apiService.dio.get(
+        '/subscription/my-subscription',
+      );
       if (response.statusCode == 200 && response.data['success'] == true) {
         if (response.data['data'] == null) return null;
         return UserSubscription.fromJson(response.data['data']);
       }
-      throw Exception(response.data['message'] ?? 'Failed to fetch subscription');
+      throw Exception(
+        response.data['message'] ?? 'Failed to fetch subscription',
+      );
     } catch (e) {
       throw Exception('Failed to load current subscription: $e');
     }
@@ -34,7 +38,7 @@ class SubscriptionService {
   Future<UserSubscription> subscribe(int planId) async {
     try {
       final response = await _apiService.dio.post(
-        '/user/subscriptions/subscribe',
+        '/subscription/subscribe',
         data: {'planId': planId},
       );
       if (response.statusCode == 201 && response.data['success'] == true) {
@@ -48,7 +52,7 @@ class SubscriptionService {
 
   Future<UserFeature?> getUserFeatures() async {
     try {
-      final response = await _apiService.dio.get('/user/subscriptions/features');
+      final response = await _apiService.dio.get('/subscription/features');
       if (response.statusCode == 200 && response.data['success'] == true) {
         if (response.data['data'] == null) return null;
         return UserFeature.fromJson(response.data['data']);
@@ -61,12 +65,14 @@ class SubscriptionService {
 
   Future<UserSubscription?> syncSubscription() async {
     try {
-      final response = await _apiService.dio.post('/user/subscriptions/sync');
+      final response = await _apiService.dio.post('/subscription/sync');
       if (response.statusCode == 200 && response.data['success'] == true) {
         if (response.data['data'] == null) return null;
         return UserSubscription.fromJson(response.data['data']);
       }
-      throw Exception(response.data['message'] ?? 'Failed to sync subscription');
+      throw Exception(
+        response.data['message'] ?? 'Failed to sync subscription',
+      );
     } catch (e) {
       throw Exception('Failed to sync subscription: $e');
     }

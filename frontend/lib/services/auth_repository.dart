@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:life_partner_again/models/auth_response.dart';
-
 import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/services/token_service.dart';
@@ -10,18 +9,17 @@ class AuthRepository {
 
   Future<OnboardingStatusResponse> getMe() async {
     try {
-      final response = await _dio.get("/user/auth/me");
+      final response = await _dio.get("/auth/me");
       return OnboardingStatusResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
     }
   }
 
-
   Future<InitiateAuthResponse> initiateAuth({required String email}) async {
     try {
       final response = await _dio.post(
-        "/user/auth/initiate",
+        "/auth/initiate",
         data: {"email": email},
       );
       return InitiateAuthResponse.fromJson(response.data);
@@ -37,7 +35,7 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        "/user/auth/verify-otp",
+        "/auth/verify-otp",
         data: {"email": email, "otp": otp, "purpose": purpose},
       );
       return SimpleMessageResponse.fromJson(response.data);
@@ -52,7 +50,7 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        "/user/auth/login",
+        "/auth/login",
         data: {"email": email, "password": password},
       );
       final verifyResponse = AuthResultResponse.fromJson(response.data);
@@ -74,7 +72,7 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        "/user/auth/register",
+        "/auth/register",
         data: {"email": email, "password": password},
       );
       final verifyResponse = AuthResultResponse.fromJson(response.data);
@@ -96,7 +94,7 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        "/user/auth/forgot-password",
+        "/auth/forgot-password",
         data: {"email": email, "password": password},
       );
       return SimpleMessageResponse.fromJson(response.data);
@@ -111,7 +109,7 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        "/user/auth/send-otp",
+        "/auth/send-otp",
         data: {"email": email, "purpose": purpose},
       );
       return SendOtpResponse.fromJson(response.data);
@@ -126,7 +124,7 @@ class AuthRepository {
   }) async {
     try {
       final response = await _dio.post(
-        "/user/auth/resend-otp",
+        "/auth/resend-otp",
         data: {"email": email, "purpose": purpose},
       );
       return SendOtpResponse.fromJson(response.data);
@@ -134,5 +132,4 @@ class AuthRepository {
       rethrow;
     }
   }
-
 }

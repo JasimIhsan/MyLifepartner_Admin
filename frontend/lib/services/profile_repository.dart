@@ -21,7 +21,7 @@ class ProfileRepository {
       }
 
       final response = await ApiService.client.get(
-        '/user/profile/sections',
+        '/profile/sections',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -46,7 +46,7 @@ class ProfileRepository {
       // If userId not stored, maybe we get it from token or user provider.
       // For now, hardcoding or fetching from prefs.
 
-      // FIX: The user snippet showed /api/user/profile/questions/1?sectionOrder=1
+      // FIX: The user snippet showed /api/profile/questions/1?sectionOrder=1
       // We need userId.
 
       if (userId == null) {
@@ -56,7 +56,7 @@ class ProfileRepository {
       }
 
       final response = await ApiService.client.get(
-        '/user/profile/questions/$userId',
+        '/profile/questions/$userId',
         queryParameters: {'sectionOrder': sectionOrder},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -87,7 +87,7 @@ class ProfileRepository {
       debugPrint('👉 User ID: $userId');
 
       final response = await ApiService.client.post(
-        '/user/profile/questions/save-answer/$userId/$questionId',
+        '/profile/questions/save-answer/$userId/$questionId',
         data: {'answer': answer},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -113,7 +113,7 @@ class ProfileRepository {
       }
 
       final response = await ApiService.client.patch(
-        '/user/profile/complete/$userId',
+        '/profile/complete/$userId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -140,7 +140,7 @@ class ProfileRepository {
       }
 
       final response = await ApiService.client.get(
-        '/user/profile/completion-status/$userId',
+        '/profile/completion-status/$userId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -167,7 +167,7 @@ class ProfileRepository {
       if (userId == null) throw Exception('User not logged in');
 
       final response = await ApiService.client.patch(
-        '/user/profile/basic-profile/$userId',
+        '/profile/basic-profile/$userId',
         data: data,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -193,7 +193,7 @@ class ProfileRepository {
       if (userId == null) throw Exception('User not logged in');
 
       final response = await ApiService.client.patch(
-        '/user/profile/partner-preference/$userId',
+        '/profile/partner-preference/$userId',
         data: data,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -217,7 +217,7 @@ class ProfileRepository {
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.get(
-        '/user/profile/images/$userId',
+        '/profile/images/$userId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -249,7 +249,7 @@ class ProfileRepository {
       });
 
       final response = await ApiService.client.post(
-        '/user/profile/upload-image/$userId',
+        '/profile/upload-image/$userId',
         data: formData,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -262,7 +262,13 @@ class ProfileRepository {
     }
   }
 
-  Future<void> uploadSelfie(XFile front, XFile left, XFile right, [double? latitude, double? longitude]) async {
+  Future<void> uploadSelfie(
+    XFile front,
+    XFile left,
+    XFile right, [
+    double? latitude,
+    double? longitude,
+  ]) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
@@ -298,7 +304,7 @@ class ProfileRepository {
       }
 
       final response = await ApiService.client.post(
-        '/user/profile/upload-selfie/$userId',
+        '/profile/upload-selfie/$userId',
         data: formData,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
@@ -322,7 +328,7 @@ class ProfileRepository {
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.delete(
-        '/user/profile/remove-image/$userId/$imageId',
+        '/profile/remove-image/$userId/$imageId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -343,7 +349,7 @@ class ProfileRepository {
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.patch(
-        '/user/profile/set-primary/$userId/$imageId',
+        '/profile/set-primary/$userId/$imageId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -366,7 +372,7 @@ class ProfileRepository {
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.post(
-        '/user/profile/complete-image-upload/$userId',
+        '/profile/complete-image-upload/$userId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -387,7 +393,7 @@ class ProfileRepository {
   Future<void> sendEmailVerificationLink({required String email}) async {
     try {
       final response = await ApiService.client.post(
-        "/user/auth/send-magic-link",
+        "/auth/send-magic-link",
         data: {"email": email},
       );
       if (response.statusCode != 200) {
@@ -408,7 +414,7 @@ class ProfileRepository {
   Future<Map<String, dynamic>> verifyEmail(String token) async {
     try {
       final response = await ApiService.client.post(
-        "/user/auth/verify-email",
+        "/auth/verify-email",
         data: {"token": token},
       );
       if (response.statusCode == 200) {
