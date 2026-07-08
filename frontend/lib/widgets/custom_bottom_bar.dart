@@ -94,7 +94,11 @@ class CustomBottomBar extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.add, color: Colors.white, size: 30),
+                    child: const Icon(
+                      Icons.support_agent,
+                      color: Colors.white,
+                      size: 30,
+                    ),
                   ),
                 ),
               ),

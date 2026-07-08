@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:life_partner_again/main.dart';
 
 class LikedMatchesScreen extends StatefulWidget {
   const LikedMatchesScreen({super.key});
@@ -139,18 +139,11 @@ class _LikedMatchesScreenState extends State<LikedMatchesScreen>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       height: 52,
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.inputBackground,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.black.withValues(alpha: 0.04)),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.black.withValues(alpha: 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        color: AppColors.white,
+        border: Border.all(color: AppColors.borderColor, width: 2),
+        borderRadius: BorderRadius.circular(26),
       ),
       child: TabBar(
         controller: _tabController,

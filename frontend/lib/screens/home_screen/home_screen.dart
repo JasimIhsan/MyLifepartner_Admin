@@ -153,17 +153,17 @@ class _HomePageState extends State<HomePage> {
       ),
       showLeading: false,
       actions: [
-        IconButton(
-          icon: Image.asset(
-            'assets/icons/lpa_assist.png',
-            width: 24,
-            height: 24,
-          ),
-          tooltip: 'LPA Assist',
-          onPressed: () {
-            Navigator.pushNamed(context, AppRoutes.lpaGuide);
-          },
-        ),
+        // IconButton(
+        //   icon: Image.asset(
+        //     'assets/icons/lpa_assist.png',
+        //     width: 24,
+        //     height: 24,
+        //   ),
+        //   tooltip: 'LPA Assist',
+        //   onPressed: () {
+        //     Navigator.pushNamed(context, AppRoutes.lpaGuide);
+        //   },
+        // ),
         IconButton(
           icon: const Icon(
             Icons.notifications_active_outlined,
