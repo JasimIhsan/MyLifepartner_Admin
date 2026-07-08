@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
@@ -7,6 +8,7 @@ import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/auth_layout.dart';
+import '../../widgets/bottomsheet/custom_bottom_sheet.dart';
 import '../../widgets/custom_button.dart';
 import '../otp_screen/otp_screen.dart';
 
@@ -80,18 +82,45 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _handleBackPress() async {
+    if (!mounted) return;
+
+    await CustomBottomSheet.show(
+      context: context,
+      type: BottomSheetType.confirmation,
+      title: 'Exit App',
+      message: 'Are you sure you want to exit the app?',
+      primaryButtonText: 'Exit',
+      onPrimaryPressed: () {
+        SystemNavigator.pop();
+      },
+      secondaryButtonText: 'Cancel',
+      onSecondaryPressed: () {
+        Navigator.of(context).pop();
+      },
+      imagePath: 'assets/images/illustrations/exit.png',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return AuthLayout(
-      topImage: 'assets/images/landing_couple.png',
-      dynamicSection: 'ONBOARDING_SCREEN',
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // Check screen width for responsive text/style, matching AuthLayout breakpoint logic partially
-          // AuthLayout uses 900 breakpoint for split screen.
-          final bool isWeb = MediaQuery.of(context).size.width > 900;
-          return _buildFormContent(isWeb);
-        },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: AuthLayout(
+        topImage: 'assets/images/landing_couple.png',
+        dynamicSection: 'ONBOARDING_SCREEN',
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Check screen width for responsive text/style, matching AuthLayout breakpoint logic partially
+            // AuthLayout uses 900 breakpoint for split screen.
+            final bool isWeb = MediaQuery.of(context).size.width > 900;
+            return _buildFormContent(isWeb);
+          },
+        ),
       ),
     );
   }
@@ -153,7 +182,7 @@ class _LoginPageState extends State<LoginPage> {
                 return 'Please enter your email';
               }
               final emailRegex = RegExp(
-                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+",
+                r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$",
               );
               if (!emailRegex.hasMatch(value)) {
                 return 'Please enter a valid email address';

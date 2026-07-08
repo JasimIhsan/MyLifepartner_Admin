@@ -1,9 +1,18 @@
-
-import 'package:life_partner_again/screens/onboarding/widgets/onboarding_steps.dart';
-import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
-
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/basic_info_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/children_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/education_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/emotional_readiness_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/gender_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/habits_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/height_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/languages_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/location_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/looking_for_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/marital_status_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/profession_step.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,6 +59,100 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   String? _drinkingHabit;
 
   @override
+  void initState() {
+    super.initState();
+    _loadCachedData();
+  }
+
+  Future<void> _loadCachedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _firstName = prefs.getString('onboarding_first_name');
+      _lastName = prefs.getString('onboarding_last_name');
+      _firstNameCtrl.text = _firstName ?? '';
+      _lastNameCtrl.text = _lastName ?? '';
+
+      final dobStr = prefs.getString('onboarding_date_of_birth');
+      if (dobStr != null) {
+        _dateOfBirth = DateTime.tryParse(dobStr);
+      }
+
+      _gender = prefs.getString('onboarding_gender');
+      _country = prefs.getString('onboarding_country');
+      _countryCtrl.text = _country ?? '';
+
+      _city = prefs.getString('onboarding_city');
+      _cityCtrl.text = _city ?? '';
+
+      _heightCm = prefs.getInt('onboarding_height_cm');
+      if (_heightCm != null) {
+        _heightCtrl.text = _heightCm.toString();
+      }
+
+      _maritalStatus = prefs.getString('onboarding_marital_status');
+      _childrenStatus = prefs.getString('onboarding_children_status');
+      _emotionalReadiness = prefs.getString('onboarding_emotional_readiness');
+      _lookingFor = prefs.getString('onboarding_looking_for');
+      _highestEducation = prefs.getString('onboarding_highest_education');
+
+      _profession = prefs.getString('onboarding_profession');
+      _professionCtrl.text = _profession ?? '';
+
+      final langs = prefs.getStringList('onboarding_languages');
+      if (langs != null) {
+        _languages.clear();
+        _languages.addAll(langs);
+      }
+
+      _smokingHabit = prefs.getString('onboarding_smoking_habit');
+      _drinkingHabit = prefs.getString('onboarding_drinking_habit');
+
+      _currentStep = prefs.getInt('onboarding_current_step') ?? 0;
+    });
+  }
+
+  Future<void> _saveToCache(String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value == null) {
+      await prefs.remove(key);
+    } else if (value is String) {
+      await prefs.setString(key, value);
+    } else if (value is int) {
+      await prefs.setInt(key, value);
+    } else if (value is bool) {
+      await prefs.setBool(key, value);
+    } else if (value is List<String>) {
+      await prefs.setStringList(key, value);
+    }
+  }
+
+  Future<void> _clearCachedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = [
+      'onboarding_first_name',
+      'onboarding_last_name',
+      'onboarding_date_of_birth',
+      'onboarding_gender',
+      'onboarding_country',
+      'onboarding_city',
+      'onboarding_height_cm',
+      'onboarding_marital_status',
+      'onboarding_children_status',
+      'onboarding_emotional_readiness',
+      'onboarding_looking_for',
+      'onboarding_highest_education',
+      'onboarding_profession',
+      'onboarding_languages',
+      'onboarding_smoking_habit',
+      'onboarding_drinking_habit',
+      'onboarding_current_step',
+    ];
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
+  }
+
+  @override
   void dispose() {
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
@@ -61,19 +164,25 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   }
 
   bool get _canProceed {
+    final nameRegex = RegExp(r"^[a-zA-Z\s\-\']+$");
+    final cityRegex = RegExp(r"^[a-zA-Z\s\-\'\.]+$");
+    final professionRegex = RegExp(r"^[a-zA-Z0-9\s\-\'\.\,]+$");
+
     switch (_currentStep) {
       case 0:
         return _firstName != null &&
-            _firstName!.isNotEmpty &&
+            nameRegex.hasMatch(_firstName!.trim()) &&
             _lastName != null &&
-            _lastName!.isNotEmpty &&
+            nameRegex.hasMatch(_lastName!.trim()) &&
             _dateOfBirth != null;
       case 1:
         return _gender != null;
       case 2:
         return _maritalStatus != null;
       case 3:
-        return _country != null && _city != null && _city!.isNotEmpty;
+        return _country != null &&
+            _city != null &&
+            cityRegex.hasMatch(_city!.trim());
       case 4:
         return _emotionalReadiness != null;
       case 5:
@@ -87,7 +196,8 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       case 9:
         return _highestEducation != null;
       case 10:
-        return _profession != null && _profession!.isNotEmpty;
+        return _profession != null &&
+            professionRegex.hasMatch(_profession!.trim());
       case 11:
         return _smokingHabit != null && _drinkingHabit != null;
       default:
@@ -101,6 +211,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         _goingForward = true;
         _currentStep++;
       });
+      _saveToCache('onboarding_current_step', _currentStep);
     } else {
       _submit();
     }
@@ -112,6 +223,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         _goingForward = false;
         _currentStep--;
       });
+      _saveToCache('onboarding_current_step', _currentStep);
     }
   }
 
@@ -143,6 +255,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('name', name);
+      await _clearCachedData();
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -169,39 +282,45 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   Widget _buildTopNavigation() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _currentStep == 0 ? null : _back,
-            icon: Icon(
-              _currentStep == 0
-                  ? Icons.close
-                  : Icons.arrow_back_ios_new_rounded,
-              size: 20,
-            ),
-            color: Colors.black87,
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value: (_currentStep + 1) / _totalSteps,
-                  backgroundColor: AppColors.borderColor,
-                  valueColor: const AlwaysStoppedAnimation<Color>(
-                    AppColors.primary,
+      child: SizedBox(
+        height: 48, // keeps navbar height stable
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (_currentStep > 0)
+              IconButton(
+                onPressed: _back,
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: Colors.black87,
+                ),
+              ),
+
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: _currentStep > 0 ? 12 : 0,
+                  right: 12,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: (_currentStep + 1) / _totalSteps,
+                    backgroundColor: AppColors.borderColor,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
+                    ),
+                    minHeight: 6,
                   ),
-                  minHeight: 6,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
-
 
   Widget _buildCurrentStep() {
     switch (_currentStep) {
@@ -210,80 +329,128 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           firstNameCtrl: _firstNameCtrl,
           lastNameCtrl: _lastNameCtrl,
           dateOfBirth: _dateOfBirth,
-          onFirstNameChanged: (v) => setState(() => _firstName = v),
-          onLastNameChanged: (v) => setState(() => _lastName = v),
-          onDateOfBirthChanged: (d) => setState(() => _dateOfBirth = d),
+          onFirstNameChanged: (v) {
+            setState(() => _firstName = v);
+            _saveToCache('onboarding_first_name', v);
+          },
+          onLastNameChanged: (v) {
+            setState(() => _lastName = v);
+            _saveToCache('onboarding_last_name', v);
+          },
+          onDateOfBirthChanged: (d) {
+            setState(() => _dateOfBirth = d);
+            _saveToCache('onboarding_date_of_birth', d.toIso8601String());
+          },
         );
       case 1:
         return GenderStep(
           selectedGender: _gender,
-          onGenderChanged: (v) => setState(() => _gender = v),
+          onGenderChanged: (v) {
+            setState(() => _gender = v);
+            _saveToCache('onboarding_gender', v);
+          },
         );
       case 2:
         return MaritalStatusStep(
           selectedMaritalStatus: _maritalStatus,
-          onMaritalStatusChanged: (v) => setState(() => _maritalStatus = v),
+          onMaritalStatusChanged: (v) {
+            setState(() => _maritalStatus = v);
+            _saveToCache('onboarding_marital_status', v);
+          },
         );
       case 3:
         return LocationStep(
           country: _country,
           cityCtrl: _cityCtrl,
-          onCountryChanged: (v) => setState(() {
-            _country = v;
-            _countryCtrl.text = v;
-          }),
-          onCityChanged: (v) => setState(() => _city = v),
+          onCountryChanged: (v) {
+            setState(() {
+              _country = v;
+              _countryCtrl.text = v;
+            });
+            _saveToCache('onboarding_country', v);
+          },
+          onCityChanged: (v) {
+            setState(() => _city = v);
+            _saveToCache('onboarding_city', v);
+          },
         );
       case 4:
         return EmotionalReadinessStep(
           selectedReadiness: _emotionalReadiness,
-          onReadinessChanged: (v) => setState(() => _emotionalReadiness = v),
+          onReadinessChanged: (v) {
+            setState(() => _emotionalReadiness = v);
+            _saveToCache('onboarding_emotional_readiness', v);
+          },
         );
       case 5:
         return LanguagesStep(
           selectedLanguages: _languages,
-          onLanguageToggled: (l) => setState(() {
-            if (_languages.contains(l)) {
-              _languages.remove(l);
-            } else {
-              _languages.add(l);
-            }
-          }),
+          onLanguageToggled: (l) {
+            setState(() {
+              if (_languages.contains(l)) {
+                _languages.remove(l);
+              } else {
+                _languages.add(l);
+              }
+            });
+            _saveToCache('onboarding_languages', _languages);
+          },
         );
       case 6:
         return ChildrenStep(
           selectedChildrenStatus: _childrenStatus,
-          onChildrenStatusChanged: (v) => setState(() => _childrenStatus = v),
+          onChildrenStatusChanged: (v) {
+            setState(() => _childrenStatus = v);
+            _saveToCache('onboarding_children_status', v);
+          },
         );
       case 7:
         return HeightStep(
           heightCm: _heightCm,
-          onHeightChanged: (v) => setState(() {
-            _heightCm = v;
-            _heightCtrl.text = v.toString();
-          }),
+          onHeightChanged: (v) {
+            setState(() {
+              _heightCm = v;
+              _heightCtrl.text = v.toString();
+            });
+            _saveToCache('onboarding_height_cm', v);
+          },
         );
       case 8:
         return LookingForStep(
           selectedLookingFor: _lookingFor,
-          onLookingForChanged: (v) => setState(() => _lookingFor = v),
+          onLookingForChanged: (v) {
+            setState(() => _lookingFor = v);
+            _saveToCache('onboarding_looking_for', v);
+          },
         );
       case 9:
         return EducationStep(
           selectedEducation: _highestEducation,
-          onEducationChanged: (v) => setState(() => _highestEducation = v),
+          onEducationChanged: (v) {
+            setState(() => _highestEducation = v);
+            _saveToCache('onboarding_highest_education', v);
+          },
         );
       case 10:
         return ProfessionStep(
           professionCtrl: _professionCtrl,
-          onProfessionChanged: (v) => setState(() => _profession = v),
+          onProfessionChanged: (v) {
+            setState(() => _profession = v);
+            _saveToCache('onboarding_profession', v);
+          },
         );
       case 11:
         return HabitsStep(
           drinkingHabit: _drinkingHabit,
           smokingHabit: _smokingHabit,
-          onDrinkingChanged: (v) => setState(() => _drinkingHabit = v),
-          onSmokingChanged: (v) => setState(() => _smokingHabit = v),
+          onDrinkingChanged: (v) {
+            setState(() => _drinkingHabit = v);
+            _saveToCache('onboarding_drinking_habit', v);
+          },
+          onSmokingChanged: (v) {
+            setState(() => _smokingHabit = v);
+            _saveToCache('onboarding_smoking_habit', v);
+          },
         );
       default:
         return const SizedBox.shrink();
@@ -311,15 +478,16 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
                     return FadeTransition(
                       opacity: animation,
                       child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: offsetBegin,
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeOutCubic,
-                          ),
-                        ),
+                        position:
+                            Tween<Offset>(
+                              begin: offsetBegin,
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeOutCubic,
+                              ),
+                            ),
                         child: child,
                       ),
                     );

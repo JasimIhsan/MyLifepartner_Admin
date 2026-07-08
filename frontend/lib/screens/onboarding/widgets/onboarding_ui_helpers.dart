@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
 class OnboardingStepTitle extends StatelessWidget {
@@ -53,6 +54,8 @@ class OnboardingInputField extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget? suffixIcon;
   final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
+  final String? errorText;
 
   const OnboardingInputField({
     super.key,
@@ -64,41 +67,70 @@ class OnboardingInputField extends StatelessWidget {
     this.onTap,
     this.suffixIcon,
     this.onChanged,
+    this.inputFormatters,
+    this.errorText,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFF0E6E6), width: 1),
-      ),
-      child: TextField(
-        controller: controller,
-        readOnly: isReadonly,
-        onTap: onTap,
-        keyboardType: keyboardType,
-        textCapitalization: capitalization,
-        onChanged: onChanged,
-        style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: AppColors.textSecondary, fontSize: 16),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 18,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: errorText != null
+                  ? Colors.red.shade300
+                  : const Color(0xFFF0E6E6),
+              width: errorText != null ? 1.5 : 1,
+            ),
           ),
-          border: InputBorder.none,
-          suffixIcon: suffixIcon != null
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: suffixIcon,
-                )
-              : null,
+          child: TextField(
+            controller: controller,
+            readOnly: isReadonly,
+            onTap: onTap,
+            keyboardType: keyboardType,
+            textCapitalization: capitalization,
+            onChanged: onChanged,
+            inputFormatters: inputFormatters,
+            style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 16,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 18,
+              ),
+              border: InputBorder.none,
+              suffixIcon: suffixIcon != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: suffixIcon,
+                    )
+                  : null,
+            ),
+          ),
         ),
-      ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 8, top: 6),
+            child: Text(
+              errorText!,
+              style: TextStyle(
+                color: Colors.red.shade700,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
@@ -182,10 +214,19 @@ class OnboardingLanguageChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        padding: EdgeInsets.only(
+          left: isSelected ? 14 : 18,
+          right: isSelected ? 12 : 18,
+          top: 12,
+          bottom: 12,
+        ),
         margin: const EdgeInsets.only(right: 10, bottom: 12),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : const Color(0xFFF5F2F2),
+          color: Colors.white,
+          border: Border.all(
+            color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
+            width: isSelected ? 1.5 : 1,
+          ),
           borderRadius: BorderRadius.circular(30),
         ),
         child: Row(
@@ -194,14 +235,18 @@ class OnboardingLanguageChip extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? Colors.white : AppColors.textPrimary,
+                color: isSelected ? AppColors.primary : AppColors.textPrimary,
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
             if (isSelected) ...[
               const SizedBox(width: 6),
-              const Icon(Icons.check_circle, color: Colors.white, size: 16),
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.primary,
+                size: 16,
+              ),
             ],
           ],
         ),
@@ -252,7 +297,10 @@ class OnboardingContinueButton extends StatelessWidget {
               )
             : Text(
                 isLastStep ? 'Finish' : 'Continue',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
       ),
     );

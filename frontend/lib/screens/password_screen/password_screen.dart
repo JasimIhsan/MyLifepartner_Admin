@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
@@ -10,9 +9,9 @@ import 'package:life_partner_again/screens/partner_preference/partner_preference
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
+import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:life_partner_again/widgets/auth_layout.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
-import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -346,6 +345,18 @@ class _PasswordScreenState extends State<PasswordScreen> {
                     }
                     if (value.length < 8) {
                       return 'Password must be at least 8 characters';
+                    }
+                    if (!value.contains(RegExp(r'[A-Z]'))) {
+                      return 'Password must contain at least one uppercase letter';
+                    }
+                    if (!value.contains(RegExp(r'[a-z]'))) {
+                      return 'Password must contain at least one lowercase letter';
+                    }
+                    if (!value.contains(RegExp(r'[0-9]'))) {
+                      return 'Password must contain at least one number';
+                    }
+                    if (!value.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) {
+                      return 'Password must contain at least one special character';
                     }
                     return null;
                   },

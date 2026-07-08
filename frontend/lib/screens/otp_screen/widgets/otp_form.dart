@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter/services.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:pinput/pinput.dart';
@@ -55,6 +55,8 @@ class OtpForm extends StatelessWidget {
               length: 6,
               controller: pinController,
               focusNode: focusNode,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               defaultPinTheme: defaultPinTheme,
               separatorBuilder: (index) => const SizedBox(width: 8),
               validator: (value) {
