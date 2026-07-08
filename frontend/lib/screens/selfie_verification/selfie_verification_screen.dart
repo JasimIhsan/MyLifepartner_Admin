@@ -31,7 +31,6 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
   bool _isPermissionDenied = false;
   bool _isCapturing = false;
   String? _errorMessage;
-  LocationPermission? _locationPermission;
   bool _hasDeniedLocation = false;
 
   XFile? _frontImage;
@@ -63,7 +62,6 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
     final permission = await Geolocator.checkPermission();
     if (mounted) {
       setState(() {
-        _locationPermission = permission;
         if (permission == LocationPermission.always ||
             permission == LocationPermission.whileInUse) {
           _hasDeniedLocation = false;
@@ -192,9 +190,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
       }
 
       if (mounted) {
-        setState(() {
-          _locationPermission = permission;
-        });
+        setState(() {});
       }
 
       if (permission == LocationPermission.denied ||

@@ -101,8 +101,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
     MatchRecommendation profile,
     String action,
   ) async {
-    if (_actionedProfileIds.contains(profile.id) || _loadingAction != null)
+    if (_actionedProfileIds.contains(profile.id) || _loadingAction != null) {
       return;
+    }
 
     setState(() {
       _loadingAction = action;

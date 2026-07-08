@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/user_image.dart';
-import 'package:life_partner_again/screens/login_screen/login_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
-import 'package:life_partner_again/widgets/custom_button.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 
 import 'widgets/empty_slot.dart';
 import 'widgets/filled_slot.dart';
@@ -188,18 +186,6 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     );
   }
 
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-        (route) => false,
-      );
-    }
-  }
-
   Widget _buildSlot(int index) {
     final isNextUpload = index == _images.length && _isUploading;
 
@@ -251,130 +237,132 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         _handleBackPress();
       },
       child: Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: const SizedBox.shrink(),
-        actions: [
-          IconButton(
-            icon: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.borderColor, width: 1.5),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          leading: const SizedBox.shrink(),
+          actions: [
+            IconButton(
+              icon: Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderColor, width: 1.5),
+                ),
+                child: const Icon(
+                  Icons.question_mark_rounded,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
               ),
-              child: const Icon(
-                Icons.question_mark_rounded,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
+              onPressed: _showPhotoTips,
             ),
-            onPressed: _showPhotoTips,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: _isLoading && _images.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              )
-            : Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ── Header ───────────────────────────────────────
-                          Text(
-                            'Add your photos',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.textPrimary,
+          ],
+        ),
+        body: SafeArea(
+          top: false,
+          child: _isLoading && _images.isEmpty
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : Column(
+                  children: [
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── Header ───────────────────────────────────────
+                            Text(
+                              'Add your photos',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Upload 4 clear photos of yourself. Tap any photo to manage it.',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppColors.textSecondary,
-                              height: 1.5,
+                            const SizedBox(height: 6),
+                            Text(
+                              'Upload 4 clear photos of yourself. Tap any photo to manage it.',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textSecondary,
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 28),
+                            const SizedBox(height: 28),
 
-                          // ── Photo grid ──────────────────────────────────
-                          AspectRatio(
-                                aspectRatio: 0.8, // Taller ratio for main photo
-                                child: _buildSlot(0),
-                              )
-                              .animate()
-                              .fade(duration: 400.ms)
-                              .slideY(begin: 0.05),
+                            // ── Photo grid ──────────────────────────────────
+                            AspectRatio(
+                                  aspectRatio:
+                                      0.8, // Taller ratio for main photo
+                                  child: _buildSlot(0),
+                                )
+                                .animate()
+                                .fade(duration: 400.ms)
+                                .slideY(begin: 0.05),
 
-                          const SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
-                          Row(
-                                children: [
-                                  Expanded(
-                                    child: AspectRatio(
-                                      aspectRatio: 0.75,
-                                      child: _buildSlot(1),
+                            Row(
+                                  children: [
+                                    Expanded(
+                                      child: AspectRatio(
+                                        aspectRatio: 0.75,
+                                        child: _buildSlot(1),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: AspectRatio(
-                                      aspectRatio: 0.75,
-                                      child: _buildSlot(2),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: AspectRatio(
+                                        aspectRatio: 0.75,
+                                        child: _buildSlot(2),
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: AspectRatio(
-                                      aspectRatio: 0.75,
-                                      child: _buildSlot(3),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: AspectRatio(
+                                        aspectRatio: 0.75,
+                                        child: _buildSlot(3),
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              )
-                              .animate()
-                              .fade(duration: 500.ms, delay: 100.ms)
-                              .slideY(begin: 0.1),
+                                  ],
+                                )
+                                .animate()
+                                .fade(duration: 500.ms, delay: 100.ms)
+                                .slideY(begin: 0.1),
 
-                          const SizedBox(height: 24),
-                        ],
+                            const SizedBox(height: 24),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
 
-                  // ── Continue button ───────────────────────────────────────
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
-                    child:
-                        CustomButton(
-                              text: 'Continue to Verification',
-                              onPressed: isValid ? _completeUpload : null,
-                              isLoading: _isSaving,
-                              height: 52,
-                            )
-                            .animate(target: isValid ? 1 : 0)
-                            .scale(
-                              duration: 300.ms,
-                              curve: Curves.easeOutBack,
-                              begin: const Offset(0.95, 0.95),
-                            ),
-                  ),
-                ],
-              ),
+                    // ── Continue button ───────────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
+                      child:
+                          CustomButton(
+                                text: 'Continue to Verification',
+                                onPressed: isValid ? _completeUpload : null,
+                                isLoading: _isSaving,
+                                height: 52,
+                              )
+                              .animate(target: isValid ? 1 : 0)
+                              .scale(
+                                duration: 300.ms,
+                                curve: Curves.easeOutBack,
+                                begin: const Offset(0.95, 0.95),
+                              ),
+                    ),
+                  ],
+                ),
+        ),
       ),
-    ));
+    );
   }
 }
