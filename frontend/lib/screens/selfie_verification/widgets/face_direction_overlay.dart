@@ -4,10 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
-/// Animated overlay that visually indicates which face direction
-/// the user should present for the current selfie step.
-///
-/// Steps: 0 = front, 1 = left profile, 2 = right profile.
 class FaceDirectionOverlay extends StatelessWidget {
   final int step;
   final double size;
@@ -22,22 +18,32 @@ class FaceDirectionOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox.square(
       dimension: size,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 400),
-        child: _buildForStep(),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          _ScannerBase(size: size),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _buildStep(),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildForStep() {
+  Widget _buildStep() {
     switch (step) {
       case 0:
-        return _FrontFaceIndicator(key: const ValueKey(0), size: size);
+        return _FrontOverlay(key: const ValueKey('front'), size: size);
       case 1:
-        return _SideIndicator(key: const ValueKey(1), size: size, isLeft: true);
+        return _TurnOverlay(
+          key: const ValueKey('left'),
+          size: size,
+          isLeft: true,
+        );
       case 2:
-        return _SideIndicator(
-          key: const ValueKey(2),
+        return _TurnOverlay(
+          key: const ValueKey('right'),
           size: size,
           isLeft: false,
         );
@@ -47,266 +53,197 @@ class FaceDirectionOverlay extends StatelessWidget {
   }
 }
 
-// ── Front face indicator ────────────────────────────────────────────────────
-/// A pulsing crosshair/target that says "look straight ahead."
-class _FrontFaceIndicator extends StatelessWidget {
+class _ScannerBase extends StatelessWidget {
   final double size;
 
-  const _FrontFaceIndicator({super.key, required this.size});
+  const _ScannerBase({required this.size});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Pulsing outer ring
-          CustomPaint(
-            size: Size(size * 0.55, size * 0.55),
-            painter: _PulseRingPainter(),
-          )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scaleXY(begin: 0.92, end: 1.06, duration: 1200.ms)
-              .fade(begin: 0.3, end: 0.7, duration: 1200.ms),
-
-          // Centre dot
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.textPrimary.withValues(alpha: 0.8),
-            ),
-          )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scaleXY(begin: 0.8, end: 1.3, duration: 900.ms),
-
-          // Small crosshair lines
-          CustomPaint(
-            size: Size(size * 0.35, size * 0.35),
-            painter: _CrosshairPainter(),
-          ).animate().fade(duration: 600.ms),
-
-          // "Look straight" label at the bottom
-          Positioned(
-            bottom: size * 0.12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'Look straight',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ).animate().fade(duration: 500.ms).slideY(begin: 0.3),
-          ),
-        ],
+    return Container(
+      margin: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.35),
+          width: 2,
+        ),
       ),
     );
   }
 }
 
-// ── Side turn indicator ─────────────────────────────────────────────────────
-/// An animated curved arrow telling the user to turn left or right.
-class _SideIndicator extends StatelessWidget {
+class _FrontOverlay extends StatelessWidget {
   final double size;
-  final bool isLeft;
 
-  const _SideIndicator({
-    super.key,
-    required this.size,
-    required this.isLeft,
-  });
+  const _FrontOverlay({super.key, required this.size});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Curved arrow
-          Transform(
-            alignment: Alignment.center,
-            transform: isLeft
-                ? (Matrix4.identity()..setEntry(0, 0, -1.0))
-                : Matrix4.identity(),
-            child: CustomPaint(
-              size: Size(size * 0.7, size * 0.7),
-              painter: _CurvedArrowPainter(),
-            )
-                .animate(onPlay: (c) => c.repeat())
-                .fade(begin: 0.4, end: 1.0, duration: 1000.ms)
-                .then()
-                .fade(begin: 1.0, end: 0.4, duration: 1000.ms),
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        CustomPaint(
+          size: Size(size * 0.58, size * 0.68),
+          painter: _FaceOvalPainter(
+            color: AppColors.primary.withValues(alpha: 0.8),
           ),
+        ),
 
-          // Bouncing chevrons
-          Positioned(
-            left: isLeft ? size * 0.08 : null,
-            right: isLeft ? null : size * 0.08,
-            child: _buildChevrons(),
+        Positioned(
+          bottom: size * 0.02,
+          child: const _InstructionLabel(
+            text: 'LOOK STRAIGHT',
+            icon: Icons.face_retouching_natural_rounded,
           ),
-
-          // Label
-          Positioned(
-            bottom: size * 0.12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.6),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    isLeft ? Icons.arrow_back : Icons.arrow_forward,
-                    size: 14,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    isLeft ? 'Turn left' : 'Turn right',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ],
-              ),
-            ).animate().fade(duration: 500.ms).slideY(begin: 0.3),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+}
 
-  Widget _buildChevrons() {
-    final icon = isLeft ? Icons.chevron_left : Icons.chevron_right;
-    return Column(
+class _RunningChevrons extends StatelessWidget {
+  final bool isLeft;
+  final double size;
+
+  const _RunningChevrons({required this.isLeft, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    final singleChevron = isLeft
+        ? Icons.chevron_left_rounded
+        : Icons.chevron_right_rounded;
+
+    return Row(
       mainAxisSize: MainAxisSize.min,
-      children: List.generate(3, (i) {
-        return Icon(icon, size: 28, color: AppColors.textPrimary.withValues(alpha: 0.7))
-            .animate(
-              onPlay: (c) => c.repeat(),
-              delay: Duration(milliseconds: i * 200),
+      children: List.generate(3, (index) {
+        final int animationOrder = isLeft ? (2 - index) : index;
+        return Icon(singleChevron, size: size * 0.16, color: AppColors.primary)
+            .animate(onPlay: (controller) => controller.repeat())
+            .fadeIn(
+              begin: 0.25,
+              duration: 400.ms,
+              delay: (animationOrder * 150).ms,
             )
-            .slideX(
-              begin: 0,
-              end: isLeft ? -0.3 : 0.3,
-              duration: 800.ms,
-            )
-            .fade(begin: 0.3, end: 0.9, duration: 400.ms)
-            .then()
-            .fade(begin: 0.9, end: 0.0, duration: 400.ms);
+            .then(delay: 150.ms)
+            .fade(begin: 1.0, end: 0.25, duration: 400.ms);
       }),
     );
   }
 }
 
-// ── Custom painters ─────────────────────────────────────────────────────────
+class _TurnOverlay extends StatelessWidget {
+  final double size;
+  final bool isLeft;
 
-class _PulseRingPainter extends CustomPainter {
+  const _TurnOverlay({super.key, required this.size, required this.isLeft});
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.textPrimary.withValues(alpha: 0.5)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+  Widget build(BuildContext context) {
+    final labelIcon = isLeft
+        ? Icons.arrow_back_rounded
+        : Icons.arrow_forward_rounded;
 
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2;
-    canvas.drawCircle(center, radius, paint);
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        CustomPaint(
+          size: Size(size * 0.58, size * 0.68),
+          painter: _FaceOvalPainter(
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
+        ),
 
-    // Inner dashed ring
-    paint
-      ..strokeWidth = 1.0
-      ..color = AppColors.textPrimary.withValues(alpha: 0.3);
-    canvas.drawCircle(center, radius * 0.7, paint);
+        _RunningChevrons(isLeft: isLeft, size: size),
+
+        Positioned(
+          bottom: size * 0.02,
+          child: _InstructionLabel(
+            text: isLeft ? 'TURN LEFT' : 'TURN RIGHT',
+            icon: labelIcon,
+          ),
+        ),
+      ],
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _CrosshairPainter extends CustomPainter {
+class _InstructionLabel extends StatelessWidget {
+  final String text;
+  final IconData icon;
+
+  const _InstructionLabel({required this.text, required this.icon});
+
   @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = AppColors.textPrimary.withValues(alpha: 0.45)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
-
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final gap = size.width * 0.12;
-    final arm = size.width * 0.3;
-
-    // Top
-    canvas.drawLine(Offset(cx, cy - gap), Offset(cx, cy - gap - arm), paint);
-    // Bottom
-    canvas.drawLine(Offset(cx, cy + gap), Offset(cx, cy + gap + arm), paint);
-    // Left
-    canvas.drawLine(Offset(cx - gap, cy), Offset(cx - gap - arm, cy), paint);
-    // Right
-    canvas.drawLine(Offset(cx + gap, cy), Offset(cx + gap + arm, cy), paint);
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.65),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: Colors.white, size: 15),
+          const SizedBox(width: 7),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ],
+      ),
+    );
   }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-class _CurvedArrowPainter extends CustomPainter {
+class _FaceOvalPainter extends CustomPainter {
+  final Color color;
+
+  _FaceOvalPainter({required this.color});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.textPrimary.withValues(alpha: 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0
-      ..strokeCap = StrokeCap.round;
+      ..color = color
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
 
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final radius = size.width * 0.35;
+    final rect = Rect.fromCenter(
+      center: size.center(Offset.zero),
+      width: size.width * 0.72,
+      height: size.height * 0.85,
+    );
 
-    // Draw arc from ~-30° to ~90° (right side arc)
-    final rect = Rect.fromCircle(center: Offset(cx, cy), radius: radius);
-    const startAngle = -math.pi / 6;
-    const sweepAngle = math.pi * 0.65;
-    canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+    final path = Path()..addOval(rect);
 
-    // Arrowhead at the end of the arc
-    final endAngle = startAngle + sweepAngle;
-    final endX = cx + radius * math.cos(endAngle);
-    final endY = cy + radius * math.sin(endAngle);
+    const dashWidth = 8.0;
+    const dashSpace = 6.0;
 
-    final arrowSize = size.width * 0.08;
-    final a1 = endAngle - math.pi * 0.7;
-    final a2 = endAngle - math.pi * 0.3;
+    for (final metric in path.computeMetrics()) {
+      double distance = 0;
 
-    final path = Path()
-      ..moveTo(endX + arrowSize * math.cos(a1), endY + arrowSize * math.sin(a1))
-      ..lineTo(endX, endY)
-      ..lineTo(
-        endX + arrowSize * math.cos(a2),
-        endY + arrowSize * math.sin(a2),
-      );
+      while (distance < metric.length) {
+        canvas.drawPath(
+          metric.extractPath(
+            distance,
+            math.min(distance + dashWidth, metric.length),
+          ),
+          paint,
+        );
 
-    paint.style = PaintingStyle.stroke;
-    canvas.drawPath(path, paint);
+        distance += dashWidth + dashSpace;
+      }
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _FaceOvalPainter oldDelegate) {
+    return oldDelegate.color != color;
+  }
 }

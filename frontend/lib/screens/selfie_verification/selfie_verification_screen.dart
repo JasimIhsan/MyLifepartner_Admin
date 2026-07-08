@@ -7,10 +7,10 @@ import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
-import 'package:life_partner_again/screens/login_screen/login_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/widgets/face_direction_overlay.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {
   const SelfieVerificationScreen({super.key});
@@ -20,14 +20,19 @@ class SelfieVerificationScreen extends StatefulWidget {
       _SelfieVerificationScreenState();
 }
 
-class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
+class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
+    with WidgetsBindingObserver {
   final ProfileRepository _profileRepository = ProfileRepository();
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
 
   bool _isCameraInitialized = false;
   bool _isLoading = false;
+  bool _isPermissionDenied = false;
+  bool _isCapturing = false;
   String? _errorMessage;
+  LocationPermission? _locationPermission;
+  bool _hasDeniedLocation = false;
 
   XFile? _frontImage;
   XFile? _leftImage;
@@ -39,7 +44,32 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initCamera();
+    _checkLocationPermission();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (!_isCameraInitialized) {
+        _initCamera();
+      }
+      _checkLocationPermission();
+    }
+  }
+
+  Future<void> _checkLocationPermission() async {
+    final permission = await Geolocator.checkPermission();
+    if (mounted) {
+      setState(() {
+        _locationPermission = permission;
+        if (permission == LocationPermission.always ||
+            permission == LocationPermission.whileInUse) {
+          _hasDeniedLocation = false;
+        }
+      });
+    }
   }
 
   Future<void> _initCamera() async {
@@ -56,25 +86,58 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
           enableAudio: false,
         );
         await _cameraController!.initialize();
-        if (mounted) setState(() => _isCameraInitialized = true);
+        if (mounted) {
+          setState(() {
+            _isCameraInitialized = true;
+            _isPermissionDenied = false;
+            _errorMessage = null;
+          });
+        }
       } else {
         setState(() => _errorMessage = 'No cameras available');
       }
     } catch (e) {
-      setState(() => _errorMessage = 'Failed to initialize camera: $e');
+      bool isPermissionError = false;
+      if (e is CameraException) {
+        if (e.code == 'cameraPermission' ||
+            e.code == 'CameraAccessDenied' ||
+            e.code == 'permissionDenied') {
+          isPermissionError = true;
+        }
+      }
+      if (e.toString().toLowerCase().contains('permission')) {
+        isPermissionError = true;
+      }
+
+      if (isPermissionError) {
+        setState(() {
+          _isPermissionDenied = true;
+          _errorMessage =
+              'Camera access is required for verification. Please grant camera access in settings.';
+        });
+      } else {
+        setState(() => _errorMessage = 'Failed to initialize camera: $e');
+      }
     }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cameraController?.dispose();
     super.dispose();
   }
 
   Future<void> _takeSelfie() async {
-    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+    if (_cameraController == null ||
+        !_cameraController!.value.isInitialized ||
+        _isCapturing) {
       return;
     }
+
+    setState(() {
+      _isCapturing = true;
+    });
 
     try {
       await HapticFeedback.mediumImpact();
@@ -96,6 +159,12 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to take picture: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isCapturing = false;
+        });
       }
     }
   }
@@ -120,14 +189,21 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied) {
-          throw 'Location permission denied.';
-        }
       }
 
-      if (permission == LocationPermission.deniedForever) {
-        throw 'Location permission permanently denied.\n'
-            'Please enable it in app settings.';
+      if (mounted) {
+        setState(() {
+          _locationPermission = permission;
+        });
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        setState(() {
+          _hasDeniedLocation = true;
+          _isLoading = false;
+        });
+        return;
       }
 
       final position = await Geolocator.getCurrentPosition(
@@ -177,18 +253,6 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
       ),
       builder: (_) => const _SelfieTipsSheet(),
     );
-  }
-
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-        (route) => false,
-      );
-    }
   }
 
   void _retakeAll() {
@@ -241,6 +305,25 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
     );
   }
 
+  Future<void> _handleBackPress() async {
+    if (!mounted) return;
+    await CustomBottomSheet.show(
+      context: context,
+      type: BottomSheetType.confirmation,
+      title: 'Exit App',
+      message: 'Are you sure you want to exit the app?',
+      primaryButtonText: 'Exit',
+      onPrimaryPressed: () {
+        SystemNavigator.pop();
+      },
+      secondaryButtonText: 'Cancel',
+      onSecondaryPressed: () {
+        Navigator.of(context).pop();
+      },
+      imagePath: 'assets/images/illustrations/exit.png',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final double circleDia = (MediaQuery.of(context).size.width * 0.78).clamp(
@@ -248,7 +331,13 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
       320.0,
     );
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -270,14 +359,6 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               ),
             ),
             onPressed: _showTips,
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.logout,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-            onPressed: _logout,
           ),
         ],
       ),
@@ -401,13 +482,57 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
                               ? Center(
                                   child: Padding(
                                     padding: const EdgeInsets.all(24),
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                      textAlign: TextAlign.center,
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          _isPermissionDenied
+                                              ? Icons.videocam_off_outlined
+                                              : Icons.error_outline,
+                                          color: AppColors.textSecondary,
+                                          size: 32,
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          _errorMessage!,
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        if (_isPermissionDenied) ...[
+                                          const SizedBox(height: 16),
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              await Geolocator.openAppSettings();
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor:
+                                                  AppColors.primary,
+                                              foregroundColor: Colors.white,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 20,
+                                                    vertical: 10,
+                                                  ),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                              ),
+                                              elevation: 0,
+                                            ),
+                                            child: const Text(
+                                              'Grant Access',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                 )
@@ -435,20 +560,22 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               const SizedBox(height: 32),
 
               if (_currentStep < 3) ...[
-                _PrimaryButton(
-                  label: 'Take Selfie',
-                  onPressed: _isCameraInitialized && !_isLoading
-                      ? _takeSelfie
-                      : null,
-                ),
+                _buildShutterButton(),
               ] else ...[
                 _buildPreviewThumbnails(),
                 const SizedBox(height: 32),
-                _PrimaryButton(
-                  label: 'Complete Verification',
-                  isLoading: _isLoading,
-                  onPressed: _isLoading ? null : _submitVerification,
-                ),
+                _hasDeniedLocation
+                    ? _PrimaryButton(
+                        label: 'Grant Location Access',
+                        onPressed: () async {
+                          await Geolocator.openAppSettings();
+                        },
+                      )
+                    : _PrimaryButton(
+                        label: 'Complete Verification',
+                        isLoading: _isLoading,
+                        onPressed: _isLoading ? null : _submitVerification,
+                      ),
                 const SizedBox(height: 14),
                 TextButton(
                   onPressed: _retakeAll,
@@ -464,6 +591,53 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen> {
               ],
               const SizedBox(height: 24),
             ],
+          ),
+        ),
+      ),
+    ));
+  }
+
+  Widget _buildShutterButton() {
+    final bool isEnabled = _isCameraInitialized && !_isLoading && !_isCapturing;
+
+    return GestureDetector(
+      onTap: isEnabled ? _takeSelfie : null,
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          width: 80,
+          height: 80,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: isEnabled
+                  ? AppColors.primary
+                  : AppColors.primary.withValues(alpha: 0.3),
+              width: 4,
+            ),
+          ),
+          padding: const EdgeInsets.all(6),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isEnabled
+                  ? AppColors.primary
+                  : AppColors.primary.withValues(alpha: 0.3),
+            ),
+            child: _isCapturing
+                ? const Padding(
+                    padding: EdgeInsets.all(16),
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3,
+                    ),
+                  )
+                : const Icon(
+                    Icons.camera_alt_rounded,
+                    color: Colors.white,
+                    size: 26,
+                  ),
           ),
         ),
       ),
@@ -610,14 +784,10 @@ class _SelfieTipsSheet extends StatelessWidget {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: AppColors.textWhite,
+                            color: AppColors.background,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(
-                            icon,
-                            size: 20,
-                            color: AppColors.textPrimary,
-                          ),
+                          child: Icon(icon, size: 20, color: AppColors.primary),
                         ),
                         const SizedBox(width: 16),
                         Expanded(

@@ -3,6 +3,8 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/services.dart';
+import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 
 import 'package:life_partner_again/screens/partner_preference/widgets/age_pref_step.dart';
@@ -288,9 +290,38 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     }
   }
 
+  Future<void> _handleBackPress() async {
+    if (_currentStep > 0) {
+      _back();
+      return;
+    }
+    if (!mounted) return;
+    await CustomBottomSheet.show(
+      context: context,
+      type: BottomSheetType.confirmation,
+      title: 'Exit App',
+      message: 'Are you sure you want to exit the app?',
+      primaryButtonText: 'Exit',
+      onPrimaryPressed: () {
+        SystemNavigator.pop();
+      },
+      secondaryButtonText: 'Cancel',
+      onSecondaryPressed: () {
+        Navigator.of(context).pop();
+      },
+      imagePath: 'assets/images/illustrations/exit.png',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPress();
+      },
+      child: Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
@@ -352,6 +383,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
