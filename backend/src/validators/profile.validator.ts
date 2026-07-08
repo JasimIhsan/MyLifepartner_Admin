@@ -27,6 +27,17 @@ export const basicProfileSchema = z.object({
    }),
 });
 
+const arrayOrSingle = <T extends z.ZodTypeAny>(schema: T, minMessage?: string) => {
+   let arraySchema = z.array(schema);
+   if (minMessage) {
+      arraySchema = arraySchema.min(1, minMessage);
+   }
+   return z.preprocess((val) => {
+      if (val === undefined || val === null) return undefined;
+      return Array.isArray(val) ? val : [val];
+   }, arraySchema);
+};
+
 export const partnerPreferenceSchema = z.object({
    body: z
       .object({
@@ -34,10 +45,10 @@ export const partnerPreferenceSchema = z.object({
          ageTo: z.number().int().min(18, "Minimum age is 18").max(100, "Maximum age is 100"),
          heightFrom: z.number().int().min(50, "Minimum height is 50cm").max(300, "Maximum height is 300cm"),
          heightTo: z.number().int().min(50, "Minimum height is 50cm").max(300, "Maximum height is 300cm"),
-         maritalStatus: z.array(MaritalStatusEnum).min(1, "Select at least one marital status"),
-         motherTongue: z.array(z.string()).min(1, "Select at least one language"),
-         highestEducation: z.array(z.string()).min(1, "Select at least one education level"),
-         occupation: z.array(z.string()).min(1, "Select at least one occupation"),
+         maritalStatus: arrayOrSingle(MaritalStatusEnum, "Select at least one marital status"),
+         motherTongue: arrayOrSingle(z.string(), "Select at least one language"),
+         highestEducation: arrayOrSingle(z.string(), "Select at least one education level"),
+         occupation: arrayOrSingle(z.string(), "Select at least one occupation"),
       })
       .refine(
          (data) => {

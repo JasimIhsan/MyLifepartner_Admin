@@ -1,0 +1,20 @@
+import { Router } from "express";
+import { jobController } from "@/composer/composer";
+
+const router = Router();
+
+/**
+ * @route   GET /api/v1/user/jobs
+ * @desc    Search/get all jobs
+ * @access  Private
+ */
+router.get("/", jobController.getJobs);
+
+/**
+ * @route   POST /api/v1/user/jobs
+ * @desc    Get or create a job
+ * @access  Private
+ */
+router.post("/", jobController.createJob);
+
+export default router;

@@ -29,6 +29,7 @@ import { SubscriptionPlanRepository } from "@/repositories/subscription-plan.rep
 import { UserSubscriptionRepository } from "@/repositories/user-subscription.repository";
 import { UserFeatureRepository } from "@/repositories/user.feature.repository";
 import { UserRepository } from "@/repositories/user.repository";
+import { JobRepository } from "@/repositories/job.repository";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Infrastructure Services
@@ -59,6 +60,7 @@ import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/user/user.auth.service";
 import { UserFeatureService } from "@/services/user/user.feature.service";
 import { ProfileService } from "@/services/user/user.profile.service";
+import { JobService } from "@/services/user/job.service";
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -80,6 +82,7 @@ import { MatchController } from "@/controllers/user/match.controller";
 import { ProfileController } from "@/controllers/user/profile.controller";
 import { ProfileImageController } from "@/controllers/user/profile.image.controller";
 import { UserController } from "@/controllers/user/user.controller";
+import { JobController } from "@/controllers/user/job.controller";
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
 import { ZegoController } from "@/controllers/user/zego.controller";
 
@@ -99,6 +102,7 @@ export const questionnaireRepository = new QuestionnaireRepository();
 export const subscriptionPlanRepository = new SubscriptionPlanRepository();
 export const userFeatureRepository = new UserFeatureRepository();
 export const userRepository = new UserRepository();
+export const jobRepository = new JobRepository();
 export const userSubscriptionRepository = new UserSubscriptionRepository();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -130,6 +134,7 @@ export const userService = new UserService(userRepository, s3Service);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
 export const authService = new AuthService(userRepository, otpService, jwtService, cacheService, subscriptionPlanRepository, userSubscriptionRepository);
 export const profileService = new ProfileService(profileRepository, s3Service);
+export const jobService = new JobService(jobRepository);
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository);
 
 // Shared services
@@ -158,6 +163,7 @@ export const authController = new AuthController(authService, userService);
 export const profileController = new ProfileController(profileService);
 export const profileImageController = new ProfileImageController(profileService);
 export const userController = new UserController(userService);
+export const jobController = new JobController(jobService);
 export const matchController = new MatchController(matchService);
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService, userFeatureService);
 export const chatController = new ChatController(chatService);

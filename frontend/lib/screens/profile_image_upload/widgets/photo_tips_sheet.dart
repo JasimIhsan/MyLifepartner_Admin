@@ -72,8 +72,7 @@ class PhotoTipsSheet extends StatelessWidget {
               const SizedBox(height: 4),
               const Text(
                 'Follow these tips for the best first impression.',
-                style: TextStyle(
-                    fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
               Expanded(
@@ -91,11 +90,10 @@ class PhotoTipsSheet extends StatelessWidget {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: AppColors.primaryLight,
+                            color: AppColors.background,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon,
-                              size: 20, color: AppColors.primary),
+                          child: Icon(icon, size: 20, color: AppColors.primary),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -143,10 +141,7 @@ class PhotoTipsSheet extends StatelessWidget {
                   ),
                   child: const Text(
                     'Got it',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),

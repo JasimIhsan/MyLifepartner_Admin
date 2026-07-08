@@ -12,9 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ProfileRepository {
   Future<List<ProfileSection>> getSections({bool? isPrimary}) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
       final queryParams = <String, dynamic>{};
       if (isPrimary != null) {
         queryParams['isPrimary'] = isPrimary;
@@ -23,7 +20,6 @@ class ProfileRepository {
       final response = await ApiService.client.get(
         '/profile/sections',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
@@ -41,7 +37,6 @@ class ProfileRepository {
   Future<List<ProfileQuestion>> getQuestions(int sectionOrder) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token'); // Assuming token is stored
       final userId = prefs.getInt('userId'); // Assuming userId is stored.
       // If userId not stored, maybe we get it from token or user provider.
       // For now, hardcoding or fetching from prefs.
@@ -58,7 +53,6 @@ class ProfileRepository {
       final response = await ApiService.client.get(
         '/profile/questions/$userId',
         queryParameters: {'sectionOrder': sectionOrder},
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
@@ -81,15 +75,12 @@ class ProfileRepository {
     debugPrint('👉 Question ID: $questionId');
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
-      debugPrint('👉 Token: $token');
       debugPrint('👉 User ID: $userId');
 
       final response = await ApiService.client.post(
         '/profile/questions/save-answer/$userId/$questionId',
         data: {'answer': answer},
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 200) {
@@ -105,7 +96,6 @@ class ProfileRepository {
   Future<void> completeProfile() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       if (userId == null) {
@@ -114,7 +104,6 @@ class ProfileRepository {
 
       final response = await ApiService.client.patch(
         '/profile/complete/$userId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 200) {
@@ -132,16 +121,16 @@ class ProfileRepository {
   Future<Map<String, dynamic>> getCompletionStatus() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       if (userId == null) {
-        throw Exception('User not logged in');
+        // Fallback or throw error.
+        // For dev, lets assume 1 if not found or handle gracefully
+        // throw Exception('User not logged in');
       }
 
       final response = await ApiService.client.get(
         '/profile/completion-status/$userId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode == 200) {
@@ -161,7 +150,6 @@ class ProfileRepository {
   Future<void> updateBasicProfile(Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       if (userId == null) throw Exception('User not logged in');
@@ -169,7 +157,6 @@ class ProfileRepository {
       final response = await ApiService.client.patch(
         '/profile/basic-profile/$userId',
         data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 200) {
@@ -187,7 +174,6 @@ class ProfileRepository {
   Future<void> updatePartnerPreference(Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       if (userId == null) throw Exception('User not logged in');
@@ -195,7 +181,6 @@ class ProfileRepository {
       final response = await ApiService.client.patch(
         '/profile/partner-preference/$userId',
         data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 200) {
@@ -213,12 +198,10 @@ class ProfileRepository {
   Future<List<UserImage>> getUserImages() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.get(
         '/profile/images/$userId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       return UserImageResponse.fromJson(response.data).data;
@@ -232,7 +215,6 @@ class ProfileRepository {
   Future<UserImage> uploadImage(XFile imageFile) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       final bytes = await imageFile.readAsBytes();
@@ -251,7 +233,6 @@ class ProfileRepository {
       final response = await ApiService.client.post(
         '/profile/upload-image/$userId',
         data: formData,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       return UserImage.fromJson(response.data['data']);
@@ -271,7 +252,6 @@ class ProfileRepository {
   ]) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       final frontBytes = await front.readAsBytes();
@@ -306,7 +286,6 @@ class ProfileRepository {
       final response = await ApiService.client.post(
         '/profile/upload-selfie/$userId',
         data: formData,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 201) {
@@ -324,12 +303,10 @@ class ProfileRepository {
   Future<void> removeImage(int imageId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.delete(
         '/profile/remove-image/$userId/$imageId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 200) {
@@ -345,12 +322,10 @@ class ProfileRepository {
   Future<void> setPrimaryImage(int imageId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.patch(
         '/profile/set-primary/$userId/$imageId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 200) {
@@ -368,12 +343,10 @@ class ProfileRepository {
   Future<void> completeImageUpload() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       final response = await ApiService.client.post(
         '/profile/complete-image-upload/$userId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       if (response.statusCode != 200) {

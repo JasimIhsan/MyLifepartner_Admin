@@ -14,16 +14,18 @@ const errorMiddleware = (err: ErrorWithStatus, req: Request, res: Response, _nex
    const error = normalizeError(err);
    const originalMessage = err.message || "Unknown error";
 
-   logger.error(`[${req.method}] ${req.path} >> StatusCode:: ${error.statusCode}, Message:: ${originalMessage}`);
+   logger.error(`[${req.method}] ${req.originalUrl} >> StatusCode:: ${error.statusCode}, Message:: ${originalMessage}`);
 
-   if (!(err instanceof ApiError) && err.stack) {
-      logger.error(`Unhandled Error Stack: ${err.stack}`);
+   if (env.NODE_ENV === "development" && error.stack) {
+      logger.error(`Error Stack: ${error.stack}`);
    }
 
    return res.status(error.statusCode).json({
-      ...error,
+      statusCode: error.statusCode,
+      data: error.data,
       message: error.message,
       success: false,
+      errors: error.errors,
       ...(env.NODE_ENV === "development" && {
          stack: error.stack,
       }),

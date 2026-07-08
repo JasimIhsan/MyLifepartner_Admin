@@ -214,13 +214,12 @@ class OnboardingLanguageChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: EdgeInsets.only(
-          left: isSelected ? 14 : 18,
-          right: isSelected ? 12 : 18,
-          top: 12,
-          bottom: 12,
+        padding: const EdgeInsets.only(
+          left: 35,
+          right: 16,
+          bottom: 14,
+          top: 14,
         ),
-        margin: const EdgeInsets.only(right: 10, bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
@@ -240,14 +239,18 @@ class OnboardingLanguageChip extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
-            if (isSelected) ...[
-              const SizedBox(width: 6),
-              const Icon(
+            const SizedBox(width: 6),
+            Visibility(
+              visible: isSelected,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: const Icon(
                 Icons.check_circle_rounded,
                 color: AppColors.primary,
                 size: 16,
               ),
-            ],
+            ),
           ],
         ),
       ),
@@ -259,6 +262,7 @@ class OnboardingContinueButton extends StatelessWidget {
   final bool canProceed;
   final bool isLoading;
   final bool isLastStep;
+  final String? label;
   final VoidCallback onNext;
 
   const OnboardingContinueButton({
@@ -266,6 +270,7 @@ class OnboardingContinueButton extends StatelessWidget {
     required this.canProceed,
     required this.isLoading,
     required this.isLastStep,
+    this.label,
     required this.onNext,
   });
 
@@ -296,7 +301,7 @@ class OnboardingContinueButton extends StatelessWidget {
                 ),
               )
             : Text(
-                isLastStep ? 'Finish' : 'Continue',
+                label ?? (isLastStep ? 'Finish' : 'Continue'),
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,

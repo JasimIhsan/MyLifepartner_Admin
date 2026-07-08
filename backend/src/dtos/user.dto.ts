@@ -1,4 +1,4 @@
-import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, Job } from "@prisma/client";
 
 export interface UserDto {
    id: number;
@@ -34,7 +34,7 @@ export interface UserDto {
    updatedAt: Date;
 }
 
-export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPrimary: boolean; imageUrl: string }[] }) | null; partnerPreference?: PartnerPreference | null }): UserDto => ({
+export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null; images?: { isPrimary: boolean; imageUrl: string }[] }) | null; partnerPreference?: PartnerPreference | null }): UserDto => ({
    id: user.id,
    mobileNumber: user.mobileNumber,
    name: user.profile?.name || null,
@@ -59,7 +59,7 @@ export const toUserDto = (user: User & { profile?: (Profile & { images?: { isPri
    state: user.profile?.state || null,
    country: user.profile?.country || null,
    highestEducation: user.profile?.highestEducation || null,
-   occupation: user.profile?.occupation || null,
+   occupation: user.profile?.job?.name || null,
    bio: user.profile?.bio || null,
    profileCompletion: user.profile?.profileCompletion || null,
 

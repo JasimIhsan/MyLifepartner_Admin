@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
-
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/screens/login_screen/login_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
+
+import 'package:life_partner_again/screens/partner_preference/widgets/age_pref_step.dart';
+import 'package:life_partner_again/screens/partner_preference/widgets/marital_pref_step.dart';
+import 'package:life_partner_again/screens/partner_preference/widgets/education_pref_step.dart';
+import 'package:life_partner_again/screens/partner_preference/widgets/occupation_pref_step.dart';
+import 'package:life_partner_again/screens/partner_preference/widgets/languages_pref_step.dart';
+import 'package:life_partner_again/screens/partner_preference/widgets/height_pref_step.dart';
 
 class PartnerPreferenceScreen extends StatefulWidget {
   const PartnerPreferenceScreen({super.key});
@@ -20,7 +26,6 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   int _currentStep = 0;
   bool _goingForward = true;
 
-  // Total steps updated to 6 to match the active steps
   static const int _totalSteps = 6;
 
   // Data
@@ -31,15 +36,93 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
   final List<String> _occupation = [];
   final List<String> _languages = [];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadCachedData();
+  }
+
+  Future<void> _loadCachedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      final ageStart = prefs.getDouble('pref_age_start') ?? 25.0;
+      final ageEnd = prefs.getDouble('pref_age_end') ?? 45.0;
+      _ageRange = RangeValues(ageStart, ageEnd);
+
+      final heightStart = prefs.getDouble('pref_height_start') ?? 150.0;
+      final heightEnd = prefs.getDouble('pref_height_end') ?? 185.0;
+      _heightRange = RangeValues(heightStart, heightEnd);
+
+      final marital = prefs.getStringList('pref_marital_status');
+      if (marital != null) {
+        _maritalStatus.clear();
+        _maritalStatus.addAll(marital);
+      }
+
+      final edu = prefs.getStringList('pref_education');
+      if (edu != null) {
+        _education.clear();
+        _education.addAll(edu);
+      }
+
+      final occ = prefs.getStringList('pref_occupation');
+      if (occ != null) {
+        _occupation.clear();
+        _occupation.addAll(occ);
+      }
+
+      final langs = prefs.getStringList('pref_languages');
+      if (langs != null) {
+        _languages.clear();
+        _languages.addAll(langs);
+      }
+
+      _currentStep = prefs.getInt('pref_current_step') ?? 0;
+    });
+  }
+
+  Future<void> _saveToCache(String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value == null) {
+      await prefs.remove(key);
+    } else if (value is String) {
+      await prefs.setString(key, value);
+    } else if (value is double) {
+      await prefs.setDouble(key, value);
+    } else if (value is int) {
+      await prefs.setInt(key, value);
+    } else if (value is List<String>) {
+      await prefs.setStringList(key, value);
+    }
+  }
+
+  Future<void> _clearCachedData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = [
+      'pref_age_start',
+      'pref_age_end',
+      'pref_height_start',
+      'pref_height_end',
+      'pref_marital_status',
+      'pref_education',
+      'pref_occupation',
+      'pref_languages',
+      'pref_current_step',
+    ];
+    for (final key in keys) {
+      await prefs.remove(key);
+    }
+  }
+
   bool get _isCurrentStepValid {
     switch (_currentStep) {
-      case 1:
-        return _maritalStatus.isNotEmpty;
       case 2:
-        return _education.isNotEmpty;
+        return _maritalStatus.isNotEmpty;
       case 3:
-        return _occupation.isNotEmpty;
+        return _education.isNotEmpty;
       case 4:
+        return _occupation.isNotEmpty;
+      case 5:
         return _languages.isNotEmpty;
       default:
         return true;
@@ -52,6 +135,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         _goingForward = true;
         _currentStep++;
       });
+      _saveToCache('pref_current_step', _currentStep);
     } else {
       _submit();
     }
@@ -63,6 +147,7 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         _goingForward = false;
         _currentStep--;
       });
+      _saveToCache('pref_current_step', _currentStep);
     }
   }
 
@@ -79,6 +164,8 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
         'occupation': _occupation,
         'motherTongue': _languages,
       });
+
+      await _clearCachedData();
 
       if (mounted) {
         Navigator.pushReplacement(
@@ -102,490 +189,51 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
     }
   }
 
-  Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginPage()),
-        (route) => false,
-      );
-    }
-  }
-
-  // ─── Helpers ──────────────────────────────────────────────────────────────
-
-  Widget _stepHeader(String title, {String? subtitle}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-            height: 1.3,
-          ),
-        ),
-        if (subtitle != null) ...[
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 14,
-              color: AppColors.textSecondary,
-              height: 1.5,
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _chip(
-    String label,
-    String value,
-    List<String> selected,
-    VoidCallback onTap,
-  ) {
-    final isSelected = selected.contains(value);
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.white,
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.borderColor,
-            width: 1.5,
-          ),
-          borderRadius: BorderRadius.circular(50),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-            color: isSelected ? Colors.white : AppColors.textPrimary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _toggle(List<String> list, String value) {
+  void _toggle(List<String> list, String value, String cacheKey) {
     setState(() {
       list.contains(value) ? list.remove(value) : list.add(value);
     });
+    _saveToCache(cacheKey, list);
   }
 
-  // ─── Steps ────────────────────────────────────────────────────────────────
-
-  Widget _buildAgeStep() {
-    return _PrefStepContainer(
-      key: const ValueKey(0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "What age range are you looking for?",
-            subtitle: "Drag the slider to set your preference.",
-          ),
-          //_buildIllustration('assets/images/onboarding/relationship.png'),
-          const SizedBox(height: 28),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _labelWithSuffix('From', _ageRange.start.round(), 'yrs'),
-                _labelWithSuffix('To', _ageRange.end.round(), 'yrs'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          _customRangeSlider(
-            values: _ageRange,
-            min: 18,
-            max: 80,
-            divisions: 62,
-            onChanged: (v) => setState(() => _ageRange = v),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMaritalStep() {
-    const options = [
-      ('Divorced', 'DIVORCED'),
-      ('Widowed', 'WIDOWED'),
-      ('Annulled', 'ANNULLED'),
-      ('Legally Separated', 'LEGALLY_SEPARATED'),
-      ('Awaiting Divorce', 'AWATING_DIVORCE'),
-    ];
-    return _PrefStepContainer(
-      key: const ValueKey(1),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "Which background are you open to?",
-            subtitle: "Select at least one option.",
-          ),
-          //_buildIllustration('assets/images/onboarding/marital_status.png'),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: options
-                .map(
-                  (o) => _chip(
-                    o.$1,
-                    o.$2,
-                    _maritalStatus,
-                    () => _toggle(_maritalStatus, o.$2),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEducationStep() {
-    const options = [
-      ('High School', 'HIGH_SCHOOL'),
-      ('Vocational / Diploma', 'VOCATIONAL'),
-      ("Bachelor's", 'BACHELORS'),
-      ("Master's", 'MASTERS'),
-      ('Doctorate / PhD', 'DOCTORATE'),
-      ('Medical Degree', 'MEDICAL'),
-      ('Law Degree', 'LAW'),
-      ('Other', 'OTHER'),
-    ];
-    return _PrefStepContainer(
-      key: const ValueKey(2),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "What education level do you prefer?",
-            subtitle: "Select at least one option.",
-          ),
-          //_buildIllustration('assets/images/onboarding/education.png'),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: options
-                .map(
-                  (o) => _chip(
-                    o.$1,
-                    o.$2,
-                    _education,
-                    () => _toggle(_education, o.$2),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOccupationStep() {
-    const options = [
-      ('Technology / IT', 'Technology / IT'),
-      ('Healthcare', 'Healthcare / Medical'),
-      ('Education', 'Education / Academia'),
-      ('Finance', 'Finance / Business'),
-      ('Law / Legal', 'Law / Legal'),
-      ('Arts / Creative', 'Arts / Entertainment'),
-      ('Engineering', 'Engineering / Science'),
-      ('Sales / Marketing', 'Sales / Marketing'),
-      ('Government', 'Government / Public Service'),
-      ('Trades', 'Manual Labor / Trades'),
-      ('Entrepreneur', 'Self-Employed / Entrepreneur'),
-      ('Other', 'Other'),
-    ];
-    return _PrefStepContainer(
-      key: const ValueKey(3),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "Any industry preference?",
-            subtitle: "Select at least one option.",
-          ),
-          //_buildIllustration('assets/images/onboarding/work.png'),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: options
-                .map(
-                  (o) => _chip(
-                    o.$1,
-                    o.$2,
-                    _occupation,
-                    () => _toggle(_occupation, o.$2),
-                  ),
-                )
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLanguagesStep() {
-    const langs = [
-      'English',
-      'French',
-      'Spanish',
-      'German',
-      'Italian',
-      'Portuguese',
-      'Dutch',
-      'Russian',
-      'Polish',
-      'Ukrainian',
-      'Romanian',
-      'Greek',
-      'Turkish',
-      'Arabic',
-      'Punjabi',
-      'Mandarin Chinese',
-      'Cantonese',
-      'Tagalog',
-      'Persian',
-      'Urdu',
-    ];
-    return _PrefStepContainer(
-      key: const ValueKey(4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "Any language preference?",
-            subtitle: "Select at least one option.",
-          ),
-          //_buildIllustration('assets/images/onboarding/language_female.png'),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: langs
-                .map(
-                  (l) => _chip(l, l, _languages, () => _toggle(_languages, l)),
-                )
-                .toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget _buildHeightStep() {
-    return _PrefStepContainer(
-      key: const ValueKey(6),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _stepHeader(
-            "What height range do you prefer?",
-            subtitle: "Drag the slider to set your preference.",
-          ),
-          //_buildIllustration(
-          //  'assets/images/onboarding/height_female.png',
-          // height: 140,
-          //),
-          const SizedBox(height: 28),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _labelWithSuffix('Min', _heightRange.start.round(), 'cm'),
-                _labelWithSuffix('Max', _heightRange.end.round(), 'cm'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          _customRangeSlider(
-            values: _heightRange,
-            min: 120,
-            max: 220,
-            divisions: 100,
-            onChanged: (v) => setState(() => _heightRange = v),
-          ),
-        ],
-      ),
-    );
-  }
-
-
-  Widget _labelWithSuffix(String label, int value, String suffix) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: TextStyle(fontSize: 12, color: AppColors.textLight)),
-        const SizedBox(height: 2),
-        Text(
-          '$value $suffix',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _customRangeSlider({
-    required RangeValues values,
-    required double min,
-    required double max,
-    required int divisions,
-    required ValueChanged<RangeValues> onChanged,
-  }) {
-    return SliderTheme(
-      data: SliderTheme.of(context).copyWith(
-        trackHeight: 4,
-        activeTrackColor: AppColors.primary,
-        inactiveTrackColor: AppColors.borderColor,
-        thumbColor: AppColors.primary,
-        rangeThumbShape: const RoundRangeSliderThumbShape(
-          enabledThumbRadius: 10,
-        ),
-        overlayColor: AppColors.primary,
-      ),
-      child: RangeSlider(
-        values: values,
-        min: min,
-        max: max,
-        divisions: divisions,
-        onChanged: onChanged,
-      ),
-    );
-  }
-
-  Widget _buildCurrentStep() {
-    switch (_currentStep) {
-      case 0:
-        return _buildAgeStep();
-      case 1:
-        return _buildMaritalStep();
-      case 2:
-        return _buildEducationStep();
-      case 3:
-        return _buildOccupationStep();
-      case 4:
-        return _buildLanguagesStep();
-      case 5:
-        return _buildHeightStep();
-      default:
-        return const SizedBox();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: _currentStep > 0
-            ? IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios_new,
-                  color: AppColors.textPrimary,
-                  size: 20,
-                ),
-                onPressed: _back,
-              )
-            : const SizedBox.shrink(),
-        actions: [
-          IconButton(
-            onPressed: _logout,
-            icon: const Icon(
-              Icons.logout,
-              color: AppColors.textSecondary,
-              size: 20,
-            ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
+  Widget _buildTopNavigation() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: SizedBox(
+        height: 48,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: LinearProgressIndicator(
-                value: (_currentStep + 1) / _totalSteps,
-                backgroundColor: AppColors.borderColor,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppColors.primary,
+            Visibility(
+              visible: _currentStep > 0,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: IconButton(
+                onPressed: _back,
+                icon: const Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  size: 20,
+                  color: Colors.black87,
                 ),
-                minHeight: 4,
               ),
             ),
             Expanded(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                switchInCurve: Curves.easeOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) {
-                  final slide = Tween<Offset>(
-                    begin: _goingForward
-                        ? const Offset(0.06, 0)
-                        : const Offset(-0.06, 0),
-                    end: Offset.zero,
-                  ).animate(animation);
-                  return FadeTransition(
-                    opacity: animation,
-                    child: SlideTransition(position: slide, child: child),
-                  );
-                },
-                child: _buildCurrentStep(),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: (_isLoading || !_isCurrentStepValid)
-                      ? null
-                      : _next,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    disabledBackgroundColor: AppColors.borderColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: _currentStep > 0 ? 12 : 0,
+                  right: 12,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: (_currentStep + 1) / _totalSteps,
+                    backgroundColor: AppColors.borderColor,
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primary,
                     ),
+                    minHeight: 6,
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          _currentStep == _totalSteps - 1
-                              ? 'Finish'
-                              : 'Continue',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
                 ),
               ),
             ),
@@ -594,17 +242,116 @@ class _PartnerPreferenceScreenState extends State<PartnerPreferenceScreen> {
       ),
     );
   }
-}
 
-class _PrefStepContainer extends StatelessWidget {
-  final Widget child;
-  const _PrefStepContainer({required super.key, required this.child});
+  Widget _buildCurrentStep() {
+    switch (_currentStep) {
+      case 0:
+        return AgePrefStep(
+          ageRange: _ageRange,
+          onAgeRangeChanged: (v) {
+            setState(() => _ageRange = v);
+            _saveToCache('pref_age_start', v.start);
+            _saveToCache('pref_age_end', v.end);
+          },
+        );
+      case 1:
+        return HeightPrefStep(
+          heightRange: _heightRange,
+          onHeightRangeChanged: (v) {
+            setState(() => _heightRange = v);
+            _saveToCache('pref_height_start', v.start);
+            _saveToCache('pref_height_end', v.end);
+          },
+        );
+      case 2:
+        return MaritalPrefStep(
+          selectedMaritalStatus: _maritalStatus,
+          onToggle: (v) => _toggle(_maritalStatus, v, 'pref_marital_status'),
+        );
+      case 3:
+        return EducationPrefStep(
+          selectedEducation: _education,
+          onToggle: (v) => _toggle(_education, v, 'pref_education'),
+        );
+      case 4:
+        return OccupationPrefStep(
+          selectedOccupation: _occupation,
+          onToggle: (v) => _toggle(_occupation, v, 'pref_occupation'),
+        );
+      case 5:
+        return LanguagesPrefStep(
+          selectedLanguages: _languages,
+          onToggle: (v) => _toggle(_languages, v, 'pref_languages'),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
-      child: child,
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildTopNavigation(),
+            Expanded(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: IntrinsicHeight(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 350),
+                          transitionBuilder: (child, animation) {
+                            final offsetBegin = _goingForward
+                                ? const Offset(0.1, 0)
+                                : const Offset(-0.1, 0);
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: offsetBegin,
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                ),
+                                child: child,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            key: ValueKey(_currentStep),
+                            child: _buildCurrentStep(),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            OnboardingContinueButton(
+              canProceed: _isCurrentStepValid,
+              isLoading: _isLoading,
+              isLastStep: false,
+              label: _currentStep == _totalSteps - 1
+                  ? 'Continue to Photo Upload'
+                  : null,
+              onNext: _next,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

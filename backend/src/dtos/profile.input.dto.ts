@@ -13,6 +13,7 @@ export interface UpdateProfileDto {
    country?: string;
    education?: string;
    occupation?: string;
+   jobId?: number;
    income?: string;
    caste?: string;
    subCaste?: string;
@@ -38,12 +39,17 @@ export interface CreatePartnerPreferenceDto {
    ageMax?: number;
    heightMin?: number;
    heightMax?: number;
-   maritalStatus?: string;
+   ageFrom?: number;
+   ageTo?: number;
+   heightFrom?: number;
+   heightTo?: number;
+   maritalStatus?: string | string[];
    religion?: string;
    caste?: string;
-   motherTongue?: string;
+   motherTongue?: string | string[];
    education?: string;
-   occupation?: string;
+   highestEducation?: string | string[];
+   occupation?: string | string[];
    income?: string;
    country?: string;
    state?: string;
@@ -52,3 +58,4 @@ export interface CreatePartnerPreferenceDto {
    smoke?: string;
    drink?: string;
 }
+

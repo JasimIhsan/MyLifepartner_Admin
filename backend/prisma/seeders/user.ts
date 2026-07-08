@@ -35,11 +35,17 @@ export async function seedUsers(prisma: PrismaClient) {
          selfieUrl: commonSelfieUrl,
          leftSelfieUrl: commonSelfieUrl,
          rightSelfieUrl: commonSelfieUrl,
-         images: [
-             { imageUrl: "https://images.unsplash.com/photo-1609505848912-b7c3b8b4beda?q=80&w=765&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", isPrimary: true }
-         ],
+         images: [{ imageUrl: "https://images.unsplash.com/photo-1609505848912-b7c3b8b4beda?q=80&w=765&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", isPrimary: true }],
          preference: {
-            ageFrom: 27, ageTo: 33, heightFrom: 168, heightTo: 190, maritalStatus: [MaritalStatus.NEVER_MARRIED], highestEducation: ["B.Tech", "M.Tech", "MBA", "MBBS"], occupation: ["Software Engineer", "Doctor", "Business", "Engineer"] } },
+            ageFrom: 27,
+            ageTo: 33,
+            heightFrom: 168,
+            heightTo: 190,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED],
+            highestEducation: ["B.Tech", "M.Tech", "MBA", "MBBS"],
+            occupation: ["Software Engineer", "Doctor", "Business", "Engineer"],
+         },
+      },
       {
          email: "sana@gmail.com",
          password: defaultPasswordHash,
@@ -66,11 +72,17 @@ export async function seedUsers(prisma: PrismaClient) {
          selfieUrl: commonSelfieUrl,
          leftSelfieUrl: commonSelfieUrl,
          rightSelfieUrl: commonSelfieUrl,
-         images: [
-             { imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Z2lybHxlbnwwfHwwfHx8MA%3D%3D", isPrimary: true }
-         ],
+         images: [{ imageUrl: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8Z2lybHxlbnwwfHwwfHx8MA%3D%3D", isPrimary: true }],
          preference: {
-            ageFrom: 27, ageTo: 35, heightFrom: 170, heightTo: 192, maritalStatus: [MaritalStatus.NEVER_MARRIED], highestEducation: ["MBBS", "MD", "B.Tech", "MBA"], occupation: ["Doctor", "Software Engineer", "Business", "Civil Engineer"] } },
+            ageFrom: 27,
+            ageTo: 35,
+            heightFrom: 170,
+            heightTo: 192,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED],
+            highestEducation: ["MBBS", "MD", "B.Tech", "MBA"],
+            occupation: ["Doctor", "Software Engineer", "Business", "Civil Engineer"],
+         },
+      },
       {
          email: "fatima@gmail.com",
          password: defaultPasswordHash,
@@ -97,11 +109,17 @@ export async function seedUsers(prisma: PrismaClient) {
          selfieUrl: commonSelfieUrl,
          leftSelfieUrl: commonSelfieUrl,
          rightSelfieUrl: commonSelfieUrl,
-         images: [
-             { imageUrl: "https://images.unsplash.com/photo-1589571894960-20bbe2828d0a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDN8fGdpcmx8ZW58MHx8MHx8fDA%3D", isPrimary: true }
-         ],
+         images: [{ imageUrl: "https://images.unsplash.com/photo-1589571894960-20bbe2828d0a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDN8fGdpcmx8ZW58MHx8MHx8fDA%3D", isPrimary: true }],
          preference: {
-            ageFrom: 29, ageTo: 36, heightFrom: 168, heightTo: 190, maritalStatus: [MaritalStatus.NEVER_MARRIED], highestEducation: ["M.A", "MBA", "B.Tech", "M.Tech"], occupation: ["Teacher", "Software Engineer", "Manager", "Business"] } },
+            ageFrom: 29,
+            ageTo: 36,
+            heightFrom: 168,
+            heightTo: 190,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED],
+            highestEducation: ["M.A", "MBA", "B.Tech", "M.Tech"],
+            occupation: ["Teacher", "Software Engineer", "Manager", "Business"],
+         },
+      },
       // PRIYANKA CHOPRA (from user JSON)
       {
          email: "priyankachopra001@gmail.com",
@@ -133,10 +151,18 @@ export async function seedUsers(prisma: PrismaClient) {
             { imageUrl: "13/profile/e5184eca-dbcd-403b-bf0d-0e184b489a4f.jpg", isPrimary: true },
             { imageUrl: "13/profile/b98301a5-39e2-4b7a-bd46-2042c07377de.jpg", isPrimary: false },
             { imageUrl: "13/profile/6b60e6b8-0ca7-4788-aa4f-e46792accf26.jpg", isPrimary: false },
-            { imageUrl: "13/profile/84df1946-8475-49d1-99d4-a5118ed21b56.jpg", isPrimary: false }
+            { imageUrl: "13/profile/84df1946-8475-49d1-99d4-a5118ed21b56.jpg", isPrimary: false },
          ],
          preference: {
-            ageFrom: 22, ageTo: 35, heightFrom: 160, heightTo: 190, maritalStatus: [MaritalStatus.LEGALLY_SEPARATED, MaritalStatus.DIVORCED], highestEducation: [], occupation: [] } },
+            ageFrom: 22,
+            ageTo: 35,
+            heightFrom: 160,
+            heightTo: 190,
+            maritalStatus: [MaritalStatus.LEGALLY_SEPARATED, MaritalStatus.DIVORCED],
+            highestEducation: [],
+            occupation: [],
+         },
+      },
       // BINU (from user JSON)
       {
          email: "binu@gmail.com",
@@ -168,10 +194,18 @@ export async function seedUsers(prisma: PrismaClient) {
             { imageUrl: "12/profile/79d0d248-088a-4508-ba3f-a9bccf536568.jpg", isPrimary: true },
             { imageUrl: "12/profile/f02158b9-6977-42fd-8445-45f0aef78423.jpg", isPrimary: false },
             { imageUrl: "12/profile/de1971ca-a8ee-4e45-be99-6409fe61bf47.jpg", isPrimary: false },
-            { imageUrl: "12/profile/305f8b01-3e85-4d18-9114-5d37990e90a5.jpg", isPrimary: false }
+            { imageUrl: "12/profile/305f8b01-3e85-4d18-9114-5d37990e90a5.jpg", isPrimary: false },
          ],
          preference: {
-            ageFrom: 22, ageTo: 35, heightFrom: 155, heightTo: 180, maritalStatus: [MaritalStatus.LEGALLY_SEPARATED, MaritalStatus.DIVORCED], highestEducation: [], occupation: [] } },
+            ageFrom: 22,
+            ageTo: 35,
+            heightFrom: 155,
+            heightTo: 180,
+            maritalStatus: [MaritalStatus.LEGALLY_SEPARATED, MaritalStatus.DIVORCED],
+            highestEducation: [],
+            occupation: [],
+         },
+      },
       // MALE PROFILES
       {
          email: "rahul@gmail.com",
@@ -199,11 +233,17 @@ export async function seedUsers(prisma: PrismaClient) {
          selfieUrl: commonSelfieUrl,
          leftSelfieUrl: commonSelfieUrl,
          rightSelfieUrl: commonSelfieUrl,
-         images: [
-             { imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fG1hbnxlbnwwfHwwfHx8MA%3D%3D", isPrimary: true }
-         ],
+         images: [{ imageUrl: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fG1hbnxlbnwwfHwwfHx8MA%3D%3D", isPrimary: true }],
          preference: {
-            ageFrom: 25, ageTo: 32, heightFrom: 155, heightTo: 175, maritalStatus: [MaritalStatus.NEVER_MARRIED], highestEducation: ["B.Tech", "MBA", "M.A"], occupation: ["Business", "Software Engineer", "Teacher"] } },
+            ageFrom: 25,
+            ageTo: 32,
+            heightFrom: 155,
+            heightTo: 175,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED],
+            highestEducation: ["B.Tech", "MBA", "M.A"],
+            occupation: ["Business", "Software Engineer", "Teacher"],
+         },
+      },
       {
          email: "zayed@gmail.com",
          password: defaultPasswordHash,
@@ -230,11 +270,17 @@ export async function seedUsers(prisma: PrismaClient) {
          selfieUrl: commonSelfieUrl,
          leftSelfieUrl: commonSelfieUrl,
          rightSelfieUrl: commonSelfieUrl,
-         images: [
-             { imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fG1hbnxlbnwwfHwwfHx8MA%3D%3D", isPrimary: true }
-         ],
+         images: [{ imageUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fG1hbnxlbnwwfHwwfHx8MA%3D%3D", isPrimary: true }],
          preference: {
-            ageFrom: 24, ageTo: 30, heightFrom: 150, heightTo: 170, maritalStatus: [MaritalStatus.NEVER_MARRIED], highestEducation: ["B.Tech", "M.Tech", "MBA", "MBBS"], occupation: ["Software Engineer", "Doctor", "Teacher", "Business"] } }
+            ageFrom: 24,
+            ageTo: 30,
+            heightFrom: 150,
+            heightTo: 170,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED],
+            highestEducation: ["B.Tech", "M.Tech", "MBA", "MBBS"],
+            occupation: ["Software Engineer", "Doctor", "Teacher", "Business"],
+         },
+      },
    ];
 
    for (const p of dummyProfiles) {
@@ -246,12 +292,15 @@ export async function seedUsers(prisma: PrismaClient) {
             isVerified: true,
             role: Role.USER,
             isBlocked: false,
-            isDeleted: false },
+            isDeleted: false,
+         },
          create: {
             email: p.email,
             password: p.password,
             isVerified: true,
-            role: Role.USER } });
+            role: Role.USER,
+         },
+      });
 
       // 2) Create or update profile
       const profile = await prisma.profile.upsert({
@@ -285,7 +334,8 @@ export async function seedUsers(prisma: PrismaClient) {
             selfieUrl: p.selfieUrl,
             leftSelfieUrl: p.leftSelfieUrl,
             rightSelfieUrl: p.rightSelfieUrl,
-            selfieStatus: SelfieStatus.APPROVED },
+            selfieStatus: SelfieStatus.APPROVED,
+         },
          create: {
             userId: user.id,
             name: p.name,
@@ -316,18 +366,23 @@ export async function seedUsers(prisma: PrismaClient) {
             selfieUrl: p.selfieUrl,
             leftSelfieUrl: p.leftSelfieUrl,
             rightSelfieUrl: p.rightSelfieUrl,
-            selfieStatus: SelfieStatus.APPROVED } });
+            selfieStatus: SelfieStatus.APPROVED,
+         },
+      });
 
       // 3) Replace old profile images
       await prisma.userImage.deleteMany({
-         where: { profileId: profile.id } });
+         where: { profileId: profile.id },
+      });
 
       for (const img of p.images) {
-          await prisma.userImage.create({
-             data: {
-                profileId: profile.id,
-                imageUrl: img.imageUrl,
-                isPrimary: img.isPrimary } });
+         await prisma.userImage.create({
+            data: {
+               profileId: profile.id,
+               imageUrl: img.imageUrl,
+               isPrimary: img.isPrimary,
+            },
+         });
       }
 
       // 4) Create or update partner preference
@@ -340,7 +395,7 @@ export async function seedUsers(prisma: PrismaClient) {
             heightTo: p.preference.heightTo,
             maritalStatus: p.preference.maritalStatus,
             highestEducation: p.preference.highestEducation,
-            occupation: p.preference.occupation
+            occupation: p.preference.occupation,
          },
          create: {
             userId: user.id,
@@ -350,32 +405,36 @@ export async function seedUsers(prisma: PrismaClient) {
             heightTo: p.preference.heightTo,
             maritalStatus: p.preference.maritalStatus,
             highestEducation: p.preference.highestEducation,
-            occupation: p.preference.occupation
-         }
+            occupation: p.preference.occupation,
+         },
       });
 
       console.log(`User seeded: ${p.name}`);
    }
 
    // 5) Make Priyanka and Binu mutual connections
-   const priyanka = await prisma.user.findUnique({ where: { email: "priyankachopra001@gmail.com" }, include: { profile: true }});
-   const binu = await prisma.user.findUnique({ where: { email: "binu@gmail.com" }, include: { profile: true }});
+   const priyanka = await prisma.user.findUnique({ where: { email: "priyankachopra001@gmail.com" }, include: { profile: true } });
+   const binu = await prisma.user.findUnique({ where: { email: "binu@gmail.com" }, include: { profile: true } });
 
    if (priyanka?.profile && binu?.profile) {
       // Priyanka swipes right on Binu
       const existingPTB = await prisma.profileSwipe.findFirst({
-         where: { userId: priyanka.id, targetProfileId: binu.profile.id } });
+         where: { userId: priyanka.id, targetProfileId: binu.profile.id },
+      });
       if (!existingPTB) {
          await prisma.profileSwipe.create({
-            data: { userId: priyanka.id, targetProfileId: binu.profile.id, action: SwipeAction.RIGHT } });
+            data: { userId: priyanka.id, targetProfileId: binu.profile.id, action: SwipeAction.RIGHT },
+         });
       }
 
       // Binu swipes right on Priyanka
       const existingBTP = await prisma.profileSwipe.findFirst({
-         where: { userId: binu.id, targetProfileId: priyanka.profile.id } });
+         where: { userId: binu.id, targetProfileId: priyanka.profile.id },
+      });
       if (!existingBTP) {
          await prisma.profileSwipe.create({
-            data: { userId: binu.id, targetProfileId: priyanka.profile.id, action: SwipeAction.RIGHT } });
+            data: { userId: binu.id, targetProfileId: priyanka.profile.id, action: SwipeAction.RIGHT },
+         });
       }
       console.log("Priyanka and Binu are now mutual connections.");
    }

@@ -54,7 +54,8 @@ model Profile {
   lastLocationLng Float?
 
   highestEducation String?
-  occupation       String?
+  jobId            Int?
+  job              Job?    @relation(fields: [jobId], references: [id])
   bio              String?
 
   languages String[]
@@ -186,7 +187,7 @@ model Admins {
 model SubscriptionPlan {
   id                Int                @id @default(autoincrement())
   name              String             @unique // FREE, PREMIUM, GOLD
-  description       String?            // User understandable explanation of the plan
+  description       String? // User understandable explanation of the plan
   price             Int // price in paise (₹1 = 100 paise)
   durationDays      Int
   isActive          Boolean            @default(true)
@@ -205,7 +206,7 @@ model PlanFeature {
   planId      Int
   plan        SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
   featureKey  String
-  description String?          // User understandable feature explanation for the plan card
+  description String? // User understandable feature explanation for the plan card
   limit       String // e.g. "50", "UNLIMITED", "true"
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
@@ -215,18 +216,18 @@ model PlanFeature {
 }
 
 model UserSubscription {
-  id                  Int                @id @default(autoincrement())
-  userId              Int
-  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId              Int
-  plan                SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
-  startDate           DateTime           @default(now())
-  endDate             DateTime
-  status              SubscriptionStatus @default(ACTIVE)
-  willRenew           Boolean            @default(true)
-  nextPlanId          Int?
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
+  id         Int                @id @default(autoincrement())
+  userId     Int
+  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId     Int
+  plan       SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  startDate  DateTime           @default(now())
+  endDate    DateTime
+  status     SubscriptionStatus @default(ACTIVE)
+  willRenew  Boolean            @default(true)
+  nextPlanId Int?
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
 
   @@index([userId, status])
   @@map("user_subscriptions")
@@ -284,6 +285,17 @@ model ImageAssets {
 
   @@index([section, isActive, displayOrder])
   @@map("image_assets")
+}
+
+model Job {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  profiles  Profile[]
+
+  @@index([name])
+  @@map("jobs")
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
@@ -436,7 +448,7 @@ model Guide {
   id           Int      @id @default(autoincrement())
   question     String   @unique
   answer       String
-  categoryId   Int      // 1 = About LPA, 2 = Safety & Privacy, 3 = Verification & Account, 4 = Membership & Subscription
+  categoryId   Int // 1 = About LPA, 2 = Safety & Privacy, 3 = Verification & Account, 4 = Membership & Subscription
   bullets      String[] @default([])
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())

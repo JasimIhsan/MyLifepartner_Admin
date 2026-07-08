@@ -5,11 +5,21 @@ import { ZodError, ZodIssue, ZodTypeAny } from "zod";
 export const validate = (schema: ZodTypeAny) => {
    return async (req: Request, _res: Response, next: NextFunction): Promise<void> => {
       try {
-         await schema.parseAsync({
+         const parsed = (await schema.parseAsync({
             body: req.body,
             query: req.query,
             params: req.params,
-         });
+         })) as { body?: unknown; query?: Record<string, unknown>; params?: Record<string, string> };
+
+         if (parsed.body !== undefined) {
+            req.body = parsed.body;
+         }
+         if (parsed.query !== undefined) {
+            Object.assign(req.query, parsed.query);
+         }
+         if (parsed.params !== undefined) {
+            Object.assign(req.params, parsed.params);
+         }
 
          next();
       } catch (error) {

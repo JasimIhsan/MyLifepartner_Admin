@@ -1,5 +1,5 @@
 import prisma from "@/config/prisma";
-import { Prisma, SwipeAction as PrismaSwipeAction, Gender } from "@prisma/client";
+import { Gender, Prisma } from "@prisma/client";
 import { CandidateProfile, IMatchRepository, SwipedProfile, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
 import { InteractionState, SwipeAction } from "../interfaces/services/match.service.interface";
 
@@ -21,6 +21,7 @@ const candidateProfileInclude = {
          score: true,
       },
    },
+   job: true,
 } satisfies Prisma.ProfileInclude;
 
 type CandidateProfilePayload = Prisma.ProfileGetPayload<{
@@ -29,6 +30,7 @@ type CandidateProfilePayload = Prisma.ProfileGetPayload<{
 
 type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
    include: {
+      job: true;
       images: {
          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }];
       };
@@ -174,6 +176,7 @@ export class MatchRepository implements IMatchRepository {
             },
          },
          include: {
+            job: true,
             images: {
                orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
             },
@@ -209,10 +212,7 @@ export class MatchRepository implements IMatchRepository {
       });
 
       return profiles.map((profile) => {
-         const interactionState = this.determineInteractionState(
-            profile.swipesOnMe as unknown as { action: SwipeAction }[], 
-            profile.user.profileSwipes as unknown as { action: SwipeAction }[]
-         );
+         const interactionState = this.determineInteractionState(profile.swipesOnMe as unknown as { action: SwipeAction }[], profile.user.profileSwipes as unknown as { action: SwipeAction }[]);
 
          return this.mapToCandidateProfile(profile, interactionState);
       });
@@ -423,6 +423,7 @@ export class MatchRepository implements IMatchRepository {
             id: profileId,
          },
          include: {
+            job: true,
             images: {
                orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
             },
@@ -461,10 +462,7 @@ export class MatchRepository implements IMatchRepository {
          return null;
       }
 
-      const interactionState = this.determineInteractionState(
-         profile.swipesOnMe as unknown as { action: SwipeAction }[], 
-         profile.user.profileSwipes as unknown as { action: SwipeAction }[]
-      );
+      const interactionState = this.determineInteractionState(profile.swipesOnMe as unknown as { action: SwipeAction }[], profile.user.profileSwipes as unknown as { action: SwipeAction }[]);
 
       return this.mapToCandidateProfile(profile, interactionState);
    }
@@ -558,7 +556,7 @@ export class MatchRepository implements IMatchRepository {
          country: profile.country,
          motherTongue: profile.motherTongue,
          highestEducation: profile.highestEducation,
-         occupation: profile.occupation,
+         occupation: profile.job?.name || null,
          bio: profile.bio,
          gender: profile.gender,
          images: profile.images.map((image) => ({

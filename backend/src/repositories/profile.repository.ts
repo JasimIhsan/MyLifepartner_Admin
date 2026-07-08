@@ -3,6 +3,16 @@ import { CreatePartnerPreferenceDto, UpdateProfileDto } from "@/dtos/profile.inp
 import { DrinkingHabit, Gender, MaritalStatus, Prisma, Profile, ProfileStatus, SmokingHabit } from "@prisma/client";
 import { IProfileRepository } from "../interfaces/repositories/profile.repository.interface";
 
+/**
+ * Normalizes partner preference fields to flat arrays or undefined.
+ * Exists because the frontend or request validation might send a single value or an array,
+ * and we need to avoid nested arrays (like [[value]]) when saving to Prisma.
+ */
+const toArrayOrUndefined = <T>(value?: T | T[] | null): T[] | undefined => {
+   if (value === undefined || value === null) return undefined;
+   return Array.isArray(value) ? value : [value];
+};
+
 export class ProfileRepository implements IProfileRepository {
    /**
     * Gets the profile structure with active questions.
@@ -197,7 +207,7 @@ export class ProfileRepository implements IProfileRepository {
     * @param data - Profile update data.
     * @returns Updated profile.
     */
-   async updateBasicProfile(userId: number, data: UpdateProfileDto) {
+    async updateBasicProfile(userId: number, data: UpdateProfileDto) {
       await this.findOrCreateProfile(userId);
 
       const updateData: Prisma.ProfileUpdateInput = {
@@ -215,7 +225,29 @@ export class ProfileRepository implements IProfileRepository {
       if (data.state !== undefined) updateData.state = data.state;
       if (data.country !== undefined) updateData.country = data.country;
       if (data.education !== undefined) updateData.highestEducation = data.education;
-      if (data.occupation !== undefined) updateData.occupation = data.occupation;
+      
+      if (data.jobId !== undefined) {
+         if (data.jobId) {
+            updateData.job = { connect: { id: data.jobId } };
+         } else {
+            updateData.job = { disconnect: true };
+         }
+      } else if (data.occupation !== undefined) {
+         if (data.occupation) {
+            let job = await prisma.job.findFirst({
+               where: { name: { equals: data.occupation, mode: "insensitive" } }
+            });
+            if (!job) {
+               job = await prisma.job.create({
+                  data: { name: data.occupation }
+               });
+            }
+            updateData.job = { connect: { id: job.id } };
+         } else {
+            updateData.job = { disconnect: true };
+         }
+      }
+
       if (data.smoke !== undefined) updateData.smokingHabit = data.smoke as SmokingHabit;
       if (data.drink !== undefined) updateData.drinkingHabit = data.drink as DrinkingHabit;
 
@@ -224,6 +256,9 @@ export class ProfileRepository implements IProfileRepository {
             userId,
          },
          data: updateData,
+         include: {
+            job: true,
+         },
       });
    }
 
@@ -234,46 +269,46 @@ export class ProfileRepository implements IProfileRepository {
     * @param data - Partner preference data.
     * @returns Created or updated partner preference.
     */
-   async updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto) {
-      await this.findOrCreateProfile(userId);
-
-      const mappedData = {
-         ageFrom: data.ageMin,
-         ageTo: data.ageMax,
-         heightFrom: data.heightMin,
-         heightTo: data.heightMax,
-         maritalStatus: data.maritalStatus ? [data.maritalStatus as MaritalStatus] : undefined,
-         motherTongue: data.motherTongue ? [data.motherTongue] : undefined,
-         highestEducation: data.education ? [data.education] : undefined,
-         occupation: data.occupation ? [data.occupation] : undefined,
-      };
-
-      const partnerPreference = await prisma.partnerPreference.upsert({
-         where: {
-            userId,
-         },
-         update: mappedData,
-         create: {
-            ...mappedData,
-            user: {
-               connect: {
-                  id: userId,
-               },
-            },
-         },
-      });
-
-      await prisma.profile.update({
-         where: {
-            userId,
-         },
-         data: {
-            hasCompletedPartnerPreference: true,
-         },
-      });
-
-      return partnerPreference;
-   }
+    async updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto) {
+       await this.findOrCreateProfile(userId);
+ 
+       const preferenceData = {
+          ageFrom: data.ageFrom !== undefined ? data.ageFrom : data.ageMin,
+          ageTo: data.ageTo !== undefined ? data.ageTo : data.ageMax,
+          heightFrom: data.heightFrom !== undefined ? data.heightFrom : data.heightMin,
+          heightTo: data.heightTo !== undefined ? data.heightTo : data.heightMax,
+          maritalStatus: toArrayOrUndefined(data.maritalStatus) as MaritalStatus[] | undefined,
+          motherTongue: toArrayOrUndefined(data.motherTongue),
+          highestEducation: toArrayOrUndefined(data.highestEducation !== undefined ? data.highestEducation : data.education),
+          occupation: toArrayOrUndefined(data.occupation),
+       };
+ 
+       const partnerPreference = await prisma.partnerPreference.upsert({
+          where: {
+             userId,
+          },
+          update: preferenceData,
+          create: {
+             ...preferenceData,
+             user: {
+                connect: {
+                   id: userId,
+                },
+             },
+          },
+       });
+ 
+       await prisma.profile.update({
+          where: {
+             userId,
+          },
+          data: {
+             hasCompletedPartnerPreference: true,
+          },
+       });
+ 
+       return partnerPreference;
+    }
 
    /**
     * Gets user images.

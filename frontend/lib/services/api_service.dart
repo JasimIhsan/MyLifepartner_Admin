@@ -1,6 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:life_partner_again/config/env.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/services/token_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service class for handling API requests using Dio.
 class ApiService {
@@ -25,6 +29,8 @@ class ApiService {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final accessToken = await TokenService.getAccessToken();
+
+          debugPrint("👉 Access Token: $accessToken");
 
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $accessToken';
@@ -53,7 +59,7 @@ class ApiService {
           final refreshToken = await TokenService.getRefreshToken();
 
           if (refreshToken == null || refreshToken.isEmpty) {
-            await TokenService.clearTokens();
+            await _logoutAndRedirect();
             return handler.next(e);
           }
 
@@ -78,7 +84,7 @@ class ApiService {
             if (refreshResponse.statusCode != 200 ||
                 refreshResponse.data == null ||
                 refreshResponse.data['data'] == null) {
-              await TokenService.clearTokens();
+              await _logoutAndRedirect();
               return handler.next(e);
             }
 
@@ -91,7 +97,7 @@ class ApiService {
                 newAccessToken.toString().isEmpty ||
                 newRefreshToken == null ||
                 newRefreshToken.toString().isEmpty) {
-              await TokenService.clearTokens();
+              await _logoutAndRedirect();
               return handler.next(e);
             }
 
@@ -109,7 +115,7 @@ class ApiService {
 
             return handler.resolve(retryResponse);
           } catch (_) {
-            await TokenService.clearTokens();
+            await _logoutAndRedirect();
             return handler.next(e);
           }
         },
@@ -132,4 +138,15 @@ class ApiService {
   }
 
   static Dio get client => _instance.dio;
+
+  static Future<void> _logoutAndRedirect() async {
+    await TokenService.clearTokens();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      AppRoutes.login,
+      (route) => false,
+    );
+  }
 }

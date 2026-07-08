@@ -15,7 +15,9 @@ class EmotionalReadinessStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const OnboardingStepTitle(title: "Are you ready for a serious relationship?"),
+        const OnboardingStepTitle(
+          title: "Are you ready for a serious relationship?",
+        ),
         const SizedBox(height: 20),
         OnboardingSelectionTile(
           label: "Yes, I'm ready",

@@ -1,4 +1,4 @@
-import { PartnerPreference, Profile, ProfileQuestion, ProfileSection, ProfileStatus, UserAnswer, UserImage } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileQuestion, ProfileSection, ProfileStatus, UserAnswer, UserImage, Job } from "@prisma/client";
 import { UpdateProfileDto, CreatePartnerPreferenceDto } from "@/dtos/profile.input.dto";
 
 export interface IProfileRepository {
@@ -10,7 +10,7 @@ export interface IProfileRepository {
    updateProfileStatus(userId: number, status: ProfileStatus): Promise<Profile>;
    getRequiredQuestionsCount(isPrimary?: boolean): Promise<number>;
    getUserAnsweredCount(userId: number, isPrimary?: boolean): Promise<number>;
-   updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile>;
+   updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile & { job: Job | null }>;
    updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference>;
    getUserImages(userId: number): Promise<UserImage[]>;
    getUserImagesCount(userId: number): Promise<number>;

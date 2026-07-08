@@ -7,6 +7,8 @@ import { Router } from "express";
 
 const router = Router();
 
+router.use(verifyJWT);
+
 /**
  * @route   GET /api/v1/user/profile/sections
  * @desc    Get all questionnaire sections for profile setup

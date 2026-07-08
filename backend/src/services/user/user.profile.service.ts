@@ -5,6 +5,42 @@ import { IProfileRepository } from "@/interfaces/repositories/profile.repository
 import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { IProfileService, PartnerPreference, Profile, ProfileStatus } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
+import { Profile as DbProfile, Job } from "@prisma/client";
+
+const toServiceProfile = (profile: DbProfile & { job?: Job | null }): Profile => ({
+   id: profile.id,
+   userId: profile.userId,
+   name: profile.name,
+   gender: profile.gender,
+   dateOfBirth: profile.dateOfBirth,
+   maritalStatus: profile.maritalStatus,
+   heightCm: profile.heightCm,
+   motherTongue: profile.motherTongue,
+   city: profile.city,
+   state: profile.state,
+   country: profile.country,
+   lastLocationLat: profile.lastLocationLat,
+   lastLocationLng: profile.lastLocationLng,
+   highestEducation: profile.highestEducation,
+   occupation: profile.job?.name || null,
+   bio: profile.bio,
+   languages: profile.languages,
+   childrenStatus: profile.childrenStatus,
+   emotionalReadiness: profile.emotionalReadiness,
+   lookingFor: profile.lookingFor,
+   relationshipTimeline: profile.relationshipTimeline,
+   smokingHabit: profile.smokingHabit,
+   drinkingHabit: profile.drinkingHabit,
+   profileCompletion: profile.profileCompletion,
+   profileStatus: profile.profileStatus as ProfileStatus,
+   hasCompletedBasicDetails: profile.hasCompletedBasicDetails,
+   hasCompletedPartnerPreference: profile.hasCompletedPartnerPreference,
+   hasCompletedImageUpload: profile.hasCompletedImageUpload,
+   selfieUrl: profile.selfieUrl,
+   leftSelfieUrl: profile.leftSelfieUrl,
+   rightSelfieUrl: profile.rightSelfieUrl,
+   selfieStatus: profile.selfieStatus,
+});
 
 type ProfileCompletionStatus = {
    isCompleted: boolean;
@@ -142,7 +178,8 @@ export class ProfileService implements IProfileService {
     * @returns Updated profile.
     */
    async updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile> {
-      return this.profileRepository.updateBasicProfile(userId, data) as unknown as Profile;
+      const dbProfile = await this.profileRepository.updateBasicProfile(userId, data);
+      return toServiceProfile(dbProfile);
    }
 
    /**

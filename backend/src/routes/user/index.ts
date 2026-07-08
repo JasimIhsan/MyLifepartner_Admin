@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import chatRoutes from "@routes/user/chat.routes";
 import guideRoutes from "@routes/user/guide.routes";
+import jobRoutes from "@routes/user/job.routes";
 import matchRoutes from "@routes/user/match.routes";
 import userAuthRoutes from "@routes/user/user.auth.routes";
 import userProfileRoutes from "@routes/user/user.profile.routes";
@@ -29,6 +30,7 @@ router.use("/chat", chatRoutes);
 router.use("/guide", guideRoutes);
 router.use("/match", matchRoutes);
 router.use("/zego", zegoRoutes);
+router.use("/jobs", jobRoutes);
 router.use("/", userRoutes);
 
 export default router;

@@ -73,7 +73,7 @@ class _FilledSlotState extends State<FilledSlot> {
                             fit: BoxFit.cover,
                             fadeInDuration: const Duration(milliseconds: 300),
                             placeholder: (_, __) => Container(
-                              color: AppColors.primaryLight,
+                              color: AppColors.surface,
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,

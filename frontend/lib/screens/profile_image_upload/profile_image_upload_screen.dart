@@ -6,7 +6,9 @@ import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/screens/login_screen/login_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'widgets/empty_slot.dart';
 import 'widgets/filled_slot.dart';
 import 'widgets/image_options_sheet.dart';
@@ -42,7 +44,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     setState(() => _isLoading = true);
     try {
       final images = await _profileRepository.getUserImages();
-      
+
       // Ensure the primary photo is always at index 0 (the large slot)
       images.sort((a, b) {
         if (a.isPrimary && !b.isPrimary) return -1;
@@ -124,14 +126,18 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
   Future<void> _completeUpload() async {
     if (_images.length != _maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload all 4 photos to continue.')),
+        const SnackBar(
+          content: Text('Please upload all 4 photos to continue.'),
+        ),
       );
       return;
     }
     final hasPrimary = _images.any((img) => img.isPrimary == true);
     if (!hasPrimary) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please set one photo as your main photo.')),
+        const SnackBar(
+          content: Text('Please set one photo as your main photo.'),
+        ),
       );
       return;
     }
@@ -213,7 +219,8 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isValid = _images.length == _maxImages &&
+    final bool isValid =
+        _images.length == _maxImages &&
         _images.any((img) => img.isPrimary == true);
 
     return Scaffold(
@@ -232,15 +239,13 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.borderColor, width: 1.5),
               ),
-              child: const Icon(Icons.question_mark_rounded,
-                  size: 16, color: AppColors.textSecondary),
+              child: const Icon(
+                Icons.question_mark_rounded,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
             ),
             onPressed: _showPhotoTips,
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout,
-                color: AppColors.textSecondary, size: 20),
-            onPressed: _logout,
           ),
         ],
       ),
@@ -248,8 +253,8 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         top: false,
         child: _isLoading && _images.isEmpty
             ? const Center(
-                child:
-                    CircularProgressIndicator(color: AppColors.primary))
+                child: CircularProgressIndicator(color: AppColors.primary),
+              )
             : Column(
                 children: [
                   Expanded(
@@ -280,40 +285,44 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
 
                           // ── Photo grid ──────────────────────────────────
                           AspectRatio(
-                            aspectRatio: 0.8, // Taller ratio for main photo
-                            child: _buildSlot(0),
-                          ).animate().fade(duration: 400.ms).slideY(begin: 0.05),
+                                aspectRatio: 0.8, // Taller ratio for main photo
+                                child: _buildSlot(0),
+                              )
+                              .animate()
+                              .fade(duration: 400.ms)
+                              .slideY(begin: 0.05),
 
                           const SizedBox(height: 16),
 
                           Row(
-                            children: [
-                              Expanded(
-                                child: AspectRatio(
-                                  aspectRatio: 0.75,
-                                  child: _buildSlot(1),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: AspectRatio(
-                                  aspectRatio: 0.75,
-                                  child: _buildSlot(2),
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: AspectRatio(
-                                  aspectRatio: 0.75,
-                                  child: _buildSlot(3),
-                                ),
-                              ),
-                            ],
-                          ).animate().fade(duration: 500.ms, delay: 100.ms).slideY(begin: 0.1),
+                                children: [
+                                  Expanded(
+                                    child: AspectRatio(
+                                      aspectRatio: 0.75,
+                                      child: _buildSlot(1),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: AspectRatio(
+                                      aspectRatio: 0.75,
+                                      child: _buildSlot(2),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 14),
+                                  Expanded(
+                                    child: AspectRatio(
+                                      aspectRatio: 0.75,
+                                      child: _buildSlot(3),
+                                    ),
+                                  ),
+                                ],
+                              )
+                              .animate()
+                              .fade(duration: 500.ms, delay: 100.ms)
+                              .slideY(begin: 0.1),
 
                           const SizedBox(height: 24),
-
-
                         ],
                       ),
                     ),
@@ -322,69 +331,19 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                   // ── Continue button ───────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
-                    child: SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: _isSaving || !isValid
-                            ? null
-                            : _completeUpload,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.transparent, // Handled by container
-                          foregroundColor: Colors.white,
-                          disabledBackgroundColor: Colors.transparent,
-                          shadowColor: Colors.transparent,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                        ),
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            gradient: _isSaving || !isValid
-                                ? null
-                                : const LinearGradient(
-                                    colors: [Color(0xFFFF4B4B), Color(0xFFFF7A7A)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                            color: _isSaving || !isValid ? AppColors.borderColor : null,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: _isSaving || !isValid
-                                ? []
-                                : [
-                                    BoxShadow(
-                                      color: const Color(0xFFFF4B4B).withValues(alpha: 0.4),
-                                      blurRadius: 12,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                          ),
-                          child: Container(
-                            alignment: Alignment.center,
-                            child: _isSaving
-                                ? const SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2.5, color: Colors.white),
-                                  )
-                                : const Text(
-                                    'Continue',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ).animate(target: isValid ? 1 : 0).scale(
-                        duration: 300.ms,
-                        curve: Curves.easeOutBack,
-                        begin: const Offset(0.95, 0.95),
-                      ),
-                    ),
+                    child:
+                        CustomButton(
+                              text: 'Continue to Verification',
+                              onPressed: isValid ? _completeUpload : null,
+                              isLoading: _isSaving,
+                              height: 52,
+                            )
+                            .animate(target: isValid ? 1 : 0)
+                            .scale(
+                              duration: 300.ms,
+                              curve: Curves.easeOutBack,
+                              begin: const Offset(0.95, 0.95),
+                            ),
                   ),
                 ],
               ),
@@ -392,4 +351,3 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     );
   }
 }
-

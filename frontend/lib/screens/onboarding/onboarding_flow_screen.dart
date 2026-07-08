@@ -15,6 +15,7 @@ import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_help
 import 'package:life_partner_again/screens/onboarding/widgets/profession_step.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/services/job_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingFlowScreen extends StatefulWidget {
@@ -54,6 +55,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   String? _relationshipTimeline;
   String? _highestEducation;
   String? _profession;
+  int? _jobId;
   final List<String> _languages = [];
   String? _smokingHabit;
   String? _drinkingHabit;
@@ -97,6 +99,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
       _profession = prefs.getString('onboarding_profession');
       _professionCtrl.text = _profession ?? '';
+      _jobId = prefs.getInt('onboarding_job_id');
 
       final langs = prefs.getStringList('onboarding_languages');
       if (langs != null) {
@@ -142,6 +145,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       'onboarding_looking_for',
       'onboarding_highest_education',
       'onboarding_profession',
+      'onboarding_job_id',
       'onboarding_languages',
       'onboarding_smoking_habit',
       'onboarding_drinking_habit',
@@ -232,6 +236,15 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
     try {
       final name = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'
           .trim();
+
+      int? jobId = _jobId;
+      if (jobId == null && _profession != null && _profession!.trim().isNotEmpty) {
+        try {
+          final newJob = await JobService.createJob(_profession!);
+          jobId = newJob.id;
+        } catch (_) {}
+      }
+
       await _profileRepo.updateBasicProfile({
         'name': name,
         'gender': _gender,
@@ -248,6 +261,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         'relationshipTimeline': _relationshipTimeline,
         'highestEducation': _highestEducation,
         'occupation': _profession,
+        'jobId': jobId,
         'languages': _languages,
         'smokingHabit': _smokingHabit,
         'drinkingHabit': _drinkingHabit,
@@ -434,9 +448,14 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       case 10:
         return ProfessionStep(
           professionCtrl: _professionCtrl,
+          selectedJobId: _jobId,
           onProfessionChanged: (v) {
             setState(() => _profession = v);
             _saveToCache('onboarding_profession', v);
+          },
+          onJobIdChanged: (v) {
+            setState(() => _jobId = v);
+            _saveToCache('onboarding_job_id', v);
           },
         );
       case 11:
@@ -502,7 +521,10 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             OnboardingContinueButton(
               canProceed: _canProceed,
               isLoading: _isLoading,
-              isLastStep: _currentStep == _totalSteps - 1,
+              isLastStep: false,
+              label: _currentStep == _totalSteps - 1
+                  ? 'Continue to Partner Preferences'
+                  : null,
               onNext: _next,
             ),
           ],

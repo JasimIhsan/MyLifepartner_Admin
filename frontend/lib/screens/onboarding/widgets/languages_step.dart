@@ -14,22 +14,44 @@ class LanguagesStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const langs = [
-      'English', 'French', 'Spanish', 'German', 'Italian', 'Portuguese',
-      'Dutch', 'Russian', 'Polish', 'Ukrainian', 'Romanian', 'Greek',
-      'Turkish', 'Arabic', 'Punjabi', 'Mandarin Chinese', 'Cantonese',
-      'Tagalog', 'Persian', 'Urdu',
+      'English',
+      'French',
+      'Spanish',
+      'German',
+      'Italian',
+      'Portuguese',
+      'Dutch',
+      'Russian',
+      'Polish',
+      'Ukrainian',
+      'Romanian',
+      'Greek',
+      'Turkish',
+      'Arabic',
+      'Punjabi',
+      'Mandarin Chinese',
+      'Cantonese',
+      'Tagalog',
+      'Persian',
+      'Urdu',
     ];
     return Column(
       children: [
-        const OnboardingStepTitle(title: "What languages are you comfortable with?"),
+        const OnboardingStepTitle(
+          title: "What languages are you comfortable with?",
+        ),
         const SizedBox(height: 20),
         Wrap(
           alignment: WrapAlignment.center,
-          children: langs.map((l) => OnboardingLanguageChip(
-            label: l,
-            isSelected: selectedLanguages.contains(l),
-            onTap: () => onLanguageToggled(l),
-          )).toList(),
+          children: langs
+              .map(
+                (l) => OnboardingLanguageChip(
+                  label: l,
+                  isSelected: selectedLanguages.contains(l),
+                  onTap: () => onLanguageToggled(l),
+                ),
+              )
+              .toList(),
         ),
       ],
     );

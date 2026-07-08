@@ -7,7 +7,6 @@ class UserRepository {
   Future<User> getUser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       if (userId == null) {
@@ -16,7 +15,6 @@ class UserRepository {
 
       final response = await ApiService.client.get(
         '/$userId',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       return User.fromJson(response.data['data']);
@@ -28,7 +26,6 @@ class UserRepository {
   Future<User> updateUser({String? name, String? email}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
       final userId = prefs.getInt('userId');
 
       if (userId == null) {
@@ -42,7 +39,6 @@ class UserRepository {
       final response = await ApiService.client.patch(
         '/user/$userId',
         data: data,
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
       return User.fromJson(response.data['data']);
