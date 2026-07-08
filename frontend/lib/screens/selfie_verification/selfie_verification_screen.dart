@@ -9,8 +9,8 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/widgets/face_direction_overlay.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {
   const SelfieVerificationScreen({super.key});
@@ -338,263 +338,266 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
         _handleBackPress();
       },
       child: Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0,
-        leading: const SizedBox.shrink(),
-        actions: [
-          IconButton(
-            icon: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.borderColor, width: 1.5),
-              ),
-              child: const Icon(
-                Icons.question_mark_rounded,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-            ),
-            onPressed: _showTips,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 8),
-              Text(
-                'Verify your identity',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Take a clear selfie to help us keep\n'
-                'the community safe and authentic.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: const SizedBox.shrink(),
+          actions: [
+            IconButton(
+              icon: Container(
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
-                  color: AppColors.textWhite,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.borderColor),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderColor, width: 1.5),
                 ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.shield_outlined,
-                      color: AppColors.textPrimary,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Your selfies are only used for verification and will remain secure. We also request location service access when submitting the selfies.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey.shade600,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: const Icon(
+                  Icons.question_mark_rounded,
+                  size: 16,
+                  color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 36),
-
-              // ── Camera circle with animated overlay ──
-              Expanded(
-                child: Center(
-                  child: Stack(
-                    alignment: Alignment.center,
+              onPressed: _showTips,
+            ),
+          ],
+        ),
+        body: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 8),
+                Text(
+                  'Verify your identity',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Take a clear selfie to help us keep\n'
+                  'the community safe and authentic.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.textWhite,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.borderColor),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Outer glow ring
-                      Container(
-                        width: circleDia + 10,
-                        height: circleDia + 10,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color:
-                                (_currentImage != null || _isCameraInitialized)
-                                ? AppColors.textPrimary.withValues(alpha: 0.2)
-                                : AppColors.borderColor,
-                            width: 5,
+                      const Icon(
+                        Icons.shield_outlined,
+                        color: AppColors.textPrimary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Your selfies are only used for verification and will remain secure. We also request location service access when submitting the selfies.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            height: 1.4,
                           ),
                         ),
                       ),
-                      // Camera / captured image circle
-                      Container(
-                        width: circleDia,
-                        height: circleDia,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color:
-                                (_currentImage != null || _isCameraInitialized)
-                                ? AppColors.textPrimary
-                                : AppColors.borderColor,
-                            width: 2,
-                          ),
-                          color: AppColors.textWhite,
-                        ),
-                        child: ClipOval(
-                          child: _currentImage != null
-                              ? (kIsWeb
-                                    ? Image.network(
-                                        _currentImage!.path,
-                                        width: circleDia,
-                                        height: circleDia,
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Image.file(
-                                        File(_currentImage!.path),
-                                        width: circleDia,
-                                        height: circleDia,
-                                        fit: BoxFit.cover,
-                                      ))
-                              : _isCameraInitialized
-                              ? _buildCameraFill(circleDia)
-                              : _errorMessage != null
-                              ? Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(24),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          _isPermissionDenied
-                                              ? Icons.videocam_off_outlined
-                                              : Icons.error_outline,
-                                          color: AppColors.textSecondary,
-                                          size: 32,
-                                        ),
-                                        const SizedBox(height: 12),
-                                        Text(
-                                          _errorMessage!,
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: AppColors.textSecondary,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        if (_isPermissionDenied) ...[
-                                          const SizedBox(height: 16),
-                                          ElevatedButton(
-                                            onPressed: () async {
-                                              await Geolocator.openAppSettings();
-                                            },
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor:
-                                                  AppColors.primary,
-                                              foregroundColor: Colors.white,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 20,
-                                                    vertical: 10,
-                                                  ),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(20),
-                                              ),
-                                              elevation: 0,
-                                            ),
-                                            child: const Text(
-                                              'Grant Access',
-                                              style: TextStyle(
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ],
-                                    ),
-                                  ),
-                                )
-                              : const Center(
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      // ── Animated direction overlay ──
-                      if (_currentStep < 3 && _isCameraInitialized)
-                        IgnorePointer(
-                          child: FaceDirectionOverlay(
-                            step: _currentStep,
-                            size: circleDia,
-                          ),
-                        ),
                     ],
                   ),
                 ),
-              ),
+                const SizedBox(height: 36),
 
-              const SizedBox(height: 32),
-
-              if (_currentStep < 3) ...[
-                _buildShutterButton(),
-              ] else ...[
-                _buildPreviewThumbnails(),
-                const SizedBox(height: 32),
-                _hasDeniedLocation
-                    ? _PrimaryButton(
-                        label: 'Grant Location Access',
-                        onPressed: () async {
-                          await Geolocator.openAppSettings();
-                        },
-                      )
-                    : _PrimaryButton(
-                        label: 'Complete Verification',
-                        isLoading: _isLoading,
-                        onPressed: _isLoading ? null : _submitVerification,
-                      ),
-                const SizedBox(height: 14),
-                TextButton(
-                  onPressed: _retakeAll,
-                  child: Text(
-                    'Retake All',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
+                // ── Camera circle with animated overlay ──
+                Expanded(
+                  child: Center(
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Outer glow ring
+                        Container(
+                          width: circleDia + 10,
+                          height: circleDia + 10,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color:
+                                  (_currentImage != null ||
+                                      _isCameraInitialized)
+                                  ? AppColors.textPrimary.withValues(alpha: 0.2)
+                                  : AppColors.borderColor,
+                              width: 5,
+                            ),
+                          ),
+                        ),
+                        // Camera / captured image circle
+                        Container(
+                          width: circleDia,
+                          height: circleDia,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color:
+                                  (_currentImage != null ||
+                                      _isCameraInitialized)
+                                  ? AppColors.textPrimary
+                                  : AppColors.borderColor,
+                              width: 2,
+                            ),
+                            color: AppColors.textWhite,
+                          ),
+                          child: ClipOval(
+                            child: _currentImage != null
+                                ? (kIsWeb
+                                      ? Image.network(
+                                          _currentImage!.path,
+                                          width: circleDia,
+                                          height: circleDia,
+                                          fit: BoxFit.cover,
+                                        )
+                                      : Image.file(
+                                          File(_currentImage!.path),
+                                          width: circleDia,
+                                          height: circleDia,
+                                          fit: BoxFit.cover,
+                                        ))
+                                : _isCameraInitialized
+                                ? _buildCameraFill(circleDia)
+                                : _errorMessage != null
+                                ? Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(24),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            _isPermissionDenied
+                                                ? Icons.videocam_off_outlined
+                                                : Icons.error_outline,
+                                            color: AppColors.textSecondary,
+                                            size: 32,
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Text(
+                                            _errorMessage!,
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                          if (_isPermissionDenied) ...[
+                                            const SizedBox(height: 16),
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                await Geolocator.openAppSettings();
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor:
+                                                    AppColors.primary,
+                                                foregroundColor: Colors.white,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 20,
+                                                      vertical: 10,
+                                                    ),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(20),
+                                                ),
+                                                elevation: 0,
+                                              ),
+                                              child: const Text(
+                                                'Grant Access',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                    ),
+                                  )
+                                : const Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                        // ── Animated direction overlay ──
+                        if (_currentStep < 3 && _isCameraInitialized)
+                          IgnorePointer(
+                            child: FaceDirectionOverlay(
+                              step: _currentStep,
+                              size: circleDia,
+                            ),
+                          ),
+                      ],
                     ),
                   ),
                 ),
+
+                const SizedBox(height: 32),
+
+                if (_currentStep < 3) ...[
+                  _buildShutterButton(),
+                ] else ...[
+                  _buildPreviewThumbnails(),
+                  const SizedBox(height: 32),
+                  _hasDeniedLocation
+                      ? _PrimaryButton(
+                          label: 'Grant Location Access',
+                          onPressed: () async {
+                            await Geolocator.openAppSettings();
+                          },
+                        )
+                      : _PrimaryButton(
+                          label: 'Complete Verification',
+                          isLoading: _isLoading,
+                          onPressed: _isLoading ? null : _submitVerification,
+                        ),
+                  const SizedBox(height: 14),
+                  TextButton(
+                    onPressed: _retakeAll,
+                    child: Text(
+                      'Retake All',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
               ],
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),
-    ));
+    );
   }
 
   Widget _buildShutterButton() {

@@ -6,13 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/country_helper.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
-import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:life_partner_again/services/match_service.dart';
+import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
-import 'package:life_partner_again/main.dart';
 import 'package:provider/provider.dart';
 
 /// Discover screen refactored into a modern profile browser UI.
@@ -59,7 +59,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
 
   void _fetchRecommendations() {
     if (mounted) {
-      context.read<MatchProvider>().loadRecommendations().then((_) => _syncWithProvider());
+      context.read<MatchProvider>().loadRecommendations().then(
+        (_) => _syncWithProvider(),
+      );
     }
   }
 
@@ -99,7 +101,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
     MatchRecommendation profile,
     String action,
   ) async {
-    if (_actionedProfileIds.contains(profile.id) || _loadingAction != null) return;
+    if (_actionedProfileIds.contains(profile.id) || _loadingAction != null)
+      return;
 
     setState(() {
       _loadingAction = action;
@@ -108,7 +111,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
     try {
       // Backend integration: 'RIGHT' for interest, 'LEFT' for not interested
       await MatchService.swipe(targetProfileId: profile.id, action: action);
-      
+
       if (mounted) {
         setState(() {
           _actionedProfileIds.add(profile.id);
@@ -124,13 +127,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
           _loadingAction = null;
         });
       }
-      
+
       if (mounted && e is DioException && e.response?.statusCode == 402) {
         FeatureExhaustedModal.show(context, featureType: 'Interest');
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to perform action. Please try again.')),
+            const SnackBar(
+              content: Text('Failed to perform action. Please try again.'),
+            ),
           );
         }
       }
@@ -176,13 +181,16 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
                           return RefreshIndicator(
                             color: AppColors.primary,
                             onRefresh: () async {
-                              await context.read<MatchProvider>().loadRecommendations();
+                              await context
+                                  .read<MatchProvider>()
+                                  .loadRecommendations();
                               _syncWithProvider();
                             },
                             child: LayoutBuilder(
                               builder: (context, constraints) {
                                 return SingleChildScrollView(
-                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
                                   child: SizedBox(
                                     height: constraints.maxHeight,
                                     child: _ProfileBrowserCard(
@@ -192,15 +200,24 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
                                       onNotInterested: () =>
                                           _handleInteraction(profile, 'LEFT'),
                                       onReturnFromDetail: () {
-                                        context.read<MatchProvider>().loadRecommendations().then((_) => _syncWithProvider());
+                                        context
+                                            .read<MatchProvider>()
+                                            .loadRecommendations()
+                                            .then((_) => _syncWithProvider());
                                       },
-                                      isActioning: _currentIndex == index && _loadingAction != null,
-                                      loadingAction: _currentIndex == index ? _loadingAction : null,
-                                      isActioned: _actionedProfileIds.contains(profile.id),
+                                      isActioning:
+                                          _currentIndex == index &&
+                                          _loadingAction != null,
+                                      loadingAction: _currentIndex == index
+                                          ? _loadingAction
+                                          : null,
+                                      isActioned: _actionedProfileIds.contains(
+                                        profile.id,
+                                      ),
                                     ),
                                   ),
                                 );
-                              }
+                              },
                             ),
                           );
                         },
@@ -732,7 +749,7 @@ class _ActionButtonsRow extends StatelessWidget {
         Expanded(
           child: _ActionButton(
             label: '',
-            icon: Icons.close,
+            icon: Icons.heart_broken,
             onTap: (isActioning || isActioned) ? () {} : onNotInterested,
             primary: false,
             isLoading: isActioning && loadingAction == 'LEFT',

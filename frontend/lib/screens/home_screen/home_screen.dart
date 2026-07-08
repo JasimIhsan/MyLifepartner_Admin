@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/discover_screen.dart';
 import 'package:life_partner_again/screens/likes_screen/likes_screen.dart';
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/screens/notification_screen/notification_screen.dart';
 import 'package:life_partner_again/screens/profile_screen/profile_screen.dart';
 import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/services/zego_service.dart';
+import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/custom_app_bar.dart';
 import 'package:life_partner_again/widgets/custom_bottom_bar.dart';
-import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -135,9 +135,10 @@ class _HomePageState extends State<HomePage> {
         _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
+        extendBody: true,
         appBar: _buildAppBar(),
-        body: SafeArea(child: _buildBody()),
+        body: _buildBody(),
         bottomNavigationBar: _buildBottomNavigationBar(),
       ),
     );
@@ -160,10 +161,7 @@ class _HomePageState extends State<HomePage> {
           ),
           tooltip: 'LPA Assist',
           onPressed: () {
-            Navigator.pushNamed(
-              context,
-              AppRoutes.lpaGuide,
-            );
+            Navigator.pushNamed(context, AppRoutes.lpaGuide);
           },
         ),
         IconButton(
@@ -185,6 +183,9 @@ class _HomePageState extends State<HomePage> {
     return CustomBottomBar(
       selectedIndex: _selectedIndex,
       onTap: _onTabTapped,
+      onCenterTap: () {
+        Navigator.pushNamed(context, AppRoutes.lpaGuide);
+      },
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.explore_outlined),
@@ -195,7 +196,7 @@ class _HomePageState extends State<HomePage> {
           label: 'Matches',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.message_outlined),
+          icon: Icon(Icons.chat_bubble_outline),
           label: 'Chat',
         ),
         BottomNavigationBarItem(
