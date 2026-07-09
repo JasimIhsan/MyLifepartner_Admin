@@ -124,11 +124,18 @@ class _ManageProfilePicturesScreenState
     }
   }
 
-  Future<void> _removeImage(int imageId) async {
-    setState(() => _processingImageId = imageId);
+  Future<void> _replaceImage(int imageId) async {
     try {
-      await _profileRepository.removeImage(imageId);
-      await _fetchImages();
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+      );
+
+      if (image != null) {
+        setState(() => _processingImageId = imageId);
+        await _profileRepository.replaceImage(imageId, image);
+        await _fetchImages();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -150,7 +157,7 @@ class _ManageProfilePicturesScreenState
         return ImageOptionsBottomSheet(
           image: image,
           onSetPrimary: _setPrimaryImage,
-          onRemove: _removeImage,
+          onReplace: _replaceImage,
         );
       },
     );

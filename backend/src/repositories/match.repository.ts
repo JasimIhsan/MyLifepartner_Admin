@@ -9,6 +9,7 @@ const candidateProfileInclude = {
          isVerified: true,
          createdAt: true,
          updatedAt: true,
+         privacySettings: true,
       },
    },
    images: {
@@ -52,6 +53,7 @@ type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
             isVerified: true;
             createdAt: true;
             updatedAt: true;
+            privacySettings: true;
          };
       };
    };
@@ -206,6 +208,7 @@ export class MatchRepository implements IMatchRepository {
                   isVerified: true,
                   createdAt: true,
                   updatedAt: true,
+                  privacySettings: true,
                },
             },
          },
@@ -453,6 +456,7 @@ export class MatchRepository implements IMatchRepository {
                   isVerified: true,
                   createdAt: true,
                   updatedAt: true,
+                  privacySettings: true,
                },
             },
          },
@@ -559,7 +563,10 @@ export class MatchRepository implements IMatchRepository {
          occupation: profile.job?.name || null,
          bio: profile.bio,
          gender: profile.gender,
+         privacyEnabled: (profile.user as any)?.privacySettings?.privacyEnabled ?? false,
+         blurredImageUrl: (profile.user as any)?.privacySettings?.blurredImageUrl ?? null,
          images: profile.images.map((image) => ({
+            id: image.id,
             imageUrl: image.imageUrl,
             isPrimary: image.isPrimary,
          })),
@@ -568,6 +575,14 @@ export class MatchRepository implements IMatchRepository {
          createdAt: profile.user.createdAt,
          lastLoginAt: profile.user.updatedAt,
       };
+   }
+
+   async getViewerPrivacyStatus(userId: number): Promise<boolean> {
+      const settings = await prisma.privacySettings.findUnique({
+         where: { userId },
+         select: { privacyEnabled: true },
+      });
+      return settings?.privacyEnabled ?? false;
    }
 
    /**

@@ -201,6 +201,17 @@ export class ProfileRepository implements IProfileRepository {
    }
 
    /**
+    * @returns Updated profile.
+    */
+    async updatePrivacySettings(userId: number, privacyEnabled: boolean) {
+      return prisma.privacySettings.upsert({
+         where: { userId },
+         update: { privacyEnabled },
+         create: { userId, privacyEnabled },
+      });
+    }
+
+   /**
     * Updates basic profile details.
     *
     * @param userId - User ID.
@@ -383,16 +394,31 @@ export class ProfileRepository implements IProfileRepository {
    }
 
    /**
-    * Deletes a user image.
+    * Replaces a user image's URL.
     *
-    * @param id - User image ID.
-    * @returns Deleted user image.
+    * @param imageId - Image ID.
+    * @param newImageUrl - New S3 image URL.
+    * @returns Updated user image.
     */
-   async deleteUserImage(id: number) {
-      return prisma.userImage.delete({
-         where: {
-            id,
-         },
+   async replaceUserImage(imageId: number, newImageUrl: string) {
+      return prisma.userImage.update({
+         where: { id: imageId },
+         data: { imageUrl: newImageUrl },
+      });
+   }
+
+   /**
+    * Updates blurred image URL in privacy settings.
+    *
+    * @param userId - User ID.
+    * @param blurredImageUrl - Blurred image S3 URL, or null to clear.
+    * @returns Updated privacy settings.
+    */
+   async updateBlurredImageUrl(userId: number, blurredImageUrl: string | null) {
+      return prisma.privacySettings.upsert({
+         where: { userId },
+         update: { blurredImageUrl },
+         create: { userId, blurredImageUrl },
       });
    }
 

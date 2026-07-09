@@ -1,4 +1,4 @@
-import { PartnerPreference, Profile, ProfileQuestion, ProfileSection, ProfileStatus, UserAnswer, UserImage, Job } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileQuestion, ProfileSection, ProfileStatus, UserAnswer, UserImage, Job, PrivacySettings } from "@prisma/client";
 import { UpdateProfileDto, CreatePartnerPreferenceDto } from "@/dtos/profile.input.dto";
 
 export interface IProfileRepository {
@@ -16,9 +16,11 @@ export interface IProfileRepository {
    getUserImagesCount(userId: number): Promise<number>;
    getUserImageById(id: number): Promise<(UserImage & { profile: Profile }) | null>;
    saveUserImage(userId: number, imageUrl: string, isPrimary?: boolean): Promise<UserImage>;
-   deleteUserImage(id: number): Promise<UserImage>;
+   replaceUserImage(imageId: number, newImageUrl: string): Promise<UserImage>;
+   updateBlurredImageUrl(userId: number, blurredImageUrl: string | null): Promise<PrivacySettings>;
    unsetPrimaryImages(userId: number): Promise<{ count: number }>;
    setImageAsPrimary(id: number): Promise<UserImage>;
    completeImageUpload(userId: number): Promise<Profile>;
    saveSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number): Promise<{ user: Profile; oldSelfieUrls: { front: string | null; left: string | null; right: string | null } }>;
+   updatePrivacySettings(userId: number, privacyEnabled: boolean): Promise<PrivacySettings>;
 }

@@ -19,6 +19,7 @@
 import { AdminRepository } from "@/repositories/admin.repository";
 import { ChatRepository } from "@/repositories/chat.repository";
 import { GuideRepository } from "@/repositories/guide.repository";
+import { ImageAccessRequestRepository } from "@/repositories/image-access-request.repository";
 import { ImageAssetRepository } from "@/repositories/image-asset.repository";
 import { MatchRepository } from "@/repositories/match.repository";
 import { PlanFeatureRepository } from "@/repositories/plan-feature.repository";
@@ -55,7 +56,11 @@ import { ImageAssetService } from "@/services/admin/image-asset.service";
 
 import { ChatService } from "@/services/chat.service";
 import { GuideService } from "@/services/guide.service";
+import { ImageAccessRequestService } from "@/services/image-access-request.service";
+import { ImageProcessorService } from "@/services/image-processor.service";
 import { MatchService } from "@/services/match.service";
+import { PrivacyImageMapperService } from "@/services/privacy-image-mapper.service";
+import { PrivacyPolicyService } from "@/services/privacy-policy.service";
 import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/user/user.auth.service";
 import { UserFeatureService } from "@/services/user/user.feature.service";
@@ -81,6 +86,8 @@ import { ChatController } from "@/controllers/user/chat.controller";
 import { MatchController } from "@/controllers/user/match.controller";
 import { ProfileController } from "@/controllers/user/profile.controller";
 import { ProfileImageController } from "@/controllers/user/profile.image.controller";
+import { PrivacyController } from "@/controllers/user/privacy.controller";
+import { ImageAccessRequestController } from "@/controllers/user/image-access-request.controller";
 import { UserController } from "@/controllers/user/user.controller";
 import { JobController } from "@/controllers/user/job.controller";
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
@@ -93,6 +100,7 @@ import { ZegoController } from "@/controllers/user/zego.controller";
 export const adminRepository = new AdminRepository();
 export const chatRepository = new ChatRepository();
 export const guideRepository = new GuideRepository();
+export const imageAccessRequestRepository = new ImageAccessRequestRepository();
 export const imageAssetRepository = new ImageAssetRepository();
 export const matchRepository = new MatchRepository();
 export const planFeatureRepository = new PlanFeatureRepository();
@@ -133,14 +141,18 @@ export const imageAssetService = new ImageAssetService(imageAssetRepository, s3S
 export const userService = new UserService(userRepository, s3Service);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
 export const authService = new AuthService(userRepository, otpService, jwtService, cacheService, subscriptionPlanRepository, userSubscriptionRepository);
-export const profileService = new ProfileService(profileRepository, s3Service);
+export const imageProcessorService = new ImageProcessorService();
+export const profileService = new ProfileService(profileRepository, s3Service, imageProcessorService);
 export const jobService = new JobService(jobRepository);
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);
 export const chatService = new ChatService(chatRepository, userFeatureService);
-export const matchService = new MatchService(matchRepository, s3Service, userFeatureService);
+export const privacyPolicyService = new PrivacyPolicyService();
+export const privacyImageMapperService = new PrivacyImageMapperService(privacyPolicyService, s3Service);
+export const imageAccessRequestService = new ImageAccessRequestService(imageAccessRequestRepository);
+export const matchService = new MatchService(matchRepository, s3Service, userFeatureService, privacyImageMapperService, imageAccessRequestService);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Controller Instances
@@ -162,6 +174,8 @@ export const guideController = new GuideController(guideService);
 export const authController = new AuthController(authService, userService);
 export const profileController = new ProfileController(profileService);
 export const profileImageController = new ProfileImageController(profileService);
+export const privacyController = new PrivacyController(profileService);
+export const imageAccessRequestController = new ImageAccessRequestController(imageAccessRequestService);
 export const userController = new UserController(userService);
 export const jobController = new JobController(jobService);
 export const matchController = new MatchController(matchService);

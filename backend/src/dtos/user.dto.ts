@@ -1,4 +1,4 @@
-import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, Job } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, Job, PrivacySettings } from "@prisma/client";
 
 export interface UserDto {
    id: number;
@@ -15,6 +15,7 @@ export interface UserDto {
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
    primaryImageUrl?: string | null;
+   privacyEnabled?: boolean;
 
    // Profile demographics
    gender?: string | null;
@@ -34,7 +35,7 @@ export interface UserDto {
    updatedAt: Date;
 }
 
-export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null; images?: { isPrimary: boolean; imageUrl: string }[] }) | null; partnerPreference?: PartnerPreference | null }): UserDto => ({
+export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null; images?: { isPrimary: boolean; imageUrl: string }[] }) | null; partnerPreference?: PartnerPreference | null; privacySettings?: PrivacySettings | null }): UserDto => ({
    id: user.id,
    mobileNumber: user.mobileNumber,
    name: user.profile?.name || null,
@@ -49,6 +50,7 @@ export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null
    selfieStatus: user.profile?.selfieStatus || null,
    selfieUrl: user.profile?.selfieUrl || null,
    primaryImageUrl: user.profile?.images?.find((img) => img.isPrimary)?.imageUrl || null,
+   privacyEnabled: user.privacySettings?.privacyEnabled ?? false,
 
    gender: user.profile?.gender || null,
    dateOfBirth: user.profile?.dateOfBirth || null,

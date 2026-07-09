@@ -1,5 +1,7 @@
 import { CandidateProfile, IMatchRepository, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
+import { IImageAccessRequestService } from "../interfaces/services/image-access-request.service.interface";
 import { IMatchService, InteractionState, MatchRecommendationItem, ProfileDetail, SwipeAction, SwipeInput } from "../interfaces/services/match.service.interface";
+import { IPrivacyImageMapperService } from "../interfaces/services/privacy-image-mapper.service.interface";
 import { IS3Service } from "../interfaces/services/s3.service.interface";
 import { IUserFeatureService } from "../interfaces/services/user.feature.service.interface";
 import { ApiError } from "../utils/ApiError";
@@ -10,6 +12,9 @@ type CompatibilityScore = {
 };
 
 type UserMatchContext = {
+   viewerUserId: number;
+   viewerPrivacyEnabled: boolean;
+   approvedAccesses: Set<number>;
    preference: UserPreferenceData | null;
    answers: UserAnswerData[];
 };
@@ -22,7 +27,9 @@ export class MatchService implements IMatchService {
    constructor(
       private readonly matchRepository: IMatchRepository,
       private readonly s3Service: IS3Service,
-      private readonly userFeatureService: IUserFeatureService
+      private readonly userFeatureService: IUserFeatureService,
+      private readonly privacyImageMapperService: IPrivacyImageMapperService,
+      private readonly imageAccessRequestService: IImageAccessRequestService
    ) {}
 
    /**
@@ -84,7 +91,7 @@ export class MatchService implements IMatchService {
          return null;
       }
 
-      const matchContext = await this.getUserMatchContext(userId);
+      const matchContext = await this.getUserMatchContext(userId, [candidate.userId]);
       const { totalScore, highlights } = this.calculateCompatibility(candidate, matchContext.preference, matchContext.answers);
 
       return {
@@ -104,7 +111,7 @@ export class MatchService implements IMatchService {
          bio: candidate.bio,
          matchPercentage: Math.round(totalScore),
          compatibilityHighlights: highlights,
-         images: await this.getPresignedImages(candidate),
+         images: await this.getPresignedImages(candidate, matchContext),
          interactionState: candidate.interactionState ?? InteractionState.NONE,
          createdAt: candidate.createdAt,
          lastLoginAt: candidate.lastLoginAt,
@@ -156,7 +163,7 @@ export class MatchService implements IMatchService {
     * @returns Match recommendation items.
     */
    private async enrichCandidatesToRecommendations(userId: number, candidates: CandidateProfile[]): Promise<MatchRecommendationItem[]> {
-      const matchContext = await this.getUserMatchContext(userId);
+      const matchContext = await this.getUserMatchContext(userId, candidates.map((c) => c.userId));
 
       return this.buildRecommendationItems(candidates, matchContext);
    }
@@ -195,7 +202,7 @@ export class MatchService implements IMatchService {
          maritalStatus: candidate.maritalStatus,
          matchPercentage: Math.round(totalScore),
          compatibilityHighlights: highlights,
-         images: await this.getPresignedImages(candidate),
+         images: await this.getPresignedImages(candidate, matchContext),
          interactionState: candidate.interactionState ?? InteractionState.NONE,
          createdAt: candidate.createdAt,
          lastLoginAt: candidate.lastLoginAt,
@@ -208,10 +215,20 @@ export class MatchService implements IMatchService {
     * @param userId - User ID.
     * @returns User match context.
     */
-   private async getUserMatchContext(userId: number): Promise<UserMatchContext> {
-      const [preference, answers] = await Promise.all([this.matchRepository.getUserPreference(userId), this.matchRepository.getUserAnswers(userId)]);
+   private async getUserMatchContext(userId: number, candidateUserIds: number[] = []): Promise<UserMatchContext> {
+      const [preference, answers, viewerPrivacyEnabled, approvedAccessesList] = await Promise.all([
+         this.matchRepository.getUserPreference(userId),
+         this.matchRepository.getUserAnswers(userId),
+         this.matchRepository.getViewerPrivacyStatus(userId),
+         this.imageAccessRequestService.getApprovedAccessesForViewer(userId, candidateUserIds)
+      ]);
+
+      const approvedAccesses = new Set(approvedAccessesList.map((a) => a.ownerUserId));
 
       return {
+         viewerUserId: userId,
+         viewerPrivacyEnabled,
+         approvedAccesses,
          preference,
          answers,
       };
@@ -223,13 +240,27 @@ export class MatchService implements IMatchService {
     * @param candidate - Candidate profile.
     * @returns Images with presigned URLs.
     */
-   private async getPresignedImages(candidate: CandidateProfile) {
-      return Promise.all(
-         candidate.images.map(async (image) => ({
-            ...image,
-            imageUrl: await this.s3Service.getPresignedUrl(image.imageUrl),
-         }))
-      );
+   private async getPresignedImages(candidate: CandidateProfile, matchContext: UserMatchContext) {
+      const mappedImages = await this.privacyImageMapperService.mapImages({
+         viewerUserId: matchContext.viewerUserId,
+         viewerPrivacyEnabled: matchContext.viewerPrivacyEnabled,
+         targetUserId: candidate.userId,
+         targetPrivacyEnabled: candidate.privacyEnabled,
+         targetBlurredImageUrl: candidate.blurredImageUrl,
+         targetImages: candidate.images.map((img) => ({
+            id: img.id,
+            imageUrl: img.imageUrl,
+            isPrimary: img.isPrimary,
+         })),
+         hasApprovedAccess: matchContext.approvedAccesses.has(candidate.userId),
+      });
+
+      return mappedImages.map((image) => ({
+         id: image.id,
+         imageUrl: image.imageUrl ?? "",
+         isPrimary: image.isPrimary,
+         isBlurred: image.isBlurred,
+      }));
    }
 
    /**

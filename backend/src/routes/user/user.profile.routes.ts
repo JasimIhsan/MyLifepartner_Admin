@@ -1,4 +1,4 @@
-import { profileController, profileImageController } from "@/composer/composer";
+import { profileController, profileImageController, privacyController } from "@/composer/composer";
 import { multerConfig } from "@/config/multer.config";
 import { verifyJWT } from "@/middlewares/auth.middleware";
 import { validate } from "@/middlewares/validate.middleware";
@@ -65,6 +65,13 @@ router.patch("/basic-profile/:userId", validate(basicProfileSchema), profileCont
  */
 router.patch("/partner-preference/:userId", validate(partnerPreferenceSchema), profileController.updatePartnerPreference);
 
+/**
+ * @route   PATCH /api/v1/user/profile/privacy/:userId
+ * @desc    Update privacy settings for the profile (enable/disable image blurring)
+ * @access  Private
+ */
+router.patch("/privacy/:userId", privacyController.updatePrivacySettings);
+
 // Image Profile Routes
 
 /**
@@ -75,11 +82,11 @@ router.patch("/partner-preference/:userId", validate(partnerPreferenceSchema), p
 router.post("/upload-image/:userId", multerConfig.single("image"), profileImageController.uploadImage);
 
 /**
- * @route   DELETE /api/v1/user/profile/remove-image/:userId/:imageId
- * @desc    Remove a specific profile image for user
+ * @route   PUT /api/v1/user/profile/replace-image/:userId/:imageId
+ * @desc    Replace a specific profile image for user
  * @access  Private
  */
-router.delete("/remove-image/:userId/:imageId", profileImageController.removeImage);
+router.put("/replace-image/:userId/:imageId", multerConfig.single("image"), profileImageController.replaceImage);
 
 /**
  * @route   PATCH /api/v1/user/profile/set-primary/:userId/:imageId

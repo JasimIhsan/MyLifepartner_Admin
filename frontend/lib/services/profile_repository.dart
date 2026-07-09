@@ -300,22 +300,55 @@ class ProfileRepository {
     }
   }
 
-  Future<void> removeImage(int imageId) async {
+  Future<UserImage> replaceImage(int imageId, XFile imageFile) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      final response = await ApiService.client.delete(
-        '/profile/remove-image/$userId/$imageId',
+      final bytes = await imageFile.readAsBytes();
+      final mimeType = imageFile.mimeType ?? 'image/jpeg';
+      final mediaType = MediaType.parse(mimeType);
+
+      FormData formData = FormData.fromMap({
+        "image": MultipartFile.fromBytes(
+          bytes,
+          filename: imageFile.name.isEmpty ? 'image.jpg' : imageFile.name,
+          contentType: mediaType,
+        ),
+      });
+
+      final response = await ApiService.client.put(
+        '/profile/replace-image/$userId/$imageId',
+        data: formData,
+      );
+
+      return UserImage.fromJson(response.data['data']);
+    } on DioException catch (e) {
+      throw Exception(getDioErrorMessage(e, fallback: 'Error replacing image'));
+    } catch (e) {
+      throw Exception('Error replacing image: $e');
+    }
+  }
+
+  Future<void> updatePrivacySettings(bool enabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+
+      final response = await ApiService.client.patch(
+        '/profile/privacy/$userId',
+        data: {'privacyEnabled': enabled},
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to remove image');
+        throw Exception('Failed to update privacy settings');
       }
     } on DioException catch (e) {
-      throw Exception(getDioErrorMessage(e, fallback: 'Error removing image'));
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error updating privacy settings'),
+      );
     } catch (e) {
-      throw Exception('Error removing image: $e');
+      throw Exception('Error updating privacy settings: $e');
     }
   }
 

@@ -26,6 +26,7 @@ model User {
   profileSwipes     ProfileSwipe[]     @relation("UserSwipes")
   subscriptions     UserSubscription[]
   userFeature       UserFeature?
+  privacySettings   PrivacySettings?
 
   conversationsAsOne Conversation[] @relation("ConversationUserOne")
   conversationsAsTwo Conversation[] @relation("ConversationUserTwo")
@@ -102,15 +103,27 @@ model PartnerPreference {
 }
 
 model UserImage {
-  id        Int      @id @default(autoincrement())
-  profileId Int
-  profile   Profile  @relation(fields: [profileId], references: [id])
-  imageUrl  String
-  isPrimary Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  profileId       Int
+  profile         Profile  @relation(fields: [profileId], references: [id])
+  imageUrl        String
+  isPrimary       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@map("user_images")
+}
+
+model PrivacySettings {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  user            User     @relation(fields: [userId], references: [id])
+  privacyEnabled  Boolean  @default(false)
+  blurredImageUrl String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("privacy_settings")
 }
 
 model ProfileSwipe {
@@ -123,6 +136,28 @@ model ProfileSwipe {
   createdAt       DateTime    @default(now())
 
   @@map("profile_swipes")
+}
+
+model ImageAccessRequest {
+  id              Int               @id @default(autoincrement())
+
+  ownerUserId     Int
+  requesterUserId Int
+
+  status          ImageAccessStatus @default(PENDING)
+
+  requestedAt     DateTime          @default(now())
+  respondedAt     DateTime?
+  revokedAt       DateTime?
+  revokedByUserId Int?
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([ownerUserId, requesterUserId])
+  @@index([ownerUserId, status])
+  @@index([requesterUserId, status])
+  @@map("image_access_requests")
 }
 
 // ─── Survey & compatibility ──────────────────────────────────────────────────
@@ -299,6 +334,14 @@ model Job {
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum ImageAccessStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVOKED
+  CANCELLED
+}
 
 enum Role {
   USER

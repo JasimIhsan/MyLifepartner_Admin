@@ -108,6 +108,7 @@ class User {
   final List<String> languages;
   final String? smokingHabit;
   final String? drinkingHabit;
+  final bool privacyEnabled;
 
   User({
     required this.id,
@@ -116,6 +117,7 @@ class User {
     required this.hasCompletedBasicDetails,
     required this.hasCompletedImageUpload,
     required this.hasCompletedPartnerPreference,
+    this.privacyEnabled = false,
     this.selfieStatus,
     this.name,
     this.email,
@@ -143,6 +145,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     final rawLanguages = json['languages'];
+    final privacySettings = json['privacySettings'];
 
     return User(
       id: json['id'] ?? 0,
@@ -152,6 +155,7 @@ class User {
       hasCompletedImageUpload: json['hasCompletedImageUpload'] ?? false,
       hasCompletedPartnerPreference:
           json['hasCompletedPartnerPreference'] ?? false,
+      privacyEnabled: json['privacyEnabled'] ?? privacySettings?['privacyEnabled'] ?? false,
       selfieStatus: json['selfieStatus'],
       name: json['name'],
       email: json['email'],

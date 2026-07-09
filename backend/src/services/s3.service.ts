@@ -1,9 +1,16 @@
 import env from "@/config/env";
 import { s3Client } from "@/config/s3.config";
-import { IS3Service } from "@/interfaces/services/s3.service.interface";
+import { IS3Service, S3UploadOptions } from "@/interfaces/services/s3.service.interface";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { v4 as uuidv4 } from "uuid";
+
+export interface S3UploadObjectOptions {
+   body: Buffer;
+   folder: string;
+   extension: string;
+   contentType: string;
+}
 
 export class S3Service implements IS3Service {
    /**
@@ -32,6 +39,42 @@ export class S3Service implements IS3Service {
       await s3Client.send(command);
 
       // Return the S3 key instead of the full URL
+      return fileName;
+   }
+
+   /**
+    * Uploads a buffer directly to S3.
+    * @param options Upload options including buffer, folder, extension, and content type.
+    * @returns The S3 key of the uploaded object.
+    */
+   public async uploadBufferToS3(options: S3UploadOptions): Promise<string> {
+      return this.uploadObjectToS3({
+         body: options.buffer,
+         folder: options.folder,
+         extension: options.extension,
+         contentType: options.contentType,
+      });
+   }
+
+   /**
+    * Reusable private method to upload an object (buffer) to S3.
+    */
+   private async uploadObjectToS3(options: S3UploadObjectOptions): Promise<string> {
+      if (!env.AWS_S3_BUCKET_NAME) {
+         throw new Error("AWS_S3_BUCKET_NAME is not defined in environment variables.");
+      }
+
+      const fileName = `${options.folder}/${uuidv4()}.${options.extension}`;
+
+      const command = new PutObjectCommand({
+         Bucket: env.AWS_S3_BUCKET_NAME,
+         Key: fileName,
+         Body: options.body,
+         ContentType: options.contentType,
+      });
+
+      await s3Client.send(command);
+
       return fileName;
    }
 

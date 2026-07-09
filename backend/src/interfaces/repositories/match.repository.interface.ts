@@ -11,6 +11,7 @@ export interface IMatchRepository {
    getSwipedProfileIds(userId: number): Promise<SwipedProfile[]>;
    recordSwipe(userId: number, targetProfileId: number, action: SwipeAction): Promise<void>;
    getProfileById(currentUserId: number, profileId: number): Promise<CandidateProfile | null>;
+   getViewerPrivacyStatus(userId: number): Promise<boolean>;
 }
 
 export interface CandidateProfile {
@@ -30,7 +31,9 @@ export interface CandidateProfile {
    occupation: string | null;
    bio: string | null;
    gender: string | null;
-   images: Array<{ imageUrl: string; isPrimary: boolean }>;
+   privacyEnabled: boolean;
+   blurredImageUrl: string | null;
+   images: Array<{ id: number; imageUrl: string; isPrimary: boolean }>;
    answers: UserAnswerData[];
    createdAt: Date;
    lastLoginAt: Date;

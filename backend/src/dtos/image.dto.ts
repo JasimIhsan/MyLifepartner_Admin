@@ -2,17 +2,19 @@ import { UserImage } from "@prisma/client";
 
 export interface UserImageDto {
    id: number;
-   profileId: number;
-   imageUrl: string;
+   profileId?: number;
+   imageUrl: string | null;
    isPrimary: boolean;
-   createdAt: Date;
+   isBlurred?: boolean;
+   createdAt?: Date;
 }
 
-export const toUserImageDto = (image: UserImage): UserImageDto => ({
+export const toUserImageDto = (image: UserImage, isBlurred?: boolean): UserImageDto => ({
    id: image.id,
    profileId: image.profileId,
    imageUrl: image.imageUrl,
    isPrimary: image.isPrimary,
+   isBlurred,
    createdAt: image.createdAt,
 });
 

@@ -22,6 +22,7 @@ export class UserRepository implements IUserRepository {
       },
       partnerPreference: true,
       userFeature: true,
+      privacySettings: true,
    } satisfies Prisma.UserInclude;
 
    /**

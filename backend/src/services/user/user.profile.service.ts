@@ -2,6 +2,7 @@ import { ImageUploadStatusDto, toImageUploadStatusDto, toUserImageDto, UserImage
 import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto, UserAnswerDto } from "@/dtos/profile.dto";
 import { CreatePartnerPreferenceDto, UpdateProfileDto } from "@/dtos/profile.input.dto";
 import { IProfileRepository } from "@/interfaces/repositories/profile.repository.interface";
+import { IImageProcessorService } from "@/interfaces/services/image-processor.service.interface";
 import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { IProfileService, PartnerPreference, Profile, ProfileStatus } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
@@ -57,7 +58,8 @@ const DEFAULT_NEXT_PENDING_SECTION_ORDER = 1;
 export class ProfileService implements IProfileService {
    constructor(
       private readonly profileRepository: IProfileRepository,
-      private readonly s3Service: IS3Service
+      private readonly s3Service: IS3Service,
+      private readonly imageProcessorService: IImageProcessorService
    ) {}
 
    /**
@@ -183,6 +185,18 @@ export class ProfileService implements IProfileService {
    }
 
    /**
+    * Updates privacy settings.
+    *
+    * @param userId - User ID.
+    * @param privacyEnabled - Privacy status.
+    * @returns Updated profile.
+    */
+   async updatePrivacySettings(userId: number, privacyEnabled: boolean): Promise<{ privacyEnabled: boolean }> {
+      const settings = await this.profileRepository.updatePrivacySettings(userId, privacyEnabled);
+      return { privacyEnabled: settings.privacyEnabled };
+   }
+
+   /**
     * Updates partner preference.
     *
     * @param userId - User ID.
@@ -209,7 +223,7 @@ export class ProfileService implements IProfileService {
             return image;
          })
       );
-      return imagesWithPresignedUrls.map(toUserImageDto);
+      return imagesWithPresignedUrls.map((img) => toUserImageDto(img));
    }
 
    /**
@@ -226,39 +240,69 @@ export class ProfileService implements IProfileService {
          throw new ApiError(400, "Maximum of 4 images allowed");
       }
 
-      const s3Url = await this.s3Service.uploadToS3(file, `${userId}/profile`);
+      let s3Url = "";
 
       try {
+         // Upload original
+         s3Url = await this.s3Service.uploadToS3(file, `${userId}/profile`);
+
          const isPrimary = currentCount === 0;
          const image = await this.profileRepository.saveUserImage(userId, s3Url, isPrimary);
+
+         // If this is the first image (primary), generate and store blurred version
+         if (isPrimary) {
+            await this.generateAndStoreBlurredImage(userId, file);
+         }
 
          image.imageUrl = await this.s3Service.getPresignedUrl(image.imageUrl);
          return toUserImageDto(image);
       } catch (error) {
-         await this.s3Service.deleteFromS3(s3Url);
+         if (s3Url) {
+            await this.s3Service.deleteFromS3(s3Url);
+         }
          throw error;
       }
    }
 
    /**
-    * Deletes user image.
+    * Replaces an existing user image.
     *
     * @param userId - User ID.
-    * @param imageId - Image ID.
-    * @returns Delete status.
+    * @param imageId - Image ID to replace.
+    * @param file - New image file.
+    * @returns Updated user image.
     */
-   async deleteUserImage(userId: number, imageId: number): Promise<DeleteImageResponse> {
-      const image = await this.getOwnedUserImage(userId, imageId);
+   async replaceUserImage(userId: number, imageId: number, file: Express.Multer.File): Promise<UserImageDto> {
+      const existingImage = await this.getOwnedUserImage(userId, imageId);
+      const oldS3Url = existingImage.imageUrl;
 
-      if (image.imageUrl) {
-         await this.s3Service.deleteFromS3(image.imageUrl);
+      let newS3Url = "";
+
+      try {
+         // Upload new image
+         newS3Url = await this.s3Service.uploadToS3(file, `${userId}/profile`);
+
+         // Update the DB record in-place
+         const updatedImage = await this.profileRepository.replaceUserImage(imageId, newS3Url);
+
+         // Delete old image from S3
+         if (oldS3Url) {
+            await this.s3Service.deleteFromS3(oldS3Url);
+         }
+
+         // If the replaced image is the primary, regenerate blurred image
+         if (existingImage.isPrimary) {
+            await this.generateAndStoreBlurredImage(userId, file);
+         }
+
+         updatedImage.imageUrl = await this.s3Service.getPresignedUrl(updatedImage.imageUrl);
+         return toUserImageDto(updatedImage);
+      } catch (error) {
+         if (newS3Url) {
+            await this.s3Service.deleteFromS3(newS3Url);
+         }
+         throw error;
       }
-
-      await this.profileRepository.deleteUserImage(image.id);
-
-      return {
-         success: true,
-      };
    }
 
    /**
@@ -269,11 +313,13 @@ export class ProfileService implements IProfileService {
     * @returns Updated user image.
     */
    async setPrimaryImage(userId: number, imageId: number): Promise<UserImageDto> {
-      await this.getOwnedUserImage(userId, imageId);
+      const image = await this.getOwnedUserImage(userId, imageId);
 
       await this.profileRepository.unsetPrimaryImages(userId);
-
       const updatedImage = await this.profileRepository.setImageAsPrimary(imageId);
+
+      // Regenerate blurred image from the new primary
+      await this.regenerateBlurredImageFromS3(userId, image.imageUrl);
 
       return toUserImageDto(updatedImage);
    }
@@ -417,5 +463,52 @@ export class ProfileService implements IProfileService {
       const value = answer.value;
 
       return typeof value === "number" ? value : 0;
+   }
+
+   /**
+    * Generates a blurred image from a Multer file and stores it in S3 + PrivacySettings.
+    * Deletes any previously existing blurred image from S3.
+    *
+    * @param userId - User ID.
+    * @param file - The original image file buffer.
+    */
+   private async generateAndStoreBlurredImage(userId: number, file: Express.Multer.File): Promise<void> {
+      const blurredBuffer = await this.imageProcessorService.createBlurredImageBuffer(file);
+
+      const blurredS3Url = await this.s3Service.uploadBufferToS3({
+         buffer: blurredBuffer,
+         folder: `${userId}/profile/blurred`,
+         extension: "jpg",
+         contentType: "image/jpeg",
+      });
+
+      await this.profileRepository.updateBlurredImageUrl(userId, blurredS3Url);
+   }
+
+   /**
+    * Regenerates blurred image from an existing S3 image key.
+    * Used when the primary changes (setPrimary) and we don't have the file buffer.
+    *
+    * @param userId - User ID.
+    * @param imageS3Key - The S3 key of the image to blur.
+    */
+   private async regenerateBlurredImageFromS3(userId: number, imageS3Key: string): Promise<void> {
+      const presignedUrl = await this.s3Service.getPresignedUrl(imageS3Key);
+      const response = await fetch(presignedUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      const pseudoFile = { buffer } as Express.Multer.File;
+
+      const blurredBuffer = await this.imageProcessorService.createBlurredImageBuffer(pseudoFile);
+
+      const blurredS3Url = await this.s3Service.uploadBufferToS3({
+         buffer: blurredBuffer,
+         folder: `${userId}/profile/blurred`,
+         extension: "jpg",
+         contentType: "image/jpeg",
+      });
+
+      await this.profileRepository.updateBlurredImageUrl(userId, blurredS3Url);
    }
 }

@@ -36,10 +36,10 @@ export class ProfileImageController {
    });
 
    /**
-    * @route DELETE /api/v1/user/profile/remove-image/:userId/:imageId
-    * @purpose Removes a profile image for the authenticated user.
+    * @route PUT /api/v1/user/profile/replace-image/:userId/:imageId
+    * @purpose Replaces a profile image for the authenticated user.
     */
-   public removeImage = asyncHandler(async (req: AuthRequest, res: Response) => {
+   public replaceImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
       const userId = Number(req.params.userId);
       const imageId = Number(req.params.imageId);
@@ -54,9 +54,13 @@ export class ProfileImageController {
 
       this.ensureUserOwnsResource(userId, authUserId);
 
-      await this.profileService.deleteUserImage(userId, imageId);
+      if (!req.file) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No image file provided");
+      }
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Image removed successfully"));
+      const updatedImage = await this.profileService.replaceUserImage(userId, imageId, req.file);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedImage, "Image replaced successfully"));
    });
 
    /**

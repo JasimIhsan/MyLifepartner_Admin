@@ -1,4 +1,4 @@
-import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, UserFeature } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, UserFeature, PrivacySettings } from "@prisma/client";
 
 import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
 
@@ -16,6 +16,7 @@ export type UserWithProfile = User & {
    profile: ProfileWithImages | null;
    partnerPreference?: PartnerPreference | null;
    userFeature?: UserFeature | null;
+   privacySettings?: PrivacySettings | null;
 };
 
 export type UserListFilters = {

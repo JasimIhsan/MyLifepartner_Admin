@@ -6,13 +6,13 @@ import 'package:life_partner_again/models/user_image.dart';
 class ImageOptionsBottomSheet extends StatelessWidget {
   final UserImage image;
   final Function(int) onSetPrimary;
-  final Function(int) onRemove;
+  final Function(int) onReplace;
 
   const ImageOptionsBottomSheet({
     super.key,
     required this.image,
     required this.onSetPrimary,
-    required this.onRemove,
+    required this.onReplace,
   });
 
   @override
@@ -106,25 +106,25 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF0F0),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
-                        Icons.delete_outline_rounded,
-                        color: Color(0xFFE53935),
+                        Icons.sync_rounded,
+                        color: AppColors.primary,
                         size: 22,
                       ),
                     ),
                     title: const Text(
-                      'Remove Photo',
+                      'Replace Photo',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFFE53935),
+                        color: AppColors.primary,
                       ),
                     ),
                     subtitle: const Text(
-                      'Permanently remove this photo from your profile',
+                      'Select a new photo to replace this one',
                       style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
@@ -132,7 +132,7 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                     ),
                     onTap: () {
                       Navigator.pop(context);
-                      onRemove(image.id);
+                      onReplace(image.id);
                     },
                   ),
                   const SizedBox(height: 16),

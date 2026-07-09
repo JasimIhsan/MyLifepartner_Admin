@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../widgets/custom_button.dart';
 import '../../widgets/bottomsheet/logout_bottom_sheet.dart';
+import '../../widgets/bottomsheet/custom_bottom_sheet.dart';
 import '../login_screen/login_screen.dart';
 import '../subscription_screen/subscription_screen.dart';
 import 'manage_profile_pictures_screen.dart';
@@ -31,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
   User? _user;
   UserImage? _primaryImage;
   bool _isLoading = true;
+  bool _isUpdatingPrivacy = false;
 
   @override
   void initState() {
@@ -420,20 +422,18 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
                           ),
                         ]),
 
-                        // _buildSectionHeader("Preferences"),
-                        // _buildActionGroup([
-                        //   _buildActionItem(
-                        //     icon: Icons.settings_outlined,
-                        //     title: "Settings",
-                        //     onTap: () {},
-                        //   ),
-                        //   _buildActionItem(
-                        //     icon: Icons.notifications_outlined,
-                        //     title: "Notifications",
-                        //     showDivider: false,
-                        //     onTap: () {},
-                        //   ),
-                        // ]),
+                        _buildSectionHeader("Privacy & Security"),
+                        _buildActionGroup([
+                          _buildSwitchItem(
+                            icon: Icons.shield_outlined,
+                            title: "Blur Profile Image",
+                            subtitle: "Only approved matches can see your photos",
+                            value: _user?.privacyEnabled ?? false,
+                            isLoading: _isUpdatingPrivacy,
+                            onChanged: (value) => _togglePrivacy(value),
+                          ),
+                        ]),
+
                         _buildSectionHeader("Support"),
                         _buildActionGroup([
                           _buildActionItem(
@@ -563,6 +563,110 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
             color: AppColors.divider,
           ),
       ],
+    );
+  }
+
+  Widget _buildSwitchItem({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required bool isLoading,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.primary, size: 22),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isLoading)
+                const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              else
+                Switch(
+                  value: value,
+                  onChanged: onChanged,
+                  activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
+                  activeThumbColor: AppColors.primary,
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _togglePrivacy(bool newValue) {
+    if (_isUpdatingPrivacy) return;
+
+    final isEnabling = newValue;
+
+    CustomBottomSheet.show(
+      context: context,
+      type: BottomSheetType.confirmation,
+      title: isEnabling ? 'Enable Privacy?' : 'Disable Privacy?',
+      message: isEnabling
+          ? 'Your profile photos will be blurred for everyone except matches you approve.'
+          : 'Your profile photos will be visible to everyone on the platform.',
+      primaryButtonText: isEnabling ? 'Enable' : 'Disable',
+      onPrimaryPressed: () async {
+        Navigator.pop(context); // close sheet
+        
+        setState(() {
+          _isUpdatingPrivacy = true;
+        });
+        
+        try {
+          await _profileRepository.updatePrivacySettings(newValue);
+          await _fetchProfileData();
+        } catch (e) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+            );
+          }
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isUpdatingPrivacy = false;
+            });
+          }
+        }
+      },
+      secondaryButtonText: 'Cancel',
+      onSecondaryPressed: () {
+        Navigator.pop(context);
+      },
+      imagePath: 'assets/images/illustrations/privacy.png',
     );
   }
 }
