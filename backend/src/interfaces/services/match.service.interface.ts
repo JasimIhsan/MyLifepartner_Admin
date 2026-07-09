@@ -24,10 +24,13 @@ export interface MatchRecommendationItem {
    maritalStatus: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
-   images: Array<{ imageUrl: string; isPrimary: boolean }>;
+   images: Array<{ imageUrl: string; isPrimary: boolean; isBlurred?: boolean }>;
    interactionState: InteractionState;
    createdAt: Date;
    lastLoginAt: Date;
+   viewerPrivacyEnabled?: boolean;
+   targetPrivacyEnabled?: boolean;
+   imageAccessRequestStatus?: string | null;
 }
 
 export interface SwipeInput {
@@ -53,11 +56,14 @@ export interface ProfileDetail {
    bio: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
-   images: Array<{ imageUrl: string; isPrimary: boolean }>;
+   images: Array<{ imageUrl: string; isPrimary: boolean; isBlurred?: boolean }>;
    interactionState: InteractionState;
    createdAt: Date;
    lastLoginAt: Date;
    isVerified: boolean;
+   viewerPrivacyEnabled?: boolean;
+   targetPrivacyEnabled?: boolean;
+   imageAccessRequestStatus?: string | null;
 }
 
 export interface IMatchService {

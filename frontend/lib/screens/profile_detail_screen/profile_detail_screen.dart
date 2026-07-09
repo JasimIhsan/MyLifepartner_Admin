@@ -9,7 +9,9 @@ import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_details_grid.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
+import 'package:life_partner_again/services/image_access_service.dart';
 import 'package:life_partner_again/services/match_service.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final int profileId;
@@ -92,6 +94,68 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                             )
                           : HeaderCarousel(images: images),
                     ),
+                    if (images.isNotEmpty && images.first['isBlurred'] == true)
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 32),
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.15),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.lock_outline_rounded,
+                                  color: Colors.white,
+                                  size: 26,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                (p['viewerPrivacyEnabled'] == true)
+                                    ? 'Your profile is private'
+                                    : 'Photos are private',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                (p['viewerPrivacyEnabled'] == true)
+                                    ? 'You need access to see ${widget.profileName}\'s photos.'
+                                    : 'Request access to see ${widget.profileName}\'s photos.',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              _RequestAccessButton(
+                                userId: p['userId'],
+                                imageAccessRequestStatus:
+                                    p['imageAccessRequestStatus'],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     Positioned(
                       bottom: 0,
                       left: 0,
@@ -222,6 +286,94 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           child: ProfileActionBar(profile: p),
         ),
       ],
+    );
+  }
+}
+
+class _RequestAccessButton extends StatefulWidget {
+  final int userId;
+  final String? imageAccessRequestStatus;
+
+  const _RequestAccessButton({
+    required this.userId,
+    required this.imageAccessRequestStatus,
+  });
+
+  @override
+  State<_RequestAccessButton> createState() => _RequestAccessButtonState();
+}
+
+class _RequestAccessButtonState extends State<_RequestAccessButton> {
+  bool _isLoading = false;
+  String? _status;
+
+  @override
+  void initState() {
+    super.initState();
+    _status = widget.imageAccessRequestStatus;
+  }
+
+  Future<void> _sendRequest() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final success = await ImageAccessService.requestAccess(widget.userId);
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (success) {
+          _status = 'PENDING';
+        }
+      });
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Access request sent successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send access request')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_status == 'PENDING') {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Text(
+            'Access Pending',
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_status == 'APPROVED') {
+      return const SizedBox.shrink();
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: CustomButton(
+        onPressed: _isLoading ? () {} : _sendRequest,
+        text: _isLoading ? 'Sending...' : 'Request Access',
+        height: 40,
+        borderRadius: 12,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }

@@ -17,6 +17,7 @@ type UserMatchContext = {
    approvedAccesses: Set<number>;
    preference: UserPreferenceData | null;
    answers: UserAnswerData[];
+   sentRequestsMap: Map<number, string>;
 };
 
 const MINIMUM_MATCH_PERCENTAGE = 10;
@@ -116,6 +117,9 @@ export class MatchService implements IMatchService {
          createdAt: candidate.createdAt,
          lastLoginAt: candidate.lastLoginAt,
          isVerified: candidate.isVerified,
+         viewerPrivacyEnabled: matchContext.viewerPrivacyEnabled,
+         targetPrivacyEnabled: candidate.privacyEnabled,
+         imageAccessRequestStatus: matchContext.sentRequestsMap.get(candidate.userId) ?? null,
       };
    }
 
@@ -206,6 +210,9 @@ export class MatchService implements IMatchService {
          interactionState: candidate.interactionState ?? InteractionState.NONE,
          createdAt: candidate.createdAt,
          lastLoginAt: candidate.lastLoginAt,
+         viewerPrivacyEnabled: matchContext.viewerPrivacyEnabled,
+         targetPrivacyEnabled: candidate.privacyEnabled,
+         imageAccessRequestStatus: matchContext.sentRequestsMap.get(candidate.userId) ?? null,
       };
    }
 
@@ -216,14 +223,19 @@ export class MatchService implements IMatchService {
     * @returns User match context.
     */
    private async getUserMatchContext(userId: number, candidateUserIds: number[] = []): Promise<UserMatchContext> {
-      const [preference, answers, viewerPrivacyEnabled, approvedAccessesList] = await Promise.all([
+      const [preference, answers, viewerPrivacyEnabled, approvedAccessesList, sentRequestsList] = await Promise.all([
          this.matchRepository.getUserPreference(userId),
          this.matchRepository.getUserAnswers(userId),
          this.matchRepository.getViewerPrivacyStatus(userId),
-         this.imageAccessRequestService.getApprovedAccessesForViewer(userId, candidateUserIds)
+         this.imageAccessRequestService.getApprovedAccessesForViewer(userId, candidateUserIds),
+         this.imageAccessRequestService.getSentRequests(userId),
       ]);
 
       const approvedAccesses = new Set(approvedAccessesList.map((a) => a.ownerUserId));
+      const sentRequestsMap = new Map<number, string>();
+      for (const req of sentRequestsList) {
+         sentRequestsMap.set(req.ownerUserId, req.status);
+      }
 
       return {
          viewerUserId: userId,
@@ -231,6 +243,7 @@ export class MatchService implements IMatchService {
          approvedAccesses,
          preference,
          answers,
+         sentRequestsMap,
       };
    }
 

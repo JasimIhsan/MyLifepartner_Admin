@@ -38,18 +38,52 @@ export class ImageAccessRequestRepository implements IImageAccessRequestReposito
       });
    }
 
-   async findReceivedRequests(ownerUserId: number): Promise<ImageAccessRequest[]> {
-      return prisma.imageAccessRequest.findMany({
+   async findReceivedRequests(ownerUserId: number): Promise<any[]> {
+      const requests = await prisma.imageAccessRequest.findMany({
          where: { ownerUserId },
          orderBy: { requestedAt: "desc" },
       });
+
+      if (requests.length === 0) return [];
+
+      const requesterUserIds = requests.map((r) => r.requesterUserId);
+      const profiles = await prisma.profile.findMany({
+         where: { userId: { in: requesterUserIds } },
+         include: { images: true },
+      });
+
+      const profileMap = new Map(profiles.map((p) => [p.userId, p]));
+
+      return requests.map((req) => ({
+         ...req,
+         requester: {
+            profile: profileMap.get(req.requesterUserId) || null,
+         },
+      }));
    }
 
-   async findSentRequests(requesterUserId: number): Promise<ImageAccessRequest[]> {
-      return prisma.imageAccessRequest.findMany({
+   async findSentRequests(requesterUserId: number): Promise<any[]> {
+      const requests = await prisma.imageAccessRequest.findMany({
          where: { requesterUserId },
          orderBy: { requestedAt: "desc" },
       });
+
+      if (requests.length === 0) return [];
+
+      const ownerUserIds = requests.map((r) => r.ownerUserId);
+      const profiles = await prisma.profile.findMany({
+         where: { userId: { in: ownerUserIds } },
+         include: { images: true },
+      });
+
+      const profileMap = new Map(profiles.map((p) => [p.userId, p]));
+
+      return requests.map((req) => ({
+         ...req,
+         owner: {
+            profile: profileMap.get(req.ownerUserId) || null,
+         },
+      }));
    }
 
    async findApprovedAccess(ownerUserId: number, requesterUserId: number): Promise<ImageAccessRequest | null> {

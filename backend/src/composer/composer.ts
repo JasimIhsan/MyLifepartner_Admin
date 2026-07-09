@@ -151,7 +151,7 @@ export const guideService = new GuideService(guideRepository);
 export const chatService = new ChatService(chatRepository, userFeatureService);
 export const privacyPolicyService = new PrivacyPolicyService();
 export const privacyImageMapperService = new PrivacyImageMapperService(privacyPolicyService, s3Service);
-export const imageAccessRequestService = new ImageAccessRequestService(imageAccessRequestRepository);
+export const imageAccessRequestService = new ImageAccessRequestService(imageAccessRequestRepository, s3Service);
 export const matchService = new MatchService(matchRepository, s3Service, userFeatureService, privacyImageMapperService, imageAccessRequestService);
 
 // ─────────────────────────────────────────────────────────────────────────────

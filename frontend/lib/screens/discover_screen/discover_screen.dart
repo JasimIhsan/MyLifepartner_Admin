@@ -10,9 +10,11 @@ import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
+import 'package:life_partner_again/services/image_access_service.dart';
 import 'package:life_partner_again/services/match_service.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
@@ -103,7 +105,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
       context: context,
       type: BottomSheetType.confirmation,
       title: 'Pass on Profile?',
-      message: 'Are you sure you want to pass on ${profile.name}? You won\'t see them again in your recommendations.',
+      message:
+          'Are you sure you want to pass on ${profile.name}? You won\'t see them again in your recommendations.',
       primaryButtonText: 'Pass Profile',
       secondaryButtonText: 'Cancel',
       imagePath: 'assets/images/illustrations/rejection.png',
@@ -434,6 +437,13 @@ class _ProfileBrowserCard extends StatelessWidget {
     return null;
   }
 
+  bool get _isBlurred {
+    final primary = profile.images.where((img) => img.isPrimary);
+    if (primary.isNotEmpty) return primary.first.isBlurred;
+    if (profile.images.isNotEmpty) return profile.images.first.isBlurred;
+    return false;
+  }
+
   bool _isNewProfile(String isoString) {
     try {
       if (isoString.isEmpty) return false;
@@ -597,6 +607,64 @@ class _ProfileBrowserCard extends StatelessWidget {
                   ),
                 ),
               ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
+            ),
+          if (_isBlurred)
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 32),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      profile.viewerPrivacyEnabled
+                          ? 'Your profile is private'
+                          : 'Photos are private',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      profile.viewerPrivacyEnabled
+                          ? 'You need access to see ${profile.name}\'s photos.'
+                          : 'Request access to see ${profile.name}\'s photos.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    _RequestAccessButton(profile: profile),
+                  ],
+                ),
+              ),
             ),
         ],
       ),
@@ -867,6 +935,91 @@ class _ActionButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _RequestAccessButton extends StatefulWidget {
+  final MatchRecommendation profile;
+  const _RequestAccessButton({required this.profile});
+
+  @override
+  State<_RequestAccessButton> createState() => _RequestAccessButtonState();
+}
+
+class _RequestAccessButtonState extends State<_RequestAccessButton> {
+  bool _isLoading = false;
+  String? _status;
+
+  @override
+  void initState() {
+    super.initState();
+    _status = widget.profile.imageAccessRequestStatus;
+  }
+
+  Future<void> _sendRequest() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final success = await ImageAccessService.requestAccess(
+      widget.profile.userId,
+    );
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (success) {
+          _status = 'PENDING';
+        }
+      });
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Access request sent successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send access request')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_status == 'PENDING') {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Text(
+            'Access Pending',
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_status == 'APPROVED') {
+      return const SizedBox.shrink();
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: CustomButton(
+        onPressed: _isLoading ? () {} : _sendRequest,
+        text: _isLoading ? 'Sending...' : 'Request Access',
+        height: 40,
+        borderRadius: 12,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
       ),
     );
   }

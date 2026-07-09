@@ -24,9 +24,9 @@ export class PrivacyImageMapperService implements IPrivacyImageMapperService {
          hasApprovedAccess: params.hasApprovedAccess,
       });
 
-      const mappedImages = await Promise.all(
-         params.targetImages.map(async (image) => {
-            if (canViewOriginal) {
+      if (canViewOriginal) {
+         return Promise.all(
+            params.targetImages.map(async (image) => {
                const signedUrl = await this.s3Service.getPresignedUrl(image.imageUrl);
                return {
                   id: image.id,
@@ -34,29 +34,24 @@ export class PrivacyImageMapperService implements IPrivacyImageMapperService {
                   isPrimary: image.isPrimary,
                   isBlurred: false,
                };
-            }
+            })
+         );
+      }
 
-            // Privacy blocks original — only primary gets blurred image
-            if (image.isPrimary && params.targetBlurredImageUrl) {
-               const signedUrl = await this.s3Service.getPresignedUrl(params.targetBlurredImageUrl);
-               return {
-                  id: image.id,
-                  imageUrl: signedUrl,
-                  isPrimary: true,
-                  isBlurred: true,
-               };
-            }
-
-            // Non-primary images are hidden entirely
-            return {
-               id: image.id,
-               imageUrl: null,
-               isPrimary: image.isPrimary,
+      // Privacy blocks original — only return a single blurred primary image
+      if (params.targetBlurredImageUrl) {
+         const primaryImage = params.targetImages.find((img) => img.isPrimary);
+         const signedUrl = await this.s3Service.getPresignedUrl(params.targetBlurredImageUrl);
+         return [
+            {
+               id: primaryImage?.id ?? 0,
+               imageUrl: signedUrl,
+               isPrimary: true,
                isBlurred: true,
-            };
-         })
-      );
+            },
+         ];
+      }
 
-      return mappedImages;
+      return [];
    }
 }

@@ -1,13 +1,15 @@
 class MatchImage {
   final String imageUrl;
   final bool isPrimary;
+  final bool isBlurred;
 
-  MatchImage({required this.imageUrl, required this.isPrimary});
+  MatchImage({required this.imageUrl, required this.isPrimary, this.isBlurred = false});
 
   factory MatchImage.fromJson(Map<String, dynamic> json) {
     return MatchImage(
       imageUrl: json['imageUrl'] as String,
       isPrimary: json['isPrimary'] as bool,
+      isBlurred: json['isBlurred'] as bool? ?? false,
     );
   }
 }
@@ -46,6 +48,9 @@ class MatchRecommendation {
   final InteractionState interactionState;
   final String createdAt;
   final String lastLoginAt;
+  final bool viewerPrivacyEnabled;
+  final bool targetPrivacyEnabled;
+  final String? imageAccessRequestStatus;
 
   MatchRecommendation({
     required this.id,
@@ -64,6 +69,9 @@ class MatchRecommendation {
     required this.interactionState,
     required this.createdAt,
     required this.lastLoginAt,
+    this.viewerPrivacyEnabled = false,
+    this.targetPrivacyEnabled = false,
+    this.imageAccessRequestStatus,
   });
 
   factory MatchRecommendation.fromJson(Map<String, dynamic> json) {
@@ -91,6 +99,9 @@ class MatchRecommendation {
       ),
       createdAt: json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
       lastLoginAt: json['lastLoginAt'] as String? ?? DateTime.now().toIso8601String(),
+      viewerPrivacyEnabled: json['viewerPrivacyEnabled'] as bool? ?? false,
+      targetPrivacyEnabled: json['targetPrivacyEnabled'] as bool? ?? false,
+      imageAccessRequestStatus: json['imageAccessRequestStatus'] as String?,
     );
   }
 }

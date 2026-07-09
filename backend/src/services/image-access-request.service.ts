@@ -1,12 +1,14 @@
 import { IImageAccessRequestRepository } from "@/interfaces/repositories/image-access-request.repository.interface";
 import { IImageAccessRequestService } from "@/interfaces/services/image-access-request.service.interface";
+import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
 import { ImageAccessRequest, ImageAccessStatus } from "@prisma/client";
 
 export class ImageAccessRequestService implements IImageAccessRequestService {
    constructor(
-      private readonly requestRepository: IImageAccessRequestRepository
+      private readonly requestRepository: IImageAccessRequestRepository,
+      private readonly s3Service: IS3Service
    ) {}
 
    async requestAccess(requesterUserId: number, targetUserId: number): Promise<ImageAccessRequest> {
@@ -25,12 +27,69 @@ export class ImageAccessRequestService implements IImageAccessRequestService {
       return this.requestRepository.createOrUpdatePendingRequest(targetUserId, requesterUserId);
    }
 
-   async getReceivedRequests(ownerUserId: number): Promise<ImageAccessRequest[]> {
-      return this.requestRepository.findReceivedRequests(ownerUserId);
+   async getReceivedRequests(ownerUserId: number): Promise<any[]> {
+      const requests = await this.requestRepository.findReceivedRequests(ownerUserId);
+      return Promise.all(requests.map(async (req) => {
+         const profile = req.requester?.profile;
+         let imageUrl = null;
+         if (profile?.images) {
+            const primaryImg = profile.images.find((img: any) => img.isPrimary) || profile.images[0];
+            if (primaryImg) {
+               imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
+            }
+         }
+         return {
+            id: req.id,
+            ownerUserId: req.ownerUserId,
+            requesterUserId: req.requesterUserId,
+            status: req.status,
+            requestedAt: req.requestedAt,
+            respondedAt: req.respondedAt,
+            requesterProfile: profile ? {
+               name: profile.name,
+               age: profile.dateOfBirth ? this.calculateAge(profile.dateOfBirth) : null,
+               imageUrl,
+            } : null,
+         };
+      }));
    }
 
-   async getSentRequests(requesterUserId: number): Promise<ImageAccessRequest[]> {
-      return this.requestRepository.findSentRequests(requesterUserId);
+   async getSentRequests(requesterUserId: number): Promise<any[]> {
+      const requests = await this.requestRepository.findSentRequests(requesterUserId);
+      return Promise.all(requests.map(async (req) => {
+         const profile = req.owner?.profile;
+         let imageUrl = null;
+         if (profile?.images) {
+            const primaryImg = profile.images.find((img: any) => img.isPrimary) || profile.images[0];
+            if (primaryImg) {
+               imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
+            }
+         }
+         return {
+            id: req.id,
+            ownerUserId: req.ownerUserId,
+            requesterUserId: req.requesterUserId,
+            status: req.status,
+            requestedAt: req.requestedAt,
+            respondedAt: req.respondedAt,
+            ownerProfile: profile ? {
+               name: profile.name,
+               age: profile.dateOfBirth ? this.calculateAge(profile.dateOfBirth) : null,
+               imageUrl,
+            } : null,
+         };
+      }));
+   }
+
+   private calculateAge(dateOfBirth: Date): number {
+      const today = new Date();
+      const birthDate = new Date(dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+         age--;
+      }
+      return age;
    }
 
    async approveRequest(ownerUserId: number, requestId: number): Promise<ImageAccessRequest> {

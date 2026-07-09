@@ -1,22 +1,22 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
 import 'package:life_partner_again/screens/profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/user_repository.dart';
 // import 'package:life_partner_again/shared/widgets/header_waves_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../widgets/custom_button.dart';
-import '../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../widgets/bottomsheet/custom_bottom_sheet.dart';
+import '../../widgets/bottomsheet/logout_bottom_sheet.dart';
+import '../../widgets/custom_button.dart';
 import '../login_screen/login_screen.dart';
 import '../subscription_screen/subscription_screen.dart';
 import 'manage_profile_pictures_screen.dart';
-
-import 'package:life_partner_again/main.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -421,16 +421,31 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
                             },
                           ),
                         ]),
-
                         _buildSectionHeader("Privacy & Security"),
                         _buildActionGroup([
                           _buildSwitchItem(
                             icon: Icons.shield_outlined,
                             title: "Blur Profile Image",
-                            subtitle: "Only approved matches can see your photos",
+                            subtitle:
+                                "Only approved matches can see your photos",
                             value: _user?.privacyEnabled ?? false,
                             isLoading: _isUpdatingPrivacy,
                             onChanged: (value) => _togglePrivacy(value),
+                            showDivider: true,
+                          ),
+                          _buildActionItem(
+                            icon: Icons.lock_open_outlined,
+                            title: "Image Access Requests",
+                            showDivider: false,
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ImageAccessRequestsScreen(),
+                                ),
+                              );
+                            },
                           ),
                         ]),
 
@@ -573,6 +588,7 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
     required bool value,
     required bool isLoading,
     required ValueChanged<bool> onChanged,
+    bool showDivider = false,
   }) {
     return Column(
       children: [
@@ -621,6 +637,13 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
             ],
           ),
         ),
+        if (showDivider)
+          const Divider(
+            height: 1,
+            thickness: 1,
+            indent: 56, // aligns with text
+            color: AppColors.divider,
+          ),
       ],
     );
   }
@@ -640,18 +663,20 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
       primaryButtonText: isEnabling ? 'Enable' : 'Disable',
       onPrimaryPressed: () async {
         Navigator.pop(context); // close sheet
-        
+
         setState(() {
           _isUpdatingPrivacy = true;
         });
-        
+
         try {
           await _profileRepository.updatePrivacySettings(newValue);
           await _fetchProfileData();
         } catch (e) {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+              SnackBar(
+                content: Text(e.toString().replaceAll('Exception: ', '')),
+              ),
             );
           }
         } finally {

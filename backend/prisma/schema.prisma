@@ -32,6 +32,9 @@ model User {
   conversationsAsTwo Conversation[] @relation("ConversationUserTwo")
   chatMessages       ChatMessage[]
 
+  receivedImageRequests ImageAccessRequest[] @relation("ReceivedRequests")
+  sentImageRequests     ImageAccessRequest[] @relation("SentRequests")
+
   @@map("users")
 }
 
@@ -142,7 +145,9 @@ model ImageAccessRequest {
   id              Int               @id @default(autoincrement())
 
   ownerUserId     Int
+  owner           User              @relation("ReceivedRequests", fields: [ownerUserId], references: [id], onDelete: Cascade)
   requesterUserId Int
+  requester       User              @relation("SentRequests", fields: [requesterUserId], references: [id], onDelete: Cascade)
 
   status          ImageAccessStatus @default(PENDING)
 
