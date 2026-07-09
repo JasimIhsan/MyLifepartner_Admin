@@ -73,7 +73,7 @@ import { AdminManagementController } from "@/controllers/admin/admin.management.
 import { AdminQuestionnaireController } from "@/controllers/admin/admin.questionnaire.controller";
 import { AdminSubscriptionController } from "@/controllers/admin/admin.subscription.controller";
 import { AdminUsersController } from "@/controllers/admin/admin.users.controller";
-import { ImageAssetController } from "@/controllers/admin/image-asset.controller";
+import { ImageAssetController } from "@/controllers/image-asset.controller";
 
 import { GuideController } from "@/controllers/guide.controller";
 import { AuthController } from "@/controllers/user/auth.controller";

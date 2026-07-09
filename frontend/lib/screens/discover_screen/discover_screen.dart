@@ -11,6 +11,7 @@ import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:life_partner_again/services/match_service.dart';
+import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -95,6 +96,25 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
         curve: Curves.easeOutCubic,
       );
     }
+  }
+
+  void _showRejectionConfirmation(MatchRecommendation profile) {
+    CustomBottomSheet.show(
+      context: context,
+      type: BottomSheetType.confirmation,
+      title: 'Pass on Profile?',
+      message: 'Are you sure you want to pass on ${profile.name}? You won\'t see them again in your recommendations.',
+      primaryButtonText: 'Pass Profile',
+      secondaryButtonText: 'Cancel',
+      imagePath: 'assets/images/illustrations/rejection.png',
+      onPrimaryPressed: () {
+        Navigator.pop(context); // Close bottom sheet
+        _handleInteraction(profile, 'LEFT');
+      },
+      onSecondaryPressed: () {
+        Navigator.pop(context); // Close bottom sheet
+      },
+    );
   }
 
   Future<void> _handleInteraction(
@@ -199,7 +219,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> with RouteAware {
                                       onInterest: () =>
                                           _handleInteraction(profile, 'RIGHT'),
                                       onNotInterested: () =>
-                                          _handleInteraction(profile, 'LEFT'),
+                                          _showRejectionConfirmation(profile),
                                       onReturnFromDetail: () {
                                         context
                                             .read<MatchProvider>()

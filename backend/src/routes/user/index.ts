@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import chatRoutes from "@routes/user/chat.routes";
 import guideRoutes from "@routes/user/guide.routes";
+import imageAssetRoutes from "@routes/user/image-asset.routes";
 import jobRoutes from "@routes/user/job.routes";
 import matchRoutes from "@routes/user/match.routes";
 import userAuthRoutes from "@routes/user/user.auth.routes";
@@ -31,6 +32,7 @@ router.use("/guide", guideRoutes);
 router.use("/match", matchRoutes);
 router.use("/zego", zegoRoutes);
 router.use("/jobs", jobRoutes);
+router.use("/image-assets", imageAssetRoutes);
 router.use("/", userRoutes);
 
 export default router;
