@@ -200,7 +200,8 @@ class ProfileNameRow extends StatelessWidget {
         ),
 
         /// RIGHT SIDE (match badge stays fixed)
-        _buildMatchBadge(profile['matchPercentage'] ?? 0),
+        if ((profile['matchPercentage'] ?? 0) > 0)
+          _buildMatchBadge(profile['matchPercentage'] ?? 0),
       ],
     ).animate().fadeIn(duration: 400.ms);
   }

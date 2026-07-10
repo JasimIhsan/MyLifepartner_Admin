@@ -95,23 +95,30 @@ export class MatchService implements IMatchService {
       const matchContext = await this.getUserMatchContext(userId, [candidate.userId]);
       const { totalScore, highlights } = this.calculateCompatibility(candidate, matchContext.preference, matchContext.answers);
 
+      const hasApprovedAccess = matchContext.approvedAccesses.has(candidate.userId);
+      const isRestricted = (matchContext.viewerPrivacyEnabled || candidate.privacyEnabled) && !hasApprovedAccess;
+
+      const name = isRestricted
+         ? (candidate.name ? candidate.name.split(" ")[0] : DEFAULT_PROFILE_NAME)
+         : (candidate.name ?? DEFAULT_PROFILE_NAME);
+
       return {
          id: candidate.id,
          userId: candidate.userId,
-         name: candidate.name ?? DEFAULT_PROFILE_NAME,
+         name,
          age: this.getCandidateAge(candidate),
-         gender: candidate.gender,
-         heightCm: candidate.heightCm,
-         maritalStatus: candidate.maritalStatus,
+         gender: isRestricted ? null : candidate.gender,
+         heightCm: isRestricted ? null : candidate.heightCm,
+         maritalStatus: isRestricted ? null : candidate.maritalStatus,
          city: candidate.city,
-         state: candidate.state,
+         state: isRestricted ? null : candidate.state,
          country: candidate.country,
-         motherTongue: candidate.motherTongue,
-         highestEducation: candidate.highestEducation,
-         occupation: candidate.occupation,
+         motherTongue: isRestricted ? null : candidate.motherTongue,
+         highestEducation: isRestricted ? null : candidate.highestEducation,
+         occupation: isRestricted ? null : candidate.occupation,
          bio: candidate.bio,
-         matchPercentage: Math.round(totalScore),
-         compatibilityHighlights: highlights,
+         matchPercentage: isRestricted ? 0 : Math.round(totalScore),
+         compatibilityHighlights: isRestricted ? [] : highlights,
          images: await this.getPresignedImages(candidate, matchContext),
          interactionState: candidate.interactionState ?? InteractionState.NONE,
          createdAt: candidate.createdAt,
@@ -193,19 +200,26 @@ export class MatchService implements IMatchService {
    private async mapCandidateToRecommendationItem(candidate: CandidateProfile, matchContext: UserMatchContext): Promise<MatchRecommendationItem> {
       const { totalScore, highlights } = this.calculateCompatibility(candidate, matchContext.preference, matchContext.answers);
 
+      const hasApprovedAccess = matchContext.approvedAccesses.has(candidate.userId);
+      const isRestricted = (matchContext.viewerPrivacyEnabled || candidate.privacyEnabled) && !hasApprovedAccess;
+
+      const name = isRestricted
+         ? (candidate.name ? candidate.name.split(" ")[0] : DEFAULT_PROFILE_NAME)
+         : (candidate.name ?? DEFAULT_PROFILE_NAME);
+
       return {
          id: candidate.id,
          userId: candidate.userId,
-         name: candidate.name ?? DEFAULT_PROFILE_NAME,
+         name,
          age: this.getCandidateAge(candidate),
-         heightCm: candidate.heightCm,
+         heightCm: isRestricted ? null : candidate.heightCm,
          city: candidate.city,
          country: candidate.country,
          isVerified: candidate.isVerified,
-         occupation: candidate.occupation,
-         maritalStatus: candidate.maritalStatus,
-         matchPercentage: Math.round(totalScore),
-         compatibilityHighlights: highlights,
+         occupation: isRestricted ? null : candidate.occupation,
+         maritalStatus: isRestricted ? null : candidate.maritalStatus,
+         matchPercentage: isRestricted ? 0 : Math.round(totalScore),
+         compatibilityHighlights: isRestricted ? [] : highlights,
          images: await this.getPresignedImages(candidate, matchContext),
          interactionState: candidate.interactionState ?? InteractionState.NONE,
          createdAt: candidate.createdAt,
