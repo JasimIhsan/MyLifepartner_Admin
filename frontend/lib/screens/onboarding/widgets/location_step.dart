@@ -60,13 +60,14 @@ class LocationStep extends StatelessWidget {
             ),
             child: Row(
               children: [
-                if (country != null)
+                if (country != null && kCountries.any((c) => c.name == country)) ...[
                   CountryFlag.fromCountryCode(
                     kCountries.firstWhere((c) => c.name == country).code,
                     height: 18,
                     width: 26,
                   ),
-                if (country != null) const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
                 Expanded(
                   child: Text(
                     country ?? 'Select your country',

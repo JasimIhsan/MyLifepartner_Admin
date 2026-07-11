@@ -70,4 +70,12 @@ class MatchService {
     }
     return [];
   }
+
+  static Future<bool> cancelInterest(int targetProfileId) async {
+    final response = await _client.post(
+      '/match/swipe/cancel',
+      data: {'targetProfileId': targetProfileId},
+    );
+    return response.data['success'] == true;
+  }
 }

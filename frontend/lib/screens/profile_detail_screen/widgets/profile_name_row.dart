@@ -177,7 +177,7 @@ class ProfileNameRow extends StatelessWidget {
                             Icon(
                               Icons.access_time_rounded,
                               size: 16,
-                              color: subTextColor,
+                              color: const Color.fromARGB(255, 96, 186, 101),
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -187,7 +187,7 @@ class ProfileNameRow extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w500,
-                                color: subTextColor,
+                                color: const Color.fromARGB(255, 96, 186, 101),
                               ),
                             ),
                           ],
@@ -200,8 +200,7 @@ class ProfileNameRow extends StatelessWidget {
         ),
 
         /// RIGHT SIDE (match badge stays fixed)
-        if ((profile['matchPercentage'] ?? 0) > 0)
-          _buildMatchBadge(profile['matchPercentage'] ?? 0),
+        _buildMatchBadge(profile['matchPercentage'] ?? 0),
       ],
     ).animate().fadeIn(duration: 400.ms);
   }

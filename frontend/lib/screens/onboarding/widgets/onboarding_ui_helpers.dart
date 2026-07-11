@@ -57,6 +57,9 @@ class OnboardingInputField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? errorText;
 
+  final int? minLines;
+  final int? maxLines;
+
   const OnboardingInputField({
     super.key,
     required this.controller,
@@ -69,6 +72,8 @@ class OnboardingInputField extends StatelessWidget {
     this.onChanged,
     this.inputFormatters,
     this.errorText,
+    this.minLines = 1,
+    this.maxLines = 1,
   });
 
   @override
@@ -96,6 +101,8 @@ class OnboardingInputField extends StatelessWidget {
             textCapitalization: capitalization,
             onChanged: onChanged,
             inputFormatters: inputFormatters,
+            minLines: minLines,
+            maxLines: maxLines,
             style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
             decoration: InputDecoration(
               hintText: hint,
@@ -280,7 +287,7 @@ class OnboardingContinueButton extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
       child: ElevatedButton(
-        onPressed: canProceed ? onNext : null,
+        onPressed: (canProceed && !isLoading) ? onNext : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,

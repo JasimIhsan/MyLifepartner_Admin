@@ -291,7 +291,7 @@ class DatingProfileCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.white70,
+                            color: Colors.green,
                           ),
                         ),
                       ),

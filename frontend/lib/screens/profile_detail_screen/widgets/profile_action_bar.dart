@@ -167,8 +167,8 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
       child: Row(
         children: [
           _actionButton(
-            label: 'Pass',
-            icon: Icons.close_rounded,
+            label: '',
+            icon: Icons.heart_broken,
             isOutlined: true,
             isLoading: _isPassing,
             onTap: canPass

@@ -1052,22 +1052,29 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: visuals.gradientColors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    gradient: plan.price == 0
+                        ? null
+                        : LinearGradient(
+                            colors: visuals.gradientColors,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                    color: plan.price == 0 ? const Color(0xFFF1F5F9) : null,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    boxShadow: plan.price == 0
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                   ),
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : () => _handleSubscribe(plan),
+                    onPressed: (isLoading || plan.price == 0)
+                        ? null
+                        : () => _handleSubscribe(plan),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
@@ -1075,10 +1082,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Subscribe',
+                    child: Text(
+                      plan.price == 0 ? 'Free Plan' : 'Subscribe',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: plan.price == 0
+                            ? AppColors.textSecondary
+                            : Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
@@ -1097,7 +1106,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     ),
                   ),
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : () => _handleSubscribe(plan),
+                    onPressed: (isLoading || plan.price == 0)
+                        ? null
+                        : () => _handleSubscribe(plan),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
@@ -1106,10 +1117,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Subscribe',
+                    child: Text(
+                      plan.price == 0 ? 'Free Plan' : 'Subscribe',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: plan.price == 0
+                            ? AppColors.textSecondary
+                            : AppColors.primary,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),

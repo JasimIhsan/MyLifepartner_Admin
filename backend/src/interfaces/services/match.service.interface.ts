@@ -73,4 +73,5 @@ export interface IMatchService {
    getSentInterests(userId: number): Promise<MatchRecommendationItem[]>;
    getReceivedInterests(userId: number): Promise<MatchRecommendationItem[]>;
    getMutualMatches(userId: number): Promise<MatchRecommendationItem[]>;
+   cancelSwipeInterest(userId: number, targetProfileId: number): Promise<void>;
 }

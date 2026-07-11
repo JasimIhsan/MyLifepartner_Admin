@@ -98,9 +98,7 @@ export class MatchService implements IMatchService {
       const hasApprovedAccess = matchContext.approvedAccesses.has(candidate.userId);
       const isRestricted = (matchContext.viewerPrivacyEnabled || candidate.privacyEnabled) && !hasApprovedAccess;
 
-      const name = isRestricted
-         ? (candidate.name ? candidate.name.split(" ")[0] : DEFAULT_PROFILE_NAME)
-         : (candidate.name ?? DEFAULT_PROFILE_NAME);
+      const name = isRestricted ? (candidate.name ? candidate.name.split(" ")[0] : DEFAULT_PROFILE_NAME) : (candidate.name ?? DEFAULT_PROFILE_NAME);
 
       return {
          id: candidate.id,
@@ -117,7 +115,7 @@ export class MatchService implements IMatchService {
          highestEducation: isRestricted ? null : candidate.highestEducation,
          occupation: isRestricted ? null : candidate.occupation,
          bio: candidate.bio,
-         matchPercentage: isRestricted ? 0 : Math.round(totalScore),
+         matchPercentage: Math.round(totalScore),
          compatibilityHighlights: isRestricted ? [] : highlights,
          images: await this.getPresignedImages(candidate, matchContext),
          interactionState: candidate.interactionState ?? InteractionState.NONE,
@@ -174,7 +172,10 @@ export class MatchService implements IMatchService {
     * @returns Match recommendation items.
     */
    private async enrichCandidatesToRecommendations(userId: number, candidates: CandidateProfile[]): Promise<MatchRecommendationItem[]> {
-      const matchContext = await this.getUserMatchContext(userId, candidates.map((c) => c.userId));
+      const matchContext = await this.getUserMatchContext(
+         userId,
+         candidates.map((c) => c.userId)
+      );
 
       return this.buildRecommendationItems(candidates, matchContext);
    }
@@ -203,9 +204,7 @@ export class MatchService implements IMatchService {
       const hasApprovedAccess = matchContext.approvedAccesses.has(candidate.userId);
       const isRestricted = (matchContext.viewerPrivacyEnabled || candidate.privacyEnabled) && !hasApprovedAccess;
 
-      const name = isRestricted
-         ? (candidate.name ? candidate.name.split(" ")[0] : DEFAULT_PROFILE_NAME)
-         : (candidate.name ?? DEFAULT_PROFILE_NAME);
+      const name = isRestricted ? (candidate.name ? candidate.name.split(" ")[0] : DEFAULT_PROFILE_NAME) : (candidate.name ?? DEFAULT_PROFILE_NAME);
 
       return {
          id: candidate.id,
@@ -218,7 +217,7 @@ export class MatchService implements IMatchService {
          isVerified: candidate.isVerified,
          occupation: isRestricted ? null : candidate.occupation,
          maritalStatus: isRestricted ? null : candidate.maritalStatus,
-         matchPercentage: isRestricted ? 0 : Math.round(totalScore),
+         matchPercentage: Math.round(totalScore),
          compatibilityHighlights: isRestricted ? [] : highlights,
          images: await this.getPresignedImages(candidate, matchContext),
          interactionState: candidate.interactionState ?? InteractionState.NONE,
@@ -533,5 +532,15 @@ export class MatchService implements IMatchService {
       }
 
       return age;
+   }
+
+   /**
+    * Cancels a swipe interest request and refunds 1 interest count.
+    */
+   async cancelSwipeInterest(userId: number, targetProfileId: number): Promise<void> {
+      const deleted = await this.matchRepository.deleteSwipe(userId, targetProfileId);
+      if (deleted) {
+         await this.userFeatureService.updateInterests(userId, -1);
+      }
    }
 }
