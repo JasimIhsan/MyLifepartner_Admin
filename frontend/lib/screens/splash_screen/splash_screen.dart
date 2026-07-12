@@ -29,7 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (accessToken == null || accessToken.isEmpty) {
-      _goTo(AppRoutes.login);
+      _goTo(AppRoutes.landing);
       return;
     }
 
@@ -50,10 +50,10 @@ class _SplashScreenState extends State<SplashScreen> {
       }
     } catch (_) {
       // If access token is expired, ApiService interceptor will try refresh-token + retry.
-      // If refresh fails, tokens are cleared; we fall back to login.
+      // If refresh fails, tokens are cleared; we fall back to landing.
       await TokenService.clearTokens();
       if (!mounted) return;
-      _goTo(AppRoutes.login);
+      _goTo(AppRoutes.landing);
     }
   }
 

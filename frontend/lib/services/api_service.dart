@@ -145,7 +145,7 @@ class ApiService {
     await prefs.clear();
 
     navigatorKey.currentState?.pushNamedAndRemoveUntil(
-      AppRoutes.login,
+      AppRoutes.landing,
       (route) => false,
     );
   }

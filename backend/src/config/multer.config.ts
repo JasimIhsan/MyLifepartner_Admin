@@ -1,7 +1,7 @@
 import { ApiError } from "@/utils/ApiError";
 import multer from "multer";
 
-const MAX_FILE_SIZE_IN_BYTES = 15 * 1024 * 1024;
+const MAX_FILE_SIZE_IN_BYTES = 20 * 1024 * 1024;
 
 const ALLOWED_IMAGE_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 

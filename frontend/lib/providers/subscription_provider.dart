@@ -18,11 +18,14 @@ class SubscriptionProvider extends ChangeNotifier {
   bool _isPurchasing = false;
   bool _isInitialized = false;
   final SubscriptionService _subscriptionService = SubscriptionService();
+  String? _authenticatedUserId;
 
   /// =========================
   /// INIT (call once)
   /// =========================
   Future<void> init(String userId) async {
+    _authenticatedUserId = userId;
+    
     if (_isInitialized) return;
 
     try {
@@ -42,6 +45,45 @@ class SubscriptionProvider extends ChangeNotifier {
   }
 
   /// =========================
+  /// IDENTITY VERIFICATION
+  /// =========================
+  Future<bool> _ensureRevenueCatIdentity(String userId) async {
+    try {
+      final appUserID = await Purchases.appUserID;
+      if (appUserID != userId) {
+         debugPrint("CRITICAL ERROR: RevenueCat identity mismatch! RC ID: $appUserID, Backend ID: $userId");
+         await Purchases.logOut();
+         await Purchases.logIn(userId);
+         return true; // We forcefully logged them back in
+      }
+      return true;
+    } catch (e) {
+      debugPrint("Error checking RevenueCat identity: $e");
+      return false;
+    }
+  }
+
+  /// =========================
+  /// LOGOUT
+  /// =========================
+  Future<void> logout() async {
+    try {
+      if (_isInitialized) {
+        await Purchases.logOut();
+      }
+      _isInitialized = false;
+      _authenticatedUserId = null;
+      plans = [];
+      currentSubscription = null;
+      _rcPackages = [];
+      _mySubscription = null;
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error logging out from RevenueCat: $e");
+    }
+  }
+
+  /// =========================
   /// MAIN ENTRY (replace fetchPlans)
   /// =========================
   Future<void> loadSubscriptions(String userId) async {
@@ -51,6 +93,7 @@ class SubscriptionProvider extends ChangeNotifier {
       notifyListeners();
 
       await init(userId);
+      await _ensureRevenueCatIdentity(userId);
 
       final results = await Future.wait([
         _fetchBackendPlans(),
@@ -85,12 +128,9 @@ class SubscriptionProvider extends ChangeNotifier {
   Future<List<SubscriptionPlan>> _fetchBackendPlans() async {
     try {
       debugPrint("🌐 Fetching backend plans...");
-
       final plans = await _subscriptionService.getPlans();
-
       debugPrint("✅ Backend plans count: ${plans.length}");
-
-      return plans; // ✅ already parsed
+      return plans; 
     } catch (e, stack) {
       debugPrint("❌ Error fetching backend plans: $e");
       debugPrint("$stack");
@@ -104,11 +144,9 @@ class SubscriptionProvider extends ChangeNotifier {
   Future<List<Package>> _fetchRevenueCatPlans() async {
     try {
       final offerings = await Purchases.getOfferings();
-
       final packages = offerings.all.values
           .expand((e) => e.availablePackages)
           .toList();
-
       return packages;
     } catch (e, stack) {
       debugPrint("❌ Error fetching RevenueCat plans: $e");
@@ -147,7 +185,6 @@ class SubscriptionProvider extends ChangeNotifier {
 
     for (final plan in backendPlans) {
       if (plan.price == 0) {
-        // Free plan, no RevenueCat product expected
         merged.add(plan);
         continue;
       }
@@ -203,61 +240,74 @@ class SubscriptionProvider extends ChangeNotifier {
   }
 
   /// =========================
-  /// CURRENT SUBSCRIPTION
+  /// CURRENT SUBSCRIPTION PRECEDENCE
   /// =========================
   void _setCurrentSubscription(CustomerInfo info) {
+    // 1. Active paid backend subscription
     if (_mySubscription != null &&
         _mySubscription!.isActive &&
-        _mySubscription!.plan != null) {
-      // Find the matched plan in the local list so we have the merged data (like RC price)
+        _mySubscription!.plan != null &&
+        _mySubscription!.plan!.name.toUpperCase() != "FREE" &&
+        _mySubscription!.plan!.price > 0) {
       final match = plans.where((p) => p.id == _mySubscription!.plan!.id);
-      currentSubscription = match.isNotEmpty
-          ? match.first
-          : _mySubscription!.plan!;
-      debugPrint(
-        "👉 currentSubscription from DB: ${currentSubscription?.name}",
-      );
+      currentSubscription = match.isNotEmpty ? match.first : _mySubscription!.plan!;
+      debugPrint("👉 currentSubscription [1. Backend Paid]: ${currentSubscription?.name}");
       return;
     }
 
+    // 2. Active RevenueCat entitlement fallback
     final active = info.entitlements.active;
-
-    if (active.isEmpty) {
-      currentSubscription = null;
-      return;
-    }
-
-    final entitlement = active.values.first;
-
-    final match = plans.where(
-      (p) => (p.identifier ?? p.id.toString()) == entitlement.productIdentifier,
-    );
-
-    if (match.isNotEmpty) {
-      currentSubscription = match.first;
-    } else {
-      // Try matching by name or identifier against entitlement identifier
-      final fallbackMatch = plans.where(
-        (p) => p.name.toLowerCase() == entitlement.identifier.toLowerCase(),
+    if (active.isNotEmpty) {
+      final entitlement = active.values.first;
+      final match = plans.where(
+        (p) => (p.identifier ?? p.id.toString()) == entitlement.productIdentifier,
       );
-      if (fallbackMatch.isNotEmpty) {
-        currentSubscription = fallbackMatch.first;
+
+      if (match.isNotEmpty) {
+        currentSubscription = match.first;
+        debugPrint("👉 currentSubscription [2. RevenueCat Temporary UI Fallback]: ${currentSubscription?.name}");
+        return;
       } else {
-        currentSubscription = null;
-        debugPrint(
-          "⚠️ Could not match RevenueCat entitlement ${entitlement.identifier} to any backend plan.",
+        final fallbackMatch = plans.where(
+          (p) => p.name.toLowerCase() == entitlement.identifier.toLowerCase(),
         );
+        if (fallbackMatch.isNotEmpty) {
+          currentSubscription = fallbackMatch.first;
+          debugPrint("👉 currentSubscription [2. RevenueCat Temporary UI Fallback]: ${currentSubscription?.name}");
+          return;
+        } else {
+          debugPrint("⚠️ Could not match RevenueCat entitlement ${entitlement.identifier} to any backend plan.");
+        }
       }
     }
 
-    debugPrint("👉 currentSubscription from RC: ${currentSubscription?.name}");
+    // 3. Backend FREE subscription fallback
+    if (_mySubscription != null &&
+        _mySubscription!.isActive &&
+        _mySubscription!.plan != null) {
+      final match = plans.where((p) => p.id == _mySubscription!.plan!.id);
+      currentSubscription = match.isNotEmpty ? match.first : _mySubscription!.plan!;
+      debugPrint("👉 currentSubscription [3. Backend FREE]: ${currentSubscription?.name}");
+      return;
+    }
+
+    // 4. Null
+    currentSubscription = null;
+    debugPrint("👉 currentSubscription [4. Null]");
   }
 
   /// =========================
   /// PURCHASE FLOW
   /// =========================
   Future<bool> subscribeToPlan(String id) async {
-    if (_isPurchasing) return false;
+    if (_isPurchasing || _authenticatedUserId == null) return false;
+    
+    // Safety identity verification before purchase
+    bool identityOk = await _ensureRevenueCatIdentity(_authenticatedUserId!);
+    if (!identityOk) {
+       error = "Identity mismatch occurred. Please try restarting the app.";
+       return false;
+    }
 
     debugPrint("🔥 id: $id");
 
@@ -269,20 +319,16 @@ class SubscriptionProvider extends ChangeNotifier {
         (p) => (p.identifier ?? p.id.toString()) == id,
       );
 
-      // If it's a Free plan (price == 0), skip RevenueCat purchase and just tell backend to subscribe (downgrade)
       if (backendPlan.price == 0) {
         final sub = await _subscriptionService.subscribe(backendPlan.id);
         _mySubscription = sub;
 
-        // Also fetch CustomerInfo just to keep it in sync, but we don't purchase anything
         try {
           final customerInfo = await Purchases.getCustomerInfo();
           _handleCustomerInfoUpdate(customerInfo);
 
           if (customerInfo.entitlements.active.isNotEmpty) {
-            error =
-                "Plan downgraded! Please remember to also cancel your active subscription in your App Store / Play Store settings so you aren't charged.";
-            // We return false just to show the error snackbar with the instructions, but the DB was updated!
+            error = "Plan downgraded! Please remember to also cancel your active subscription in your App Store / Play Store settings so you aren't charged.";
             return false;
           }
         } catch (_) {}
@@ -297,12 +343,21 @@ class SubscriptionProvider extends ChangeNotifier {
       // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);
 
+      // Temporarily update UI locally before backend verifies
+      _handleCustomerInfoUpdate(result.customerInfo);
+
       // Trigger verification and sync with the backend
-      final syncedSub = await _subscriptionService.syncSubscription();
-      if (syncedSub != null) {
-        _mySubscription = syncedSub;
+      try {
+         final syncedSub = await _subscriptionService.syncSubscription();
+         if (syncedSub != null) {
+           _mySubscription = syncedSub;
+         }
+      } catch (syncError) {
+         debugPrint("Backend sync failed after purchase (will retry via webhook or later manually): $syncError");
+         // We do NOT reset the UI fallback, because the user just paid. Let them see their plan locally.
       }
 
+      // Re-trigger update in case backend sync changed things
       _handleCustomerInfoUpdate(result.customerInfo);
 
       return true;
@@ -328,19 +383,22 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
 
   Future<void> fetchMySubscription() async {
-    if (!_isInitialized) {
-      debugPrint(
-        "⚠️ fetchMySubscription called but Purchases not initialized yet.",
-      );
+    if (!_isInitialized || _authenticatedUserId == null) {
+      debugPrint("⚠️ fetchMySubscription called but Purchases not initialized yet.");
       return;
     }
     try {
+      await _ensureRevenueCatIdentity(_authenticatedUserId!);
+      
       final customerInfo = await Purchases.getCustomerInfo();
       
-      // Perform backend sync to verify subscription with RevenueCat directly
-      final syncedSub = await _subscriptionService.syncSubscription();
-      if (syncedSub != null) {
-        _mySubscription = syncedSub;
+      try {
+        final syncedSub = await _subscriptionService.syncSubscription();
+        if (syncedSub != null) {
+          _mySubscription = syncedSub;
+        }
+      } catch (e) {
+        debugPrint("fetchMySubscription: backend sync failed: $e");
       }
 
       _handleCustomerInfoUpdate(customerInfo);
@@ -360,7 +418,6 @@ class SubscriptionProvider extends ChangeNotifier {
           return "Purchase was cancelled.";
         }
       } catch (_) {
-        // If parsing the error code fails (e.g. FormatException), fallback to generic message.
       }
       return e.message ?? "A payment service error occurred. Please try again.";
     }

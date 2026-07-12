@@ -12,6 +12,7 @@ import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:life_partner_again/core/app_routes.dart';
@@ -24,8 +25,12 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<PageRoute> routeObserver =
     RouteObserver<PageRoute>();
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   ZegoService.instance.init();
   runApp(const MyApp());
 }
@@ -116,7 +121,7 @@ class _MyAppState extends State<MyApp> {
         scaffoldMessengerKey: scaffoldMessengerKey,
         navigatorKey: navigatorKey,
         navigatorObservers: [routeObserver],
-        initialRoute: AppRoutes.landing,
+        initialRoute: AppRoutes.splash,
         onGenerateRoute: AppRoutes.onGenerateRoute,
 
         theme: ThemeData(

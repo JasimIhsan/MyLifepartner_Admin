@@ -2,6 +2,7 @@ import env from "@/config/env";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
 import { NextFunction, Request, Response } from "express";
+import multer from "multer";
 
 type ErrorWithStatus = Error & {
    statusCode?: number;
@@ -41,6 +42,13 @@ const errorMiddleware = (err: ErrorWithStatus, req: Request, res: Response, _nex
 const normalizeError = (err: ErrorWithStatus): ApiError => {
    if (err instanceof ApiError) {
       return err;
+   }
+
+   if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+         return new ApiError(400, "File size limit exceeded. Maximum file size allowed is 20MB.", [], err.stack);
+      }
+      return new ApiError(400, err.message, [], err.stack);
    }
 
    return new ApiError(err.statusCode ?? 500, DEFAULT_ERROR_MESSAGE, err.errors ?? [], err.stack);
