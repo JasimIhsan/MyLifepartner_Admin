@@ -19,7 +19,7 @@ class GuideService {
       );
 
       if (response.data['success'] == true) {
-        final List<dynamic> data = response.data['data']['guide'];
+        final List<dynamic> data = response.data['data']['guides'];
         return data.map((json) => GuideItem.fromJson(json)).toList();
       }
       return [];

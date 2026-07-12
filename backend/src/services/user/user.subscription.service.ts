@@ -98,6 +98,15 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
    async subscribe(userId: number, planId: number): Promise<EnrichedUserSubscription> {
       const plan = await this.getRequiredActivePlan(planId);
+      const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
+
+      const currentSubscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
+
+      if (currentSubscription) {
+         if (!currentSubscription.willRenew && planId === freePlan?.id) {
+            throw new ApiError(400, "Your plan is already cancelled and will downgrade on expiration.");
+         }
+      }
 
       await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
 
@@ -265,22 +274,57 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                   data: { status: "EXPIRED" },
                });
 
-               const subscription = await tx.userSubscription.create({
-                  data: {
-                     userId,
-                     planId: targetPlanId,
-                     status: "ACTIVE",
-                     startDate: new Date(),
-                     endDate,
-                     willRenew: true,
-                     revenueCatEventId: event.id,
-                     lastEventTimestampMs: event.event_timestamp_ms,
-                     originalTransactionId: event.original_transaction_id,
-                     store: event.store,
-                     environment: event.environment,
-                  },
-                  include: { plan: { include: { features: true } } },
-               });
+               const originalTransactionId = event.original_transaction_id;
+
+               let subscription;
+
+               if (originalTransactionId) {
+                  subscription = await tx.userSubscription.upsert({
+                     where: { originalTransactionId },
+                     create: {
+                        userId,
+                        planId: targetPlanId,
+                        status: "ACTIVE",
+                        startDate: new Date(),
+                        endDate,
+                        willRenew: true,
+                        revenueCatEventId: event.id,
+                        lastEventTimestampMs: event.event_timestamp_ms,
+                        originalTransactionId,
+                        store: event.store,
+                        environment: event.environment,
+                     },
+                     update: {
+                        userId,
+                        planId: targetPlanId,
+                        status: "ACTIVE",
+                        endDate,
+                        willRenew: true,
+                        revenueCatEventId: event.id,
+                        lastEventTimestampMs: event.event_timestamp_ms,
+                        store: event.store,
+                        environment: event.environment,
+                     },
+                     include: { plan: { include: { features: true } } },
+                  });
+               } else {
+                  subscription = await tx.userSubscription.create({
+                     data: {
+                        userId,
+                        planId: targetPlanId,
+                        status: "ACTIVE",
+                        startDate: new Date(),
+                        endDate,
+                        willRenew: true,
+                        revenueCatEventId: event.id,
+                        lastEventTimestampMs: event.event_timestamp_ms,
+                        originalTransactionId: null,
+                        store: event.store,
+                        environment: event.environment,
+                     },
+                     include: { plan: { include: { features: true } } },
+                  });
+               }
 
                const featurePayload = this.buildFeaturePayload(subscription.plan as EnrichedSubscriptionPlan);
 
@@ -321,7 +365,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                         willRenew: true,
                         revenueCatEventId: event.id,
                         lastEventTimestampMs: event.event_timestamp_ms,
-                        originalTransactionId: event.original_transaction_id,
+                        originalTransactionId: null,
                      },
                      include: { plan: { include: { features: true } } },
                   });

@@ -409,6 +409,7 @@ class SubscriptionProvider extends ChangeNotifier {
   }
 
   String? get currentSubscriptionMessage => _mySubscription?.message;
+  UserSubscription? get mySubscription => _mySubscription;
 
   String _getReadableError(dynamic e) {
     if (e is PlatformException) {

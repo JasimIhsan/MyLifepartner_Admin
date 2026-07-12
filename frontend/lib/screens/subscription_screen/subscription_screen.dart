@@ -436,6 +436,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                                   isCurrentPlan,
                                                   provider.isLoading,
                                                   isSelectedPage,
+                                                  provider
+                                                          .mySubscription
+                                                          ?.willRenew ??
+                                                      true,
                                                 ),
                                               );
                                             },
@@ -509,6 +513,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               onPressed: () async {
                                 final provider = context
                                     .read<SubscriptionProvider>();
+                                if (provider.mySubscription != null &&
+                                    !provider.mySubscription!.willRenew) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Your plan is already cancelled and will downgrade on expiration.',
+                                      ),
+                                      backgroundColor: Colors.black,
+                                    ),
+                                  );
+                                  return;
+                                }
+
                                 if (provider.currentSubscription == null ||
                                     provider.currentSubscription!.price == 0) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -846,6 +863,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     bool isCurrentPlan,
     bool isLoading,
     bool isSelectedPage,
+    bool willRenew,
   ) {
     final visuals = _getPlanVisuals(plan);
 
@@ -999,6 +1017,24 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     ),
                     child: const Text(
                       'Active Plan',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
+                else if (!willRenew)
+                  Container(
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: const Text(
+                      'Downgrading on expiration',
                       style: TextStyle(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w800,
