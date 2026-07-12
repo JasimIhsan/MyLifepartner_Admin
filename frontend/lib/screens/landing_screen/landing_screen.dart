@@ -240,7 +240,7 @@ class _LandingScreenState extends State<LandingScreen> {
           onPressed: () {
             Navigator.pushReplacementNamed(
               context,
-              AppRoutes.splash,
+              AppRoutes.login,
             );
           },
         )

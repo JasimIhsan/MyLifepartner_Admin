@@ -46,39 +46,39 @@ export const paiseToRupees = (paise: number) =>
 // ─── Plan APIs ────────────────────────────────────────────────────────────────
 
 export const getPlans = async () => {
-   const res = await axiosInstance.get("/admin/plans");
+   const res = await axiosInstance.get("/admin/subscriptions");
    return res.data; // { success, data, message }
 };
 
 export const createPlan = async (data: { name: string; description?: string; price: number; durationDays: number; identifier: string }) => {
-   const res = await axiosInstance.post("/admin/plans", data);
+   const res = await axiosInstance.post("/admin/subscriptions", data);
    return res.data;
 };
 
 export const updatePlan = async (planId: number, data: { description?: string; price?: number; durationDays?: number; isActive?: boolean; isMostPopular?: boolean; identifier?: string }) => {
-   const res = await axiosInstance.patch(`/admin/plans/${planId}`, data);
+   const res = await axiosInstance.patch(`/admin/subscriptions/${planId}`, data);
    return res.data;
 };
 
 export const deletePlan = async (planId: number) => {
-   const res = await axiosInstance.delete(`/admin/plans/${planId}`);
+   const res = await axiosInstance.delete(`/admin/subscriptions/${planId}`);
    return res.data;
 };
 
 // ─── Plan Feature Mapping APIs ────────────────────────────────────────────────
 
 export const addFeaturesToPlan = async (planId: number, features: { featureKey: string; limit: string; description?: string }[]) => {
-   const res = await axiosInstance.post(`/admin/plans/${planId}/features`, features);
+   const res = await axiosInstance.post(`/admin/subscriptions/${planId}/features`, features);
    return res.data;
 };
 
 export const updatePlanFeature = async (planId: number, planFeatureId: number, data: { limit?: string; description?: string }) => {
-   const res = await axiosInstance.patch(`/admin/plans/${planId}/features/${planFeatureId}`, data);
+   const res = await axiosInstance.patch(`/admin/subscriptions/${planId}/features/${planFeatureId}`, data);
    return res.data;
 };
 
 export const deletePlanFeature = async (planId: number, planFeatureId: number) => {
-   const res = await axiosInstance.delete(`/admin/plans/${planId}/features/${planFeatureId}`);
+   const res = await axiosInstance.delete(`/admin/subscriptions/${planId}/features/${planFeatureId}`);
    return res.data;
 };
 

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/profile_question.dart';
 import 'package:life_partner_again/models/profile_section.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
-import 'package:life_partner_again/screens/login_screen/login_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/screens/questionaire_screen/widgets/question_widget.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
@@ -506,8 +506,8 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
               final sharedPrefs = await SharedPreferences.getInstance();
               await sharedPrefs.clear();
               if (mounted) {
-                nav.pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                nav.pushNamedAndRemoveUntil(
+                  AppRoutes.landing,
                   (route) => false,
                 );
               }

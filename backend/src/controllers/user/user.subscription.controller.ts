@@ -103,8 +103,15 @@ export class UserSubscriptionController {
       const userId = this.getAuthenticatedUserId(req);
 
       const subscription = await this.userSubscriptionService.syncSubscription(userId);
+      const features = await this.userSubscriptionService.getUserFeatures(userId);
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscription, "Subscription synced successfully"));
+      const responseData = {
+         subscription,
+         features,
+         syncStatus: subscription?.plan?.name === "FREE" ? "DOWNGRADED" : "SYNCED"
+      };
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, responseData, "Subscription synced successfully"));
    });
 
    /**

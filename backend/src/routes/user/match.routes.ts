@@ -49,4 +49,11 @@ router.get("/profile/:profileId", matchController.getProfileDetail);
  */
 router.post("/swipe", matchController.swipeProfile);
 
+/**
+ * @route   POST /api/v1/user/match/swipe/cancel
+ * @desc    Cancel sent interest swipe
+ * @access  Private
+ */
+router.post("/swipe/cancel", matchController.cancelSwipeInterest);
+
 export default router;

@@ -12,6 +12,7 @@ export interface IMatchRepository {
    recordSwipe(userId: number, targetProfileId: number, action: SwipeAction): Promise<void>;
    getProfileById(currentUserId: number, profileId: number): Promise<CandidateProfile | null>;
    getViewerPrivacyStatus(userId: number): Promise<boolean>;
+   deleteSwipe(userId: number, targetProfileId: number): Promise<boolean>;
 }
 
 export interface CandidateProfile {

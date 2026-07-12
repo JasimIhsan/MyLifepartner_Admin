@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/basic_info_step.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/bio_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/children_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/education_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/emotional_readiness_step.dart';
@@ -14,11 +16,10 @@ import 'package:life_partner_again/screens/onboarding/widgets/marital_status_ste
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/profession_step.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
-import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/job_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/services.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingFlowScreen extends StatefulWidget {
   const OnboardingFlowScreen({super.key});
@@ -29,7 +30,7 @@ class OnboardingFlowScreen extends StatefulWidget {
 
 class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   final ProfileRepository _profileRepo = ProfileRepository();
-  final int _totalSteps = 12;
+  final int _totalSteps = 13;
   int _currentStep = 0;
   bool _isLoading = false;
   bool _goingForward = true;
@@ -37,6 +38,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   // Form controllers
   final TextEditingController _firstNameCtrl = TextEditingController();
   final TextEditingController _lastNameCtrl = TextEditingController();
+  final TextEditingController _bioCtrl = TextEditingController();
   final TextEditingController _countryCtrl = TextEditingController();
   final TextEditingController _cityCtrl = TextEditingController();
   final TextEditingController _heightCtrl = TextEditingController();
@@ -46,6 +48,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   String? _firstName;
   String? _lastName;
   DateTime? _dateOfBirth;
+  String? _bio;
   String? _gender;
   String? _country;
   String? _city;
@@ -81,6 +84,9 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         _dateOfBirth = DateTime.tryParse(dobStr);
       }
 
+      _bio = prefs.getString('onboarding_bio');
+      _bioCtrl.text = _bio ?? '';
+
       _gender = prefs.getString('onboarding_gender');
       _country = prefs.getString('onboarding_country');
       _countryCtrl.text = _country ?? '';
@@ -112,7 +118,14 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       _smokingHabit = prefs.getString('onboarding_smoking_habit');
       _drinkingHabit = prefs.getString('onboarding_drinking_habit');
 
-      _currentStep = prefs.getInt('onboarding_current_step') ?? 0;
+      final cachedStep = prefs.getInt('onboarding_current_step') ?? 0;
+      if (cachedStep >= _totalSteps) {
+        _currentStep = _totalSteps - 1;
+      } else if (cachedStep < 0) {
+        _currentStep = 0;
+      } else {
+        _currentStep = cachedStep;
+      }
     });
   }
 
@@ -137,6 +150,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
       'onboarding_first_name',
       'onboarding_last_name',
       'onboarding_date_of_birth',
+      'onboarding_bio',
       'onboarding_gender',
       'onboarding_country',
       'onboarding_city',
@@ -162,6 +176,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
   void dispose() {
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
+    _bioCtrl.dispose();
     _countryCtrl.dispose();
     _cityCtrl.dispose();
     _heightCtrl.dispose();
@@ -182,29 +197,33 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             nameRegex.hasMatch(_lastName!.trim()) &&
             _dateOfBirth != null;
       case 1:
-        return _gender != null;
+        return _bio == null ||
+            _bio!.trim().isEmpty ||
+            _bio!.trim().length >= 50;
       case 2:
-        return _maritalStatus != null;
+        return _gender != null;
       case 3:
+        return _maritalStatus != null;
+      case 4:
         return _country != null &&
             _city != null &&
             cityRegex.hasMatch(_city!.trim());
-      case 4:
-        return _emotionalReadiness != null;
       case 5:
-        return _languages.isNotEmpty;
+        return _emotionalReadiness != null;
       case 6:
-        return _childrenStatus != null;
+        return _languages.isNotEmpty;
       case 7:
-        return _heightCm != null;
+        return _childrenStatus != null;
       case 8:
-        return _lookingFor != null;
+        return _heightCm != null;
       case 9:
-        return _highestEducation != null;
+        return _lookingFor != null;
       case 10:
+        return _highestEducation != null;
+      case 11:
         return _profession != null &&
             professionRegex.hasMatch(_profession!.trim());
-      case 11:
+      case 12:
         return _smokingHabit != null && _drinkingHabit != null;
       default:
         return true;
@@ -240,7 +259,9 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           .trim();
 
       int? jobId = _jobId;
-      if (jobId == null && _profession != null && _profession!.trim().isNotEmpty) {
+      if (jobId == null &&
+          _profession != null &&
+          _profession!.trim().isNotEmpty) {
         try {
           final newJob = await JobService.createJob(_profession!);
           jobId = newJob.id;
@@ -249,6 +270,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
 
       await _profileRepo.updateBasicProfile({
         'name': name,
+        'bio': _bio,
         'gender': _gender,
         'dateOfBirth': _dateOfBirth != null
             ? '${_dateOfBirth!.toIso8601String()}Z'
@@ -359,6 +381,14 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
           },
         );
       case 1:
+        return BioStep(
+          bioCtrl: _bioCtrl,
+          onBioChanged: (v) {
+            setState(() => _bio = v);
+            _saveToCache('onboarding_bio', v);
+          },
+        );
+      case 2:
         return GenderStep(
           selectedGender: _gender,
           onGenderChanged: (v) {
@@ -366,7 +396,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_gender', v);
           },
         );
-      case 2:
+      case 3:
         return MaritalStatusStep(
           selectedMaritalStatus: _maritalStatus,
           onMaritalStatusChanged: (v) {
@@ -374,7 +404,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_marital_status', v);
           },
         );
-      case 3:
+      case 4:
         return LocationStep(
           country: _country,
           cityCtrl: _cityCtrl,
@@ -390,7 +420,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_city', v);
           },
         );
-      case 4:
+      case 5:
         return EmotionalReadinessStep(
           selectedReadiness: _emotionalReadiness,
           onReadinessChanged: (v) {
@@ -398,7 +428,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_emotional_readiness', v);
           },
         );
-      case 5:
+      case 6:
         return LanguagesStep(
           selectedLanguages: _languages,
           onLanguageToggled: (l) {
@@ -412,7 +442,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_languages', _languages);
           },
         );
-      case 6:
+      case 7:
         return ChildrenStep(
           selectedChildrenStatus: _childrenStatus,
           onChildrenStatusChanged: (v) {
@@ -420,7 +450,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_children_status', v);
           },
         );
-      case 7:
+      case 8:
         return HeightStep(
           heightCm: _heightCm,
           onHeightChanged: (v) {
@@ -431,7 +461,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_height_cm', v);
           },
         );
-      case 8:
+      case 9:
         return LookingForStep(
           selectedLookingFor: _lookingFor,
           onLookingForChanged: (v) {
@@ -439,7 +469,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_looking_for', v);
           },
         );
-      case 9:
+      case 10:
         return EducationStep(
           selectedEducation: _highestEducation,
           onEducationChanged: (v) {
@@ -447,7 +477,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_highest_education', v);
           },
         );
-      case 10:
+      case 11:
         return ProfessionStep(
           professionCtrl: _professionCtrl,
           selectedJobId: _jobId,
@@ -460,7 +490,7 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
             _saveToCache('onboarding_job_id', v);
           },
         );
-      case 11:
+      case 12:
         return HabitsStep(
           drinkingHabit: _drinkingHabit,
           smokingHabit: _smokingHabit,
@@ -510,57 +540,58 @@ class _OnboardingFlowScreenState extends State<OnboardingFlowScreen> {
         _handleBackPress();
       },
       child: Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildTopNavigation(),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 350),
-                  transitionBuilder: (child, animation) {
-                    final offsetBegin = _goingForward
-                        ? const Offset(0.1, 0)
-                        : const Offset(-0.1, 0);
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position:
-                            Tween<Offset>(
-                              begin: offsetBegin,
-                              end: Offset.zero,
-                            ).animate(
-                              CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeOutCubic,
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopNavigation(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    transitionBuilder: (child, animation) {
+                      final offsetBegin = _goingForward
+                          ? const Offset(0.1, 0)
+                          : const Offset(-0.1, 0);
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position:
+                              Tween<Offset>(
+                                begin: offsetBegin,
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic,
+                                ),
                               ),
-                            ),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Container(
-                    key: ValueKey(_currentStep),
-                    child: _buildCurrentStep(),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: Container(
+                      key: ValueKey(_currentStep),
+                      child: _buildCurrentStep(),
+                    ),
                   ),
                 ),
               ),
-            ),
-            OnboardingContinueButton(
-              canProceed: _canProceed,
-              isLoading: _isLoading,
-              isLastStep: false,
-              label: _currentStep == _totalSteps - 1
-                  ? 'Continue to Partner Preferences'
-                  : null,
-              onNext: _next,
-            ),
-          ],
+              OnboardingContinueButton(
+                canProceed: _canProceed,
+                isLoading: _isLoading,
+                isLastStep: false,
+                label: _currentStep == _totalSteps - 1
+                    ? 'Continue to Partner Preferences'
+                    : null,
+                onNext: _next,
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }

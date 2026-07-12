@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/screens/login_screen/login_screen.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/custom_app_bar.dart';
@@ -169,8 +169,8 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
               final sharedPrefs = await SharedPreferences.getInstance();
               await sharedPrefs.clear();
               if (mounted) {
-                nav.pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                nav.pushNamedAndRemoveUntil(
+                  AppRoutes.landing,
                   (route) => false,
                 );
               }

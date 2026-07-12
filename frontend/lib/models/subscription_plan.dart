@@ -143,6 +143,7 @@ class UserSubscription {
   final DateTime endDate;
   final String status;
   final String? message;
+  final bool willRenew;
 
   UserSubscription({
     required this.id,
@@ -152,6 +153,7 @@ class UserSubscription {
     required this.endDate,
     required this.status,
     this.message,
+    this.willRenew = true,
   });
 
   factory UserSubscription.fromJson(Map<String, dynamic> json) {
@@ -165,6 +167,7 @@ class UserSubscription {
       endDate: DateTime.parse(json['endDate']),
       status: json['status'],
       message: json['message'],
+      willRenew: json['willRenew'] ?? true,
     );
   }
 

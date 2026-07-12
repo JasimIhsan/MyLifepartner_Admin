@@ -594,4 +594,22 @@ export class MatchRepository implements IMatchRepository {
    private swipesToProfiles(swipes: SwipeWithUserProfile[]): CandidateProfilePayload[] {
       return swipes.map((swipe) => swipe.user.profile).filter((profile): profile is CandidateProfilePayload => Boolean(profile));
    }
+
+   /**
+    * Deletes a user swipe record.
+    *
+    * @param userId - User ID.
+    * @param targetProfileId - Target profile ID.
+    * @returns True if a swipe was deleted.
+    */
+   async deleteSwipe(userId: number, targetProfileId: number): Promise<boolean> {
+      const deleteResult = await prisma.profileSwipe.deleteMany({
+         where: {
+            userId,
+            targetProfileId,
+         },
+      });
+
+      return deleteResult.count > 0;
+   }
 }

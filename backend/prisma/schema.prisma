@@ -106,13 +106,13 @@ model PartnerPreference {
 }
 
 model UserImage {
-  id              Int      @id @default(autoincrement())
-  profileId       Int
-  profile         Profile  @relation(fields: [profileId], references: [id])
-  imageUrl        String
-  isPrimary       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  imageUrl  String
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("user_images")
 }
@@ -142,22 +142,22 @@ model ProfileSwipe {
 }
 
 model ImageAccessRequest {
-  id              Int               @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   ownerUserId     Int
-  owner           User              @relation("ReceivedRequests", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  owner           User @relation("ReceivedRequests", fields: [ownerUserId], references: [id], onDelete: Cascade)
   requesterUserId Int
-  requester       User              @relation("SentRequests", fields: [requesterUserId], references: [id], onDelete: Cascade)
+  requester       User @relation("SentRequests", fields: [requesterUserId], references: [id], onDelete: Cascade)
 
-  status          ImageAccessStatus @default(PENDING)
+  status ImageAccessStatus @default(PENDING)
 
-  requestedAt     DateTime          @default(now())
+  requestedAt     DateTime  @default(now())
   respondedAt     DateTime?
   revokedAt       DateTime?
   revokedByUserId Int?
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([ownerUserId, requesterUserId])
   @@index([ownerUserId, status])
@@ -268,6 +268,13 @@ model UserSubscription {
   nextPlanId Int?
   createdAt  DateTime           @default(now())
   updatedAt  DateTime           @updatedAt
+
+  // RevenueCat Audit fields
+  revenueCatEventId     String?
+  lastEventTimestampMs  BigInt?
+  originalTransactionId String? @unique
+  store                 String? // TEST_STORE, PLAY_STORE, APP_STORE
+  environment           String? // SANDBOX, PRODUCTION
 
   @@index([userId, status])
   @@map("user_subscriptions")

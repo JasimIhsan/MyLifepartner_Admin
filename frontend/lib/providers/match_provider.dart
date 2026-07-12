@@ -204,4 +204,22 @@ class MatchProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> cancelInterest(int targetProfileId) async {
+    try {
+      final success = await MatchService.cancelInterest(targetProfileId);
+      if (success) {
+        _sentInterests.removeWhere((p) => p.id == targetProfileId);
+        notifyListeners();
+      }
+    } on DioException catch (e) {
+      _error = getDioErrorMessage(e, fallback: 'Failed to cancel interest');
+      notifyListeners();
+      rethrow;
+    } catch (e) {
+      _error = 'An unexpected error occurred: ${e.toString()}';
+      notifyListeners();
+      rethrow;
+    }
+  }
 }

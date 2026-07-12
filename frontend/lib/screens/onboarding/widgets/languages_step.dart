@@ -43,6 +43,8 @@ class LanguagesStep extends StatelessWidget {
         const SizedBox(height: 20),
         Wrap(
           alignment: WrapAlignment.center,
+          spacing: 10,
+          runSpacing: 10,
           children: langs
               .map(
                 (l) => OnboardingLanguageChip(

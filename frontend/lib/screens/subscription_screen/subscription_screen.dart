@@ -436,6 +436,10 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                                                   isCurrentPlan,
                                                   provider.isLoading,
                                                   isSelectedPage,
+                                                  provider
+                                                          .mySubscription
+                                                          ?.willRenew ??
+                                                      true,
                                                 ),
                                               );
                                             },
@@ -509,6 +513,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                               onPressed: () async {
                                 final provider = context
                                     .read<SubscriptionProvider>();
+                                if (provider.mySubscription != null &&
+                                    !provider.mySubscription!.willRenew) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Your plan is already cancelled and will downgrade on expiration.',
+                                      ),
+                                      backgroundColor: Colors.black,
+                                    ),
+                                  );
+                                  return;
+                                }
+
                                 if (provider.currentSubscription == null ||
                                     provider.currentSubscription!.price == 0) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -846,6 +863,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     bool isCurrentPlan,
     bool isLoading,
     bool isSelectedPage,
+    bool willRenew,
   ) {
     final visuals = _getPlanVisuals(plan);
 
@@ -1006,6 +1024,24 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       ),
                     ),
                   )
+                else if (!willRenew)
+                  Container(
+                    height: 48,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF1F5F9),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: const Text(
+                      'Downgrading on expiration',
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
                 else
                   Container(
                     height: 48,
@@ -1052,22 +1088,29 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 Container(
                   height: 48,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: visuals.gradientColors,
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    gradient: plan.price == 0
+                        ? null
+                        : LinearGradient(
+                            colors: visuals.gradientColors,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                    color: plan.price == 0 ? const Color(0xFFF1F5F9) : null,
                     borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    boxShadow: plan.price == 0
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                   ),
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : () => _handleSubscribe(plan),
+                    onPressed: (isLoading || plan.price == 0)
+                        ? null
+                        : () => _handleSubscribe(plan),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
@@ -1075,10 +1118,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Subscribe',
+                    child: Text(
+                      plan.price == 0 ? 'Free Plan' : 'Subscribe',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: plan.price == 0
+                            ? AppColors.textSecondary
+                            : Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
@@ -1097,7 +1142,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                     ),
                   ),
                   child: ElevatedButton(
-                    onPressed: isLoading ? null : () => _handleSubscribe(plan),
+                    onPressed: (isLoading || plan.price == 0)
+                        ? null
+                        : () => _handleSubscribe(plan),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       shadowColor: Colors.transparent,
@@ -1106,10 +1153,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Subscribe',
+                    child: Text(
+                      plan.price == 0 ? 'Free Plan' : 'Subscribe',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: plan.price == 0
+                            ? AppColors.textSecondary
+                            : AppColors.primary,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),

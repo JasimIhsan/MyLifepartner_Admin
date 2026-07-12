@@ -31,7 +31,17 @@ export interface UpdateProfileDto {
    marriedBrothers?: number;
    marriedSisters?: number;
    hobbies?: string[];
-   interests?: string[];
+   dateOfBirth?: Date | string;
+   heightCm?: number;
+   bio?: string;
+   highestEducation?: string;
+   smokingHabit?: string;
+   drinkingHabit?: string;
+   languages?: string[];
+   childrenStatus?: string;
+   emotionalReadiness?: string;
+   lookingFor?: string;
+   relationshipTimeline?: string;
 }
 
 export interface CreatePartnerPreferenceDto {

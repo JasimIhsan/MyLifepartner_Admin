@@ -14,8 +14,8 @@ const DEFAULT_AUTH_PURPOSE = "auth";
 const PASSWORD_RESET_PURPOSE = "password_reset";
 const FREE_PLAN_NAME = "FREE";
 const PASSWORD_SALT_ROUNDS = 10;
-const ACCESS_TOKEN_EXPIRY = "1d";
-const REFRESH_TOKEN_EXPIRY = "30d";
+const ACCESS_TOKEN_EXPIRY = "15m";
+const REFRESH_TOKEN_EXPIRY = "7d";
 const FREE_PLAN_DURATION_YEARS = 100;
 
 type AuthTokens = {

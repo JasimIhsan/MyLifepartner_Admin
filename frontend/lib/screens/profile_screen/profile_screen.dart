@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
@@ -14,7 +15,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../widgets/bottomsheet/custom_bottom_sheet.dart';
 import '../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../widgets/custom_button.dart';
-import '../login_screen/login_screen.dart';
 import '../subscription_screen/subscription_screen.dart';
 import 'manage_profile_pictures_screen.dart';
 
@@ -450,11 +450,9 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
                       final sharedPrefs = await SharedPreferences.getInstance();
                       await sharedPrefs.clear();
                       if (context.mounted) {
-                        Navigator.pushAndRemoveUntil(
+                        Navigator.pushNamedAndRemoveUntil(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginPage(),
-                          ),
+                          AppRoutes.landing,
                           (route) => false,
                         );
                       }

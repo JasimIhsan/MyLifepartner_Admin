@@ -181,6 +181,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
+        await Geolocator.openLocationSettings();
         throw 'Location services are disabled. Please enable them in settings.';
       }
 

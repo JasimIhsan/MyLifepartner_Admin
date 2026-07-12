@@ -93,6 +93,19 @@ export class MatchController {
    });
 
    /**
+    * @route POST /api/v1/user/match/swipe/cancel
+    * @purpose Cancels a sent interest swipe on another profile.
+    */
+   public cancelSwipeInterest = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+      const targetProfileId = this.getRequiredPositiveNumber(req.body.targetProfileId, "Target profile ID is required");
+
+      await this.matchService.cancelSwipeInterest(userId, targetProfileId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Interest request canceled successfully"));
+   });
+
+   /**
     * Extracts and validates authenticated user ID.
     */
    private getAuthenticatedUserId(req: Request): number {
