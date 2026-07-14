@@ -22,12 +22,12 @@ async function main() {
 
    try {
       // Execute each seeder in sequence
-      await seedAdmins(prisma);
-      await seedSubscriptionPlans(prisma);
+      // await seedAdmins(prisma);
+      // await seedSubscriptionPlans(prisma);
       await seedProfileData(prisma);
       await seedUsers(prisma);
       await seedMutualConnections(prisma);
-      await seedGuide(prisma);
+      // await seedGuide(prisma);
 
       console.log("Database seeding completed successfully.");
    } catch (error) {

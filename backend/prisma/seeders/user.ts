@@ -4,7 +4,7 @@ import bcrypt from "bcrypt";
 export async function seedUsers(prisma: PrismaClient) {
    console.log("Seeding dummy user profiles...");
 
-   const defaultPasswordHash = await bcrypt.hash("asdfasdf", 10);
+   const defaultPasswordHash = await bcrypt.hash("Jasim9656@", 10);
    const commonSelfieUrl = "1/selfie_front/70278098-2a48-45e9-8475-b65093279d35.jpg";
 
    const dummyProfiles = [
@@ -281,6 +281,123 @@ export async function seedUsers(prisma: PrismaClient) {
             occupation: ["Software Engineer", "Doctor", "Teacher", "Business"],
          },
       },
+      // JASIM IHSAN (from user JSON)
+      {
+         email: "jasimihsan1234@gmail.com",
+         password: "$2b$10$5560JVISrbJuXY01kCnHlOpOGIGNdsrlYnJL0vsrc7P3WBmGHu0SK",
+         name: "Jasim Ihsan",
+         gender: Gender.MALE,
+         dob: new Date("2001-06-01T00:00:00.000Z"),
+         heightCm: 183,
+         city: "Delhi",
+         state: null,
+         country: "India",
+         lat: 11.1945413,
+         lng: 76.3014534,
+         occupation: "Software Engineer",
+         highestEducation: "BACHELORS",
+         maritalStatus: MaritalStatus.DIVORCED,
+         bio: "MERN developer building scalable apps, learning every day. Solving bugs. AI",
+         languages: ["English"],
+         childrenStatus: ChildrenStatus.LIVING_WITH_ME,
+         emotionalReadiness: EmotionalReadiness.YES,
+         lookingFor: LookingFor.MARRIAGE,
+         relationshipTimeline: null,
+         smokingHabit: SmokingHabit.NO,
+         drinkingHabit: DrinkingHabit.NO,
+         selfieUrl: "1/selfie_front/126f529b-cc9a-436b-a4e4-547564eadf5c.jpg",
+         leftSelfieUrl: "1/selfie_left/06b857c6-0476-4fe9-8542-b6d618f74156.jpg",
+         rightSelfieUrl: "1/selfie_right/e8f26ee1-de60-41bb-890f-e5d8d7298caa.jpg",
+         images: [],
+         keepExistingImages: true,
+         preference: {
+            ageFrom: 20,
+            ageTo: 30,
+            heightFrom: 150,
+            heightTo: 180,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED, MaritalStatus.DIVORCED],
+            highestEducation: [],
+            occupation: [],
+         },
+      },
+      // PRIYA WARRIOR (from user JSON)
+      {
+         email: "priya@gmail.com",
+         password: "$2b$10$0cSoeR.CYQ0G9i5CM3.S2O47sn5kZrRKzLrn1.Rh4Wbr/Sv/9Vo9S",
+         name: "Priya Warrior",
+         gender: Gender.FEMALE,
+         dob: new Date("2001-07-18T00:00:00.000Z"),
+         heightCm: 173,
+         city: "Delhi",
+         state: null,
+         country: "India",
+         lat: 11.1945384,
+         lng: 76.3014543,
+         occupation: "Actress",
+         highestEducation: "BACHELORS",
+         maritalStatus: MaritalStatus.DIVORCED,
+         bio: "I am an actress in Hollywood. Love to read. Polite, patient, charector ",
+         languages: ["English"],
+         childrenStatus: ChildrenStatus.LIVING_WITH_ME,
+         emotionalReadiness: EmotionalReadiness.YES,
+         lookingFor: LookingFor.MARRIAGE,
+         relationshipTimeline: null,
+         smokingHabit: SmokingHabit.NO,
+         drinkingHabit: DrinkingHabit.NO,
+         selfieUrl: "2/selfie_front/0aebf58a-57b7-4392-bff1-128c0bcc03de.jpg",
+         leftSelfieUrl: "2/selfie_left/93307755-5c85-4bb9-b95a-094b7f19345f.jpg",
+         rightSelfieUrl: "2/selfie_right/98488ee1-ba37-4915-b31d-65cb5c9afc91.jpg",
+         images: [],
+         keepExistingImages: true,
+         preference: {
+            ageFrom: 22,
+            ageTo: 35,
+            heightFrom: 165,
+            heightTo: 195,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED, MaritalStatus.DIVORCED],
+            highestEducation: [],
+            occupation: [],
+         },
+      },
+      // DEV HUNTER (from user JSON)
+      {
+         email: "jasimihsandev@gmail.com",
+         password: "$2b$10$Yj3xPPDxq1tKpSHIsz6tROEgQh3AFk6zQYfDS1tILLXD/ldvUSmn2",
+         name: "Dev Hunter",
+         gender: Gender.MALE,
+         dob: new Date("2001-07-18T00:00:00.000Z"),
+         heightCm: 172,
+         city: "Haryana",
+         state: null,
+         country: "India",
+         lat: 11.1945399,
+         lng: 76.3014512,
+         occupation: "Software Engineer",
+         highestEducation: "BACHELORS",
+         maritalStatus: MaritalStatus.DIVORCED,
+         bio: "Software developer",
+         languages: ["English"],
+         childrenStatus: ChildrenStatus.NOT_LIVING_WITH_ME,
+         emotionalReadiness: EmotionalReadiness.YES,
+         lookingFor: LookingFor.LONG_TERM_RELATIONSHIP,
+         relationshipTimeline: null,
+         smokingHabit: SmokingHabit.NO,
+         drinkingHabit: DrinkingHabit.NO,
+         selfieUrl: "3/selfie_front/c018620c-211c-4d15-a229-c4cb9178b36f.jpg",
+         leftSelfieUrl: "3/selfie_left/d29791cf-622c-4e2d-9e76-f91d8dd63c84.jpg",
+         rightSelfieUrl: "3/selfie_right/47b0dcba-05db-43f8-b309-d89cd9703643.jpg",
+         images: [],
+         keepExistingImages: true,
+         preference: {
+            ageFrom: 20,
+            ageTo: 30,
+            heightFrom: 150,
+            heightTo: 180,
+            maritalStatus: [MaritalStatus.NEVER_MARRIED, MaritalStatus.DIVORCED],
+            highestEducation: [],
+            occupation: [],
+         },
+      },
    ];
 
    for (const p of dummyProfiles) {
@@ -371,18 +488,24 @@ export async function seedUsers(prisma: PrismaClient) {
       });
 
       // 3) Replace old profile images
-      await prisma.userImage.deleteMany({
+      const existingImagesCount = await prisma.userImage.count({
          where: { profileId: profile.id },
       });
 
-      for (const img of p.images) {
-         await prisma.userImage.create({
-            data: {
-               profileId: profile.id,
-               imageUrl: img.imageUrl,
-               isPrimary: img.isPrimary,
-            },
+      if (existingImagesCount === 0 || !p.keepExistingImages) {
+         await prisma.userImage.deleteMany({
+            where: { profileId: profile.id },
          });
+
+         for (const img of p.images) {
+            await prisma.userImage.create({
+               data: {
+                  profileId: profile.id,
+                  imageUrl: img.imageUrl,
+                  isPrimary: img.isPrimary,
+               },
+            });
+         }
       }
 
       // 4) Create or update partner preference
@@ -437,6 +560,31 @@ export async function seedUsers(prisma: PrismaClient) {
          });
       }
       console.log("Priyanka and Binu are now mutual connections.");
+   }
+
+   // 6) Make Jasim and Priya mutual connections
+   const jasimUser = await prisma.user.findUnique({ where: { email: "jasimihsan1234@gmail.com" }, include: { profile: true } });
+   const priyaUser = await prisma.user.findUnique({ where: { email: "priya@gmail.com" }, include: { profile: true } });
+
+   if (jasimUser?.profile && priyaUser?.profile) {
+      const existingJTP = await prisma.profileSwipe.findFirst({
+         where: { userId: jasimUser.id, targetProfileId: priyaUser.profile.id },
+      });
+      if (!existingJTP) {
+         await prisma.profileSwipe.create({
+            data: { userId: jasimUser.id, targetProfileId: priyaUser.profile.id, action: SwipeAction.RIGHT },
+         });
+      }
+
+      const existingPTJ = await prisma.profileSwipe.findFirst({
+         where: { userId: priyaUser.id, targetProfileId: jasimUser.profile.id },
+      });
+      if (!existingPTJ) {
+         await prisma.profileSwipe.create({
+            data: { userId: priyaUser.id, targetProfileId: jasimUser.profile.id, action: SwipeAction.RIGHT },
+         });
+      }
+      console.log("Jasim and Priya are now mutual connections.");
    }
 
    console.log("Dummy user profiles seeded successfully!");

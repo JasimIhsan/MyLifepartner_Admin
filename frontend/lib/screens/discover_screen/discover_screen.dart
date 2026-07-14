@@ -945,7 +945,7 @@ class _ActionButton extends StatelessWidget {
       child: Opacity(
         opacity: (isLoading || isDisabled) ? 0.6 : 1.0,
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color: buttonColor,
             borderRadius: BorderRadius.circular(100),
