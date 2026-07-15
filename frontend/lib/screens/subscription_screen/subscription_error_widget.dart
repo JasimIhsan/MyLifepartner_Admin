@@ -57,19 +57,18 @@ class SubscriptionErrorWidget extends StatelessWidget {
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 200.ms),
 
-            const SizedBox(height: 16),
+            // const SizedBox(height: 16),
 
-            // 🔥 Debug (optional)
-            if (error != null)
-              Text(
-                error!,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.red.withValues(alpha: 0.7),
-                ),
-                textAlign: TextAlign.center,
-              ).animate().fadeIn(delay: 300.ms),
-
+            // // 🔥 Debug (optional)
+            // if (error != null)
+            //   Text(
+            //     error!,
+            //     style: TextStyle(
+            //       fontSize: 12,
+            //       color: Colors.red.withValues(alpha: 0.7),
+            //     ),
+            //     textAlign: TextAlign.center,
+            //   ).animate().fadeIn(delay: 300.ms),
             const SizedBox(height: 32),
 
             // 🔥 Retry button

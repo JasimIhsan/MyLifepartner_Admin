@@ -26,7 +26,7 @@ class ZegoService {
 
     final appConfig = ZIMAppConfig()
       ..appID = Env.zegoAppId
-      ..appSign = Env.zegoAppSign;
+      ..appSign = kIsWeb ? '' : Env.zegoAppSign;
 
     ZIM.create(appConfig);
     _isInitialized = true;
@@ -97,11 +97,13 @@ class ZegoService {
   }
 
   /// Log in to ZIM. userId must be a string representation of the app user ID.
-  Future<void> login(String userId, String userName) async {
+  Future<void> login(String userId, String userName, {String? token}) async {
     if (_isLoggedIn) return;
 
     final zim = _getZIM();
-    final loginConfig = ZIMLoginConfig()..userName = userName;
+    final loginConfig = ZIMLoginConfig()
+      ..userName = userName
+      ..token = token ?? '';
 
     try {
       await zim.login(userId, loginConfig);

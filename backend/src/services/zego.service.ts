@@ -1,5 +1,6 @@
 import env from "@/config/env";
 import { generateToken04 } from "@/utils/zegoServerAssistant";
+import { ApiError } from "@/utils/ApiError";
 
 const ZEGO_TOKEN_EXPIRY_SECONDS = 60 * 60;
 
@@ -19,6 +20,9 @@ export class ZegoService {
     * @returns ZEGOCLOUD access token.
     */
    generateToken(userId: string): string {
+      if (!this.appId || !this.serverSecret) {
+         throw new ApiError(500, "ZEGOCLOUD APP ID or Server Secret is not configured on the server.");
+      }
       return generateToken04(this.appId, userId, this.serverSecret, ZEGO_TOKEN_EXPIRY_SECONDS);
    }
 }

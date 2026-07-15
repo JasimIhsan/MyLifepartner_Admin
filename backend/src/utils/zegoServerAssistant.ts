@@ -17,10 +17,12 @@ type ZegoTokenInfo = {
    payload: string;
 };
 
-type ZegoTokenError = {
-   errorCode: ZegoTokenErrorCode;
-   errorMessage: string;
-};
+class ZegoTokenError extends Error {
+   constructor(public readonly errorCode: ZegoTokenErrorCode, message: string) {
+      super(message);
+      this.name = "ZegoTokenError";
+   }
+}
 
 const TOKEN_VERSION = "04";
 const SECRET_LENGTH = 32;
@@ -100,10 +102,7 @@ function validateTokenInput(appId: number, userId: string, secret: string, effec
  * @returns ZEGOCLOUD token error.
  */
 function createZegoTokenError(errorCode: ZegoTokenErrorCode, errorMessage: string): ZegoTokenError {
-   return {
-      errorCode,
-      errorMessage,
-   };
+   return new ZegoTokenError(errorCode, errorMessage);
 }
 
 /**

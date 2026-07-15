@@ -42,10 +42,10 @@ class ChatApiService {
   }
 
   /// Get ZEGOCLOUD access token
-  // static Future<Map<String, dynamic>?> getZegoToken() async {
-  //   final response = await _dio.get('/zego/token');
-  //   return response.data?['data'] as Map<String, dynamic>?;
-  // }
+  static Future<Map<String, dynamic>?> getZegoToken() async {
+    final response = await _dio.get('/zego/token');
+    return response.data?['data'] as Map<String, dynamic>?;
+  }
 
   /// Verify via backend if current user can initiate an audio or video call
   static Future<void> checkCallAccess({

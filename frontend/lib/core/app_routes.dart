@@ -31,6 +31,10 @@ class AppRoutes {
   static const String selfieVerification = '/selfie-verification';
   static const String profileImageUpload = '/profile-image-upload';
   static const String home = '/home';
+  static const String discover = '/discover';
+  static const String matches = '/matches';
+  static const String chat = '/chat';
+  static const String profile = '/profile';
   static const String lpaGuide = '/lpa-guide';
   static const String chatDetail = '/chat-detail';
   static const String profileDetail = '/profile-detail';
@@ -101,8 +105,16 @@ class AppRoutes {
           settings: settings,
         );
       case home:
+      case discover:
+      case matches:
+      case chat:
+      case profile:
+        int initialIndex = 0;
+        if (settings.name == matches) initialIndex = 1;
+        if (settings.name == chat) initialIndex = 2;
+        if (settings.name == profile) initialIndex = 3;
         return MaterialPageRoute(
-          builder: (_) => const HomePage(),
+          builder: (_) => HomePage(initialIndex: initialIndex),
           settings: settings,
         );
       case lpaGuide:

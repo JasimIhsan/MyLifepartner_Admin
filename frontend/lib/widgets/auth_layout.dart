@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:provider/provider.dart';
@@ -71,7 +70,7 @@ class AuthLayout extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      "lifepartneragain",
+                      "Life Partner Again",
                       style: TextStyle(
                         color: AppColors.textPrimary,
                         fontWeight: FontWeight.w600,

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
@@ -41,11 +42,46 @@ class _CallScreenState extends State<CallScreen> {
   Timer? _pollTimer;
   int _lastElapsedSeconds = 0;
   bool _isEnding = false;
+  String? _zegoToken;
+  bool _isLoadingToken = kIsWeb;
 
   @override
   void initState() {
     super.initState();
     _startTime = DateTime.now();
+    if (kIsWeb) {
+      _fetchToken();
+    }
+  }
+
+  Future<void> _fetchToken() async {
+    try {
+      final data = await ChatApiService.getZegoToken();
+      if (data != null && data['token'] != null) {
+        if (mounted) {
+          setState(() {
+            _zegoToken = data['token'];
+            _isLoadingToken = false;
+          });
+        }
+      } else {
+        throw Exception('Token not found in response');
+      }
+    } catch (e) {
+      debugPrint('[CallScreen] Failed to fetch token: $e');
+      if (mounted) {
+        setState(() {
+          _isLoadingToken = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to initialize call: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        Navigator.of(context).pop();
+      }
+    }
   }
 
   void _startPolling() {
@@ -131,10 +167,18 @@ class _CallScreenState extends State<CallScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingToken) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     return SafeArea(
       child: ZegoUIKitPrebuiltCall(
         appID: Env.zegoAppId,
-        appSign: Env.zegoAppSign,
+        appSign: kIsWeb ? '' : Env.zegoAppSign,
+        token: _zegoToken ?? '',
         userID: widget.userID,
         userName: widget.userName,
         callID: widget.callID,

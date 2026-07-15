@@ -16,12 +16,18 @@ const baseURL = `${server_url}/api`;
 export const tokenClient: AxiosInstance = axios.create({
    baseURL,
    withCredentials: true,
+   headers: {
+      "ngrok-skip-browser-warning": "true",
+   },
 });
 
 // ===== MAIN AXIOS INSTANCE =====
 const axiosInstance: AxiosInstance = axios.create({
    baseURL,
    withCredentials: true,
+   headers: {
+      "ngrok-skip-browser-warning": "true",
+   },
 });
 
 // ===== TOKEN REFRESH LOGIC =====

@@ -1,3 +1,4 @@
+import { toSubscriptionPlanDto, toUserSubscriptionDto } from "@/dtos/subscription.dto";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
@@ -20,8 +21,9 @@ export class UserSubscriptionController {
     */
    public getPlans = asyncHandler(async (_req: Request, res: Response) => {
       const plans = await this.userSubscriptionService.getPlans();
+      const planDtos = plans.map(toSubscriptionPlanDto);
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, plans, "Subscription plans retrieved successfully"));
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, planDtos, "Subscription plans retrieved successfully"));
    });
 
    /**
@@ -32,8 +34,9 @@ export class UserSubscriptionController {
       const userId = this.getAuthenticatedUserId(req);
 
       const subscription = await this.userSubscriptionService.getMySubscription(userId);
+      const subscriptionDto = subscription ? toUserSubscriptionDto(subscription) : null;
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscription, "Current subscription retrieved successfully"));
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscriptionDto, "Current subscription retrieved successfully"));
    });
 
    /**
@@ -61,8 +64,9 @@ export class UserSubscriptionController {
       }
 
       const subscription = await this.userSubscriptionService.subscribe(userId, planId);
+      const subscriptionDto = toUserSubscriptionDto(subscription);
 
-      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, subscription, "Subscribed successfully"));
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, subscriptionDto, "Subscribed successfully"));
    });
 
    /**
@@ -106,7 +110,7 @@ export class UserSubscriptionController {
       const features = await this.userSubscriptionService.getUserFeatures(userId);
 
       const responseData = {
-         subscription,
+         subscription: subscription ? toUserSubscriptionDto(subscription) : null,
          features,
          syncStatus: subscription?.plan?.name === "FREE" ? "DOWNGRADED" : "SYNCED"
       };

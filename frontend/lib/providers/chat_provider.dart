@@ -89,7 +89,19 @@ class ChatProvider extends ChangeNotifier {
           userName = profile.name!;
         }
       } catch (_) {}
-      await ZegoService.instance.login(userId.toString(), userName);
+
+      String? token;
+      // Zegocloud requires token on Web
+      final tokenData = await ChatApiService.getZegoToken();
+      if (tokenData != null) {
+        token = tokenData['token'];
+      }
+
+      await ZegoService.instance.login(
+        userId.toString(),
+        userName,
+        token: token,
+      );
       startListening();
     } catch (e) {
       debugPrint('[ChatProvider] ensureZegoLogin failed: $e');

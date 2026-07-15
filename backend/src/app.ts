@@ -8,6 +8,18 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 
+// Global BigInt JSON serialization helper without using 'any'
+declare global {
+   interface BigInt {
+      toJSON(): string | number;
+   }
+}
+
+BigInt.prototype.toJSON = function (this: bigint): string | number {
+   const num = Number(this);
+   return Number.isSafeInteger(num) ? num : this.toString();
+};
+
 const app = express();
 
 // Trust proxy for IP detection behind Vercel/Cloudflare

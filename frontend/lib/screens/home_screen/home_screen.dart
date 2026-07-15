@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
@@ -8,6 +10,7 @@ import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/discover_screen.dart';
 import 'package:life_partner_again/screens/likes_screen/likes_screen.dart';
+import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
 import 'package:life_partner_again/screens/notification_screen/notification_screen.dart';
 import 'package:life_partner_again/screens/profile_screen/profile_screen.dart';
 import 'package:life_partner_again/services/user_repository.dart';
@@ -19,23 +22,35 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int initialIndex;
+  const HomePage({super.key, this.initialIndex = 0});
 
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   bool _showNotifications = false;
+  bool _showGuideOverlay = false;
 
   @override
   void initState() {
     super.initState();
+    _selectedIndex = widget.initialIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initZegoAndChat();
-      //_checkProfileCompletion();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant HomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialIndex != oldWidget.initialIndex) {
+      setState(() {
+        _selectedIndex = widget.initialIndex;
+      });
+    }
   }
 
   Future<void> _initZegoAndChat() async {
@@ -78,9 +93,19 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // ─── Navigation helpers ────────────────────────────────────────────────────
-
   void _onTabTapped(int index) {
+    if (kIsWeb && MediaQuery.of(context).size.width >= 800) {
+      String targetRoute = AppRoutes.home;
+      if (index == 0) targetRoute = AppRoutes.discover;
+      if (index == 1) targetRoute = AppRoutes.matches;
+      if (index == 2) targetRoute = AppRoutes.chat;
+      if (index == 3) targetRoute = AppRoutes.profile;
+
+      _showNotifications = false;
+      Navigator.pushReplacementNamed(context, targetRoute);
+      return;
+    }
+
     setState(() => _selectedIndex = index);
     _showNotifications = false;
     if (index == 0) {
@@ -124,10 +149,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ─── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = kIsWeb && MediaQuery.of(context).size.width >= 800;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -136,10 +161,174 @@ class _HomePageState extends State<HomePage> {
       },
       child: Scaffold(
         backgroundColor: AppColors.surface,
-        extendBody: true,
-        appBar: _buildAppBar(),
-        body: _buildBody(),
-        bottomNavigationBar: _buildBottomNavigationBar(),
+        extendBody: !isDesktop,
+        appBar: isDesktop ? null : _buildAppBar(),
+        body: Stack(
+          children: [
+            Column(
+              children: [
+                if (isDesktop) _buildWebNavBar(),
+                Expanded(child: _buildBody()),
+              ],
+            ),
+            if (isDesktop && _showGuideOverlay)
+              Positioned(
+                right: 32,
+                bottom: 88,
+                width: 420,
+                height: 600,
+                child: Card(
+                  elevation: 16,
+                  shadowColor: Colors.black.withValues(alpha: 0.15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: const LpaGuideScreen(),
+                ),
+              ),
+          ],
+        ),
+        bottomNavigationBar: isDesktop ? null : _buildBottomNavigationBar(),
+        floatingActionButton: isDesktop
+            ? FloatingActionButton(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _showGuideOverlay = !_showGuideOverlay;
+                  });
+                },
+                child: Icon(
+                  _showGuideOverlay
+                      ? Icons.close_rounded
+                      : Icons.support_agent_rounded,
+                ),
+              )
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildWebNavBar() {
+    return Container(
+      height: 72,
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Brand Logo and Title
+          Row(
+            children: [
+              Image.asset(
+                'assets/icons/app_logo.png',
+                height: 36,
+                width: 36,
+                errorBuilder: (context, error, stackTrace) => const Icon(
+                  Icons.favorite,
+                  color: AppColors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                "Life Partner Again",
+                style: GoogleFonts.outfit(
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 22,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Navigation Tabs
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildWebNavItem(0, Icons.explore_outlined, 'Discover'),
+              const SizedBox(width: 12),
+              _buildWebNavItem(1, Icons.favorite_border, 'Matches'),
+              const SizedBox(width: 12),
+              _buildWebNavItem(2, Icons.chat_bubble_outline, 'Chat'),
+              const SizedBox(width: 12),
+              _buildWebNavItem(3, Icons.person_outline, 'Profile'),
+            ],
+          ),
+          const Spacer(),
+          // Right Side Actions
+          Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  _showNotifications
+                      ? Icons.notifications
+                      : Icons.notifications_active_outlined,
+                  color: _showNotifications
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
+                ),
+                tooltip: 'Notifications',
+                onPressed: () {
+                  setState(() {
+                    _showNotifications = !_showNotifications;
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWebNavItem(int index, IconData icon, String label) {
+    final bool isSelected = _selectedIndex == index && !_showNotifications;
+    return InkWell(
+      onTap: () => _onTabTapped(index),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.08)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? AppColors.primary : Colors.grey.shade600,
+              size: 20,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected ? AppColors.primary : Colors.grey.shade700,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                fontSize: 15,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -153,17 +342,6 @@ class _HomePageState extends State<HomePage> {
       ),
       showLeading: false,
       actions: [
-        // IconButton(
-        //   icon: Image.asset(
-        //     'assets/icons/lpa_assist.png',
-        //     width: 24,
-        //     height: 24,
-        //   ),
-        //   tooltip: 'LPA Assist',
-        //   onPressed: () {
-        //     Navigator.pushNamed(context, AppRoutes.lpaGuide);
-        //   },
-        // ),
         IconButton(
           icon: const Icon(
             Icons.notifications_active_outlined,
