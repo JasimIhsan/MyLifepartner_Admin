@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/config/env.dart';
+// ignore: unused_import
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/main.dart';
-import 'package:life_partner_again/services/token_service.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/services/token_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

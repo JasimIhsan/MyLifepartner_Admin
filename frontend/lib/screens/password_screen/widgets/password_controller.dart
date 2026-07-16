@@ -2,12 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
-import 'package:life_partner_again/screens/home_screen/home_screen.dart';
-import 'package:life_partner_again/screens/onboarding/onboarding_flow_screen.dart';
 import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
-import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
-import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
@@ -19,7 +14,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final AuthRepository authRepository = AuthRepository();
   bool isLoading = false;
   bool obscureText = true;
@@ -181,10 +177,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
     });
 
     try {
-      await authRepository.sendOtp(
-        email: email,
-        purpose: "password_reset",
-      );
+      await authRepository.sendOtp(email: email, purpose: "password_reset");
       if (mounted) {
         Navigator.push(
           context,

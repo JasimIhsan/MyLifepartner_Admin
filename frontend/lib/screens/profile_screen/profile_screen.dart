@@ -1,19 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
 import 'package:life_partner_again/screens/profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/user_repository.dart';
+import 'package:provider/provider.dart';
 // import 'package:life_partner_again/shared/widgets/header_waves_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:life_partner_again/providers/auth_provider.dart';
-import 'package:provider/provider.dart';
 
 import '../../widgets/bottomsheet/custom_bottom_sheet.dart';
 import '../../widgets/bottomsheet/logout_bottom_sheet.dart';

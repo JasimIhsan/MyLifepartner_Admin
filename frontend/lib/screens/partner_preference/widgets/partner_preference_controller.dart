@@ -6,7 +6,6 @@ import 'package:life_partner_again/screens/partner_preference/widgets/height_pre
 import 'package:life_partner_again/screens/partner_preference/widgets/languages_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/marital_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/occupation_pref_step.dart';
-import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
@@ -186,25 +185,39 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
 
   String getPrefTitle(int step) {
     switch (step) {
-      case 0: return "Preferred Age";
-      case 1: return "Preferred Height";
-      case 2: return "Marital Status";
-      case 3: return "Highest Education";
-      case 4: return "Occupation / Profession";
-      case 5: return "Languages / Mother Tongue";
-      default: return "Partner Preferences";
+      case 0:
+        return "Preferred Age";
+      case 1:
+        return "Preferred Height";
+      case 2:
+        return "Marital Status";
+      case 3:
+        return "Highest Education";
+      case 4:
+        return "Occupation / Profession";
+      case 5:
+        return "Languages / Mother Tongue";
+      default:
+        return "Partner Preferences";
     }
   }
 
   String getPrefDescription(int step) {
     switch (step) {
-      case 0: return "Select the age range you prefer for your ideal partner.";
-      case 1: return "Specify the height range in centimeters for your matches.";
-      case 2: return "Choose one or more acceptable marital status options.";
-      case 3: return "Select the highest education levels you would like matches to have.";
-      case 4: return "Select the professions or career backgrounds you prefer.";
-      case 5: return "Select the languages or mother tongues your partner should speak.";
-      default: return "Set your requirements to find compatible recommendations.";
+      case 0:
+        return "Select the age range you prefer for your ideal partner.";
+      case 1:
+        return "Specify the height range in centimeters for your matches.";
+      case 2:
+        return "Choose one or more acceptable marital status options.";
+      case 3:
+        return "Select the highest education levels you would like matches to have.";
+      case 4:
+        return "Select the professions or career backgrounds you prefer.";
+      case 5:
+        return "Select the languages or mother tongues your partner should speak.";
+      default:
+        return "Set your requirements to find compatible recommendations.";
     }
   }
 
