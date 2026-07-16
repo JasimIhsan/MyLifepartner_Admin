@@ -1,0 +1,651 @@
+import 'dart:ui';
+
+import 'package:country_flags/country_flags.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/country_helper.dart';
+import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
+import 'package:life_partner_again/services/image_access_service.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
+
+class ProfileBrowserCard extends StatelessWidget {
+  final MatchRecommendation profile;
+  final VoidCallback onInterest;
+  final VoidCallback onNotInterested;
+  final VoidCallback? onReturnFromDetail;
+  final bool isActioning;
+  final String? loadingAction;
+  final bool isActioned;
+
+  const ProfileBrowserCard({
+    super.key,
+    required this.profile,
+    required this.onInterest,
+    required this.onNotInterested,
+    this.onReturnFromDetail,
+    this.isActioning = false,
+    this.loadingAction,
+    this.isActioned = false,
+  });
+
+  String? get _imageUrl {
+    final primary = profile.images.where((img) => img.isPrimary);
+    if (primary.isNotEmpty) return primary.first.imageUrl;
+    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
+    return null;
+  }
+
+  bool get _isBlurred {
+    final primary = profile.images.where((img) => img.isPrimary);
+    if (primary.isNotEmpty) return primary.first.isBlurred;
+    if (profile.images.isNotEmpty) return profile.images.first.isBlurred;
+    return false;
+  }
+
+  bool _isNewProfile(String isoString) {
+    try {
+      if (isoString.isEmpty) return false;
+      final date = DateTime.parse(isoString);
+      final diff = DateTime.now().difference(date);
+      return diff.inDays <= 7;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        color: Colors.grey.shade100,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+            spreadRadius: -5,
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Profile Hero Image
+          _imageUrl != null
+              ? Image.network(
+                  _imageUrl!,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return _placeholder(showLoading: true);
+                  },
+                  errorBuilder: (_, __, ___) => _placeholder(),
+                )
+              : _placeholder(),
+
+          // Dark Gradient Overlay at the bottom
+          Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  stops: const [0.5, 1.0],
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.9),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          if (_isNewProfile(profile.createdAt.toString()))
+            Positioned(
+              top: 24,
+              left: 20,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Text(
+                  'NEW',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
+            ),
+          // Detail Overlay & Action Buttons
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 24,
+            child:
+                Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _buildProfileInfo(context),
+                        const SizedBox(height: 32),
+                        ActionButtonsRow(
+                          onInterest: onInterest,
+                          onNotInterested: onNotInterested,
+                          isActioning: isActioning,
+                          loadingAction: loadingAction,
+                          isActioned: isActioned,
+                        ),
+                      ],
+                    )
+                    .animate()
+                    .fadeIn(duration: 600.ms, delay: 200.ms)
+                    .slideY(begin: 0.1, end: 0),
+          ),
+
+          // View Profile Tap Area (Top portion)
+          Positioned.fill(
+            bottom: 300,
+            child: GestureDetector(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ProfileDetailScreen(
+                      profileId: profile.id,
+                      profileName: profile.name,
+                    ),
+                  ),
+                );
+                if (onReturnFromDetail != null) {
+                  onReturnFromDetail!();
+                }
+              },
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
+          // Country Flag Top Right
+          if (CountryHelper.getCode(profile.country) != null)
+            Positioned(
+              top: 24,
+              right: 20,
+              child: Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: CountryFlag.fromCountryCode(
+                    CountryHelper.getCode(profile.country)!,
+                    width: 36,
+                    height: 36,
+                  ),
+                ),
+              ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
+            ),
+          if (_isBlurred)
+            Align(
+              alignment: Alignment.center,
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 32),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.65),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: Colors.white,
+                        size: 26,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      profile.viewerPrivacyEnabled
+                          ? 'Your profile is private'
+                          : 'Photos are private',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      profile.viewerPrivacyEnabled
+                          ? 'You need access to see ${profile.name}\'s photos.'
+                          : 'Request access to see ${profile.name}\'s photos.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    RequestAccessButton(profile: profile),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileInfo(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              '${profile.name}, ${profile.age}',
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                letterSpacing: -0.5,
+              ),
+            ),
+            if (profile.isVerified) ...[
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.transparent,
+                    builder: (_) =>
+                        VerifiedProfileBottomSheet(profileName: profile.name),
+                  );
+                },
+                child: Image.asset(
+                  'assets/icons/verified_icon.png',
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 4),
+        if (profile.maritalStatus != null)
+          _buildInfoRow(
+            Icons.favorite_border_rounded,
+            _formatEnum(profile.maritalStatus!),
+          ),
+        if (profile.city != null)
+          _buildInfoRow(Icons.location_on_outlined, profile.city!),
+      ],
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: Colors.white70),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withValues(alpha: 0.8),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _placeholder({bool showLoading = false}) => Container(
+    color: const Color(0xFFF2F2F2),
+    child: showLoading
+        ? const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: AppColors.primary,
+            ),
+          )
+        : null,
+  );
+
+  String _formatEnum(String value) {
+    return value
+        .replaceAll('_', ' ')
+        .toLowerCase()
+        .split(' ')
+        .map(
+          (w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '',
+        )
+        .join(' ');
+  }
+}
+
+class SideNavigationButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isLeft;
+
+  const SideNavigationButton({
+    super.key,
+    required this.icon,
+    required this.onTap,
+    required this.isLeft,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child:
+          Container(
+                margin: EdgeInsets.only(
+                  left: isLeft ? 25 : 0,
+                  right: !isLeft ? 25 : 0,
+                ),
+                width: 55,
+                height: 55,
+                child: ClipOval(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withValues(alpha: 0.4),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(icon, color: Colors.white, size: 24),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              .animate()
+              .fadeIn(duration: 400.ms)
+              .scale(
+                begin: const Offset(0.8, 0.8),
+                end: const Offset(1.0, 1.0),
+                curve: Curves.easeOutBack,
+                duration: 500.ms,
+              ),
+    );
+  }
+}
+
+class ActionButtonsRow extends StatelessWidget {
+  final VoidCallback onInterest;
+  final VoidCallback onNotInterested;
+  final bool isActioning;
+  final String? loadingAction;
+  final bool isActioned;
+
+  const ActionButtonsRow({
+    super.key,
+    required this.onInterest,
+    required this.onNotInterested,
+    this.isActioning = false,
+    this.loadingAction,
+    this.isActioned = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: ActionButton(
+            label: '',
+            icon: Icons.heart_broken,
+            onTap: (isActioning || isActioned) ? () {} : onNotInterested,
+            primary: false,
+            isLoading: isActioning && loadingAction == 'LEFT',
+            isDisabled: isActioned,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: ActionButton(
+            label: '',
+            icon: Icons.favorite_rounded,
+            onTap: (isActioning || isActioned) ? () {} : onInterest,
+            primary: true,
+            isLoading: isActioning && loadingAction == 'RIGHT',
+            isDisabled: isActioned,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class ActionButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool primary;
+  final bool isLoading;
+  final bool isDisabled;
+  final Color? backgroundColor;
+  final Color? iconColor;
+  final Color? textColor;
+  final Border? borderColor;
+
+  const ActionButton({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+    required this.primary,
+    this.isLoading = false,
+    this.isDisabled = false,
+    this.backgroundColor,
+    this.iconColor,
+    this.textColor,
+    this.borderColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Color buttonColor =
+        backgroundColor ??
+        (isDisabled
+            ? Colors.grey.shade400
+            : (primary ? AppColors.primary : Colors.transparent));
+
+    final Border? borderStyle =
+        borderColor ??
+        ((primary || isDisabled)
+            ? null
+            : Border.all(color: Colors.white30, width: 1.5));
+
+    final Color effectiveIconColor = iconColor ?? Colors.white;
+    final Color effectiveTextColor = textColor ?? Colors.white;
+
+    return GestureDetector(
+      onTap: (isLoading || isDisabled) ? null : onTap,
+      child: Opacity(
+        opacity: (isLoading || isDisabled) ? 0.6 : 1.0,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: buttonColor,
+            borderRadius: BorderRadius.circular(100),
+            border: borderStyle,
+            boxShadow:
+                (primary &&
+                    !isDisabled &&
+                    !isLoading &&
+                    backgroundColor == null)
+                ? [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isLoading)
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: effectiveIconColor,
+                  ),
+                )
+              else ...[
+                Icon(icon, color: effectiveIconColor, size: 20),
+                if (label.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: effectiveTextColor,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class RequestAccessButton extends StatefulWidget {
+  final MatchRecommendation profile;
+  const RequestAccessButton({super.key, required this.profile});
+
+  @override
+  State<RequestAccessButton> createState() => _RequestAccessButtonState();
+}
+
+class _RequestAccessButtonState extends State<RequestAccessButton> {
+  bool _isLoading = false;
+  String? _status;
+
+  @override
+  void initState() {
+    super.initState();
+    _status = widget.profile.imageAccessRequestStatus;
+  }
+
+  Future<void> _sendRequest() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final success = await ImageAccessService.requestAccess(
+      widget.profile.userId,
+    );
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+        if (success) {
+          _status = 'PENDING';
+        }
+      });
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Access request sent successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to send access request')),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_status == 'PENDING') {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Center(
+          child: Text(
+            'Access Pending',
+            style: TextStyle(
+              color: Colors.white70,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (_status == 'APPROVED') {
+      return const SizedBox.shrink();
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: CustomButton(
+        onPressed: _isLoading ? () {} : _sendRequest,
+        text: _isLoading ? 'Sending...' : 'Request Access',
+        height: 40,
+        borderRadius: 12,
+        fontSize: 13,
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+}

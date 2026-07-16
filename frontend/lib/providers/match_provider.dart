@@ -35,6 +35,11 @@ class MatchProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void removeProfile(int id) {
+    _profiles.removeWhere((p) => p.id == id);
+    notifyListeners();
+  }
+
   Future<void> loadRecommendations() async {
     _state = MatchLoadState.loading;
     _error = null;
