@@ -9,11 +9,13 @@ import 'connection_card.dart';
 class MatchesList extends StatefulWidget {
   final int tabIndex;
   final Function(bool) onScroll;
+  final bool isWeb;
 
   const MatchesList({
     super.key,
     required this.tabIndex,
     required this.onScroll,
+    this.isWeb = false,
   });
 
   @override
@@ -253,8 +255,8 @@ class _MatchesListState extends State<MatchesList> {
               physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics(),
               ),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: widget.isWeb ? 4 : 2,
                 childAspectRatio: 0.72,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 16,
