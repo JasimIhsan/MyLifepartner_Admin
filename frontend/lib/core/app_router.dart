@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/main.dart' show navigatorKey;
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
+import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
+import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
+import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
+import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
 import 'package:life_partner_again/screens/landing_screen/landing_screen.dart';
 import 'package:life_partner_again/screens/login_screen/login_screen.dart';
 import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
+import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/onboarding/onboarding_flow_screen.dart';
 import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
@@ -15,16 +22,9 @@ import 'package:life_partner_again/screens/password_screen/password_screen.dart'
 import 'package:life_partner_again/screens/profile_completion/profile_completion_screen.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
-import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
-import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
-import 'package:life_partner_again/main.dart' show navigatorKey;
-import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
-import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
-import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
-import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
@@ -153,23 +153,28 @@ GoRouter createRouter(AuthProvider authProvider) {
       // Home / Bottom Navigation Tabs Routes
       GoRoute(
         path: AppRoutes.home,
-        builder: (context, state) => const HomePage(initialIndex: 0),
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: HomePage(initialIndex: 0)),
       ),
       GoRoute(
         path: AppRoutes.discover,
-        builder: (context, state) => const HomePage(initialIndex: 0),
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: HomePage(initialIndex: 0)),
       ),
       GoRoute(
         path: AppRoutes.matches,
-        builder: (context, state) => const HomePage(initialIndex: 1),
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: HomePage(initialIndex: 1)),
       ),
       GoRoute(
         path: AppRoutes.chat,
-        builder: (context, state) => const HomePage(initialIndex: 2),
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: HomePage(initialIndex: 2)),
       ),
       GoRoute(
         path: AppRoutes.profile,
-        builder: (context, state) => const HomePage(initialIndex: 3),
+        pageBuilder: (context, state) =>
+            const NoTransitionPage(child: HomePage(initialIndex: 3)),
       ),
       GoRoute(
         path: AppRoutes.lpaGuide,

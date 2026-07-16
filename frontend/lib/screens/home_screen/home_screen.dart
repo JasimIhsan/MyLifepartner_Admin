@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
@@ -18,7 +19,6 @@ import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/custom_app_bar.dart';
 import 'package:life_partner_again/widgets/custom_bottom_bar.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -264,11 +264,8 @@ class _HomePageState extends State<HomePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _buildWebNavItem(0, Icons.explore_outlined, 'Discover'),
-              const SizedBox(width: 12),
               _buildWebNavItem(1, Icons.favorite_border, 'Matches'),
-              const SizedBox(width: 12),
               _buildWebNavItem(2, Icons.chat_bubble_outline, 'Chat'),
-              const SizedBox(width: 12),
               _buildWebNavItem(3, Icons.person_outline, 'Profile'),
             ],
           ),
@@ -303,14 +300,17 @@ class _HomePageState extends State<HomePage> {
     final bool isSelected = _selectedIndex == index && !_showNotifications;
     return InkWell(
       onTap: () => _onTabTapped(index),
-      borderRadius: BorderRadius.circular(12),
+      hoverColor: AppColors.primary.withValues(alpha: 0.05),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        height: 72,
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.08)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected ? AppColors.primary : Colors.transparent,
+              width: 3,
+            ),
+          ),
         ),
         child: Row(
           children: [
