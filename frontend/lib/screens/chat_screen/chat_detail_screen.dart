@@ -464,7 +464,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     // Navigate to the "Calling..." screen
     context.push(
-      AppRoutes.outgoingCall,
+      '/outgoing-call/$otherUserId',
       extra: OutgoingCallArguments(
         calleeName: widget.profile.name,
         calleeAvatar: _profileImageUrl,

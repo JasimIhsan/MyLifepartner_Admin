@@ -34,16 +34,16 @@ class AppRoutes {
   static const String matches = '/matches';
   static const String chat = '/chat';
   static const String profile = '/profile';
-  static const String lpaGuide = '/lpa-guide';
-  static const String chatDetail = '/chat-detail';
   static const String profileDetail = '/profile/:profileId';
+  static const String lpaGuide = '/lpa-guide';
+  static const String chatDetail = '/chat-detail/:profileId';
   static const String editProfile = '/edit-profile';
   static const String manageProfilePictures = '/manage-profile-pictures';
   static const String subscription = '/subscription';
   static const String imageAccessRequests = '/image-access-requests';
   static const String mediaPreview = '/media-preview';
-  static const String call = '/call';
-  static const String outgoingCall = '/outgoing-call';
+  static const String call = '/call/:callId';
+  static const String outgoingCall = '/outgoing-call/:userId';
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -193,7 +193,11 @@ class MediaPreviewArguments {
   final String type;
   final VoidCallback onSend;
 
-  MediaPreviewArguments({required this.path, required this.type, required this.onSend});
+  MediaPreviewArguments({
+    required this.path,
+    required this.type,
+    required this.onSend,
+  });
 }
 
 class OutgoingCallArguments {
@@ -201,7 +205,11 @@ class OutgoingCallArguments {
   final String? calleeAvatar;
   final bool isVideoCall;
 
-  OutgoingCallArguments({required this.calleeName, this.calleeAvatar, required this.isVideoCall});
+  OutgoingCallArguments({
+    required this.calleeName,
+    this.calleeAvatar,
+    required this.isVideoCall,
+  });
 }
 
 class CallArguments {

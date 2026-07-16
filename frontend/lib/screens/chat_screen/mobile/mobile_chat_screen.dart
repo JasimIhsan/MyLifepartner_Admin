@@ -93,7 +93,7 @@ class _MobileChatScreenState extends State<MobileChatScreen>
                         final prefs = await SharedPreferences.getInstance();
                         final currentUserId = prefs.getInt('userId') ?? 0;
                         if (!context.mounted) return;
-                        context.push(AppRoutes.chatDetail, extra: ChatDetailArguments(profile: match, currentUserId: currentUserId));
+                        context.push('/chat-detail/${match.id}', extra: ChatDetailArguments(profile: match, currentUserId: currentUserId));
                       },
                     );
                   },

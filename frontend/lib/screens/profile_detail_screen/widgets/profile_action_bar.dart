@@ -228,7 +228,7 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                       final prefs = await SharedPreferences.getInstance();
                       final currentUserId = prefs.getInt('userId') ?? 0;
                       if (!context.mounted) return;
-                      context.push(AppRoutes.chatDetail, extra: ChatDetailArguments(profile: MatchRecommendation.fromJson(widget.profile,), currentUserId: currentUserId,));
+                      context.push('/chat-detail/${widget.profile['id']}', extra: ChatDetailArguments(profile: MatchRecommendation.fromJson(widget.profile,), currentUserId: currentUserId,));
                       return;
                     }
 

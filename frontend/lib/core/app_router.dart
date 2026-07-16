@@ -188,7 +188,8 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.chatDetail,
             builder: (context, state) {
-              final args = state.extra as ChatDetailArguments;
+              final args = state.extra as ChatDetailArguments?;
+              if (args == null) return _buildErrorScreen(context, 'Chat data not found.');
               return ChatDetailScreen(
                 profile: args.profile,
                 currentUserId: args.currentUserId,
@@ -204,7 +205,10 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.editProfile,
             builder: (context, state) {
-              final user = state.extra as User;
+              final user = state.extra as User?;
+              if (user == null) {
+                return _buildErrorScreen(context, 'User data not found.');
+              }
               return EditProfileScreen(user: user);
             },
           ),
@@ -225,7 +229,8 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.mediaPreview,
         builder: (context, state) {
-          final args = state.extra as MediaPreviewArguments;
+          final args = state.extra as MediaPreviewArguments?;
+          if (args == null) return _buildErrorScreen(context, 'Media data not found.');
           return MediaPreviewScreen(
             path: args.path,
             type: args.type,
@@ -236,7 +241,8 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.outgoingCall,
         builder: (context, state) {
-          final args = state.extra as OutgoingCallArguments;
+          final args = state.extra as OutgoingCallArguments?;
+          if (args == null) return _buildErrorScreen(context, 'Call data not found.');
           return OutgoingCallScreen(
             calleeName: args.calleeName,
             calleeAvatar: args.calleeAvatar,
@@ -248,7 +254,8 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.call,
         builder: (context, state) {
-          final args = state.extra as CallArguments;
+          final args = state.extra as CallArguments?;
+          if (args == null) return _buildErrorScreen(context, 'Call data not found.');
           return CallScreen(
             callID: args.callID,
             userID: args.userID,
@@ -262,5 +269,23 @@ GoRouter createRouter(AuthProvider authProvider) {
         },
       ),
     ],
+  );
+}
+
+Widget _buildErrorScreen(BuildContext context, String message) {
+  return Scaffold(
+    body: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(message),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () => context.go(AppRoutes.home),
+            child: const Text('Go Home'),
+          ),
+        ],
+      ),
+    ),
   );
 }
