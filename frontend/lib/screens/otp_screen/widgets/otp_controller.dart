@@ -47,6 +47,8 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
     });
   }
 
+  bool isResending = false;
+
   Future<void> verifyOtp(String pin) async {
     setState(() {
       isLoading = true;
@@ -93,7 +95,11 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
   }
 
   Future<void> resendOtp() async {
-    if (!isResendEnabled) return;
+    if (!isResendEnabled || isResending) return;
+
+    setState(() {
+      isResending = true;
+    });
 
     try {
       await authRepository.resendOtp(
@@ -123,6 +129,12 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
             backgroundColor: Colors.redAccent,
           ),
         );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isResending = false;
+        });
       }
     }
   }

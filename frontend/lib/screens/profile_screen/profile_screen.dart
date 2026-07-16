@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
@@ -407,7 +407,7 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
             _buildActionGroup([
               _buildSwitchItem(
                 icon: Icons.shield_outlined,
-                title: "Blur Profile Image",
+                title: "Private Account",
                 subtitle: "Only approved matches can see your photos",
                 value: _user?.privacyEnabled ?? false,
                 isLoading: _isUpdatingPrivacy,

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="color-scheme" content="light" />
+      <meta name="supported-color-schemes" content="light" />
+
+      <title>Welcome to Life Partner Again</title>
+
+      <style>
+         * {
+            box-sizing: border-box;
+         }
+
+         html,
+         body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+         }
+
+         body {
+            background-color: #f4f4f4;
+            color: #171717;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+         }
+
+         .email-wrapper {
+            width: 100%;
+            padding: 30px 15px;
+         }
+
+         .email-container {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            overflow: hidden;
+            background-color: #ffffff;
+            border: 1px solid #eeeeee;
+            border-radius: 14px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+         }
+
+         /* Top red title */
+         .top-header {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #f23352 0%, #e91f45 100%);
+            text-align: center;
+         }
+
+         .top-header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 1px;
+         }
+
+         /* Logo and welcome image section */
+         .brand-banner {
+            width: 100%;
+            display: block;
+         }
+
+         .brand-header {
+            display: block;
+            width: 100%;
+            height: auto;
+            border: 0;
+         }
+
+         /* Main body */
+         .content {
+            padding: 38px 42px 32px;
+         }
+
+         h2 {
+            margin: 0 0 20px;
+            color: #111111;
+            font-size: 26px;
+            font-weight: 750;
+            line-height: 1.25;
+         }
+
+         .greeting,
+         .description,
+         .support-text {
+            margin-top: 0;
+            color: #2d2d2d;
+            font-size: 16px;
+            line-height: 1.65;
+         }
+
+         .greeting {
+            margin-bottom: 12px;
+            font-weight: bold;
+         }
+
+         .description {
+            margin-bottom: 30px;
+         }
+
+         /* Feature List */
+         .features-list {
+            margin: 30px 0;
+         }
+
+         .feature-item {
+            margin-bottom: 24px;
+            display: table;
+            width: 100%;
+         }
+
+         .feature-icon-cell {
+            display: table-cell;
+            vertical-align: top;
+            width: 60px;
+         }
+
+         .feature-icon-circle {
+            width: 48px;
+            height: 48px;
+            background-color: #fff0f2;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 48px;
+            font-size: 22px;
+         }
+
+         .feature-text-cell {
+            display: table-cell;
+            vertical-align: middle;
+            padding-left: 15px;
+         }
+
+         .feature-title {
+            margin: 0 0 4px;
+            color: #111111;
+            font-size: 17px;
+            font-weight: 700;
+         }
+
+         .feature-desc {
+            margin: 0;
+            color: #666666;
+            font-size: 14px;
+            line-height: 1.45;
+         }
+
+         .support-text {
+            margin-top: 30px;
+            border-top: 1px solid #eeeeee;
+            padding-top: 20px;
+         }
+
+         /* Footer */
+         .footer {
+            padding: 15px 25px;
+            background-color: #f92c4d;
+            text-align: center;
+         }
+
+         .footer p {
+            margin: 0;
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 1.5;
+         }
+
+         /* Mobile responsive */
+         @media only screen and (max-width: 600px) {
+            .email-wrapper {
+               padding: 12px 8px;
+            }
+
+            .email-container {
+               border-radius: 10px;
+            }
+
+            .top-header h1 {
+               font-size: 14px;
+            }
+
+            .content {
+               padding: 24px 20px;
+            }
+
+            h2 {
+               font-size: 22px;
+            }
+         }
+      </style>
+   </head>
+
+   <body>
+      <div class="email-wrapper">
+         <div class="email-container">
+            <!-- Top title -->
+            <div class="top-header">
+               <h1>WELCOME TO LIFE PARTNER AGAIN</h1>
+            </div>
+
+            <!-- Brand banner -->
+            <div class="brand-banner">
+               <img src="{{HEADER_IMAGE_URL}}" alt="Life Partner Again" class="brand-header" />
+            </div>
+
+            <!-- Main content -->
+            <div class="content">
+               <h2>Welcome to Life Partner Again!</h2>
+
+               <p class="greeting">Hi {{USER_NAME}},</p>
+
+               <p class="description">
+                  We're excited to have you on board! You're one step closer to finding a meaningful connection and a second chance at love.
+               </p>
+
+               <!-- Features -->
+               <div class="features-list">
+                  <!-- Feature 1 -->
+                  <div class="feature-item">
+                     <div class="feature-icon-cell">
+                        <div class="feature-icon-circle">👥</div>
+                     </div>
+                     <div class="feature-text-cell">
+                        <h3 class="feature-title">Create your profile</h3>
+                        <p class="feature-desc">Add more details to help others know you better.</p>
+                     </div>
+                  </div>
+
+                  <!-- Feature 2 -->
+                  <div class="feature-item">
+                     <div class="feature-icon-cell">
+                        <div class="feature-icon-circle">❤️</div>
+                     </div>
+                     <div class="feature-text-cell">
+                        <h3 class="feature-title">Explore matches</h3>
+                        <p class="feature-desc">Discover compatible matches curated for you.</p>
+                     </div>
+                  </div>
+
+                  <!-- Feature 3 -->
+                  <div class="feature-item">
+                     <div class="feature-icon-cell">
+                        <div class="feature-icon-circle">🛡️</div>
+                     </div>
+                     <div class="feature-text-cell">
+                        <h3 class="feature-title">Connect & build</h3>
+                        <p class="feature-desc">Start conversations and build real connections.</p>
+                     </div>
+                  </div>
+               </div>
+
+               <p class="support-text">
+                  If you need any help, our support team is always here for you.<br />
+                  Wishing you the best on your journey!
+               </p>
+            </div>
+
+            <!-- Copyright -->
+            <div class="footer">
+               <p>&copy; {{YEAR}} Life Partner Again. All rights reserved.</p>
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

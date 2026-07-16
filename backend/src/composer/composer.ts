@@ -118,9 +118,9 @@ export const userSubscriptionRepository = new UserSubscriptionRepository();
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const cacheService = new CacheService();
-export const emailService = new EmailService();
-export const jwtService = new JwtService();
 export const s3Service = new S3Service();
+export const emailService = new EmailService(s3Service);
+export const jwtService = new JwtService();
 export const zegoService = new ZegoService();
 
 export const otpService = new OtpService(cacheService, emailService);
@@ -140,7 +140,7 @@ export const imageAssetService = new ImageAssetService(imageAssetRepository, s3S
 // User services
 export const userService = new UserService(userRepository, s3Service);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
-export const authService = new AuthService(userRepository, otpService, jwtService, cacheService, subscriptionPlanRepository, userSubscriptionRepository);
+export const authService = new AuthService(userRepository, otpService, jwtService, cacheService, subscriptionPlanRepository, userSubscriptionRepository, emailService);
 export const imageProcessorService = new ImageProcessorService();
 export const profileService = new ProfileService(profileRepository, s3Service, imageProcessorService);
 export const jobService = new JobService(jobRepository);

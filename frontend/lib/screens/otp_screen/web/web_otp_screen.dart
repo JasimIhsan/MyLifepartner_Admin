@@ -143,6 +143,7 @@ class _WebOtpScreenState extends State<WebOtpScreen> with OtpControllerState {
                               focusNode: focusNode,
                               isWeb: true,
                               isLoading: isLoading,
+                              isResending: isResending,
                               email: widget.email,
                               onResend: resendOtp,
                               onVerify: verifyOtp,
