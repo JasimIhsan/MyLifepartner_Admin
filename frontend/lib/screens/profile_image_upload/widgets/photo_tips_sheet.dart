@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
@@ -130,7 +131,7 @@ class PhotoTipsSheet extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

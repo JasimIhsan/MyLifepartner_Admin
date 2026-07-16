@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="color-scheme" content="light" />
+      <meta name="supported-color-schemes" content="light" />
+
+      <title>OTP Verification - Life Partner Again</title>
+
+      <style>
+         * {
+            box-sizing: border-box;
+         }
+
+         html,
+         body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+         }
+
+         body {
+            background-color: #f4f4f4;
+            color: #171717;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+         }
+
+         .email-wrapper {
+            width: 100%;
+            padding: 30px 15px;
+         }
+
+         .email-container {
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            overflow: hidden;
+            background-color: #ffffff;
+            border: 1px solid #eeeeee;
+            border-radius: 14px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+         }
+
+         /* Top red title */
+
+         .top-header {
+            padding: 14px 20px;
+            background: linear-gradient(135deg, #f23352 0%, #e91f45 100%);
+            text-align: center;
+         }
+
+         .top-header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+         }
+
+         /* Logo and security image section */
+
+         .brand-banner {
+            width: 100%;
+            display: block;
+         }
+
+         .brand-header {
+            display: block;
+            width: 100%;
+            height: auto;
+            border: 0;
+         }
+
+         /* Main body */
+
+         .content {
+            padding: 38px 42px 32px;
+         }
+
+         .heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 32px;
+         }
+
+         .mail-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background-color: #ed2c4b;
+            border-radius: 8px;
+         }
+
+         .envelope {
+            position: relative;
+            width: 22px;
+            height: 14px;
+            border: 2px solid #ffffff;
+            border-radius: 2px;
+            box-sizing: border-box;
+         }
+
+         .envelope::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-top: 6px solid #ffffff;
+         }
+
+         .heading-row h2 {
+            margin: 0;
+            color: #111111;
+            font-size: 28px;
+            font-weight: 750;
+            line-height: 1.25;
+         }
+
+         .greeting,
+         .description,
+         .validity,
+         .warning-text {
+            margin-top: 0;
+            color: #2d2d2d;
+            font-size: 16px;
+            line-height: 1.65;
+         }
+
+         .greeting {
+            margin-bottom: 12px;
+         }
+
+         .description {
+            margin-bottom: 25px;
+         }
+
+         /* OTP */
+
+         .otp-wrapper {
+            margin: 27px 0;
+            text-align: center;
+         }
+
+         .otp-box {
+            display: inline-block;
+            min-width: 330px;
+            padding: 17px 30px;
+            color: #e92447;
+            background-color: #fff8f9;
+            border: 2px solid #f9dce2;
+            border-radius: 12px;
+            font-size: 38px;
+            font-weight: 800;
+            letter-spacing: 15px;
+            line-height: 1.2;
+            text-align: center;
+         }
+
+         .validity {
+            margin-bottom: 21px;
+            font-weight: 500;
+         }
+
+         .warning-text {
+            margin-bottom: 30px;
+         }
+
+         /* Button */
+
+         .button-wrapper {
+            margin: 32px 0 24px;
+            text-align: center;
+         }
+
+         .verify-button {
+            display: inline-block;
+            min-width: 190px;
+            padding: 14px 28px;
+            color: #ffffff !important;
+            background: linear-gradient(135deg, #f23352 0%, #e91f45 100%);
+            border-radius: 8px;
+            box-shadow: 0 5px 14px rgba(233, 31, 69, 0.25);
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.2;
+            text-decoration: none;
+         }
+
+         .verify-button:hover {
+            background-color: #d91d3f;
+         }
+
+         .security-note {
+            margin: 28px 0 0;
+            color: #9a9a9a;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+         }
+
+         /* Founder section */
+
+         .signature-section {
+            padding: 22px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background-color: #fff7f8;
+            border-top: 1px solid #fce8ec;
+         }
+
+         .founder-image-wrapper {
+            flex-shrink: 0;
+         }
+
+         .founder-image {
+            display: block;
+            width: 82px;
+            height: 82px;
+            object-fit: cover;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+         }
+
+         .founder-details {
+            text-align: left;
+         }
+
+         .founder-name {
+            margin: 0 0 5px;
+            color: #e62748;
+            font-size: 20px;
+            font-weight: 750;
+         }
+
+         .founder-position {
+            margin: 0;
+            color: #333333;
+            font-size: 16px;
+         }
+
+         /* Footer */
+
+         .footer {
+            padding: 15px 25px;
+            background-color: #f92c4d;
+            text-align: center;
+         }
+
+         .footer p {
+            margin: 0;
+            color: #ffffff;
+            font-size: 12px;
+            line-height: 1.5;
+         }
+
+         /* Mobile responsive */
+
+         @media only screen and (max-width: 600px) {
+            .email-wrapper {
+               padding: 12px 8px;
+            }
+
+            .email-container {
+               border-radius: 10px;
+            }
+
+            .top-header h1 {
+               font-size: 17px;
+            }
+
+            .otp-box {
+               font-size: 27px;
+               letter-spacing: 7px;
+            }
+         }
+      </style>
+   </head>
+
+   <body>
+      <div class="email-wrapper">
+         <div class="email-container">
+            <!-- Top title -->
+            <div class="top-header">
+               <h1>OTP VERIFICATION EMAIL</h1>
+            </div>
+
+            <!-- Brand banner -->
+            <div class="brand-banner">
+               <img src="{{HEADER_IMAGE_URL}}" alt="Life Partner Again" class="brand-header" />
+            </div>
+
+            <!-- Main content -->
+            <div class="content">
+               <!-- <div class="heading-row">
+                  <h2>Verify Your Email</h2>
+               </div> -->
+
+               <p class="greeting">Hi there,</p>
+
+               <p class="description">
+                  Thank you for choosing
+                  <strong>Life Partner Again.</strong>
+                  <br />
+                  To verify your email address, please use the OTP below:
+               </p>
+
+               <!-- OTP -->
+               <div class="otp-wrapper">
+                  <div class="otp-box">{{OTP}}</div>
+               </div>
+
+               <p class="validity">
+                  This OTP is valid for
+                  <strong>5 minutes.</strong>
+               </p>
+
+               <p class="warning-text">If you didn’t request this, please ignore this email or contact our support team.</p>
+
+               <p class="security-note">For your security, never share this OTP with anyone.</p>
+            </div>
+
+            <!-- Copyright -->
+            <div class="footer">
+               <p>&copy; {{YEAR}} Life Partner Again. All rights reserved.</p>
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

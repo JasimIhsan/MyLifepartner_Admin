@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -6,7 +7,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:provider/provider.dart';
 
 /// Discover listing – editorial magazine feel with portrait cards.
@@ -201,7 +201,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             ),
             const SizedBox(height: 8),
             Text(
-              'New profiles are added daily.\nCheck back soon.',
+              'New profiles are added daily.\\nCheck back soon.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -338,15 +338,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProfileDetailScreen(
-            profileId: profile.id,
-            profileName: profile.name,
-          ),
-        ),
-      ),
+      onTap: () => context.push('/profile/${profile.id}'),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: SizedBox(
@@ -498,15 +490,7 @@ class _PortraitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ProfileDetailScreen(
-            profileId: profile.id,
-            profileName: profile.name,
-          ),
-        ),
-      ),
+      onTap: () => context.push('/profile/${profile.id}'),
       child: Container(
         height: 120,
         decoration: BoxDecoration(

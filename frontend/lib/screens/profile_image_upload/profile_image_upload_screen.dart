@@ -1,3 +1,6 @@
+// ignore_for_file: unused_import
+
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,6 +11,8 @@ import 'package:life_partner_again/screens/selfie_verification/selfie_verificati
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 import 'widgets/empty_slot.dart';
 import 'widgets/filled_slot.dart';
@@ -152,11 +157,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     try {
       await _profileRepository.completeImageUpload();
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const SelfieVerificationScreen()),
-          (route) => false,
-        );
+        await context.read<AuthProvider>().bootstrap();
       }
     } catch (e) {
       setState(() => _isSaving = false);
@@ -225,7 +226,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );

@@ -1,9 +1,11 @@
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
-import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
+
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -180,7 +182,7 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                         targetProfileId: widget.profile['id'],
                       );
                       if (!context.mounted) return;
-                      Navigator.pop(context);
+                      context.pop();
                     } catch (e) {
                       if (!context.mounted) return;
                       if (e is DioException && e.response?.statusCode == 402) {
@@ -226,17 +228,7 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                       final prefs = await SharedPreferences.getInstance();
                       final currentUserId = prefs.getInt('userId') ?? 0;
                       if (!context.mounted) return;
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ChatDetailScreen(
-                            profile: MatchRecommendation.fromJson(
-                              widget.profile,
-                            ),
-                            currentUserId: currentUserId,
-                          ),
-                        ),
-                      );
+                      context.push('/chat-detail/${widget.profile['id']}', extra: ChatDetailArguments(profile: MatchRecommendation.fromJson(widget.profile,), currentUserId: currentUserId,));
                       return;
                     }
 
@@ -246,7 +238,7 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                         targetProfileId: widget.profile['id'],
                       );
                       if (!context.mounted) return;
-                      Navigator.pop(context);
+                      context.pop();
                     } catch (e) {
                       if (!context.mounted) return;
                       if (e is DioException && e.response?.statusCode == 402) {

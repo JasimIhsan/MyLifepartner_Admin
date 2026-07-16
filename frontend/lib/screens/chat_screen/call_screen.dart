@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:convert';
 
@@ -79,7 +80,7 @@ class _CallScreenState extends State<CallScreen> {
             backgroundColor: Colors.redAccent,
           ),
         );
-        Navigator.of(context).pop();
+        context.pop();
       }
     }
   }
@@ -134,7 +135,7 @@ class _CallScreenState extends State<CallScreen> {
       );
 
       // Programmatically end call by popping navigation
-      Navigator.of(context).pop();
+      context.pop();
     }
   }
 

@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/services/image_access_service.dart';
@@ -88,7 +89,7 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
               Icons.arrow_back_ios_new_rounded,
               color: AppColors.textPrimary,
             ),
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => context.pop(true),
           ),
           title: const Text(
             'Image Access Requests',

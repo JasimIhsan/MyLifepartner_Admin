@@ -35,17 +35,17 @@ export const authenticateAdmin = (req: Request, res: Response, next: NextFunctio
  * @returns Auth token, or undefined if not found.
  */
 const getAuthToken = (req: Request): string | undefined => {
+   const authHeader = req.headers.authorization;
+
+   if (authHeader?.startsWith("Bearer ")) {
+      return authHeader.split(" ")[1];
+   }
+
    const cookieToken = req.cookies?.accessToken;
 
    if (cookieToken) {
       return cookieToken;
    }
 
-   const authHeader = req.headers.authorization;
-
-   if (!authHeader?.startsWith("Bearer ")) {
-      return undefined;
-   }
-
-   return authHeader.split(" ")[1];
+   return undefined;
 };

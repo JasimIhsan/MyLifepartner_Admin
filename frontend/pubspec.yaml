@@ -49,6 +49,7 @@ dependencies:
    swipeable_stack: ^0.4.3
    flutter_animate: ^4.5.0
    provider: ^6.1.5
+   go_router: ^14.3.0
    camera: ^0.11.4
    http_parser: ^4.1.2
    app_links: ^6.4.1

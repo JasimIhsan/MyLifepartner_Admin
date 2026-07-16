@@ -43,6 +43,7 @@ class _MobileOtpScreenState extends State<MobileOtpScreen>
             focusNode: focusNode,
             isWeb: false,
             isLoading: isLoading,
+            isResending: isResending,
             email: widget.email,
             onResend: resendOtp,
             onVerify: verifyOtp,

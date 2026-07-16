@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/basic_info_step.dart';
@@ -13,10 +14,11 @@ import 'package:life_partner_again/screens/onboarding/widgets/location_step.dart
 import 'package:life_partner_again/screens/onboarding/widgets/looking_for_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/marital_status_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/profession_step.dart';
-import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/services/job_service.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
@@ -188,9 +190,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
             nameRegex.hasMatch(lastName!.trim()) &&
             dateOfBirth != null;
       case 1:
-        return bio == null ||
-            bio!.trim().isEmpty ||
-            bio!.trim().length >= 50;
+        return bio == null || bio!.trim().isEmpty || bio!.trim().length >= 50;
       case 2:
         return gender != null;
       case 3:
@@ -287,10 +287,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       await clearCachedData();
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const PartnerPreferenceScreen()),
-        );
+        await context.read<AuthProvider>().bootstrap();
       }
     } catch (e) {
       if (mounted) {
@@ -308,39 +305,67 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
 
   String getStepTitle(int step) {
     switch (step) {
-      case 0: return "Basic Info";
-      case 1: return "Write a Bio";
-      case 2: return "Your Gender";
-      case 3: return "Marital Status";
-      case 4: return "Your Location";
-      case 5: return "Emotional Readiness";
-      case 6: return "Languages";
-      case 7: return "Children Status";
-      case 8: return "Height";
-      case 9: return "Looking For";
-      case 10: return "Education";
-      case 11: return "Profession";
-      case 12: return "Habits";
-      default: return "Onboarding";
+      case 0:
+        return "Basic Info";
+      case 1:
+        return "Write a Bio";
+      case 2:
+        return "Your Gender";
+      case 3:
+        return "Marital Status";
+      case 4:
+        return "Your Location";
+      case 5:
+        return "Emotional Readiness";
+      case 6:
+        return "Languages";
+      case 7:
+        return "Children Status";
+      case 8:
+        return "Height";
+      case 9:
+        return "Looking For";
+      case 10:
+        return "Education";
+      case 11:
+        return "Profession";
+      case 12:
+        return "Habits";
+      default:
+        return "Onboarding";
     }
   }
 
   String getStepDescription(int step) {
     switch (step) {
-      case 0: return "Let's start with your name and date of birth to set up your profile.";
-      case 1: return "Describe yourself in a few words. Let others know who you are.";
-      case 2: return "Select your gender identity to help find relevant recommendations.";
-      case 3: return "Select your current marital status.";
-      case 4: return "Let others know where you are based to find local matches.";
-      case 5: return "Reflect on and choose your current emotional readiness level.";
-      case 6: return "Select all the languages you speak comfortably.";
-      case 7: return "Do you have children or plan to have children?";
-      case 8: return "Choose your height in centimeters.";
-      case 9: return "What type of relationship or connection are you looking for?";
-      case 10: return "Select your highest level of completed education.";
-      case 11: return "What is your profession or current occupation?";
-      case 12: return "Let others know your smoking and drinking habits.";
-      default: return "Please fill out this step to continue.";
+      case 0:
+        return "Let's start with your name and date of birth to set up your profile.";
+      case 1:
+        return "Describe yourself in a few words. Let others know who you are.";
+      case 2:
+        return "Select your gender identity to help find relevant recommendations.";
+      case 3:
+        return "Select your current marital status.";
+      case 4:
+        return "Let others know where you are based to find local matches.";
+      case 5:
+        return "Reflect on and choose your current emotional readiness level.";
+      case 6:
+        return "Select all the languages you speak comfortably.";
+      case 7:
+        return "Do you have children or plan to have children?";
+      case 8:
+        return "Choose your height in centimeters.";
+      case 9:
+        return "What type of relationship or connection are you looking for?";
+      case 10:
+        return "Select your highest level of completed education.";
+      case 11:
+        return "What is your profession or current occupation?";
+      case 12:
+        return "Let others know your smoking and drinking habits.";
+      default:
+        return "Please fill out this step to continue.";
     }
   }
 
@@ -509,7 +534,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );

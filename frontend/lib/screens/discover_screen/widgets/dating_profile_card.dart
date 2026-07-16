@@ -1,7 +1,7 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 
 class DatingProfileCard extends StatelessWidget {
   final MatchRecommendation profile;
@@ -36,15 +36,7 @@ class DatingProfileCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProfileDetailScreen(
-              profileId: profile.id,
-              profileName: profile.name,
-            ),
-          ),
-        );
+        context.push('/profile/${profile.id}');
       },
       child: Container(
         margin: const EdgeInsets.all(8.0),

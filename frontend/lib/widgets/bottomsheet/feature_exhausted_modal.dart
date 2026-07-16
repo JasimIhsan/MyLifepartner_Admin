@@ -1,6 +1,7 @@
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 
 class FeatureExhaustedModal extends StatelessWidget {
   final String featureType;
@@ -77,13 +78,8 @@ class FeatureExhaustedModal extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const SubscriptionScreen(),
-                      ),
-                    );
+                    context.pop();
+                    context.push(AppRoutes.subscription);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -104,7 +100,7 @@ class FeatureExhaustedModal extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(

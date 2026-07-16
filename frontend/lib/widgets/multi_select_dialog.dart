@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 class MultiSelectDialog extends StatefulWidget {
@@ -51,11 +52,11 @@ class _MultiSelectDialogState extends State<MultiSelectDialog> {
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
           child: const Text('Cancel'),
         ),
         ElevatedButton(
-          onPressed: () => Navigator.pop(context, _currentSelections),
+          onPressed: () => context.pop(_currentSelections),
           child: const Text('Confirm'),
         ),
       ],

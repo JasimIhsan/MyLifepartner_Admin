@@ -1,3 +1,4 @@
+import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { toUserDto } from "@/dtos/user.dto";
 import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
 import { IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
@@ -30,7 +31,8 @@ export class AuthService implements IUserAuthService {
       private readonly jwtService: IJwtService,
       private readonly cacheService: ICacheService,
       private readonly subscriptionPlanRepository: ISubscriptionPlanRepository,
-      private readonly userSubscriptionRepository: IUserSubscriptionRepository
+      private readonly userSubscriptionRepository: IUserSubscriptionRepository,
+      private readonly emailService: IEmailService
    ) {}
 
    /**
@@ -146,6 +148,11 @@ export class AuthService implements IUserAuthService {
 
       await this.assignFreePlanIfAvailable(user.id);
       await this.clearOtpVerified(normalizedEmail, DEFAULT_AUTH_PURPOSE);
+
+      // Send welcome email asynchronously
+      this.emailService.sendWelcomeEmail(user.email, "there").catch((error) => {
+         console.error(`Failed to send welcome email to ${user.email}:`, error);
+      });
 
       const tokens = this.generateAuthTokens(user.id, user.email, user.role);
 

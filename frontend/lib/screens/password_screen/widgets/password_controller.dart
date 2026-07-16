@@ -1,23 +1,21 @@
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
-import 'package:life_partner_again/screens/home_screen/home_screen.dart';
-import 'package:life_partner_again/screens/onboarding/onboarding_flow_screen.dart';
-import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
-import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
-import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
-import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final AuthRepository authRepository = AuthRepository();
   bool isLoading = false;
   bool obscureText = true;
@@ -62,13 +60,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  PasswordScreen(email: email, isExistingUser: true),
-            ),
-          );
+          context.pushReplacement(AppRoutes.password, extra: PasswordArguments(email: email, isExistingUser: true));
         }
         return;
       }
@@ -111,47 +103,16 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
 
         if (!mounted) return;
 
-        if (!user.hasCompletedBasicDetails) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const OnboardingFlowScreen(),
-            ),
-            ModalRoute.withName('/'),
-          );
-        } else if (!user.hasCompletedPartnerPreference) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const PartnerPreferenceScreen(),
-            ),
-            ModalRoute.withName('/'),
-          );
-        } else {
-          if (user.hasCompletedImageUpload == false) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileImageUploadScreen(),
-              ),
-              ModalRoute.withName('/'),
-            );
-          } else if (user.selfieStatus == null || user.selfieStatus == "NONE") {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SelfieVerificationScreen(),
-              ),
-              ModalRoute.withName('/'),
-            );
-          } else {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-              ModalRoute.withName('/'),
-            );
-          }
-        }
+        final onboardingStatus = OnboardingStatus(
+          id: user.id,
+          hasCompletedBasicDetails: user.hasCompletedBasicDetails,
+          hasCompletedPartnerPreference: user.hasCompletedPartnerPreference,
+          profileStatus: user.profileStatus,
+          hasCompletedImageUpload: user.hasCompletedImageUpload,
+          selfieStatus: user.selfieStatus,
+        );
+
+        context.read<AuthProvider>().loginSuccess(onboardingStatus);
       }
     } catch (e) {
       debugPrint("Auth Error: $e");
@@ -187,11 +148,11 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () => context.pop(false),
               child: const Text("Cancel"),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () => context.pop(true),
               child: const Text(
                 "Send OTP",
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -210,21 +171,9 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
     });
 
     try {
-      await authRepository.sendOtp(
-        email: email,
-        purpose: "password_reset",
-      );
+      await authRepository.sendOtp(email: email, purpose: "password_reset");
       if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OtpPage(
-              email: email,
-              isExistingUser: isExistingUser,
-              isPasswordReset: true,
-            ),
-          ),
-        );
+        context.push(AppRoutes.otp, extra: OtpArguments(email: email, isExistingUser: isExistingUser, isPasswordReset: true));
       }
     } catch (e) {
       debugPrint("Send magic link error: $e");

@@ -1,10 +1,9 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/profile_question.dart';
 import 'package:life_partner_again/models/profile_section.dart';
-import 'package:life_partner_again/screens/home_screen/home_screen.dart';
-import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/screens/questionaire_screen/widgets/question_widget.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/custom_app_bar.dart';
@@ -209,19 +208,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
 
     if (!mounted) return;
     if (widget.isPrimaryFlow) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ProfileImageUploadScreen(),
-        ),
-        (route) => false,
-      );
+      context.go(AppRoutes.profileImageUpload);
     } else {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
-        (route) => false,
-      );
+      context.go(AppRoutes.home);
     }
   }
 
@@ -380,7 +369,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
             //   MaterialPageRoute(builder: (context) => const HomePage()),
             //   (route) => false,
             // );
-            Navigator.pop(context);
+            context.pop();
           },
         ),
         backgroundColor: Colors.white,
@@ -502,14 +491,10 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
         actions: [
           TextButton(
             onPressed: () async {
-              final nav = Navigator.of(context);
               final sharedPrefs = await SharedPreferences.getInstance();
               await sharedPrefs.clear();
-              if (mounted) {
-                nav.pushNamedAndRemoveUntil(
-                  AppRoutes.landing,
-                  (route) => false,
-                );
+              if (context.mounted) {
+                context.go(AppRoutes.landing);
               }
             },
             child: const Icon(Icons.logout, color: AppColors.textPrimary),

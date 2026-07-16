@@ -1,7 +1,7 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
-import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/custom_app_bar.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
@@ -121,12 +121,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
       }
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const PartnerPreferenceScreen(),
-          ),
-        );
+        context.go(AppRoutes.partnerPreference);
       }
     } catch (e) {
       if (mounted) {
@@ -165,14 +160,10 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
         actions: [
           TextButton(
             onPressed: () async {
-              final nav = Navigator.of(context);
               final sharedPrefs = await SharedPreferences.getInstance();
               await sharedPrefs.clear();
-              if (mounted) {
-                nav.pushNamedAndRemoveUntil(
-                  AppRoutes.landing,
-                  (route) => false,
-                );
+              if (context.mounted) {
+                context.go(AppRoutes.landing);
               }
             },
             child: const Icon(Icons.logout, color: AppColors.textPrimary),

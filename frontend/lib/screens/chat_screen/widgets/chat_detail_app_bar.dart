@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -45,7 +46,7 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             color: AppColors.textPrimary,
             size: 22,
           ),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
       ),
       leadingWidth: 48,

@@ -27,17 +27,17 @@ export const verifyJWT = asyncHandler(async (req: Request, _res: Response, next:
  * @returns Auth token, or undefined if not found.
  */
 const getAuthToken = (req: Request): string | undefined => {
+   const authHeader = req.header("Authorization");
+
+   if (authHeader?.startsWith("Bearer ")) {
+      return authHeader.split(" ")[1];
+   }
+
    const cookieToken = req.cookies?.accessToken;
 
    if (cookieToken) {
       return cookieToken;
    }
 
-   const authHeader = req.header("Authorization");
-
-   if (!authHeader?.startsWith("Bearer ")) {
-      return undefined;
-   }
-
-   return authHeader.split(" ")[1];
+   return undefined;
 };

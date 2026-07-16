@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -91,7 +92,7 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                         ),
                       ),
                       onTap: () {
-                        Navigator.pop(context);
+                        context.pop();
                         onSetPrimary(image.id);
                       },
                     ),
@@ -131,7 +132,7 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                       ),
                     ),
                     onTap: () {
-                      Navigator.pop(context);
+                      context.pop();
                       onReplace(image.id);
                     },
                   ),
@@ -142,7 +143,7 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                       width: double.infinity,
                       height: 48,
                       child: TextButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () => context.pop(),
                         style: TextButton.styleFrom(
                           backgroundColor: Colors.black.withValues(alpha: 0.05),
                           shape: RoundedRectangleBorder(

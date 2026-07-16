@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -9,11 +10,13 @@ import 'connection_card.dart';
 class MatchesList extends StatefulWidget {
   final int tabIndex;
   final Function(bool) onScroll;
+  final bool isWeb;
 
   const MatchesList({
     super.key,
     required this.tabIndex,
     required this.onScroll,
+    this.isWeb = false,
   });
 
   @override
@@ -93,7 +96,7 @@ class _MatchesListState extends State<MatchesList> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
+              onPressed: () => dialogContext.pop(false),
               child: const Text(
                 'No',
                 style: TextStyle(color: AppColors.textSecondary),
@@ -107,7 +110,7 @@ class _MatchesListState extends State<MatchesList> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
+              onPressed: () => dialogContext.pop(true),
               child: const Text('Yes, Cancel'),
             ),
           ],
@@ -253,8 +256,8 @@ class _MatchesListState extends State<MatchesList> {
               physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics(),
               ),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: widget.isWeb ? 4 : 2,
                 childAspectRatio: 0.72,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 16,

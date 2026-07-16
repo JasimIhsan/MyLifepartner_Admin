@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -5,7 +7,6 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart' show navigatorKey;
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
-import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 
 /// Full-screen overlay shown when an incoming call is received.
 class IncomingCallOverlay extends StatefulWidget {
@@ -46,9 +47,7 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
     provider.acceptCall();
 
     // Use navigatorKey to push onto MaterialApp's navigator.
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(
-        builder: (_) => CallScreen(
+    navigatorKey.currentContext?.push('/call/${call.callId}', extra: CallArguments(
           callID: call.callId,
           userID: provider.currentUserId ?? '',
           userName: provider.currentUserName ?? 'User',
@@ -57,9 +56,7 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
           isVideoCall: call.isVideo,
           isCaller: false,
           otherUserId: call.callerId,
-        ),
-      ),
-    );
+        ));
 
     provider.clearIncomingCall();
   }

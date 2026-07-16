@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -48,7 +49,7 @@ class AttachmentBottomSheet extends StatelessWidget {
                     label: 'Photo',
                     color: Colors.purple.shade400,
                     onTap: () async {
-                      Navigator.pop(context);
+                      context.pop();
                       final picker = ImagePicker();
                       final file = await picker.pickImage(
                         source: ImageSource.gallery,
@@ -63,7 +64,7 @@ class AttachmentBottomSheet extends StatelessWidget {
                     label: 'Video',
                     color: Colors.orange.shade400,
                     onTap: () async {
-                      Navigator.pop(context);
+                      context.pop();
                       final picker = ImagePicker();
                       final file = await picker.pickVideo(
                         source: ImageSource.gallery,
@@ -78,7 +79,7 @@ class AttachmentBottomSheet extends StatelessWidget {
                     label: 'Camera',
                     color: Colors.blue.shade400,
                     onTap: () async {
-                      Navigator.pop(context);
+                      context.pop();
                       final picker = ImagePicker();
                       final file = await picker.pickImage(
                         source: ImageSource.camera,

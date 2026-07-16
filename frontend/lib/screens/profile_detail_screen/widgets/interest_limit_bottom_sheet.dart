@@ -1,7 +1,8 @@
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:flutter/material.dart';
 
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 
 class InterestLimitBottomSheet extends StatelessWidget {
   final String message;
@@ -68,11 +69,8 @@ class InterestLimitBottomSheet extends StatelessWidget {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                Navigator.pop(context); // Close bottom sheet
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
-                );
+                context.pop(); // Close bottom sheet
+                context.push(AppRoutes.subscription);
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
@@ -97,7 +95,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.pop(),
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),

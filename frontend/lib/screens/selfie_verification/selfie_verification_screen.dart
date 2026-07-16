@@ -1,3 +1,6 @@
+// ignore_for_file: unused_import
+
+import 'package:go_router/go_router.dart';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -10,6 +13,8 @@ import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/widgets/face_direction_overlay.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {
@@ -222,10 +227,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
       await prefs.setBool('locationVerified', true);
 
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomePage()),
-          (route) => false,
-        );
+        await context.read<AuthProvider>().bootstrap();
       }
     } catch (e) {
       setState(() {
@@ -315,7 +317,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );
@@ -824,7 +826,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

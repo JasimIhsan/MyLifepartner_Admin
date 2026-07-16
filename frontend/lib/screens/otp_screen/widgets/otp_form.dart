@@ -10,6 +10,7 @@ class OtpForm extends StatelessWidget {
   final FocusNode focusNode;
   final bool isWeb;
   final bool isLoading;
+  final bool isResending;
   final String email;
   final VoidCallback onResend;
   final Function(String) onVerify;
@@ -23,6 +24,7 @@ class OtpForm extends StatelessWidget {
     required this.focusNode,
     required this.isWeb,
     required this.isLoading,
+    required this.isResending,
     required this.email,
     required this.onResend,
     required this.onVerify,
@@ -109,11 +111,39 @@ class OtpForm extends StatelessWidget {
                 text: "Didn't receive a code? ",
                 style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 children: [
-                  if (isResendEnabled)
+                  if (isResending)
+                    const WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            "Resending",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else if (isResendEnabled)
                     WidgetSpan(
                       child: GestureDetector(
                         onTap: onResend,
-                        child: Text(
+                        child: const Text(
                           "Resend",
                           style: TextStyle(
                             fontSize: 14,
@@ -128,7 +158,7 @@ class OtpForm extends StatelessWidget {
                     TextSpan(
                       text:
                           "Resent in 00.${timerValue.toString().padLeft(2, '0')}",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.black,
@@ -143,28 +173,30 @@ class OtpForm extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             height: 56,
-            child: CustomButton(
-              onPressed: _isVerifyButtonEnabled()
-                  ? () {
-                      focusNode.unfocus();
-                      if (formKey.currentState!.validate()) {
-                        onVerify(pinController.text);
-                      }
-                    }
-                  : null,
-              isLoading: isLoading,
-              text: "Verify",
-              borderRadius: 12,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: pinController,
+              builder: (context, value, child) {
+                final isEnabled = !isLoading && value.text.isNotEmpty;
+                return CustomButton(
+                  onPressed: isEnabled
+                      ? () {
+                          focusNode.unfocus();
+                          if (formKey.currentState!.validate()) {
+                            onVerify(pinController.text);
+                          }
+                        }
+                      : null,
+                  isLoading: isLoading,
+                  text: "Verify",
+                  borderRadius: 12,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                );
+              },
             ),
           ),
         ],
       ),
     );
-  }
-
-  bool _isVerifyButtonEnabled() {
-    return !isLoading;
   }
 }

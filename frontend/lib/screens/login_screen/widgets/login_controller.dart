@@ -1,14 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
+import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
-
-import '../../otp_screen/otp_screen.dart';
-import '../../../widgets/bottomsheet/custom_bottom_sheet.dart';
 
 mixin LoginControllerState<T extends StatefulWidget> on State<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -42,12 +42,9 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
 
       debugPrint("Initiate Auth Response: ${response.message}");
       if (response.success && mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                OtpPage(email: email, isExistingUser: response.exists),
-          ),
+        context.push(
+          AppRoutes.otp,
+          extra: OtpArguments(email: email, isExistingUser: response.exists),
         );
       }
     } catch (e) {
@@ -87,7 +84,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );

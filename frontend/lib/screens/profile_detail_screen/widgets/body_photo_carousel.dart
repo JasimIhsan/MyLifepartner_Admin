@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
@@ -27,7 +28,7 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
         backgroundColor: Colors.transparent,
         insetPadding: const EdgeInsets.all(16),
         child: GestureDetector(
-          onTap: () => Navigator.pop(ctx),
+          onTap: () => ctx.pop(),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Image.network(url, fit: BoxFit.contain),

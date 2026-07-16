@@ -11,13 +11,12 @@ import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/screens/profile_completion/profile_completion_screen.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:life_partner_again/screens/profile_screen/edit_profile_screen.dart';
-import 'package:life_partner_again/screens/profile_screen/manage_profile_pictures_screen.dart';
+import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
+import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
-import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -35,13 +34,16 @@ class AppRoutes {
   static const String matches = '/matches';
   static const String chat = '/chat';
   static const String profile = '/profile';
+  static const String profileDetail = '/profile/:profileId';
   static const String lpaGuide = '/lpa-guide';
-  static const String chatDetail = '/chat-detail';
-  static const String profileDetail = '/profile-detail';
+  static const String chatDetail = '/chat-detail/:profileId';
   static const String editProfile = '/edit-profile';
   static const String manageProfilePictures = '/manage-profile-pictures';
   static const String subscription = '/subscription';
-
+  static const String imageAccessRequests = '/image-access-requests';
+  static const String mediaPreview = '/media-preview';
+  static const String call = '/call/:callId';
+  static const String outgoingCall = '/outgoing-call/:userId';
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -119,7 +121,8 @@ class AppRoutes {
         );
       case lpaGuide:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(body: SafeArea(child: LpaGuideScreen())),
+          builder: (_) =>
+              const Scaffold(body: SafeArea(child: LpaGuideScreen())),
           settings: settings,
         );
       case chatDetail:
@@ -131,15 +134,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case profileDetail:
-        final args = settings.arguments as ProfileDetailArguments;
-        return MaterialPageRoute(
-          builder: (_) => ProfileDetailScreen(
-            profileId: args.profileId,
-            profileName: args.profileName,
-          ),
-          settings: settings,
-        );
+
       case editProfile:
         final user = settings.arguments as User;
         return MaterialPageRoute(
@@ -190,18 +185,51 @@ class ChatDetailArguments {
   final MatchRecommendation profile;
   final int currentUserId;
 
-  ChatDetailArguments({
-    required this.profile,
-    required this.currentUserId,
+  ChatDetailArguments({required this.profile, required this.currentUserId});
+}
+
+class MediaPreviewArguments {
+  final String path;
+  final String type;
+  final VoidCallback onSend;
+
+  MediaPreviewArguments({
+    required this.path,
+    required this.type,
+    required this.onSend,
   });
 }
 
-class ProfileDetailArguments {
-  final int profileId;
-  final String profileName;
+class OutgoingCallArguments {
+  final String calleeName;
+  final String? calleeAvatar;
+  final bool isVideoCall;
 
-  ProfileDetailArguments({
-    required this.profileId,
-    required this.profileName,
+  OutgoingCallArguments({
+    required this.calleeName,
+    this.calleeAvatar,
+    required this.isVideoCall,
+  });
+}
+
+class CallArguments {
+  final String callID;
+  final String userID;
+  final String userName;
+  final String? localUserAvatar;
+  final String? remoteUserAvatar;
+  final bool isVideoCall;
+  final bool isCaller;
+  final String otherUserId;
+
+  CallArguments({
+    required this.callID,
+    required this.userID,
+    required this.userName,
+    this.localUserAvatar,
+    this.remoteUserAvatar,
+    this.isVideoCall = false,
+    this.isCaller = false,
+    required this.otherUserId,
   });
 }

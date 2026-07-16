@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/core/app_routes.dart';
-import 'package:life_partner_again/services/auth_service.dart';
-import 'package:life_partner_again/services/token_service.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,49 +13,19 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final AuthService _authService = AuthService();
-
   @override
   void initState() {
     super.initState();
-    _bootstrap();
+    _proceed();
   }
 
-  Future<void> _bootstrap() async {
+  // Auth is already bootstrapped in main(). We just show the splash animation
+  // briefly and then trigger GoRouter to re-evaluate and navigate to the
+  // correct screen based on the already-known auth state.
+  Future<void> _proceed() async {
     await Future.delayed(const Duration(seconds: 1));
-
-    final accessToken = await TokenService.getAccessToken();
     if (!mounted) return;
-
-    if (accessToken == null || accessToken.isEmpty) {
-      _goTo(AppRoutes.landing);
-      return;
-    }
-
-    try {
-      final me = await _authService.fetchMeOrThrow();
-      if (!mounted) return;
-
-      if (!me.hasCompletedBasicDetails) {
-        _goTo(AppRoutes.onboarding);
-      } else if (!me.hasCompletedPartnerPreference) {
-        _goTo(AppRoutes.partnerPreference);
-      } else if (!me.hasCompletedImageUpload) {
-        _goTo(AppRoutes.profileImageUpload);
-      } else if (me.selfieStatus == null || me.selfieStatus == "NONE") {
-        _goTo(AppRoutes.selfieVerification);
-      } else {
-        _goTo(AppRoutes.home);
-      }
-    } catch (_) {
-      await TokenService.clearTokens();
-      if (!mounted) return;
-      _goTo(AppRoutes.landing);
-    }
-  }
-
-  void _goTo(String routeName) {
-    Navigator.pushReplacementNamed(context, routeName);
+    context.read<AuthProvider>().triggerRedirect();
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -88,7 +89,7 @@ class LogoutBottomSheet extends StatelessWidget {
                   Expanded(
                     child: CustomButton(
                       onPressed: () {
-                        Navigator.pop(context);
+                        context.pop();
                         onLogoutConfirm();
                       },
                       text: "Yes, Log Out",
@@ -104,7 +105,7 @@ class LogoutBottomSheet extends StatelessWidget {
 
                   Expanded(
                     child: CustomButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () => context.pop(),
                       text: "Cancel",
                       type: CustomButtonType.primary,
                       height: 54,
