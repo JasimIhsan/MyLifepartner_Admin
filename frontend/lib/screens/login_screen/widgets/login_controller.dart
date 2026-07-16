@@ -7,6 +7,9 @@ import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+
 import '../../otp_screen/otp_screen.dart';
 import '../../../widgets/bottomsheet/custom_bottom_sheet.dart';
 
@@ -42,12 +45,9 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
 
       debugPrint("Initiate Auth Response: ${response.message}");
       if (response.success && mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                OtpPage(email: email, isExistingUser: response.exists),
-          ),
+        context.push(
+          AppRoutes.otp,
+          extra: OtpArguments(email: email, isExistingUser: response.exists),
         );
       }
     } catch (e) {

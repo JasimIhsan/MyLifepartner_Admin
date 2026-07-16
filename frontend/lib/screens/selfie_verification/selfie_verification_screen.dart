@@ -10,6 +10,8 @@ import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/widgets/face_direction_overlay.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SelfieVerificationScreen extends StatefulWidget {
@@ -222,10 +224,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
       await prefs.setBool('locationVerified', true);
 
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const HomePage()),
-          (route) => false,
-        );
+        await context.read<AuthProvider>().bootstrap();
       }
     } catch (e) {
       setState(() {

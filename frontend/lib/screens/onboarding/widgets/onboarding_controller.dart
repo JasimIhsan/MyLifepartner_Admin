@@ -17,6 +17,8 @@ import 'package:life_partner_again/screens/partner_preference/partner_preference
 import 'package:life_partner_again/services/job_service.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
@@ -287,10 +289,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       await clearCachedData();
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const PartnerPreferenceScreen()),
-        );
+        await context.read<AuthProvider>().bootstrap();
       }
     } catch (e) {
       if (mounted) {

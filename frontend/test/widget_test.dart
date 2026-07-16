@@ -7,11 +7,12 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:life_partner_again/main.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 
 void main() {
   testWidgets('App smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(MyApp(authProvider: AuthProvider()));
     await tester.pump(const Duration(seconds: 5));
 
     // Verify that the app builds without crashing.

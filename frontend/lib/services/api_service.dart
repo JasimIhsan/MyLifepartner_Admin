@@ -4,6 +4,8 @@ import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/services/token_service.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service class for handling API requests using Dio.
@@ -146,9 +148,9 @@ class ApiService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    navigatorKey.currentState?.pushNamedAndRemoveUntil(
-      AppRoutes.landing,
-      (route) => false,
-    );
+    final context = navigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      await context.read<AuthProvider>().logout();
+    }
   }
 }

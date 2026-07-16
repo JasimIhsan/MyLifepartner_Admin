@@ -9,6 +9,8 @@ import 'package:life_partner_again/screens/partner_preference/widgets/occupation
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
@@ -159,12 +161,7 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       await clearCachedData();
 
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const ProfileImageUploadScreen(),
-          ),
-        );
+        await context.read<AuthProvider>().bootstrap();
       }
     } catch (e) {
       if (mounted) {

@@ -11,6 +11,8 @@ import 'package:life_partner_again/screens/selfie_verification/selfie_verificati
 import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -111,47 +113,16 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
 
         if (!mounted) return;
 
-        if (!user.hasCompletedBasicDetails) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const OnboardingFlowScreen(),
-            ),
-            ModalRoute.withName('/'),
-          );
-        } else if (!user.hasCompletedPartnerPreference) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const PartnerPreferenceScreen(),
-            ),
-            ModalRoute.withName('/'),
-          );
-        } else {
-          if (user.hasCompletedImageUpload == false) {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ProfileImageUploadScreen(),
-              ),
-              ModalRoute.withName('/'),
-            );
-          } else if (user.selfieStatus == null || user.selfieStatus == "NONE") {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SelfieVerificationScreen(),
-              ),
-              ModalRoute.withName('/'),
-            );
-          } else {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-              ModalRoute.withName('/'),
-            );
-          }
-        }
+        final onboardingStatus = OnboardingStatus(
+          id: user.id,
+          hasCompletedBasicDetails: user.hasCompletedBasicDetails,
+          hasCompletedPartnerPreference: user.hasCompletedPartnerPreference,
+          profileStatus: user.profileStatus,
+          hasCompletedImageUpload: user.hasCompletedImageUpload,
+          selfieStatus: user.selfieStatus,
+        );
+
+        context.read<AuthProvider>().loginSuccess(onboardingStatus);
       }
     } catch (e) {
       debugPrint("Auth Error: $e");

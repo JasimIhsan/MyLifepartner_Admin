@@ -18,7 +18,9 @@ import 'package:provider/provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
 
-import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/core/app_router.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:go_router/go_router.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -36,11 +38,19 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
   ZegoService.instance.init();
-  runApp(const MyApp());
+
+  // Bootstrap auth BEFORE the app renders so GoRouter's first redirect
+  // already has the correct isLoggedIn state, preventing the login screen
+  // from flashing on web when the user manually changes the URL.
+  final authProvider = AuthProvider();
+  await authProvider.bootstrap();
+
+  runApp(MyApp(authProvider: authProvider));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final AuthProvider authProvider;
+  const MyApp({super.key, required this.authProvider});
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -50,10 +60,14 @@ class _MyAppState extends State<MyApp> {
   StreamSubscription? _sub;
   final ProfileRepository _profileRepo = ProfileRepository();
   late final AppLinks _appLinks = AppLinks();
+  late final AuthProvider _authProvider;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    _authProvider = widget.authProvider;
+    _router = createRouter(_authProvider);
     _handleIncomingLinks();
   }
 
@@ -113,20 +127,18 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: _authProvider),
         ChangeNotifierProvider(create: (_) => MatchProvider()),
         ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
         ChangeNotifierProvider(create: (_) => ImageAssetProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => CallProvider()),
       ],
-      child: MaterialApp(
+      child: MaterialApp.router(
         title: 'Life Partner Again',
         debugShowCheckedModeBanner: false,
         scaffoldMessengerKey: scaffoldMessengerKey,
-        navigatorKey: navigatorKey,
-        navigatorObservers: [routeObserver],
-        initialRoute: AppRoutes.splash,
-        onGenerateRoute: AppRoutes.onGenerateRoute,
+        routerConfig: _router,
 
         theme: ThemeData(
           useMaterial3: true,

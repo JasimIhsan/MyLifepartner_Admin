@@ -7,6 +7,9 @@ import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:provider/provider.dart';
 
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+
 mixin OtpControllerState<T extends StatefulWidget> on State<T> {
   final AuthRepository authRepository = AuthRepository();
   final TextEditingController pinController = TextEditingController();
@@ -63,14 +66,12 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
       debugPrint("OTP Verify Response: ${response.message}");
 
       if (response.success == true && mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PasswordScreen(
-              email: email,
-              isExistingUser: isExistingUser,
-              isPasswordReset: isPasswordReset,
-            ),
+        context.pushReplacement(
+          AppRoutes.password,
+          extra: PasswordArguments(
+            email: email,
+            isExistingUser: isExistingUser,
+            isPasswordReset: isPasswordReset,
           ),
         );
       }

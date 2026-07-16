@@ -18,6 +18,7 @@ import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/custom_app_bar.dart';
 import 'package:life_partner_again/widgets/custom_bottom_bar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -102,7 +103,7 @@ class _HomePageState extends State<HomePage> {
       if (index == 3) targetRoute = AppRoutes.profile;
 
       _showNotifications = false;
-      Navigator.pushReplacementNamed(context, targetRoute);
+      context.go(targetRoute);
       return;
     }
 
@@ -362,7 +363,7 @@ class _HomePageState extends State<HomePage> {
       selectedIndex: _selectedIndex,
       onTap: _onTabTapped,
       onCenterTap: () {
-        Navigator.pushNamed(context, AppRoutes.lpaGuide);
+        context.push(AppRoutes.lpaGuide);
       },
       items: const [
         BottomNavigationBarItem(

@@ -16,8 +16,8 @@ import 'package:life_partner_again/screens/profile_image_upload/profile_image_up
 import 'package:life_partner_again/screens/profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/profile_screen/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
-import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -119,7 +119,8 @@ class AppRoutes {
         );
       case lpaGuide:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(body: SafeArea(child: LpaGuideScreen())),
+          builder: (_) =>
+              const Scaffold(body: SafeArea(child: LpaGuideScreen())),
           settings: settings,
         );
       case chatDetail:
@@ -190,18 +191,12 @@ class ChatDetailArguments {
   final MatchRecommendation profile;
   final int currentUserId;
 
-  ChatDetailArguments({
-    required this.profile,
-    required this.currentUserId,
-  });
+  ChatDetailArguments({required this.profile, required this.currentUserId});
 }
 
 class ProfileDetailArguments {
   final int profileId;
   final String profileName;
 
-  ProfileDetailArguments({
-    required this.profileId,
-    required this.profileName,
-  });
+  ProfileDetailArguments({required this.profileId, required this.profileName});
 }

@@ -12,6 +12,9 @@ import 'package:life_partner_again/services/user_repository.dart';
 // import 'package:life_partner_again/shared/widgets/header_waves_background.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
+
 import '../../widgets/bottomsheet/custom_bottom_sheet.dart';
 import '../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../widgets/custom_button.dart';
@@ -450,11 +453,7 @@ class _ProfileScreenState extends State<ProfileScreen> with RouteAware {
                       final sharedPrefs = await SharedPreferences.getInstance();
                       await sharedPrefs.clear();
                       if (context.mounted) {
-                        Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          AppRoutes.landing,
-                          (route) => false,
-                        );
+                        await context.read<AuthProvider>().logout();
                       }
                     },
                   );
