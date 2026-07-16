@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
@@ -11,7 +10,6 @@ import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/discover_screen.dart';
 import 'package:life_partner_again/screens/likes_screen/likes_screen.dart';
-import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
 import 'package:life_partner_again/screens/notification_screen/notification_screen.dart';
 import 'package:life_partner_again/screens/profile_screen/profile_screen.dart';
 import 'package:life_partner_again/services/user_repository.dart';
@@ -33,7 +31,6 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late int _selectedIndex;
   bool _showNotifications = false;
-  bool _showGuideOverlay = false;
 
   @override
   void initState() {
@@ -164,175 +161,12 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: AppColors.surface,
         extendBody: !isDesktop,
         appBar: isDesktop ? null : _buildAppBar(),
-        body: Stack(
-          children: [
-            Column(
-              children: [
-                if (isDesktop) _buildWebNavBar(),
-                Expanded(child: _buildBody()),
-              ],
-            ),
-            if (isDesktop && _showGuideOverlay)
-              Positioned(
-                right: 32,
-                bottom: 88,
-                width: 420,
-                height: 600,
-                child: Card(
-                  elevation: 16,
-                  shadowColor: Colors.black.withValues(alpha: 0.15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: const LpaGuideScreen(),
-                ),
-              ),
-          ],
-        ),
+        body: _buildBody(),
         bottomNavigationBar: isDesktop ? null : _buildBottomNavigationBar(),
-        floatingActionButton: isDesktop
-            ? FloatingActionButton(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _showGuideOverlay = !_showGuideOverlay;
-                  });
-                },
-                child: Icon(
-                  _showGuideOverlay
-                      ? Icons.close_rounded
-                      : Icons.support_agent_rounded,
-                ),
-              )
-            : null,
       ),
     );
   }
 
-  Widget _buildWebNavBar() {
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 40),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-        border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
-        ),
-      ),
-      child: Row(
-        children: [
-          // Brand Logo and Title
-          Row(
-            children: [
-              Image.asset(
-                'assets/icons/app_logo.png',
-                height: 36,
-                width: 36,
-                errorBuilder: (context, error, stackTrace) => const Icon(
-                  Icons.favorite,
-                  color: AppColors.primary,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                "Life Partner Again",
-                style: GoogleFonts.outfit(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          // Navigation Tabs
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildWebNavItem(0, Icons.explore_outlined, 'Discover'),
-              _buildWebNavItem(1, Icons.favorite_border, 'Matches'),
-              _buildWebNavItem(2, Icons.chat_bubble_outline, 'Chat'),
-              _buildWebNavItem(3, Icons.person_outline, 'Profile'),
-            ],
-          ),
-          const Spacer(),
-          // Right Side Actions
-          Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  _showNotifications
-                      ? Icons.notifications
-                      : Icons.notifications_active_outlined,
-                  color: _showNotifications
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
-                ),
-                tooltip: 'Notifications',
-                onPressed: () {
-                  setState(() {
-                    _showNotifications = !_showNotifications;
-                  });
-                },
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWebNavItem(int index, IconData icon, String label) {
-    final bool isSelected = _selectedIndex == index && !_showNotifications;
-    return InkWell(
-      onTap: () => _onTabTapped(index),
-      hoverColor: AppColors.primary.withValues(alpha: 0.05),
-      child: Container(
-        height: 72,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isSelected ? AppColors.primary : Colors.transparent,
-              width: 3,
-            ),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected ? AppColors.primary : Colors.grey.shade600,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.outfit(
-                color: isSelected ? AppColors.primary : Colors.grey.shade700,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 15,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(

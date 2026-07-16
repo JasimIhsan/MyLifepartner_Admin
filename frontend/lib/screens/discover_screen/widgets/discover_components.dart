@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_routes.dart';
 import 'dart:ui';
 
 import 'package:country_flags/country_flags.dart';
@@ -168,7 +167,7 @@ class ProfileBrowserCard extends StatelessWidget {
             bottom: 300,
             child: GestureDetector(
               onTap: () async {
-                await context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name));
+                context.push('/profile/${profile.id}');
                 if (onReturnFromDetail != null) {
                   onReturnFromDetail!();
                 }

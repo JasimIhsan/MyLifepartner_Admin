@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -28,7 +27,7 @@ class ConnectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name));
+        context.push('/profile/${profile.id}');
       },
       child: Container(
         decoration: BoxDecoration(
@@ -221,7 +220,7 @@ class ConnectionCard extends StatelessWidget {
                       if (value == 'cancel') {
                         onCancel?.call();
                       } else if (value == 'view') {
-                        context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name));
+                        context.push('/profile/${profile.id}');
                       }
                     },
                   ),

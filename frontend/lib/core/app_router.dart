@@ -25,6 +25,7 @@ import 'package:life_partner_again/screens/profile_image_upload/profile_image_up
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
+import 'package:life_partner_again/widgets/web_main_layout.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
@@ -151,74 +152,75 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (context, state) => const ProfileImageUploadScreen(),
       ),
       // Home / Bottom Navigation Tabs Routes
-      GoRoute(
-        path: AppRoutes.home,
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: HomePage(initialIndex: 0)),
-      ),
-      GoRoute(
-        path: AppRoutes.discover,
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: HomePage(initialIndex: 0)),
-      ),
-      GoRoute(
-        path: AppRoutes.matches,
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: HomePage(initialIndex: 1)),
-      ),
-      GoRoute(
-        path: AppRoutes.chat,
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: HomePage(initialIndex: 2)),
-      ),
-      GoRoute(
-        path: AppRoutes.profile,
-        pageBuilder: (context, state) =>
-            const NoTransitionPage(child: HomePage(initialIndex: 3)),
-      ),
-      GoRoute(
-        path: AppRoutes.lpaGuide,
-        builder: (context, state) =>
-            const Scaffold(body: SafeArea(child: LpaGuideScreen())),
-      ),
-      GoRoute(
-        path: AppRoutes.chatDetail,
-        builder: (context, state) {
-          final args = state.extra as ChatDetailArguments;
-          return ChatDetailScreen(
-            profile: args.profile,
-            currentUserId: args.currentUserId,
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.profileDetail,
-        builder: (context, state) {
-          final args = state.extra as ProfileDetailArguments;
-          return ProfileDetailScreen(
-            profileId: args.profileId,
-            profileName: args.profileName,
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.editProfile,
-        builder: (context, state) {
-          final user = state.extra as User;
-          return EditProfileScreen(user: user);
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.manageProfilePictures,
-        builder: (context, state) => const ManageProfilePicturesScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.subscription,
-        builder: (context, state) => const SubscriptionScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.imageAccessRequests,
-        builder: (context, state) => const ImageAccessRequestsScreen(),
+      ShellRoute(
+        builder: (context, state, child) => WebMainLayout(child: child),
+        routes: [
+          GoRoute(
+            path: AppRoutes.home,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HomePage(initialIndex: 0)),
+          ),
+          GoRoute(
+            path: AppRoutes.discover,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HomePage(initialIndex: 0)),
+          ),
+          GoRoute(
+            path: AppRoutes.matches,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HomePage(initialIndex: 1)),
+          ),
+          GoRoute(
+            path: AppRoutes.chat,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HomePage(initialIndex: 2)),
+          ),
+          GoRoute(
+            path: AppRoutes.profile,
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HomePage(initialIndex: 3)),
+          ),
+          GoRoute(
+            path: AppRoutes.lpaGuide,
+            builder: (context, state) =>
+                const Scaffold(body: SafeArea(child: LpaGuideScreen())),
+          ),
+          GoRoute(
+            path: AppRoutes.chatDetail,
+            builder: (context, state) {
+              final args = state.extra as ChatDetailArguments;
+              return ChatDetailScreen(
+                profile: args.profile,
+                currentUserId: args.currentUserId,
+              );
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.profileDetail,
+            builder: (context, state) {
+              return const ProfileDetailScreen();
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.editProfile,
+            builder: (context, state) {
+              final user = state.extra as User;
+              return EditProfileScreen(user: user);
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.manageProfilePictures,
+            builder: (context, state) => const ManageProfilePicturesScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.subscription,
+            builder: (context, state) => const SubscriptionScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.imageAccessRequests,
+            builder: (context, state) => const ImageAccessRequestsScreen(),
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.mediaPreview,

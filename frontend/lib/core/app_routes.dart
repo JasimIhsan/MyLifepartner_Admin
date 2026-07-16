@@ -11,7 +11,6 @@ import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/screens/profile_completion/profile_completion_screen.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
@@ -37,7 +36,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String lpaGuide = '/lpa-guide';
   static const String chatDetail = '/chat-detail';
-  static const String profileDetail = '/profile-detail';
+  static const String profileDetail = '/profile/:profileId';
   static const String editProfile = '/edit-profile';
   static const String manageProfilePictures = '/manage-profile-pictures';
   static const String subscription = '/subscription';
@@ -135,15 +134,7 @@ class AppRoutes {
           ),
           settings: settings,
         );
-      case profileDetail:
-        final args = settings.arguments as ProfileDetailArguments;
-        return MaterialPageRoute(
-          builder: (_) => ProfileDetailScreen(
-            profileId: args.profileId,
-            profileName: args.profileName,
-          ),
-          settings: settings,
-        );
+
       case editProfile:
         final user = settings.arguments as User;
         return MaterialPageRoute(
@@ -195,13 +186,6 @@ class ChatDetailArguments {
   final int currentUserId;
 
   ChatDetailArguments({required this.profile, required this.currentUserId});
-}
-
-class ProfileDetailArguments {
-  final int profileId;
-  final String profileName;
-
-  ProfileDetailArguments({required this.profileId, required this.profileName});
 }
 
 class MediaPreviewArguments {

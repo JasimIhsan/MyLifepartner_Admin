@@ -1,4 +1,3 @@
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
@@ -253,7 +252,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                             // View Full Details click target (Solid Red Button)
                                             ElevatedButton(
                                               onPressed: () async {
-                                                await context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: selectedProfile.id, profileName: selectedProfile.name));
+                                                context.push('/profile/${selectedProfile.id}');
                                                 syncWithProvider();
                                               },
                                               style: ElevatedButton.styleFrom(

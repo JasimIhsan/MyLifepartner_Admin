@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_routes.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -202,7 +201,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             ),
             const SizedBox(height: 8),
             Text(
-              'New profiles are added daily.\nCheck back soon.',
+              'New profiles are added daily.\\nCheck back soon.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -339,7 +338,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name)),
+      onTap: () => context.push('/profile/${profile.id}'),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: SizedBox(
@@ -491,7 +490,7 @@ class _PortraitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name)),
+      onTap: () => context.push('/profile/${profile.id}'),
       child: Container(
         height: 120,
         decoration: BoxDecoration(
