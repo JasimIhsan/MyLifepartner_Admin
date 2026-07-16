@@ -491,3 +491,243 @@ const List<String> _kCountries = [
   'Uruguay', 'Uzbekistan', 'Vanuatu', 'Venezuela', 'Vietnam', 'Yemen', 'Zambia',
   'Zimbabwe'
 ];
+
+// ─── Minimal Custom Inputs ──────────────────────────────────────────────────
+
+class MinimalTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hintText;
+  final bool enabled;
+  final bool readOnly;
+  final VoidCallback? onTap;
+  final String? Function(String?)? validator;
+
+  const MinimalTextField({
+    super.key,
+    required this.controller,
+    required this.label,
+    required this.hintText,
+    this.enabled = true,
+    this.readOnly = false,
+    this.onTap,
+    this.validator,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 2),
+          TextFormField(
+            controller: controller,
+            enabled: enabled,
+            readOnly: readOnly,
+            onTap: onTap,
+            validator: validator,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: enabled ? AppColors.textPrimary : AppColors.textLight,
+            ),
+            decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: const TextStyle(
+                color: AppColors.textLight,
+                fontSize: 14,
+                fontWeight: FontWeight.normal,
+              ),
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(vertical: 6),
+              border: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderColor),
+              ),
+              enabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderColor),
+              ),
+              disabledBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.borderColor),
+              ),
+              focusedBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+              ),
+              errorBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.error),
+              ),
+              focusedErrorBorder: const UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.error, width: 1.5),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class MinimalReadOnlyField extends StatelessWidget {
+  final String label;
+  final String value;
+  final String lockedReason;
+
+  const MinimalReadOnlyField({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.lockedReason,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const Icon(
+                Icons.lock_outline_rounded,
+                size: 14,
+                color: AppColors.textLight,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textLight,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            lockedReason,
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppColors.textLight,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Divider(height: 1, thickness: 1, color: AppColors.divider),
+        ],
+      ),
+    );
+  }
+}
+
+class MinimalCountryPicker extends StatelessWidget {
+  final String? country;
+  final ValueChanged<String> onChanged;
+
+  const MinimalCountryPicker({
+    super.key,
+    required this.country,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCountry = country != null && country!.trim().isNotEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: GestureDetector(
+        onTap: () async {
+          final selected = await showModalBottomSheet<String>(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.white,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            builder: (_) => EditProfileCountryPickerSheet(selected: country),
+          );
+
+          if (selected != null) {
+            onChanged(selected);
+          }
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Country',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  hasCountry ? country! : 'Select your country',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: hasCountry
+                        ? AppColors.textPrimary
+                        : AppColors.textLight,
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textLight,
+                  size: 20,
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Divider(height: 1, thickness: 1, color: AppColors.divider),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Custom Painters ────────────────────────────────────────────────────────
+
+class DotGridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final dotPaint = Paint()
+      ..color = const Color(0xFFE2ECF7)
+      ..style = PaintingStyle.fill;
+
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 5; j++) {
+        canvas.drawCircle(Offset(i * 8.0, j * 8.0), 1.5, dotPaint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}

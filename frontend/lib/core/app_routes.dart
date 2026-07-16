@@ -13,8 +13,8 @@ import 'package:life_partner_again/screens/password_screen/password_screen.dart'
 import 'package:life_partner_again/screens/profile_completion/profile_completion_screen.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:life_partner_again/screens/profile_screen/edit_profile_screen.dart';
-import 'package:life_partner_again/screens/profile_screen/manage_profile_pictures_screen.dart';
+import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
+import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';

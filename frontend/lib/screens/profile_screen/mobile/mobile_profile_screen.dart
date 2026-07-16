@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
@@ -270,10 +271,9 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 title: "Edit Profile Info",
                 onTap: () async {
                   if (user != null) {
-                    final result = await Navigator.pushNamed(
-                      context,
+                    final result = await context.push(
                       AppRoutes.editProfile,
-                      arguments: user,
+                      extra: user,
                     );
                     if (result == true) {
                       fetchProfileData();
@@ -286,8 +286,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 title: "Manage Profile Pictures",
                 showDivider: false,
                 onTap: () async {
-                  final result = await Navigator.pushNamed(
-                    context,
+                  final result = await context.push(
                     AppRoutes.manageProfilePictures,
                   );
                   if (result == true) {
@@ -304,7 +303,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 title: "My Subscription",
                 showDivider: false,
                 onTap: () {
-                  Navigator.pushNamed(context, AppRoutes.subscription);
+                  context.push(AppRoutes.subscription);
                 },
               ),
             ]),

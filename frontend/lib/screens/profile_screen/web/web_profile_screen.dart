@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
@@ -8,10 +9,10 @@ import 'package:life_partner_again/screens/image_access_screen/image_access_scre
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/app_routes.dart';
 import '../../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../../widgets/custom_button.dart';
 import '../widgets/profile_controller.dart';
-import '../../../core/app_routes.dart';
 
 class WebProfileScreen extends StatefulWidget {
   const WebProfileScreen({super.key});
@@ -22,7 +23,6 @@ class WebProfileScreen extends StatefulWidget {
 
 class _WebProfileScreenState extends State<WebProfileScreen>
     with RouteAware, ProfileControllerState<WebProfileScreen> {
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -78,7 +78,10 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                       height: 160,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2), width: 4),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          width: 4,
+                        ),
                         color: AppColors.surface,
                       ),
                       child: ClipOval(
@@ -86,12 +89,27 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                             ? CachedNetworkImage(
                                 imageUrl: primaryImage!.imageUrl,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => const CircularProgressIndicator(color: AppColors.primary),
-                                errorWidget: (context, url, error) => const Icon(Icons.person, size: 60, color: AppColors.textSecondary),
+                                placeholder: (context, url) =>
+                                    const CircularProgressIndicator(
+                                      color: AppColors.primary,
+                                    ),
+                                errorWidget: (context, url, error) =>
+                                    const Icon(
+                                      Icons.person,
+                                      size: 60,
+                                      color: AppColors.textSecondary,
+                                    ),
                               )
-                            : const Icon(Icons.person, size: 80, color: AppColors.textSecondary),
+                            : const Icon(
+                                Icons.person,
+                                size: 80,
+                                color: AppColors.textSecondary,
+                              ),
                       ),
-                    ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
+                    ).animate().scale(
+                      duration: 400.ms,
+                      curve: Curves.easeOutBack,
+                    ),
                     const SizedBox(height: 24),
                     Text(
                       user!.name ?? "Your Name",
@@ -105,7 +123,10 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                     ).animate().fadeIn(delay: 100.ms),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -125,7 +146,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         LogoutBottomSheet.show(
                           context: context,
                           onLogoutConfirm: () async {
-                            final sharedPrefs = await SharedPreferences.getInstance();
+                            final sharedPrefs =
+                                await SharedPreferences.getInstance();
                             await sharedPrefs.clear();
                             if (context.mounted) {
                               await context.read<AuthProvider>().logout();
@@ -135,7 +157,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                       },
                       text: "Logout",
                       type: CustomButtonType.outline,
-                      textColor: Colors.red, // Use red for logout to make it distinct
+                      textColor:
+                          Colors.red, // Use red for logout to make it distinct
                       height: 52,
                       borderRadius: 16,
                       fontSize: 16,
@@ -162,7 +185,7 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         ),
                       ).animate().fadeIn().slideX(begin: 0.1),
                       const SizedBox(height: 32),
-                      
+
                       _buildSettingsCard(
                         title: "Account",
                         children: [
@@ -172,10 +195,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                             subtitle: "Update your personal details and bio",
                             onTap: () async {
                               if (user != null) {
-                                final result = await Navigator.pushNamed(
-                                  context,
+                                final result = await context.push(
                                   AppRoutes.editProfile,
-                                  arguments: user,
+                                  extra: user,
                                 );
                                 if (result == true) fetchProfileData();
                               }
@@ -187,8 +209,7 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                             subtitle: "Add or remove photos from your gallery",
                             showDivider: false,
                             onTap: () async {
-                              final result = await Navigator.pushNamed(
-                                context,
+                              final result = await context.push(
                                 AppRoutes.manageProfilePictures,
                               );
                               if (result == true) fetchProfileData();
@@ -196,9 +217,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                           ),
                         ],
                       ).animate().fadeIn(delay: 100.ms).slideY(begin: 0.1),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       _buildSettingsCard(
                         title: "Subscription",
                         children: [
@@ -208,7 +229,7 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                             subtitle: "Manage your premium plan",
                             showDivider: false,
                             onTap: () {
-                              Navigator.pushNamed(context, AppRoutes.subscription);
+                              context.push(AppRoutes.subscription);
                             },
                           ),
                         ],
@@ -222,7 +243,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                           _buildWebSwitchItem(
                             icon: Icons.shield_outlined,
                             title: "Private Account",
-                            subtitle: "Only approved matches can see your photos",
+                            subtitle:
+                                "Only approved matches can see your photos",
                             value: user?.privacyEnabled ?? false,
                             isItemLoading: isUpdatingPrivacy,
                             onChanged: (value) => togglePrivacy(value),
@@ -234,14 +256,20 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                             subtitle: "Manage who can view your private photos",
                             showDivider: false,
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => const ImageAccessRequestsScreen()));
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const ImageAccessRequestsScreen(),
+                                ),
+                              );
                             },
                           ),
                         ],
                       ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.1),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       _buildSettingsCard(
                         title: "Support",
                         children: [
@@ -265,7 +293,10 @@ class _WebProfileScreenState extends State<WebProfileScreen>
     );
   }
 
-  Widget _buildSettingsCard({required String title, required List<Widget> children}) {
+  Widget _buildSettingsCard({
+    required String title,
+    required List<Widget> children,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -292,7 +323,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                 offset: const Offset(0, 4),
               ),
             ],
-            border: Border.all(color: AppColors.borderColor.withValues(alpha: 0.5)),
+            border: Border.all(
+              color: AppColors.borderColor.withValues(alpha: 0.5),
+            ),
           ),
           child: Column(children: children),
         ),
