@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -190,7 +191,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
           width: double.infinity,
           height: 52,
           child: CustomButton(
-            onPressed: widget.onPrimaryPressed ?? () => Navigator.pop(context),
+            onPressed: widget.onPrimaryPressed ?? () => context.pop(),
             text: widget.primaryButtonText ?? 'Continue',
             borderRadius: 16,
             height: 52,
@@ -204,7 +205,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
             height: 48,
             child: TextButton(
               onPressed:
-                  widget.onSecondaryPressed ?? () => Navigator.pop(context),
+                  widget.onSecondaryPressed ?? () => context.pop(),
               style: TextButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -392,7 +393,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
           Expanded(
             child: CustomButton(
               onPressed:
-                  widget.onSecondaryPressed ?? () => Navigator.pop(context),
+                  widget.onSecondaryPressed ?? () => context.pop(),
               text: widget.secondaryButtonText ?? 'Cancel',
               type: CustomButtonType.outline,
               borderRadius: 16,
@@ -421,7 +422,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
     return SizedBox(
       width: double.infinity,
       child: CustomButton(
-        onPressed: widget.onPrimaryPressed ?? () => Navigator.pop(context),
+        onPressed: widget.onPrimaryPressed ?? () => context.pop(),
         text: primaryText,
         borderRadius: 16,
         height: 52,

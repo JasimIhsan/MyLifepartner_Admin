@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'dart:ui';
 
 import 'package:country_flags/country_flags.dart';
@@ -6,7 +8,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/country_helper.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:life_partner_again/services/image_access_service.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
@@ -167,15 +168,7 @@ class ProfileBrowserCard extends StatelessWidget {
             bottom: 300,
             child: GestureDetector(
               onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ProfileDetailScreen(
-                      profileId: profile.id,
-                      profileName: profile.name,
-                    ),
-                  ),
-                );
+                await context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name));
                 if (onReturnFromDetail != null) {
                   onReturnFromDetail!();
                 }

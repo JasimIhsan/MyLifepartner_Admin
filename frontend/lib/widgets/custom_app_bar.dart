@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import 'package:life_partner_again/core/app_colors.dart';
@@ -55,8 +56,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                     color: AppColors.textPrimary,
                   ),
                   onPressed: () {
-                    if (Navigator.of(context).canPop()) {
-                      Navigator.of(context).pop();
+                    if (context.canPop()) {
+                      context.pop();
                     }
                   },
                 ))

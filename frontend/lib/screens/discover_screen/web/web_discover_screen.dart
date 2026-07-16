@@ -1,3 +1,5 @@
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -6,7 +8,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/country_helper.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
+
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -251,20 +253,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                             // View Full Details click target (Solid Red Button)
                                             ElevatedButton(
                                               onPressed: () async {
-                                                await Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (_) =>
-                                                        ProfileDetailScreen(
-                                                          profileId:
-                                                              selectedProfile
-                                                                  .id,
-                                                          profileName:
-                                                              selectedProfile
-                                                                  .name,
-                                                        ),
-                                                  ),
-                                                );
+                                                await context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: selectedProfile.id, profileName: selectedProfile.name));
                                                 syncWithProvider();
                                               },
                                               style: ElevatedButton.styleFrom(

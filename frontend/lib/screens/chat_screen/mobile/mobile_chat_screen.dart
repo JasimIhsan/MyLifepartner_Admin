@@ -1,10 +1,11 @@
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
 import 'package:life_partner_again/main.dart';
 
 import '../widgets/chat_controller.dart';
@@ -92,15 +93,7 @@ class _MobileChatScreenState extends State<MobileChatScreen>
                         final prefs = await SharedPreferences.getInstance();
                         final currentUserId = prefs.getInt('userId') ?? 0;
                         if (!context.mounted) return;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ChatDetailScreen(
-                              profile: match,
-                              currentUserId: currentUserId,
-                            ),
-                          ),
-                        );
+                        context.push(AppRoutes.chatDetail, extra: ChatDetailArguments(profile: match, currentUserId: currentUserId));
                       },
                     );
                   },

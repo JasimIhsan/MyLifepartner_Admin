@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -231,7 +232,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           top: MediaQuery.of(context).padding.top + 8,
           left: 12,
           child: GestureDetector(
-            onTap: () => Navigator.pop(context),
+            onTap: () => context.pop(),
             child: Container(
               width: 44,
               height: 44,

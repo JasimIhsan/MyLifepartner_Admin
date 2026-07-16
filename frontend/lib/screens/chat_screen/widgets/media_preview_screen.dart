@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -24,7 +25,7 @@ class MediaPreviewScreen extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.white),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -46,7 +47,7 @@ class MediaPreviewScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   TextButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => context.pop(),
                     child: const Text(
                       'Cancel',
                       style: TextStyle(
@@ -58,7 +59,7 @@ class MediaPreviewScreen extends StatelessWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      Navigator.pop(context);
+                      context.pop();
                       onSend();
                     },
                     child: Container(

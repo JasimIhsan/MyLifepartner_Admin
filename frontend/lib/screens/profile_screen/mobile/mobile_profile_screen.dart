@@ -1,17 +1,18 @@
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_colors.dart';
+
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
-import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 
 import '../../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../../widgets/custom_button.dart';
 import '../widgets/profile_controller.dart';
-import '../../../core/app_routes.dart';
+
 
 class MobileProfileScreen extends StatefulWidget {
   const MobileProfileScreen({super.key});
@@ -323,12 +324,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 title: "Image Access Requests",
                 showDivider: false,
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ImageAccessRequestsScreen(),
-                    ),
-                  );
+                  context.push(AppRoutes.imageAccessRequests);
                 },
               ),
             ]),

@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -168,7 +169,7 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
                           : null,
 
                       // 👉 select
-                      onTap: () => Navigator.pop(context, country.name),
+                      onTap: () => context.pop(country.name),
                     );
                   },
                 ),

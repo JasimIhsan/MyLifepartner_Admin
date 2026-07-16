@@ -1,9 +1,9 @@
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
-import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
-import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
@@ -60,13 +60,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
               backgroundColor: Colors.green,
             ),
           );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>
-                  PasswordScreen(email: email, isExistingUser: true),
-            ),
-          );
+          context.pushReplacement(AppRoutes.password, extra: PasswordArguments(email: email, isExistingUser: true));
         }
         return;
       }
@@ -154,11 +148,11 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
+              onPressed: () => context.pop(false),
               child: const Text("Cancel"),
             ),
             TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
+              onPressed: () => context.pop(true),
               child: const Text(
                 "Send OTP",
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -179,16 +173,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
     try {
       await authRepository.sendOtp(email: email, purpose: "password_reset");
       if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OtpPage(
-              email: email,
-              isExistingUser: isExistingUser,
-              isPasswordReset: true,
-            ),
-          ),
-        );
+        context.push(AppRoutes.otp, extra: OtpArguments(email: email, isExistingUser: isExistingUser, isPasswordReset: true));
       }
     } catch (e) {
       debugPrint("Send magic link error: $e");

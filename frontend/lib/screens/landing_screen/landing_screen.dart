@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -239,10 +240,7 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
       type: CustomButtonType.primary,
       borderRadius: 50,
       onPressed: () {
-        Navigator.pushReplacementNamed(
-          context,
-          AppRoutes.login,
-        );
+        context.go(AppRoutes.login);
       },
     )
         .animate()
@@ -431,10 +429,7 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
                           borderRadius: 12,
                           height: 56,
                           onPressed: () {
-                            Navigator.pushReplacementNamed(
-                              context,
-                              AppRoutes.login,
-                            );
+                            context.go(AppRoutes.login);
                           },
                         ),
                       )

@@ -84,7 +84,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );

@@ -41,7 +41,10 @@ class AppRoutes {
   static const String editProfile = '/edit-profile';
   static const String manageProfilePictures = '/manage-profile-pictures';
   static const String subscription = '/subscription';
-
+  static const String imageAccessRequests = '/image-access-requests';
+  static const String mediaPreview = '/media-preview';
+  static const String call = '/call';
+  static const String outgoingCall = '/outgoing-call';
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -199,4 +202,42 @@ class ProfileDetailArguments {
   final String profileName;
 
   ProfileDetailArguments({required this.profileId, required this.profileName});
+}
+
+class MediaPreviewArguments {
+  final String path;
+  final String type;
+  final VoidCallback onSend;
+
+  MediaPreviewArguments({required this.path, required this.type, required this.onSend});
+}
+
+class OutgoingCallArguments {
+  final String calleeName;
+  final String? calleeAvatar;
+  final bool isVideoCall;
+
+  OutgoingCallArguments({required this.calleeName, this.calleeAvatar, required this.isVideoCall});
+}
+
+class CallArguments {
+  final String callID;
+  final String userID;
+  final String userName;
+  final String? localUserAvatar;
+  final String? remoteUserAvatar;
+  final bool isVideoCall;
+  final bool isCaller;
+  final String otherUserId;
+
+  CallArguments({
+    required this.callID,
+    required this.userID,
+    required this.userName,
+    this.localUserAvatar,
+    this.remoteUserAvatar,
+    this.isVideoCall = false,
+    this.isCaller = false,
+    required this.otherUserId,
+  });
 }

@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -95,7 +96,7 @@ class _MatchesListState extends State<MatchesList> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
+              onPressed: () => dialogContext.pop(false),
               child: const Text(
                 'No',
                 style: TextStyle(color: AppColors.textSecondary),
@@ -109,7 +110,7 @@ class _MatchesListState extends State<MatchesList> {
                   borderRadius: BorderRadius.circular(8),
                 ),
               ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
+              onPressed: () => dialogContext.pop(true),
               child: const Text('Yes, Cancel'),
             ),
           ],

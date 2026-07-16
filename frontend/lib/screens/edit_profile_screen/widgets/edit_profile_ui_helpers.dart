@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
@@ -442,7 +443,7 @@ class _EditProfileCountryPickerSheetState
                                 size: 20,
                               )
                             : null,
-                        onTap: () => Navigator.pop(context, country),
+                        onTap: () => context.pop(country),
                       ),
                     );
                   },

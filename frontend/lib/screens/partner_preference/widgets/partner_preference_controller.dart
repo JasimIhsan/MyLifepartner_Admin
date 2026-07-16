@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/age_pref_step.dart';
@@ -283,7 +284,7 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );

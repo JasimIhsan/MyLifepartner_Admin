@@ -1,3 +1,5 @@
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 import 'dart:io';
 
@@ -9,13 +11,13 @@ import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
-import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
+
 import 'package:life_partner_again/screens/chat_screen/widgets/attachment_bottom_sheet.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_detail_app_bar.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_empty_state.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_input_area.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_message_bubble.dart';
-import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
+
 import 'package:life_partner_again/services/chat_service.dart';
 import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:path_provider/path_provider.dart';
@@ -385,14 +387,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   }
 
   void _previewAndSendMedia(String path, String type) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MediaPreviewScreen(
-          path: path,
-          type: type,
-          onSend: () => _sendMediaMsg(path, type),
-        ),
+    context.push(
+      AppRoutes.mediaPreview,
+      extra: MediaPreviewArguments(
+        path: path,
+        type: type,
+        onSend: () => _sendMediaMsg(path, type),
       ),
     );
   }
@@ -465,14 +465,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     );
 
     // Navigate to the "Calling..." screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OutgoingCallScreen(
-          calleeName: widget.profile.name,
-          calleeAvatar: _profileImageUrl,
-          isVideoCall: isVideo,
-        ),
+    context.push(
+      AppRoutes.outgoingCall,
+      extra: OutgoingCallArguments(
+        calleeName: widget.profile.name,
+        calleeAvatar: _profileImageUrl,
+        isVideoCall: isVideo,
       ),
     );
   }

@@ -1,8 +1,9 @@
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 
 class ConnectionCard extends StatelessWidget {
   final MatchRecommendation profile;
@@ -27,15 +28,7 @@ class ConnectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProfileDetailScreen(
-              profileId: profile.id,
-              profileName: profile.name,
-            ),
-          ),
-        );
+        context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name));
       },
       child: Container(
         decoration: BoxDecoration(
@@ -228,15 +221,7 @@ class ConnectionCard extends StatelessWidget {
                       if (value == 'cancel') {
                         onCancel?.call();
                       } else if (value == 'view') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProfileDetailScreen(
-                              profileId: profile.id,
-                              profileName: profile.name,
-                            ),
-                          ),
-                        );
+                        context.push(AppRoutes.profileDetail, extra: ProfileDetailArguments(profileId: profile.id, profileName: profile.name));
                       }
                     },
                   ),

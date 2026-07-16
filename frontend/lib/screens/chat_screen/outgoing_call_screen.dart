@@ -1,10 +1,11 @@
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
-import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 
 /// Screen shown to the caller while waiting for the callee to accept/decline.
 class OutgoingCallScreen extends StatefulWidget {
@@ -64,7 +65,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
       );
     }
     provider.cancelOutgoingCall();
-    Navigator.of(context).pop();
+    context.pop();
   }
 
   @override
@@ -76,9 +77,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           final call = provider.outgoingCall!;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             provider.clearOutgoingCall();
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => CallScreen(
+            context.pushReplacement(AppRoutes.call, extra: CallArguments(
                   callID: call.callId,
                   userID: provider.currentUserId ?? '',
                   userName: provider.currentUserName ?? 'User',
@@ -87,9 +86,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                   isVideoCall: call.isVideo,
                   isCaller: true,
                   otherUserId: call.calleeId,
-                ),
-              ),
-            );
+                ));
           });
         }
 
@@ -98,7 +95,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           WidgetsBinding.instance.addPostFrameCallback((_) {
             provider.clearOutgoingCall();
             if (mounted) {
-              Navigator.of(context).pop();
+              context.pop();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Row(

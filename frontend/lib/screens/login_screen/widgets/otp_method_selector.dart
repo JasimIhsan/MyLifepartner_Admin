@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import 'package:life_partner_again/core/app_colors.dart';
@@ -32,7 +33,7 @@ class OtpMethodSelector {
           width: 400,
           child: _OtpMethodSelectionContent(
             onMethodSelected: (method) {
-              Navigator.pop(context);
+              context.pop();
               onMethodSelected(method);
             },
           ),
@@ -67,7 +68,7 @@ class OtpMethodSelector {
             const SizedBox(height: 24),
             _OtpMethodSelectionContent(
               onMethodSelected: (method) {
-                Navigator.pop(context);
+                context.pop();
                 onMethodSelected(method);
               },
             ),

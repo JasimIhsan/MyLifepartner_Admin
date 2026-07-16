@@ -1,5 +1,6 @@
 // ignore_for_file: unused_import
 
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -225,7 +226,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );

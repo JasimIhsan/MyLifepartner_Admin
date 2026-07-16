@@ -1,5 +1,6 @@
 // ignore_for_file: unused_import
 
+import 'package:go_router/go_router.dart';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -316,7 +317,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.of(context).pop();
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/exit.png',
     );
@@ -825,7 +826,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,

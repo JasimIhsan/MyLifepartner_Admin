@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
@@ -27,13 +28,13 @@ class ChatHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       child: Row(
         children: [
-          if (Navigator.of(context).canPop()) ...[
+          if (context.canPop()) ...[
             IconButton(
               icon: const Icon(
                 Icons.arrow_back_ios_new_rounded,
                 color: Colors.white,
               ),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => context.pop(),
             ),
             const SizedBox(width: 8),
           ],

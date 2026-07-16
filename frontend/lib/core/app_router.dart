@@ -21,6 +21,10 @@ import 'package:life_partner_again/screens/selfie_verification/selfie_verificati
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/main.dart' show navigatorKey;
+import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
+import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
+import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
+import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
@@ -206,6 +210,49 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.subscription,
         builder: (context, state) => const SubscriptionScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.imageAccessRequests,
+        builder: (context, state) => const ImageAccessRequestsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.mediaPreview,
+        builder: (context, state) {
+          final args = state.extra as MediaPreviewArguments;
+          return MediaPreviewScreen(
+            path: args.path,
+            type: args.type,
+            onSend: args.onSend,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.outgoingCall,
+        builder: (context, state) {
+          final args = state.extra as OutgoingCallArguments;
+          return OutgoingCallScreen(
+            calleeName: args.calleeName,
+            calleeAvatar: args.calleeAvatar,
+            isVideoCall: args.isVideoCall,
+          );
+        },
+      ),
+
+      GoRoute(
+        path: AppRoutes.call,
+        builder: (context, state) {
+          final args = state.extra as CallArguments;
+          return CallScreen(
+            callID: args.callID,
+            userID: args.userID,
+            userName: args.userName,
+            localUserAvatar: args.localUserAvatar,
+            remoteUserAvatar: args.remoteUserAvatar,
+            isVideoCall: args.isVideoCall,
+            isCaller: args.isCaller,
+            otherUserId: args.otherUserId,
+          );
+        },
       ),
     ],
   );

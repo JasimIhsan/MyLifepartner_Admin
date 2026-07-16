@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -283,7 +284,7 @@ class AuthLayout extends StatelessWidget {
           ),
 
           // Back Button if needed (Optional, usually handled by Scaffold)
-          if (Navigator.canPop(context))
+          if (context.canPop())
             Positioned(
               top: MediaQuery.of(context).padding.top + 10,
               left: 16,
@@ -295,7 +296,7 @@ class AuthLayout extends StatelessWidget {
                     size: 18,
                     color: Colors.black,
                   ),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () => context.pop(),
                 ),
               ),
             ),

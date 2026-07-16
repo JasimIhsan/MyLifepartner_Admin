@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/user_image.dart';
@@ -79,7 +80,7 @@ mixin ProfileControllerState<T extends StatefulWidget> on State<T>, RouteAware {
           : 'Your profile photos will be visible to everyone on the platform.',
       primaryButtonText: isEnabling ? 'Enable' : 'Disable',
       onPrimaryPressed: () async {
-        Navigator.pop(context); // close sheet
+        context.pop(); // close sheet
 
         setState(() {
           isUpdatingPrivacy = true;
@@ -106,7 +107,7 @@ mixin ProfileControllerState<T extends StatefulWidget> on State<T>, RouteAware {
       },
       secondaryButtonText: 'Cancel',
       onSecondaryPressed: () {
-        Navigator.pop(context);
+        context.pop();
       },
       imagePath: 'assets/images/illustrations/privacy.png',
     );
