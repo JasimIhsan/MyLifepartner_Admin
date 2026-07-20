@@ -14,10 +14,12 @@ class MaritalStatusStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const options = [
+      ('Separated', 'SEPARATED'),
       ('Divorced', 'DIVORCED'),
       ('Widowed', 'WIDOWED'),
-      ('Legally Separated', 'LEGALLY_SEPARATED'),
+      ('Awaiting Divorce', 'AWAITING_DIVORCE'),
     ];
+
     return Column(
       children: [
         const OnboardingStepTitle(title: "What's your marital status?"),

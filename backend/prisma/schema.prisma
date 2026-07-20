@@ -368,12 +368,10 @@ enum Gender {
 }
 
 enum MaritalStatus {
-  NEVER_MARRIED
-  AWATING_DIVORCE
+  AWAITING_DIVORCE
   DIVORCED
   WIDOWED
-  ANNULLED
-  LEGALLY_SEPARATED
+  SEPARATED
 }
 
 enum ChildrenStatus {
