@@ -21,7 +21,6 @@ export interface UserDto {
    gender?: string | null;
    dateOfBirth?: Date | null;
    maritalStatus?: string | null;
-   heightCm?: number | null;
    motherTongue?: string | null;
    city?: string | null;
    state?: string | null;
@@ -55,7 +54,6 @@ export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null
    gender: user.profile?.gender || null,
    dateOfBirth: user.profile?.dateOfBirth || null,
    maritalStatus: user.profile?.maritalStatus || null,
-   heightCm: user.profile?.heightCm || null,
    motherTongue: user.profile?.motherTongue || null,
    city: user.profile?.city || null,
    state: user.profile?.state || null,

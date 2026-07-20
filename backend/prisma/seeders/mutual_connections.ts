@@ -32,7 +32,6 @@ export async function seedMutualConnections(prisma: PrismaClient) {
                   gender: Gender.MALE,
                   dateOfBirth: dob,
                   maritalStatus: MaritalStatus.DIVORCED,
-                  heightCm: 175,
                   city: "Bengaluru",
                   state: "Karnataka",
                   country: "India",

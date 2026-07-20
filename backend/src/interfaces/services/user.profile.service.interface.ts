@@ -15,7 +15,6 @@ export interface Profile {
    gender: string | null;
    dateOfBirth: Date | null;
    maritalStatus: string | null;
-   heightCm: number | null;
    motherTongue: string | null;
    city: string | null;
    state: string | null;

@@ -47,7 +47,6 @@ model Profile {
   gender        Gender?
   dateOfBirth   DateTime?
   maritalStatus MaritalStatus?
-  heightCm      Int?
   motherTongue  String?
 
   city    String?

@@ -553,7 +553,6 @@ export class MatchRepository implements IMatchRepository {
          name: profile.name,
          isVerified: profile.user.isVerified,
          dateOfBirth: profile.dateOfBirth,
-         heightCm: profile.heightCm,
          maritalStatus: profile.maritalStatus,
          city: profile.city,
          state: profile.state,

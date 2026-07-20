@@ -22,7 +22,6 @@ export interface CandidateProfile {
    name: string | null;
    isVerified: boolean;
    dateOfBirth: Date | null;
-   heightCm: number | null;
    maritalStatus: string | null;
    city: string | null;
    state: string | null;

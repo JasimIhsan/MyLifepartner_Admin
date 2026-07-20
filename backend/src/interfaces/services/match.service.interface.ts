@@ -17,7 +17,6 @@ export interface MatchRecommendationItem {
    name: string;
    age: number;
    isVerified: boolean;
-   heightCm: number | null;
    city: string | null;
    country: string | null;
    occupation: string | null;
@@ -45,7 +44,6 @@ export interface ProfileDetail {
    name: string;
    age: number;
    gender: string | null;
-   heightCm: number | null;
    maritalStatus: string | null;
    city: string | null;
    state: string | null;

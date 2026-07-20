@@ -15,7 +15,6 @@ const toServiceProfile = (profile: DbProfile & { job?: Job | null }): Profile =>
    gender: profile.gender,
    dateOfBirth: profile.dateOfBirth,
    maritalStatus: profile.maritalStatus,
-   heightCm: profile.heightCm,
    motherTongue: profile.motherTongue,
    city: profile.city,
    state: profile.state,

@@ -5,7 +5,6 @@ export interface UpdateProfileDto {
    religion?: string;
    motherTongue?: string;
    maritalStatus?: string;
-   height?: number;
    weight?: number;
    about?: string;
    city?: string;
@@ -32,7 +31,6 @@ export interface UpdateProfileDto {
    marriedSisters?: number;
    hobbies?: string[];
    dateOfBirth?: Date | string;
-   heightCm?: number;
    bio?: string;
    highestEducation?: string;
    smokingHabit?: string;

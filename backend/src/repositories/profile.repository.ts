@@ -234,9 +234,6 @@ export class ProfileRepository implements IProfileRepository {
       if (data.motherTongue !== undefined) updateData.motherTongue = data.motherTongue;
       if (data.maritalStatus !== undefined) updateData.maritalStatus = data.maritalStatus as MaritalStatus;
 
-      const heightVal = data.heightCm !== undefined ? data.heightCm : data.height;
-      if (heightVal !== undefined) updateData.heightCm = heightVal;
-
       const bioVal = data.bio !== undefined ? data.bio : data.about;
       if (bioVal !== undefined) updateData.bio = bioVal;
 

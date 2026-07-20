@@ -10,7 +10,6 @@ import 'package:life_partner_again/screens/onboarding/widgets/education_step.dar
 import 'package:life_partner_again/screens/onboarding/widgets/emotional_readiness_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/gender_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/habits_step.dart';
-import 'package:life_partner_again/screens/onboarding/widgets/height_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/languages_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/location_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/looking_for_step.dart';
@@ -25,7 +24,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
   final ProfileRepository profileRepo = ProfileRepository();
-  final int totalSteps = 13;
+  final int totalSteps = 12;
   int currentStep = 0;
   bool isLoading = false;
   bool goingForward = true;
@@ -36,7 +35,6 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
   final TextEditingController bioCtrl = TextEditingController();
   final TextEditingController countryCtrl = TextEditingController();
   final TextEditingController cityCtrl = TextEditingController();
-  final TextEditingController heightCtrl = TextEditingController();
   final TextEditingController professionCtrl = TextEditingController();
 
   // Selected values
@@ -47,7 +45,6 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
   String? gender;
   String? country;
   String? city;
-  int? heightCm;
   String? maritalStatus;
   String? childrenStatus;
   String? emotionalReadiness;
@@ -88,11 +85,6 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
 
       city = prefs.getString('onboarding_city');
       cityCtrl.text = city ?? '';
-
-      heightCm = prefs.getInt('onboarding_height_cm');
-      if (heightCm != null) {
-        heightCtrl.text = heightCm.toString();
-      }
 
       maritalStatus = prefs.getString('onboarding_marital_status');
       childrenStatus = prefs.getString('onboarding_children_status');
@@ -149,7 +141,6 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       'onboarding_gender',
       'onboarding_country',
       'onboarding_city',
-      'onboarding_height_cm',
       'onboarding_marital_status',
       'onboarding_children_status',
       'onboarding_emotional_readiness',
@@ -174,7 +165,6 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
     bioCtrl.dispose();
     countryCtrl.dispose();
     cityCtrl.dispose();
-    heightCtrl.dispose();
     professionCtrl.dispose();
     super.dispose();
   }
@@ -226,15 +216,13 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       case 7:
         return childrenStatus != null;
       case 8:
-        return heightCm != null;
-      case 9:
         return lookingFor != null;
-      case 10:
+      case 9:
         return highestEducation != null;
-      case 11:
+      case 10:
         return profession != null &&
             professionRegex.hasMatch(profession!.trim());
-      case 12:
+      case 11:
         return smokingHabit != null && drinkingHabit != null;
       default:
         return true;
@@ -292,7 +280,6 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
         'country': locProvider.selectedCountry?.name ?? country,
         'city': locProvider.selectedCity?.name ?? city,
         'state': locProvider.selectedState?.name,
-        'heightCm': heightCm,
         'maritalStatus': maritalStatus,
         'childrenStatus': childrenStatus,
         'emotionalReadiness': emotionalReadiness,
@@ -346,14 +333,12 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       case 7:
         return "Children Status";
       case 8:
-        return "Height";
-      case 9:
         return "Looking For";
-      case 10:
+      case 9:
         return "Education";
-      case 11:
+      case 10:
         return "Profession";
-      case 12:
+      case 11:
         return "Habits";
       default:
         return "Onboarding";
@@ -379,14 +364,12 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       case 7:
         return "Do you have children or plan to have children?";
       case 8:
-        return "Choose your height in centimeters.";
-      case 9:
         return "What type of relationship or connection are you looking for?";
-      case 10:
+      case 9:
         return "Select your highest level of completed education.";
-      case 11:
+      case 10:
         return "What is your profession or current occupation?";
-      case 12:
+      case 11:
         return "Let others know your smoking and drinking habits.";
       default:
         return "Please fill out this step to continue.";
@@ -470,17 +453,6 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
           },
         );
       case 8:
-        return HeightStep(
-          heightCm: heightCm,
-          onHeightChanged: (v) {
-            setState(() {
-              heightCm = v;
-              heightCtrl.text = v.toString();
-            });
-            saveToCache('onboarding_height_cm', v);
-          },
-        );
-      case 9:
         return LookingForStep(
           selectedLookingFor: lookingFor,
           onLookingForChanged: (v) {
@@ -488,7 +460,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
             saveToCache('onboarding_looking_for', v);
           },
         );
-      case 10:
+      case 9:
         return EducationStep(
           selectedEducation: highestEducation,
           onEducationChanged: (v) {
@@ -496,7 +468,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
             saveToCache('onboarding_highest_education', v);
           },
         );
-      case 11:
+      case 10:
         return ProfessionStep(
           professionCtrl: professionCtrl,
           selectedJobId: jobId,
@@ -509,7 +481,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
             saveToCache('onboarding_job_id', v);
           },
         );
-      case 12:
+      case 11:
         return HabitsStep(
           drinkingHabit: drinkingHabit,
           smokingHabit: smokingHabit,

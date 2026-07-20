@@ -26,7 +26,6 @@ export const basicProfileSchema = z.object({
             { message: "Members must be aged 18 or over" }
          ),
       maritalStatus: MaritalStatusEnum.nullish(),
-      heightCm: z.number().int().min(50, "Height must be at least 50cm").max(300, "Height cannot exceed 300cm").nullish(),
       motherTongue: z.string().nullish(),
       city: z.string().nullish(),
       state: z.string().nullish(),

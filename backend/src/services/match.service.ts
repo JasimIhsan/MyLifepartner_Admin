@@ -106,7 +106,6 @@ export class MatchService implements IMatchService {
          name,
          age: this.getCandidateAge(candidate),
          gender: isRestricted ? null : candidate.gender,
-         heightCm: isRestricted ? null : candidate.heightCm,
          maritalStatus: isRestricted ? null : candidate.maritalStatus,
          city: candidate.city,
          state: isRestricted ? null : candidate.state,
@@ -211,7 +210,6 @@ export class MatchService implements IMatchService {
          userId: candidate.userId,
          name,
          age: this.getCandidateAge(candidate),
-         heightCm: isRestricted ? null : candidate.heightCm,
          city: candidate.city,
          country: candidate.country,
          isVerified: candidate.isVerified,
@@ -408,8 +406,8 @@ export class MatchService implements IMatchService {
     * @param preference - User preference data.
     * @returns True if height matches.
     */
-   private isHeightMatched(candidate: CandidateProfile, preference: UserPreferenceData): boolean {
-      return candidate.heightCm !== null && preference.heightFrom !== null && preference.heightTo !== null && candidate.heightCm >= preference.heightFrom && candidate.heightCm <= preference.heightTo;
+   private isHeightMatched(candidate: any, preference: UserPreferenceData): boolean {
+      return true;
    }
 
    /**
