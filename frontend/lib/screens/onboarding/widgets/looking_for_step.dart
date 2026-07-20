@@ -16,6 +16,14 @@ class LookingForStep extends StatelessWidget {
     return Column(
       children: [
         const OnboardingStepTitle(title: "What are you looking for?"),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 150,
+          child: Image.asset(
+            'assets/images/onboarding/relationship.png',
+            fit: BoxFit.contain,
+          ),
+        ),
         const SizedBox(height: 20),
         OnboardingSelectionTile(
           label: 'Marriage',

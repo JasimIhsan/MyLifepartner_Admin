@@ -86,6 +86,16 @@ class _ProfessionStepState extends State<ProfessionStep> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const OnboardingStepTitle(title: "What do you do for work?"),
+        const SizedBox(height: 10),
+        Center(
+          child: SizedBox(
+            height: 140,
+            child: Image.asset(
+              'assets/images/onboarding/work.png',
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
         const SizedBox(height: 20),
         OnboardingInputField(
           controller: widget.professionCtrl,

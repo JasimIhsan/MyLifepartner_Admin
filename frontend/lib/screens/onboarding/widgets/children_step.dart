@@ -16,7 +16,15 @@ class ChildrenStep extends StatelessWidget {
     return Column(
       children: [
         const OnboardingStepTitle(title: "Do you have children?"),
-        const SizedBox(height: 32),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 150,
+          child: Image.asset(
+            'assets/images/onboarding/children.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 20),
         OnboardingSelectionTile(
           label: 'Yes, living with me',
           value: 'LIVING_WITH_ME',

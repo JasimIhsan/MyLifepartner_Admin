@@ -34,6 +34,14 @@ class LocationStep extends StatelessWidget {
       children: [
         const OnboardingStepTitle(title: "Where do you live?"),
         const SizedBox(height: 10),
+        SizedBox(
+          height: 140,
+          child: Image.asset(
+            'assets/images/onboarding/location.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 20),
         const OnboardingSectionLabel(text: "Country"),
         GestureDetector(
           onTap: () async {

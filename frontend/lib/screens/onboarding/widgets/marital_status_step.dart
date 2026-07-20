@@ -22,6 +22,14 @@ class MaritalStatusStep extends StatelessWidget {
       children: [
         const OnboardingStepTitle(title: "What's your marital status?"),
         const SizedBox(height: 10),
+        SizedBox(
+          height: 150,
+          child: Image.asset(
+            'assets/images/onboarding/marital_status.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 20),
         for (final (label, value) in options)
           OnboardingSelectionTile(
             label: label,

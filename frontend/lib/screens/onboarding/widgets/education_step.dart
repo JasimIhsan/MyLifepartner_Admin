@@ -23,6 +23,14 @@ class EducationStep extends StatelessWidget {
     return Column(
       children: [
         const OnboardingStepTitle(title: "What's your highest education?"),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 140,
+          child: Image.asset(
+            'assets/images/onboarding/education.png',
+            fit: BoxFit.contain,
+          ),
+        ),
         const SizedBox(height: 20),
         for (final (label, value) in options)
           OnboardingSelectionTile(

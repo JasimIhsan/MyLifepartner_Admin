@@ -192,7 +192,11 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    final maxDays = _getDaysInMonth(_selectedYear, _selectedMonth);
+    final now = DateTime.now();
+    final maxMonth = _selectedYear == _endYear ? now.month : 12;
+    final maxDays = (_selectedYear == _endYear && _selectedMonth == now.month)
+        ? now.day
+        : _getDaysInMonth(_selectedYear, _selectedMonth);
 
     return Container(
       height: 220,
@@ -229,7 +233,7 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                           onSelectedItemChanged: (index) {
                             _updateDate(month: index + 1);
                           },
-                          children: List.generate(_months.length, (index) {
+                          children: List.generate(maxMonth, (index) {
                             final isSelected = (index + 1) == _selectedMonth;
                             return Center(
                               child: Text(
