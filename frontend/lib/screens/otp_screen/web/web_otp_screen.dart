@@ -149,6 +149,7 @@ class _WebOtpScreenState extends State<WebOtpScreen> with OtpControllerState {
                               onVerify: verifyOtp,
                               timerValue: remainingSeconds,
                               isResendEnabled: isResendEnabled,
+                              errorMessage: errorMessage,
                             ),
                           ],
                         ),

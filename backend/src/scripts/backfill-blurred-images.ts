@@ -1,6 +1,7 @@
 import { prisma } from "../config/prisma";
 import { S3Service } from "../services/s3.service";
 import { ImageProcessorService } from "../services/image-processor.service";
+import logger from "../utils/logger";
 
 const s3Service = new S3Service();
 const imageProcessorService = new ImageProcessorService();
@@ -13,7 +14,7 @@ async function getBufferFromUrl(url: string): Promise<Buffer> {
 
 async function backfillBlurredImages() {
    try {
-      console.log("Starting backfill process for blurred images...");
+      logger.info("Starting backfill process for blurred images...");
 
       // Get all profiles that have a primary image
       const profiles = await prisma.profile.findMany({
@@ -35,11 +36,11 @@ async function backfillBlurredImages() {
          (p) => p.images.length > 0
       );
 
-      console.log(`Found ${profilesToBackfill.length} profiles to backfill.`);
+      logger.info(`Found ${profilesToBackfill.length} profiles to backfill.`);
 
       for (const profile of profilesToBackfill) {
          const primaryImage = profile.images[0];
-         console.log(`Processing profile ID ${profile.id} (user ${profile.userId})...`);
+         logger.info(`Processing profile ID ${profile.id} (user ${profile.userId})...`);
 
          try {
             const originalPresignedUrl = await s3Service.getPresignedUrl(primaryImage.imageUrl);
@@ -59,9 +60,9 @@ async function backfillBlurredImages() {
             if (profile.user.privacySettings?.blurredImageUrl) {
                try {
                   await s3Service.deleteFromS3(profile.user.privacySettings.blurredImageUrl);
-                  console.log(`Deleted old blurred image for user ${profile.userId}`);
+                  logger.info(`Deleted old blurred image for user ${profile.userId}`);
                } catch (deleteError) {
-                  console.error(`Failed to delete old blurred image for user ${profile.userId}:`, deleteError);
+                  logger.error(`Failed to delete old blurred image for user ${profile.userId}:`, deleteError);
                }
             }
 
@@ -71,15 +72,15 @@ async function backfillBlurredImages() {
                create: { userId: profile.userId, blurredImageUrl: blurredS3Url },
             });
 
-            console.log(`Successfully backfilled profile ID ${profile.id}`);
+            logger.info(`Successfully backfilled profile ID ${profile.id}`);
          } catch (error) {
-            console.error(`Error processing profile ID ${profile.id}:`, error);
+            logger.error(`Error processing profile ID ${profile.id}:`, error);
          }
       }
 
-      console.log("Backfill process completed.");
+      logger.info("Backfill process completed.");
    } catch (error) {
-      console.error("Backfill process failed:", error);
+      logger.error("Backfill process failed:", error);
    } finally {
       await prisma.$disconnect();
    }

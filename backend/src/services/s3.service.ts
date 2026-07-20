@@ -3,6 +3,7 @@ import { s3Client } from "@/config/s3.config";
 import { IS3Service, S3UploadOptions } from "@/interfaces/services/s3.service.interface";
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import logger from "@/utils/logger";
 import { v4 as uuidv4 } from "uuid";
 
 export interface S3UploadObjectOptions {
@@ -92,7 +93,7 @@ export class S3Service implements IS3Service {
          let key = fileIdentifier;
          if (fileIdentifier.startsWith("http")) {
             if (!fileIdentifier.startsWith(bucketUrl)) {
-               console.warn("URL does not match S3 bucket URL, skipping deletion:", fileIdentifier);
+               logger.warn("URL does not match S3 bucket URL, skipping deletion:", fileIdentifier);
                return;
             }
             key = fileIdentifier.replace(bucketUrl, "");
@@ -105,7 +106,7 @@ export class S3Service implements IS3Service {
 
          await s3Client.send(command);
       } catch (error) {
-         console.error("Error deleting file from S3:", error);
+         logger.error("Error deleting file from S3:", error);
       }
    }
 
@@ -117,7 +118,7 @@ export class S3Service implements IS3Service {
     */
    public async getPresignedUrl(fileIdentifier: string, expiresIn: number = 3600): Promise<string> {
       if (!env.AWS_S3_BUCKET_NAME) {
-         console.warn("AWS_S3_BUCKET_NAME is not defined. Returning original URL.");
+         logger.warn("AWS_S3_BUCKET_NAME is not defined. Returning original URL.");
          return fileIdentifier;
       }
 
@@ -141,7 +142,7 @@ export class S3Service implements IS3Service {
          const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn });
          return presignedUrl;
       } catch (error) {
-         console.error("Error generating presigned URL:", error);
+         logger.error("Error generating presigned URL:", error);
          return fileIdentifier;
       }
    }

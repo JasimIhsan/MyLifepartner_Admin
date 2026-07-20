@@ -112,7 +112,10 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.otp,
         builder: (context, state) {
-          final args = state.extra as OtpArguments;
+          final args = state.extra as OtpArguments?;
+          if (args == null) {
+            return _buildErrorScreen(context, 'Session expired or invalid arguments.');
+          }
           return OtpPage(
             email: args.email,
             isExistingUser: args.isExistingUser,
@@ -123,7 +126,10 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.password,
         builder: (context, state) {
-          final args = state.extra as PasswordArguments;
+          final args = state.extra as PasswordArguments?;
+          if (args == null) {
+            return _buildErrorScreen(context, 'Session expired or invalid arguments.');
+          }
           return PasswordScreen(
             email: args.email,
             isExistingUser: args.isExistingUser,

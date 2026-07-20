@@ -454,22 +454,37 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Premium Header Section with assistant profile
-        ChatHeader(onRestartChat: _initializeChat),
-
-        // Chat messages or Loading or Error Screen
-        Expanded(child: _buildChatBody()),
-
-        // Bottom text field / interaction area
-        if (!_isLoading && _errorMessage == null)
-          ChatSearchBar(
-            controller: _searchController,
-            onSubmitted: _handleSearch,
-            enabled: !_isResponding,
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/chat_background.png'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(color: Colors.black.withValues(alpha: 0.06)),
           ),
-      ],
+          Column(
+            children: [
+              // Premium Header Section with assistant profile
+              ChatHeader(onRestartChat: _initializeChat),
+
+              // Chat messages or Loading or Error Screen
+              Expanded(child: _buildChatBody()),
+
+              // Bottom text field / interaction area
+              if (!_isLoading && _errorMessage == null)
+                ChatSearchBar(
+                  controller: _searchController,
+                  onSubmitted: _handleSearch,
+                  enabled: !_isResponding,
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

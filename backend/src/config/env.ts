@@ -4,6 +4,7 @@ import { z } from "zod";
 dotenv.config();
 
 const envSchema = z.object({
+   APP_NAME: z.string().default("LPA Backend"),
    BASE_URL: z.string().url().default("http://localhost:3000"),
    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
    PORT: z.string().transform(Number).default(3000),

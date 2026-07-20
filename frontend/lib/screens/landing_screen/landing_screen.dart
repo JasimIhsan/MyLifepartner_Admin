@@ -1,15 +1,16 @@
-import 'package:go_router/go_router.dart';
+import 'dart:ui';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/core/responsive/adaptive_screen.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
-import 'package:life_partner_again/core/app_routes.dart';
-import 'package:life_partner_again/core/responsive/adaptive_screen.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -49,6 +50,7 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
         systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
+        backgroundColor: Colors.black,
         body: Consumer<ImageAssetProvider>(
           builder: (context, provider, child) {
             final state = provider.getState('ONBOARDING_SCREEN');
@@ -57,36 +59,25 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
             return Stack(
               children: [
                 Positioned.fill(
-                  child: ShaderMask(
-                    shaderCallback: (rect) {
-                      return const LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black],
-                        stops: [0.15, 0.45],
-                      ).createShader(rect);
-                    },
-                    blendMode: BlendMode.dstIn,
-                    child: state == ImageAssetLoadState.loading
-                        ? Container(
-                            color: Colors.white,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.primary,
-                                strokeWidth: 2,
-                              ),
+                  child: state == ImageAssetLoadState.loading
+                      ? Container(
+                          color: Colors.black,
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
                             ),
-                          )
-                        : (landingAsset != null
+                          ),
+                        )
+                      : (landingAsset != null
                             ? CachedNetworkImage(
                                 imageUrl: landingAsset.imageUrl,
                                 fit: BoxFit.cover,
-                                alignment: Alignment.center,
+                                alignment: Alignment.topCenter,
                                 errorWidget: (context, url, error) =>
                                     _buildDefaultBackground(),
                               )
                             : _buildDefaultBackground()),
-                  ),
                 ),
                 Positioned.fill(
                   child: Container(
@@ -95,11 +86,11 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
+                          Colors.black.withValues(alpha: 0.05),
                           Colors.black.withValues(alpha: 0.3),
-                          Colors.transparent,
-                          Colors.black.withValues(alpha: 0.8),
+                          Colors.black.withValues(alpha: 0.95),
                         ],
-                        stops: const [0.0, 0.4, 1.0],
+                        stops: const [0.0, 0.5, 1.0],
                       ),
                     ),
                   ),
@@ -108,16 +99,17 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         _buildLogo(),
                         const Spacer(),
-                        _buildFeaturesRow(),
-                        const SizedBox(height: 40),
                         _buildTextSection(),
                         const SizedBox(height: 32),
-                        _buildCtaButton(),
+                        _buildTrustCards(),
                         const SizedBox(height: 40),
+                        _buildCtaButton(),
+                        const SizedBox(height: 32),
                       ],
                     ),
                   ),
@@ -149,103 +141,128 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
   }
 
   Widget _buildLogo() {
-    return Center(
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.15),
+            blurRadius: 30,
+            spreadRadius: 5,
+          ),
+        ],
+      ),
       child: Image.asset(
         'assets/icons/app_logo.png',
-        height: 200,
-        width: 200,
+        height: 100,
+        width: 100,
         errorBuilder: (context, error, stackTrace) => const Icon(
           Icons.favorite_rounded,
           color: AppColors.primary,
-          size: 100,
+          size: 80,
         ),
-      )
-          .animate()
-          .fadeIn(duration: 800.ms)
-          .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack),
-    );
-  }
-
-  Widget _buildFeaturesRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        _buildFeatureItem(
-          Icons.verified_user_outlined,
-          'Verified Profiles',
-        ),
-        _buildFeatureItem(Icons.favorite_outline_rounded, 'Real Love'),
-        _buildFeatureItem(Icons.lock_outline_rounded, 'Safe & Secure'),
-      ],
-    )
-        .animate()
-        .fadeIn(duration: 800.ms, delay: 400.ms)
-        .slideY(begin: 0.2, end: 0);
-  }
-
-  Widget _buildFeatureItem(IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Colors.white, size: 28),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: GoogleFonts.outfit(
-            color: Colors.white.withValues(alpha: 0.8),
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-      ],
-    );
+      ),
+    ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.2, end: 0);
   }
 
   Widget _buildTextSection() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Life Partner Again',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontSize: 34,
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.5,
-          ),
-        )
+              'Find your life\npartner again.',
+              style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                height: 1.1,
+                letterSpacing: -1.0,
+              ),
+            )
             .animate()
-            .fadeIn(duration: 800.ms, delay: 600.ms)
-            .slideY(begin: 0.2, end: 0),
-        const SizedBox(height: 12),
+            .fadeIn(duration: 800.ms, delay: 200.ms)
+            .slideY(begin: 0.1, end: 0),
+        const SizedBox(height: 16),
         Text(
-          'Start your next chapter together',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 18,
-            fontWeight: FontWeight.w300,
-          ),
-        )
+              'A trusted platform designed for emotionally mature relationships and authentic connections.',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w400,
+                height: 1.4,
+              ),
+            )
             .animate()
-            .fadeIn(duration: 800.ms, delay: 800.ms)
-            .slideY(begin: 0.2, end: 0),
+            .fadeIn(duration: 800.ms, delay: 400.ms)
+            .slideY(begin: 0.1, end: 0),
       ],
     );
   }
 
-  Widget _buildCtaButton() {
-    return CustomButton(
-      text: 'Get Started',
-      type: CustomButtonType.primary,
-      borderRadius: 50,
-      onPressed: () {
-        context.go(AppRoutes.login);
-      },
-    )
+  Widget _buildTrustCards() {
+    return Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            _buildTrustCard(Icons.verified_user_rounded, 'Verified'),
+            _buildTrustCard(Icons.shield_rounded, 'Privacy'),
+            _buildTrustCard(Icons.lock_rounded, 'Secure'),
+          ],
+        )
         .animate()
-        .fadeIn(duration: 800.ms, delay: 1000.ms)
-        .slideY(begin: 0.2, end: 0);
+        .fadeIn(duration: 800.ms, delay: 600.ms)
+        .slideY(begin: 0.1, end: 0);
+  }
+
+  Widget _buildTrustCard(IconData icon, String label) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(30),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: AppColors.primary, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCtaButton() {
+    return SizedBox(
+          width: double.infinity,
+          height: 60,
+          child: CustomButton(
+            text: 'Get Started',
+            type: CustomButtonType.primary,
+            borderRadius: 30,
+            onPressed: () {
+              context.go(AppRoutes.login);
+            },
+          ),
+        )
+        .animate()
+        .fadeIn(duration: 800.ms, delay: 800.ms)
+        .slideY(begin: 0.1, end: 0);
   }
 }
 
@@ -277,7 +294,9 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
             child: Consumer<ImageAssetProvider>(
               builder: (context, provider, child) {
                 final state = provider.getState('ONBOARDING_SCREEN');
-                final landingAsset = provider.getFeaturedAsset('ONBOARDING_SCREEN');
+                final landingAsset = provider.getFeaturedAsset(
+                  'ONBOARDING_SCREEN',
+                );
 
                 return Stack(
                   children: [
@@ -293,14 +312,14 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
                               ),
                             )
                           : (landingAsset != null
-                              ? CachedNetworkImage(
-                                  imageUrl: landingAsset.imageUrl,
-                                  fit: BoxFit.cover,
-                                  alignment: Alignment.center,
-                                  errorWidget: (context, url, error) =>
-                                      _buildDefaultBackground(),
-                                )
-                              : _buildDefaultBackground()),
+                                ? CachedNetworkImage(
+                                    imageUrl: landingAsset.imageUrl,
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.center,
+                                    errorWidget: (context, url, error) =>
+                                        _buildDefaultBackground(),
+                                  )
+                                : _buildDefaultBackground()),
                     ),
                     Positioned.fill(
                       child: Container(
@@ -309,42 +328,42 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              Colors.black.withValues(alpha: 0.2),
-                              Colors.black.withValues(alpha: 0.6),
+                              Colors.black.withValues(alpha: 0.1),
+                              Colors.black.withValues(alpha: 0.8),
                             ],
+                            stops: const [0.3, 1.0],
                           ),
                         ),
                       ),
                     ),
                     Positioned(
-                      bottom: 60,
-                      left: 60,
-                      right: 60,
+                      bottom: 80,
+                      left: 80,
+                      right: 80,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Find a connection that lasts a lifetime.",
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold,
-                              height: 1.2,
-                            ),
-                          )
+                                "Find a connection that lasts a lifetime.",
+                                style: Theme.of(context).textTheme.displayMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              )
                               .animate()
                               .fadeIn(duration: 800.ms)
                               .slideY(begin: 0.2, end: 0),
                           const SizedBox(height: 16),
                           Text(
-                            "A trusted platform designed for emotionally mature relationships. Join us and discover depth, companionship, and authentic connections.",
-                            style: GoogleFonts.outfit(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 18,
-                              height: 1.5,
-                              fontWeight: FontWeight.w300,
-                            ),
-                          )
+                                "A trusted platform designed for emotionally mature relationships. Join us and discover depth, companionship, and authentic connections.",
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                    ),
+                              )
                               .animate()
                               .fadeIn(duration: 800.ms, delay: 200.ms)
                               .slideY(begin: 0.2, end: 0),
@@ -370,69 +389,73 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Center(
-                        child: Image.asset(
-                          'assets/icons/app_logo.png',
-                          height: 120,
-                          width: 120,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.favorite_rounded,
-                            color: AppColors.primary,
-                            size: 80,
-                          ),
-                        )
-                            .animate()
-                            .fadeIn(duration: 800.ms)
-                            .scale(begin: const Offset(0.9, 0.9)),
+                        child:
+                            Image.asset(
+                                  'assets/icons/app_logo.png',
+                                  height: 120,
+                                  width: 120,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(
+                                        Icons.favorite_rounded,
+                                        color: AppColors.primary,
+                                        size: 80,
+                                      ),
+                                )
+                                .animate()
+                                .fadeIn(duration: 800.ms)
+                                .scale(begin: const Offset(0.9, 0.9)),
                       ),
                       const SizedBox(height: 48),
                       Text(
                         'Life Partner Again',
-                        style: GoogleFonts.outfit(
-                          color: Colors.black87,
-                          fontSize: 38,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -0.5,
-                        ),
-                      )
-                          .animate()
-                          .fadeIn(duration: 800.ms, delay: 200.ms),
+                        style: Theme.of(context).textTheme.headlineLarge
+                            ?.copyWith(
+                              color: Colors.black87,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ).animate().fadeIn(duration: 800.ms, delay: 200.ms),
                       const SizedBox(height: 12),
                       Text(
                         'Start your next chapter together. Sign in to connect with compatible and verified partners.',
-                        style: GoogleFonts.outfit(
-                          color: Colors.black54,
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                      )
-                          .animate()
-                          .fadeIn(duration: 800.ms, delay: 400.ms),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(color: Colors.black54),
+                      ).animate().fadeIn(duration: 800.ms, delay: 400.ms),
                       const SizedBox(height: 48),
                       // Feature Badges
                       Column(
                         children: [
-                          _buildFeatureRow(Icons.verified_user_outlined, 'Verified Profiles', 'Every profile is checked for safety and authenticity.'),
+                          _buildFeatureRow(
+                            Icons.verified_user_outlined,
+                            'Verified Profiles',
+                            'Every profile is checked for safety and authenticity.',
+                          ),
                           const SizedBox(height: 20),
-                          _buildFeatureRow(Icons.favorite_outline_rounded, 'Real Love & Intention', 'Designed exclusively for deep, emotionally mature bonds.'),
+                          _buildFeatureRow(
+                            Icons.favorite_outline_rounded,
+                            'Real Love & Intention',
+                            'Designed exclusively for deep, emotionally mature bonds.',
+                          ),
                           const SizedBox(height: 20),
-                          _buildFeatureRow(Icons.lock_outline_rounded, 'Safe & Secure', 'Your privacy is prioritized with end-to-end encryption.'),
+                          _buildFeatureRow(
+                            Icons.lock_outline_rounded,
+                            'Safe & Secure',
+                            'Your privacy is prioritized with end-to-end encryption.',
+                          ),
                         ],
-                      )
-                          .animate()
-                          .fadeIn(duration: 800.ms, delay: 600.ms),
+                      ).animate().fadeIn(duration: 800.ms, delay: 600.ms),
                       const SizedBox(height: 54),
                       SizedBox(
-                        width: double.infinity,
-                        child: CustomButton(
-                          text: 'Get Started',
-                          type: CustomButtonType.primary,
-                          borderRadius: 12,
-                          height: 56,
-                          onPressed: () {
-                            context.go(AppRoutes.login);
-                          },
-                        ),
-                      )
+                            width: double.infinity,
+                            child: CustomButton(
+                              text: 'Get Started',
+                              type: CustomButtonType.primary,
+                              borderRadius: 12,
+                              height: 56,
+                              onPressed: () {
+                                context.go(AppRoutes.login);
+                              },
+                            ),
+                          )
                           .animate()
                           .fadeIn(duration: 800.ms, delay: 800.ms)
                           .slideY(begin: 0.1, end: 0),
@@ -452,9 +475,8 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
       'assets/images/landing_couple.png',
       fit: BoxFit.cover,
       alignment: Alignment.center,
-      errorBuilder: (context, error, stackTrace) => Container(
-        color: Colors.grey[900],
-      ),
+      errorBuilder: (context, error, stackTrace) =>
+          Container(color: Colors.grey[900]),
     );
   }
 
@@ -477,19 +499,17 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
             children: [
               Text(
                 title,
-                style: GoogleFonts.outfit(
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Colors.black87,
-                  fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 subtitle,
-                style: GoogleFonts.outfit(
-                  color: Colors.black54,
-                  fontSize: 13,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.black54),
               ),
             ],
           ),

@@ -1,7 +1,13 @@
+import 'dart:ui';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/widgets/auth_layout.dart';
-import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:provider/provider.dart';
+
 import '../widgets/login_controller.dart';
 
 class MobileLoginScreen extends StatefulWidget {
@@ -13,141 +19,426 @@ class MobileLoginScreen extends StatefulWidget {
 
 class _MobileLoginScreenState extends State<MobileLoginScreen>
     with LoginControllerState {
+  bool _showEmailForm = false;
+
+  final String _googleSvg =
+      '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+</svg>''';
+
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final backgroundColor = AppColors.surface; // Light theme background
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        handleBackPress();
+        if (_showEmailForm) {
+          setState(() {
+            _showEmailForm = false;
+          });
+        } else {
+          handleBackPress();
+        }
       },
-      child: AuthLayout(
-        topImage: 'assets/images/landing_couple.png',
-        dynamicSection: 'ONBOARDING_SCREEN',
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = MediaQuery.of(context).size.width > 900;
-            return _buildFormContent(isWeb);
-          },
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        body: Stack(
+          children: [
+            // Background Image
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: size.height * 0.65,
+              child: Consumer<ImageAssetProvider>(
+                builder: (context, provider, _) {
+                  final asset = provider.getFeaturedAsset('ONBOARDING_SCREEN');
+                  if (asset != null) {
+                    return CachedNetworkImage(
+                      imageUrl: asset.imageUrl,
+                      fit: BoxFit.cover,
+                      alignment: Alignment.topCenter,
+                    );
+                  }
+                  return Image.asset(
+                    'assets/images/landing_couple.png',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                  );
+                },
+              ),
+            ),
+
+            // Gradient Fade to Background Color
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              height: size.height * 0.70,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: const [0.0, 0.4, 0.8, 1.0],
+                    colors: [
+                      backgroundColor.withValues(alpha: 0.0),
+                      backgroundColor.withValues(alpha: 0.3),
+                      backgroundColor.withValues(alpha: 0.9),
+                      backgroundColor,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Main Content Area
+            Positioned.fill(
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Optional Back Button
+                      if (context.canPop())
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(50),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
+                                ),
+                                child: IconButton(
+                                  icon: const Icon(
+                                    Icons.arrow_back_ios_new,
+                                    color: AppColors.black,
+                                    size: 20,
+                                  ),
+                                  onPressed: () {
+                                    if (_showEmailForm) {
+                                      setState(() {
+                                        _showEmailForm = false;
+                                      });
+                                    } else {
+                                      context.pop();
+                                    }
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox(height: 48),
+
+                      const Spacer(),
+
+                      // Editorial Headline
+                      const Text(
+                        "Life\nPartner\nAgain.",
+                        style: TextStyle(
+                          fontSize: 56,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.black,
+                          height: 1.0,
+                          letterSpacing: -2.0,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "A premium space for emotionally mature relationships.",
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+
+                      // Actions Container
+                      Form(
+                        key: formKey,
+                        child: AnimatedSize(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeOutQuint,
+                          child: _showEmailForm
+                              ? _buildEmailForm()
+                              : _buildActionList(),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Terms
+                      Center(
+                        child: Text.rich(
+                          TextSpan(
+                            text: "By continuing, you agree to our ",
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textSecondary,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: "Terms",
+                                style: TextStyle(color: AppColors.textPrimary),
+                              ),
+                              const TextSpan(text: " and "),
+                              const TextSpan(
+                                text: "Privacy",
+                                style: TextStyle(color: AppColors.textPrimary),
+                              ),
+                              const TextSpan(text: "."),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildFormContent(bool isWeb) {
-    return Form(
-      key: formKey,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Enter your email",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+  Widget _buildActionList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // Primary (Google) - Disabled
+        _buildEditorialButton(
+          icon: SvgPicture.string(_googleSvg, width: 22, height: 22),
+          label: "Continue with Google",
+          onPressed: null, // Disabled per user request
+          isPrimary: true,
+        ),
+        const SizedBox(height: 16),
+
+        // Tertiary (Apple) - Disabled
+        _buildEditorialButton(
+          icon: const Icon(Icons.apple, color: AppColors.black, size: 26),
+          label: "Continue with Apple",
+          onPressed: null,
+          isPrimary: true,
+        ),
+
+        const SizedBox(height: 16),
+
+        // Secondary (Email) - Active
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _showEmailForm = true;
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderColor, width: 1),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: emailController,
-            keyboardType: TextInputType.emailAddress,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: AppColors.textWhite,
-              contentPadding: EdgeInsets.symmetric(
-                vertical: isWeb ? 16 : 14,
-                horizontal: isWeb ? 16 : 10,
-              ),
-              hintText: "Enter your email address",
-              hintStyle: const TextStyle(color: Colors.grey),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(
-                  color: AppColors.primary,
-                  width: 1.5,
+            child: const Row(
+              children: [
+                Icon(Icons.mail_outline, color: AppColors.black, size: 22),
+                SizedBox(width: 16),
+                Text(
+                  "Continue with Email",
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.error),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: AppColors.error),
-              ),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your email';
-              }
-              final emailRegex = RegExp(
-                r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$",
-              );
-              if (!emailRegex.hasMatch(value)) {
-                return 'Please enter a valid email address';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            "We’ll send a verification code to your email.",
-            style: TextStyle(fontSize: 12, color: AppColors.textLight),
-          ),
-          const SizedBox(height: 32),
-          SizedBox(
-            width: double.infinity,
-            child: CustomButton(
-              onPressed: isLoading ? null : initiateAuth,
-              isLoading: isLoading,
-              text: "Continue",
-              backgroundColor: AppColors.primary,
-              borderRadius: 12,
-              height: 52,
+                Spacer(),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: AppColors.unselectedIcon,
+                  size: 14,
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
-          Center(child: _buildFooterText()),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildFooterText() {
-    return const Text.rich(
-      TextSpan(
-        text: "By continue, you agree to our ",
-        style: TextStyle(fontSize: 12, color: AppColors.textLight),
-        children: [
-          TextSpan(
-            text: "Terms of Service",
-            style: TextStyle(
-              decoration: TextDecoration.underline,
-              color: AppColors.textLight,
+  Widget _buildEmailForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Text(
+          "Enter your email",
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: emailController,
+          enabled: !isLoading,
+          keyboardType: TextInputType.text,
+          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: AppColors.inputBackground,
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 20,
+              horizontal: 20,
+            ),
+            hintText: "name@example.com",
+            hintStyle: const TextStyle(color: AppColors.textLight),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide(color: AppColors.primary),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: BorderSide(color: AppColors.primary),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(15),
+              borderSide: const BorderSide(color: AppColors.error),
             ),
           ),
-          TextSpan(text: " and "),
-          TextSpan(
-            text: "Privacy Policy",
-            style: TextStyle(
-              decoration: TextDecoration.underline,
-              color: AppColors.textLight,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your email';
+            }
+            final emailRegex = RegExp(
+              r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*\.[a-zA-Z]{2,}$",
+            );
+            if (!emailRegex.hasMatch(value)) {
+              return 'Invalid email address';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: isLoading ? null : initiateAuth,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: AppColors.white,
+            disabledBackgroundColor: AppColors.borderColor,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
             ),
+            elevation: 0,
           ),
-          TextSpan(text: "."),
-        ],
+          child: isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    color: AppColors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Text(
+                  "Continue",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEditorialButton({
+    required Widget icon,
+    required String label,
+    required VoidCallback? onPressed,
+    bool isPrimary = false,
+    bool isMuted = false,
+    String? badgeText,
+  }) {
+    final bool disabled = onPressed == null;
+
+    final bgColor = isPrimary ? AppColors.white : Colors.transparent;
+
+    final borderColor = isPrimary
+        ? AppColors.borderColor
+        : (isMuted ? Colors.transparent : AppColors.borderColor);
+
+    final textColor = isMuted ? AppColors.textSecondary : AppColors.textPrimary;
+
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(15), // Preserved from user edits
+        border: Border.all(color: borderColor, width: 1),
       ),
-      textAlign: TextAlign.center,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(10), // Preserved from user edits
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Opacity(
+                  opacity: isMuted ? 0.4 : (disabled ? 0.6 : 1.0),
+                  child: icon,
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: textColor.withValues(alpha: disabled ? 0.4 : 1.0),
+                    ),
+                  ),
+                ),
+                if (badgeText != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.inputBackground,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      badgeText,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

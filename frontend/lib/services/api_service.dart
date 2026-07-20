@@ -52,7 +52,8 @@ class ApiService {
           final isAuthRoute =
               requestPath.contains('login') ||
               requestPath.contains('register') ||
-              requestPath.contains('refresh-token');
+              requestPath.contains('refresh-token') ||
+              requestPath.contains('otp');
 
           final alreadyRetried = e.requestOptions.extra['retried'] == true;
 

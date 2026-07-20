@@ -31,7 +31,7 @@ class OtpHeader extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -40,13 +40,13 @@ class OtpHeader extends StatelessWidget {
             text: isPasswordReset
                 ? "We’ve sent a 6-digit password reset code to "
                 : "We’ve sent a 6-digit verification code to ",
-            style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+            style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
             children: [
               TextSpan(
                 text: "$_maskedEmail.",
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: AppColors.textPrimary,
                 ),
               ),
             ],

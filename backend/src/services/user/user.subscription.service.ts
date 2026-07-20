@@ -9,6 +9,7 @@ import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.r
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
+import logger from "@/utils/logger";
 
 type RevenueCatSubscription = {
    expires_date?: string;
@@ -196,7 +197,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    async handleWebhook(payload: Record<string, unknown>, _signatureHeader?: string): Promise<void> {
       const event = payload.event as RevenueCatWebhookEventData | undefined;
 
-      console.log("👉👉👉 WEBHOOK EVENT: ", event);
+      logger.info("👉👉👉 WEBHOOK EVENT: ", event);
 
       if (!event) {
          return;
@@ -217,7 +218,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       if (userId === undefined) {
-         console.warn("Could not resolve valid integer userId from RevenueCat event", event);
+         logger.warn("Could not resolve valid integer userId from RevenueCat event", event);
          return;
       }
 
