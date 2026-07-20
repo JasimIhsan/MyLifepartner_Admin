@@ -1,7 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/age_status_widget.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
+import 'package:life_partner_again/screens/onboarding/widgets/primay_date_picker.dart';
 
 class BasicInfoStep extends StatelessWidget {
   final TextEditingController firstNameCtrl;
@@ -26,14 +28,16 @@ class BasicInfoStep extends StatelessWidget {
     final nameRegex = RegExp(r"^[a-zA-Z\s\-\']+$");
 
     String? getFirstNameError() {
-      if (firstNameCtrl.text.isNotEmpty && !nameRegex.hasMatch(firstNameCtrl.text)) {
+      if (firstNameCtrl.text.isNotEmpty &&
+          !nameRegex.hasMatch(firstNameCtrl.text)) {
         return "Only letters, spaces, hyphens, and apostrophes allowed";
       }
       return null;
     }
 
     String? getLastNameError() {
-      if (lastNameCtrl.text.isNotEmpty && !nameRegex.hasMatch(lastNameCtrl.text)) {
+      if (lastNameCtrl.text.isNotEmpty &&
+          !nameRegex.hasMatch(lastNameCtrl.text)) {
         return "Only letters, spaces, hyphens, and apostrophes allowed";
       }
       return null;
@@ -61,33 +65,12 @@ class BasicInfoStep extends StatelessWidget {
           onChanged: onLastNameChanged,
         ),
         const SizedBox(height: 10),
-        const OnboardingSectionLabel(text: "When is your date of birth?"),
-        OnboardingInputField(
-          controller: TextEditingController(
-            text: dateOfBirth == null
-                ? ''
-                : '${dateOfBirth!.day}/${dateOfBirth!.month}/${dateOfBirth!.year}',
-          ),
-          hint: 'DD/MM/YYYY',
-          isReadonly: true,
-          suffixIcon: const Icon(
-            Icons.calendar_today_rounded,
-            color: AppColors.primary,
-            size: 20,
-          ),
-          onTap: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: dateOfBirth ??
-                  DateTime.now().subtract(const Duration(days: 365 * 25)),
-              firstDate: DateTime(1920),
-              lastDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
-            );
-            if (picked != null) {
-              onDateOfBirthChanged(picked);
-            }
-          },
+        const OnboardingSectionLabel(text: "Date of Birth"),
+        PrimayDatePicker(
+          initialDate: dateOfBirth,
+          onDateChanged: onDateOfBirthChanged,
         ),
+        AgeStatusWidget(dateOfBirth: dateOfBirth),
       ],
     );
   }

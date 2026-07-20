@@ -7,7 +7,24 @@ export const basicProfileSchema = z.object({
    body: z.object({
       name: z.string().min(1, "Name is required").optional(),
       gender: GenderEnum.nullish(),
-      dateOfBirth: z.string().datetime({ message: "Invalid date format" }).nullish(),
+      dateOfBirth: z
+         .string()
+         .datetime({ message: "Invalid date format" })
+         .nullish()
+         .refine(
+            (val) => {
+               if (!val) return true;
+               const dob = new Date(val);
+               const today = new Date();
+               let age = today.getFullYear() - dob.getFullYear();
+               const m = today.getMonth() - dob.getMonth();
+               if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                  age--;
+               }
+               return age >= 18;
+            },
+            { message: "Members must be aged 18 or over" }
+         ),
       maritalStatus: MaritalStatusEnum.nullish(),
       heightCm: z.number().int().min(50, "Height must be at least 50cm").max(300, "Height cannot exceed 300cm").nullish(),
       motherTongue: z.string().nullish(),

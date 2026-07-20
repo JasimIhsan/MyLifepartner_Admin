@@ -184,11 +184,16 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
 
     switch (currentStep) {
       case 0:
-        return firstName != null &&
-            nameRegex.hasMatch(firstName!.trim()) &&
-            lastName != null &&
-            nameRegex.hasMatch(lastName!.trim()) &&
-            dateOfBirth != null;
+        if (firstName == null || !nameRegex.hasMatch(firstName!.trim())) return false;
+        if (lastName == null || !nameRegex.hasMatch(lastName!.trim())) return false;
+        if (dateOfBirth == null) return false;
+        final today = DateTime.now();
+        int age = today.year - dateOfBirth!.year;
+        if (today.month < dateOfBirth!.month ||
+            (today.month == dateOfBirth!.month && today.day < dateOfBirth!.day)) {
+          age--;
+        }
+        return age >= 18;
       case 1:
         return bio == null || bio!.trim().isEmpty || bio!.trim().length >= 50;
       case 2:
