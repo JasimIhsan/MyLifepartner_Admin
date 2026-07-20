@@ -8,6 +8,7 @@ import { seedProfileData } from "./seeders/answers";
 import { seedUsers } from "./seeders/user";
 import { seedMutualConnections } from "./seeders/mutual_connections";
 import { seedGuide } from "./seeders/guide";
+import { seedJobs } from "./seeders/jobs";
 
 dotenv.config();
 
@@ -24,9 +25,10 @@ async function main() {
       // Execute each seeder in sequence
       // await seedAdmins(prisma);
       // await seedSubscriptionPlans(prisma);
-      await seedProfileData(prisma);
-      await seedUsers(prisma);
-      await seedMutualConnections(prisma);
+      // await seedProfileData(prisma);
+      // await seedUsers(prisma);
+      // await seedMutualConnections(prisma);
+      await seedJobs(prisma);
       // await seedGuide(prisma);
 
       console.log("Database seeding completed successfully.");

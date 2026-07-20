@@ -398,15 +398,17 @@ enum RelationshipTimeline {
 }
 
 enum SmokingHabit {
-  NO
+  NEVER
   OCCASIONALLY
-  YES
+  SOCIALLY
+  REGULARLY
 }
 
 enum DrinkingHabit {
-  NO
+  NEVER
+  OCCASIONALLY
   SOCIALLY
-  YES
+  REGULARLY
 }
 
 enum SelfieStatus {

@@ -21,6 +21,20 @@ class JobService {
     }
   }
 
+  static Future<List<JobModel>> getPopularJobs() async {
+    try {
+      final response = await _client.get('/jobs/popular');
+
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['data'];
+        return data.map((json) => JobModel.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
   static Future<JobModel> createJob(String name) async {
     try {
       final response = await _client.post('/jobs', data: {'name': name.trim()});

@@ -65,7 +65,7 @@ class _MobileOnboardingScreenState extends State<MobileOnboardingScreen>
                 isLoading: isLoading,
                 isLastStep: false,
                 label: currentStep == totalSteps - 1
-                    ? 'Continue to Partner Preferences'
+                    ? 'Set Partner Preferences'
                     : null,
                 onNext: next,
               ),

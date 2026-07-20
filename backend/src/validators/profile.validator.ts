@@ -38,8 +38,8 @@ export const basicProfileSchema = z.object({
       emotionalReadiness: z.enum(["YES", "MOSTLY", "NOT_SURE"]).nullish(),
       lookingFor: z.enum(["MARRIAGE", "LONG_TERM_RELATIONSHIP", "SERIOUS_COMPANIONSHIP"]).nullish(),
       relationshipTimeline: z.enum(["ZERO_TO_SIX_MONTHS", "SIX_TO_TWELVE_MONTHS", "NO_FIXED_TIMELINE"]).nullish(),
-      smokingHabit: z.enum(["NO", "OCCASIONALLY", "YES"]).nullish(),
-      drinkingHabit: z.enum(["NO", "SOCIALLY", "YES"]).nullish(),
+      smokingHabit: z.enum(["NEVER", "OCCASIONALLY", "SOCIALLY", "REGULARLY"]).nullish(),
+      drinkingHabit: z.enum(["NEVER", "OCCASIONALLY", "SOCIALLY", "REGULARLY"]).nullish(),
    }),
 });
 

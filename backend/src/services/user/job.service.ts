@@ -9,6 +9,10 @@ export class JobService implements IJobService {
       return this.jobRepository.findAll(search);
    }
 
+   async getPopularJobs(limit: number = 10): Promise<Job[]> {
+      return this.jobRepository.getPopularJobs(limit);
+   }
+
    async getOrCreateJob(name: string): Promise<Job> {
       const trimmedName = name.trim();
       const existingJob = await this.jobRepository.findByName(trimmedName);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
+
 import '../widgets/partner_preference_controller.dart';
 
 class WebPartnerPreferenceScreen extends StatefulWidget {
@@ -207,7 +208,7 @@ class _WebPartnerPreferenceScreenState extends State<WebPartnerPreferenceScreen>
                               isLoading: isLoading,
                               isLastStep: false,
                               label: currentStep == totalSteps - 1
-                                  ? 'Continue to Photo Upload'
+                                  ? 'Set Profile Images'
                                   : null,
                               onNext: next,
                             ),

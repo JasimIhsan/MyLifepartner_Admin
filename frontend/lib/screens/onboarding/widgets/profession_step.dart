@@ -1,6 +1,8 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/job.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 import 'package:life_partner_again/services/job_service.dart';
@@ -25,9 +27,32 @@ class ProfessionStep extends StatefulWidget {
 
 class _ProfessionStepState extends State<ProfessionStep> {
   List<JobModel> _suggestions = [];
+  List<JobModel> _popularJobs = [];
   bool _isLoading = false;
   Timer? _debounce;
-  bool _showSuggestions = false;
+  bool _isSearching = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isSearching = widget.professionCtrl.text.trim().isNotEmpty;
+    _fetchPopularJobs();
+  }
+
+  Future<void> _fetchPopularJobs() async {
+    setState(() => _isLoading = true);
+    try {
+      final results = await JobService.getPopularJobs();
+      if (mounted) {
+        setState(() {
+          _popularJobs = results;
+        });
+      }
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -37,14 +62,23 @@ class _ProfessionStepState extends State<ProfessionStep> {
 
   void _onSearchChanged(String query) {
     widget.onProfessionChanged(query);
-    widget.onJobIdChanged(null); // Reset job ID as the user is typing/editing
+    widget.onJobIdChanged(null);
+
+    final isNotEmpty = query.trim().isNotEmpty;
+    setState(() {
+      _isSearching = isNotEmpty;
+      if (isNotEmpty) {
+        _isLoading =
+            true; // Show loading immediately to prevent flashing empty state
+      }
+    });
 
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
+    _debounce = Timer(const Duration(milliseconds: 500), () {
       if (query.trim().isEmpty) {
         setState(() {
           _suggestions = [];
-          _showSuggestions = false;
+          _isLoading = false;
         });
         return;
       }
@@ -53,40 +87,38 @@ class _ProfessionStepState extends State<ProfessionStep> {
   }
 
   Future<void> _fetchSuggestions(String query) async {
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
     try {
       final results = await JobService.searchJobs(query);
-      setState(() {
-        _suggestions = results;
-        _showSuggestions = results.isNotEmpty;
-      });
+      if (mounted) {
+        setState(() {
+          _suggestions = results;
+        });
+      }
     } catch (_) {
-      // Silently handle error for search suggestions
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final professionRegex = RegExp(r"^[a-zA-Z0-9\s\-\'\.\,]+$");
+    final hasError =
+        widget.professionCtrl.text.isNotEmpty &&
+        !professionRegex.hasMatch(widget.professionCtrl.text);
 
-    String? getProfessionError() {
-      if (widget.professionCtrl.text.isNotEmpty &&
-          !professionRegex.hasMatch(widget.professionCtrl.text)) {
-        return "Only letters, numbers, spaces, and basic punctuation allowed";
-      }
-      return null;
-    }
+    final displayList = _isSearching ? _suggestions : _popularJobs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OnboardingStepTitle(title: "What do you do for work?"),
+        Container(
+          alignment: Alignment.center,
+          child: const OnboardingStepTitle(
+            title: "What do you\ndo professionaly?",
+          ),
+        ),
         const SizedBox(height: 10),
         Center(
           child: SizedBox(
@@ -100,66 +132,98 @@ class _ProfessionStepState extends State<ProfessionStep> {
         const SizedBox(height: 20),
         OnboardingInputField(
           controller: widget.professionCtrl,
-          hint: 'e.g. Software Developer, Doctor…',
+          hint: 'Search your job or role',
           capitalization: TextCapitalization.sentences,
-          errorText: getProfessionError(),
+          errorText: hasError
+              ? "Only letters, numbers, spaces, and basic punctuation allowed"
+              : null,
           inputFormatters: [LengthLimitingTextInputFormatter(100)],
           onChanged: _onSearchChanged,
+          prefixIcon: const Icon(
+            Icons.search,
+            color: AppColors.textPrimary,
+            size: 22,
+          ),
+          suffixIcon: _isLoading
+              ? const UnconstrainedBox(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                )
+              : null,
         ),
-        if (_isLoading)
+        if (!_isSearching)
           const Padding(
-            padding: EdgeInsets.only(top: 8.0, left: 8.0),
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.purple,
+            padding: EdgeInsets.only(top: 8, bottom: 12, left: 4),
+            child: Text(
+              "Popular jobs",
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
-        if (_showSuggestions && _suggestions.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+        if (displayList.isNotEmpty)
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: EdgeInsets.zero,
+            itemCount: displayList.length,
+            separatorBuilder: (context, index) =>
+                Divider(height: 1, color: Colors.grey.shade200),
+            itemBuilder: (context, index) {
+              final job = displayList[index];
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 0,
                 ),
-              ],
-            ),
-            constraints: const BoxConstraints(maxHeight: 200),
-            child: ListView.separated(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              itemCount: _suggestions.length,
-              separatorBuilder: (context, index) =>
-                  Divider(height: 1, color: Colors.grey.shade100),
-              itemBuilder: (context, index) {
-                final job = _suggestions[index];
-                return ListTile(
-                  title: Text(
-                    job.name,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                    ),
+                title: Text(
+                  job.name,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
                   ),
-                  onTap: () {
-                    widget.professionCtrl.text = job.name;
-                    widget.onProfessionChanged(job.name);
-                    widget.onJobIdChanged(job.id);
-                    setState(() {
-                      _showSuggestions = false;
-                    });
-                  },
-                );
-              },
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right,
+                  size: 20,
+                  color: AppColors.textSecondary,
+                ),
+                onTap: () {
+                  widget.professionCtrl.text = job.name;
+                  widget.onProfessionChanged(job.name);
+                  widget.onJobIdChanged(job.id);
+                  setState(() {
+                    _isSearching = false;
+                    FocusScope.of(context).unfocus();
+                  });
+                },
+              );
+            },
+          ),
+        if (_isSearching &&
+            _suggestions.isEmpty &&
+            !_isLoading &&
+            !hasError &&
+            widget.professionCtrl.text.trim().isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Center(
+              child: Text(
+                "Tap continue to use '${widget.professionCtrl.text.trim()}'",
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
             ),
           ),
       ],

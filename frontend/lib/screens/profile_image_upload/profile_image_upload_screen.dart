@@ -1,17 +1,17 @@
 // ignore_for_file: unused_import
 
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
-import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'widgets/empty_slot.dart';
@@ -355,7 +355,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                       padding: const EdgeInsets.fromLTRB(24, 12, 24, 28),
                       child:
                           CustomButton(
-                                text: 'Continue to Verification',
+                                text: 'Verify Your Account',
                                 onPressed: isValid ? _completeUpload : null,
                                 isLoading: _isSaving,
                                 height: 52,

@@ -52,6 +52,7 @@ class OnboardingInputField extends StatelessWidget {
   final TextCapitalization capitalization;
   final bool isReadonly;
   final VoidCallback? onTap;
+  final Widget? prefixIcon;
   final Widget? suffixIcon;
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
@@ -68,6 +69,7 @@ class OnboardingInputField extends StatelessWidget {
     this.capitalization = TextCapitalization.words,
     this.isReadonly = false,
     this.onTap,
+    this.prefixIcon,
     this.suffixIcon,
     this.onChanged,
     this.inputFormatters,
@@ -115,6 +117,7 @@ class OnboardingInputField extends StatelessWidget {
                 vertical: 18,
               ),
               border: InputBorder.none,
+              prefixIcon: prefixIcon,
               suffixIcon: suffixIcon != null
                   ? Padding(
                       padding: const EdgeInsets.only(right: 12),
@@ -165,7 +168,9 @@ class OnboardingSelectionTile extends StatelessWidget {
     final isSelected = selectedValue == value;
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    final borderColor = isDarkMode ? theme.dividerColor : const Color(0xFFF0E6E6);
+    final borderColor = isDarkMode
+        ? theme.dividerColor
+        : const Color(0xFFF0E6E6);
     final cardColor = isDarkMode ? theme.cardColor : Colors.white;
 
     return GestureDetector(
@@ -191,7 +196,11 @@ class OnboardingSelectionTile extends StatelessWidget {
                   color: AppColors.primary.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: isDarkMode ? Colors.white : AppColors.textPrimary, size: 22),
+                child: Icon(
+                  icon,
+                  color: isDarkMode ? Colors.white : AppColors.textPrimary,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 16),
             ],

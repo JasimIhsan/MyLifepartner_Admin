@@ -78,7 +78,7 @@ class _MobilePartnerPreferenceScreenState
                 isLoading: isLoading,
                 isLastStep: false,
                 label: currentStep == totalSteps - 1
-                    ? 'Continue to Photo Upload'
+                    ? 'Set Profile Images'
                     : null,
                 onNext: next,
               ),
