@@ -21,10 +21,7 @@ class LoginHeader extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           "Enter your mobile number to continue.",
-          style: TextStyle(
-            fontSize: 16,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
         ),
       ],
     );

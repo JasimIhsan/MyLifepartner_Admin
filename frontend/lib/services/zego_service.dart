@@ -12,8 +12,10 @@ class ZegoService {
   final _messageController = StreamController<ZegoZIMMessage>.broadcast();
   Stream<ZegoZIMMessage> get onMessageReceived => _messageController.stream;
 
-  final _userStatusController = StreamController<List<ZIMUserStatus>>.broadcast();
-  Stream<List<ZIMUserStatus>> get onUserStatusUpdated => _userStatusController.stream;
+  final _userStatusController =
+      StreamController<List<ZIMUserStatus>>.broadcast();
+  Stream<List<ZIMUserStatus>> get onUserStatusUpdated =>
+      _userStatusController.stream;
 
   bool _isInitialized = false;
   bool _isLoggedIn = false;
@@ -53,47 +55,48 @@ class ZegoService {
   }
 
   void _setupEventHandlers() {
-    ZIMEventHandler.onPeerMessageReceived = (
-      ZIM zim,
-      List<ZIMMessage> messageList,
-      ZIMMessageReceivedInfo info,
-      String fromUserID,
-    ) {
-      for (final msg in messageList) {
-        String content = '';
-        String messageType = 'TEXT';
+    ZIMEventHandler.onPeerMessageReceived =
+        (
+          ZIM zim,
+          List<ZIMMessage> messageList,
+          ZIMMessageReceivedInfo info,
+          String fromUserID,
+        ) {
+          for (final msg in messageList) {
+            String content = '';
+            String messageType = 'TEXT';
 
-        if (msg is ZIMTextMessage) {
-          content = msg.message;
-        } else if (msg is ZIMMediaMessage) {
-          content = msg.fileDownloadUrl;
-          if (msg is ZIMImageMessage) {
-            messageType = 'IMAGE';
-          } else if (msg is ZIMAudioMessage) {
-            messageType = 'AUDIO';
-          } else if (msg is ZIMVideoMessage) {
-            messageType = 'VIDEO';
-          } else {
-            messageType = 'FILE';
+            if (msg is ZIMTextMessage) {
+              content = msg.message;
+            } else if (msg is ZIMMediaMessage) {
+              content = msg.fileDownloadUrl;
+              if (msg is ZIMImageMessage) {
+                messageType = 'IMAGE';
+              } else if (msg is ZIMAudioMessage) {
+                messageType = 'AUDIO';
+              } else if (msg is ZIMVideoMessage) {
+                messageType = 'VIDEO';
+              } else {
+                messageType = 'FILE';
+              }
+            }
+
+            _messageController.add(
+              ZegoZIMMessage(
+                messageID: msg.messageID.toString(),
+                fromUserId: fromUserID,
+                content: content,
+                messageType: messageType,
+                timestamp: msg.timestamp,
+              ),
+            );
           }
-        }
+        };
 
-        _messageController.add(ZegoZIMMessage(
-          messageID: msg.messageID.toString(),
-          fromUserId: fromUserID,
-          content: content,
-          messageType: messageType,
-          timestamp: msg.timestamp,
-        ));
-      }
-    };
-
-    ZIMEventHandler.onUserStatusUpdated = (
-      ZIM zim,
-      List<ZIMUserStatus> userStatusList,
-    ) {
-      _userStatusController.add(userStatusList);
-    };
+    ZIMEventHandler.onUserStatusUpdated =
+        (ZIM zim, List<ZIMUserStatus> userStatusList) {
+          _userStatusController.add(userStatusList);
+        };
   }
 
   /// Log in to ZIM. userId must be a string representation of the app user ID.
@@ -135,7 +138,9 @@ class ZegoService {
       },
     );
 
-    debugPrint('[ZegoService] Sending to: "$toUserId", content length: ${content.length}');
+    debugPrint(
+      '[ZegoService] Sending to: "$toUserId", content length: ${content.length}',
+    );
 
     try {
       final result = await zim.sendMessage(
@@ -176,7 +181,8 @@ class ZegoService {
         sendConfig,
         ZIMMediaMessageSendNotification(
           onMessageAttached: (message) {},
-          onMediaUploadingProgress: (message, currentFileSize, totalFileSize) {},
+          onMediaUploadingProgress:
+              (message, currentFileSize, totalFileSize) {},
         ),
       );
       return result;
@@ -212,10 +218,7 @@ class ZegoService {
     required String callId,
     required String responseType,
   }) async {
-    final payload = jsonEncode({
-      'type': responseType,
-      'callId': callId,
-    });
+    final payload = jsonEncode({'type': responseType, 'callId': callId});
     await sendMessage(toUserId, payload);
   }
 

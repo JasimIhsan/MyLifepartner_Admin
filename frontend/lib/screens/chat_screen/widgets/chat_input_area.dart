@@ -91,11 +91,9 @@ class ChatInputArea extends StatelessWidget {
                 },
                 onLongPressStart:
                     (isTextEmpty && !isRecording && !isRecordingFinished)
-                        ? (_) => onStartRecording()
-                        : null,
-                onLongPressEnd: isRecording
-                    ? (_) => onStopRecording()
+                    ? (_) => onStartRecording()
                     : null,
+                onLongPressEnd: isRecording ? (_) => onStopRecording() : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   height: isRecording ? 52 : 44,
@@ -117,8 +115,8 @@ class ChatInputArea extends StatelessWidget {
                     isRecordingFinished
                         ? Icons.send_rounded
                         : (isTextEmpty
-                            ? Icons.mic_rounded
-                            : Icons.arrow_upward_rounded),
+                              ? Icons.mic_rounded
+                              : Icons.arrow_upward_rounded),
                     color: Colors.white,
                     size: isRecording ? 28 : 24,
                   ),
@@ -141,13 +139,13 @@ class ChatInputArea extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                )
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                    )
                     .animate(onPlay: (c) => c.repeat(reverse: true))
                     .fade(duration: 500.ms),
                 const SizedBox(width: 8),

@@ -6,7 +6,11 @@ class InlineAudioPlayer extends StatefulWidget {
   final String source;
   final bool isMe;
 
-  const InlineAudioPlayer({super.key, required this.source, required this.isMe});
+  const InlineAudioPlayer({
+    super.key,
+    required this.source,
+    required this.isMe,
+  });
 
   @override
   State<InlineAudioPlayer> createState() => _InlineAudioPlayerState();
@@ -61,7 +65,9 @@ class _InlineAudioPlayerState extends State<InlineAudioPlayer> {
   @override
   Widget build(BuildContext context) {
     final fgColor = widget.isMe ? Colors.white : AppColors.primary;
-    final bgColor = widget.isMe ? Colors.white.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.1);
+    final bgColor = widget.isMe
+        ? Colors.white.withValues(alpha: 0.2)
+        : AppColors.primary.withValues(alpha: 0.1);
 
     return Container(
       width: 200,
@@ -93,8 +99,12 @@ class _InlineAudioPlayerState extends State<InlineAudioPlayer> {
                 SliderTheme(
                   data: SliderThemeData(
                     trackHeight: 2,
-                    thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                    overlayShape: const RoundSliderOverlayShape(overlayRadius: 10),
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 6,
+                    ),
+                    overlayShape: const RoundSliderOverlayShape(
+                      overlayRadius: 10,
+                    ),
                     activeTrackColor: fgColor,
                     inactiveTrackColor: bgColor,
                     thumbColor: fgColor,
@@ -102,7 +112,10 @@ class _InlineAudioPlayerState extends State<InlineAudioPlayer> {
                   child: Slider(
                     min: 0,
                     max: _duration.inMilliseconds.toDouble(),
-                    value: _position.inMilliseconds.toDouble().clamp(0.0, _duration.inMilliseconds.toDouble()),
+                    value: _position.inMilliseconds.toDouble().clamp(
+                      0.0,
+                      _duration.inMilliseconds.toDouble(),
+                    ),
                     onChanged: (val) {
                       _audioPlayer.seek(Duration(milliseconds: val.toInt()));
                     },
@@ -115,11 +128,17 @@ class _InlineAudioPlayerState extends State<InlineAudioPlayer> {
                     children: [
                       Text(
                         _formatDuration(_position),
-                        style: TextStyle(color: fgColor.withValues(alpha: 0.8), fontSize: 10),
+                        style: TextStyle(
+                          color: fgColor.withValues(alpha: 0.8),
+                          fontSize: 10,
+                        ),
                       ),
                       Text(
                         _formatDuration(_duration),
-                        style: TextStyle(color: fgColor.withValues(alpha: 0.8), fontSize: 10),
+                        style: TextStyle(
+                          color: fgColor.withValues(alpha: 0.8),
+                          fontSize: 10,
+                        ),
                       ),
                     ],
                   ),

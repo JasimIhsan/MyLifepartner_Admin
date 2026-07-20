@@ -30,8 +30,10 @@ class CategorySelector extends StatelessWidget {
             child: InkWell(
               borderRadius: BorderRadius.circular(12),
               onTap: enabled
-                  ? () =>
-                      onSelectCategory(cat['id'] as int, cat['name'] as String)
+                  ? () => onSelectCategory(
+                      cat['id'] as int,
+                      cat['name'] as String,
+                    )
                   : null,
               child: Padding(
                 padding: const EdgeInsets.symmetric(

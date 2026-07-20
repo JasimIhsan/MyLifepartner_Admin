@@ -76,7 +76,8 @@ class _ProfessionStepState extends State<ProfessionStep> {
     final professionRegex = RegExp(r"^[a-zA-Z0-9\s\-\'\.\,]+$");
 
     String? getProfessionError() {
-      if (widget.professionCtrl.text.isNotEmpty && !professionRegex.hasMatch(widget.professionCtrl.text)) {
+      if (widget.professionCtrl.text.isNotEmpty &&
+          !professionRegex.hasMatch(widget.professionCtrl.text)) {
         return "Only letters, numbers, spaces, and basic punctuation allowed";
       }
       return null;
@@ -111,7 +112,10 @@ class _ProfessionStepState extends State<ProfessionStep> {
             child: SizedBox(
               width: 16,
               height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.purple),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.purple,
+              ),
             ),
           ),
         if (_showSuggestions && _suggestions.isNotEmpty)
@@ -126,7 +130,7 @@ class _ProfessionStepState extends State<ProfessionStep> {
                   color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
-                )
+                ),
               ],
             ),
             constraints: const BoxConstraints(maxHeight: 200),
@@ -134,13 +138,17 @@ class _ProfessionStepState extends State<ProfessionStep> {
               shrinkWrap: true,
               padding: EdgeInsets.zero,
               itemCount: _suggestions.length,
-              separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade100),
+              separatorBuilder: (context, index) =>
+                  Divider(height: 1, color: Colors.grey.shade100),
               itemBuilder: (context, index) {
                 final job = _suggestions[index];
                 return ListTile(
                   title: Text(
                     job.name,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   onTap: () {
                     widget.professionCtrl.text = job.name;

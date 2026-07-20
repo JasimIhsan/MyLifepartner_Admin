@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 
-mixin LikesControllerState<T extends StatefulWidget> on State<T>, TickerProviderStateMixin<T>, RouteAware {
+mixin LikesControllerState<T extends StatefulWidget>
+    on State<T>, TickerProviderStateMixin<T>, RouteAware {
   late TabController tabController;
   late AnimationController headerController;
   late Animation<double> headerAnimation;

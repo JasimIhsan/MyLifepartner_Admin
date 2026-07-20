@@ -3,7 +3,11 @@ class MatchImage {
   final bool isPrimary;
   final bool isBlurred;
 
-  MatchImage({required this.imageUrl, required this.isPrimary, this.isBlurred = false});
+  MatchImage({
+    required this.imageUrl,
+    required this.isPrimary,
+    this.isBlurred = false,
+  });
 
   factory MatchImage.fromJson(Map<String, dynamic> json) {
     return MatchImage(
@@ -97,8 +101,10 @@ class MatchRecommendation {
       interactionState: InteractionState.fromString(
         json['interactionState'] as String? ?? 'NONE',
       ),
-      createdAt: json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
-      lastLoginAt: json['lastLoginAt'] as String? ?? DateTime.now().toIso8601String(),
+      createdAt:
+          json['createdAt'] as String? ?? DateTime.now().toIso8601String(),
+      lastLoginAt:
+          json['lastLoginAt'] as String? ?? DateTime.now().toIso8601String(),
       viewerPrivacyEnabled: json['viewerPrivacyEnabled'] as bool? ?? false,
       targetPrivacyEnabled: json['targetPrivacyEnabled'] as bool? ?? false,
       imageAccessRequestStatus: json['imageAccessRequestStatus'] as String?,

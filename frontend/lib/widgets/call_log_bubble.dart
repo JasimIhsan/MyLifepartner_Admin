@@ -39,12 +39,16 @@ class CallLogBubble extends StatelessWidget {
       subtitle = _formatDuration(duration);
       iconColor = AppColors.primary;
     } else if (status == 'declined') {
-      icon = isVideo ? Icons.videocam_off_rounded : Icons.phone_disabled_rounded;
+      icon = isVideo
+          ? Icons.videocam_off_rounded
+          : Icons.phone_disabled_rounded;
       title = 'Declined Call';
       subtitle = isVideo ? 'Video' : 'Voice';
       iconColor = const Color(0xFFFF3B30);
     } else {
-      icon = isVideo ? Icons.missed_video_call_rounded : Icons.call_missed_rounded;
+      icon = isVideo
+          ? Icons.missed_video_call_rounded
+          : Icons.call_missed_rounded;
       title = 'Missed Call';
       subtitle = isVideo ? 'Video' : 'Voice';
       iconColor = const Color(0xFFFF3B30);

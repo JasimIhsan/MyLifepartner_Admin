@@ -310,10 +310,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 12),
             Text(
               'Loading more…',
-              style: TextStyle(
-                fontSize: 12,
-                color: AppColors.textSecondary,
-              ),
+              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
             ),
           ],
         ),

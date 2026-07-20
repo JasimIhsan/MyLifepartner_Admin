@@ -75,7 +75,9 @@ class CallProvider extends ChangeNotifier {
     try {
       final repository = ProfileRepository();
       final images = await repository.getUserImages();
-      final primary = images.where((img) => img.isPrimary).firstOrNull ?? images.firstOrNull;
+      final primary =
+          images.where((img) => img.isPrimary).firstOrNull ??
+          images.firstOrNull;
       if (primary != null) {
         _currentUserAvatar = primary.imageUrl;
       }
@@ -87,8 +89,9 @@ class CallProvider extends ChangeNotifier {
   /// Start listening to ZIM messages for call signaling.
   void startListening() {
     _zimSubscription?.cancel();
-    _zimSubscription =
-        ZegoService.instance.onMessageReceived.listen(_handleMessage);
+    _zimSubscription = ZegoService.instance.onMessageReceived.listen(
+      _handleMessage,
+    );
   }
 
   void _handleMessage(ZegoZIMMessage msg) {

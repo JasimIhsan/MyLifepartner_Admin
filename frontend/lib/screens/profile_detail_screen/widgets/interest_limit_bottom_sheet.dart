@@ -7,10 +7,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 class InterestLimitBottomSheet extends StatelessWidget {
   final String message;
 
-  const InterestLimitBottomSheet({
-    super.key,
-    required this.message,
-  });
+  const InterestLimitBottomSheet({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {

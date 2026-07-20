@@ -1,8 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 import 'package:life_partner_again/config/env.dart';
-// ignore: unused_import
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/services/token_service.dart';
@@ -33,8 +30,6 @@ class ApiService {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           final accessToken = await TokenService.getAccessToken();
-
-          debugPrint("👉 Access Token: $accessToken");
 
           if (accessToken != null && accessToken.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $accessToken';

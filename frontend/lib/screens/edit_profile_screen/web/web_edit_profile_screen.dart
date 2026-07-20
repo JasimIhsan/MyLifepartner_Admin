@@ -83,8 +83,9 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: AppColors.primary
-                                              .withValues(alpha: 0.2),
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.2,
+                                          ),
                                           width: 4,
                                         ),
                                         color: AppColors.surface,
@@ -94,24 +95,24 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                         backgroundColor: Colors.transparent,
                                         backgroundImage:
                                             primaryImageUrl != null &&
-                                                    primaryImageUrl!.isNotEmpty
-                                                ? CachedNetworkImageProvider(
-                                                    primaryImageUrl!,
-                                                  )
-                                                : null,
+                                                primaryImageUrl!.isNotEmpty
+                                            ? CachedNetworkImageProvider(
+                                                primaryImageUrl!,
+                                              )
+                                            : null,
                                         child: loadingImage
                                             ? const CircularProgressIndicator(
                                                 color: AppColors.primary,
                                               )
                                             : (primaryImageUrl == null ||
-                                                    primaryImageUrl!.isEmpty
-                                                ? const Icon(
-                                                    Icons.person,
-                                                    size: 64,
-                                                    color: AppColors
-                                                        .textSecondary,
-                                                  )
-                                                : null),
+                                                      primaryImageUrl!.isEmpty
+                                                  ? const Icon(
+                                                      Icons.person,
+                                                      size: 64,
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                    )
+                                                  : null),
                                       ),
                                     ),
                                     Container(
@@ -259,13 +260,14 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                               width: 200,
                               height: 56,
                               child: ElevatedButton(
-                                onPressed:
-                                    (isDirty && !isLoading) ? saveProfile : null,
+                                onPressed: (isDirty && !isLoading)
+                                    ? saveProfile
+                                    : null,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
-                                  disabledBackgroundColor:
-                                      AppColors.primary.withValues(alpha: 0.5),
+                                  disabledBackgroundColor: AppColors.primary
+                                      .withValues(alpha: 0.5),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(28),
                                   ),
@@ -281,7 +283,8 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                         ),
                                       )
                                     : Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: const [
                                           Icon(Icons.save_outlined, size: 22),
                                           SizedBox(width: 12),

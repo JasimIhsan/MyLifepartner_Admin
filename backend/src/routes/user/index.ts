@@ -11,6 +11,7 @@ import userProfileRoutes from "@routes/user/user.profile.routes";
 import userRoutes from "@routes/user/user.routes";
 import userSubscriptionRoutes from "@routes/user/user.subscription.routes";
 import zegoRoutes from "@routes/user/zego.routes";
+import locationRoutes from "@routes/user/location.routes";
 
 const router = Router();
 
@@ -35,6 +36,7 @@ router.use("/zego", zegoRoutes);
 router.use("/jobs", jobRoutes);
 router.use("/image-assets", imageAssetRoutes);
 router.use("/image-access", imageAccessRequestRoutes);
+router.use("/locations", locationRoutes);
 router.use("/", userRoutes);
 
 export default router;

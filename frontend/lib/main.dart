@@ -10,6 +10,7 @@ import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:life_partner_again/providers/location_provider.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
 import 'package:flutter/services.dart';
@@ -27,8 +28,7 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-final RouteObserver<PageRoute> routeObserver =
-    RouteObserver<PageRoute>();
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -133,6 +133,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => ImageAssetProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => CallProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
       ],
       child: MaterialApp.router(
         title: 'Life Partner Again',
@@ -149,10 +150,7 @@ class _MyAppState extends State<MyApp> {
           colorScheme: ColorScheme.fromSeed(
             seedColor: AppColors.primary,
             brightness: Brightness.light,
-          ).copyWith(
-            surface: Colors.white,
-            surfaceTint: Colors.transparent,
-          ),
+          ).copyWith(surface: Colors.white, surfaceTint: Colors.transparent),
 
           scaffoldBackgroundColor: Colors.white,
           canvasColor: Colors.white,
@@ -170,12 +168,7 @@ class _MyAppState extends State<MyApp> {
         ),
 
         builder: (context, child) {
-          return Stack(
-            children: [
-              child!,
-              const IncomingCallOverlay(),
-            ],
-          );
+          return Stack(children: [child!, const IncomingCallOverlay()]);
         },
       ),
     );

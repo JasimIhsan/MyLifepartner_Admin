@@ -24,6 +24,9 @@ const envSchema = z.object({
    ZEGO_APP_ID: z.coerce.number().default(0),
    ZEGO_APP_SIGN: z.string().default(""),
    ZEGO_SERVER_SECRET: z.string().default(""),
+
+   // Google Maps
+   GOOGLE_PLACES_API_KEY: z.string().default("random-dev-key"),
 });
 
 const _env = envSchema.safeParse(process.env);

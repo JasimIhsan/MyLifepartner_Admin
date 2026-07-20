@@ -11,7 +11,8 @@ class MobilePartnerPreferenceScreen extends StatefulWidget {
       _MobilePartnerPreferenceScreenState();
 }
 
-class _MobilePartnerPreferenceScreenState extends State<MobilePartnerPreferenceScreen>
+class _MobilePartnerPreferenceScreenState
+    extends State<MobilePartnerPreferenceScreen>
     with PartnerPreferenceControllerState {
   @override
   Widget build(BuildContext context) {
@@ -47,15 +48,16 @@ class _MobilePartnerPreferenceScreenState extends State<MobilePartnerPreferenceS
                               return FadeTransition(
                                 opacity: animation,
                                 child: SlideTransition(
-                                  position: Tween<Offset>(
-                                    begin: offsetBegin,
-                                    end: Offset.zero,
-                                  ).animate(
-                                    CurvedAnimation(
-                                      parent: animation,
-                                      curve: Curves.easeOutCubic,
-                                    ),
-                                  ),
+                                  position:
+                                      Tween<Offset>(
+                                        begin: offsetBegin,
+                                        end: Offset.zero,
+                                      ).animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                      ),
                                   child: child,
                                 ),
                               );

@@ -41,6 +41,8 @@
 	<string>This app needs camera access to take a selfie for verification.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs microphone access for the camera module.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to suggest your country, state, and city. You can edit these values at any time.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

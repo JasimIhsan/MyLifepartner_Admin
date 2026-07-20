@@ -107,10 +107,7 @@ class LoginForm extends StatelessWidget {
             children: [
               Text(
                 "Don't have an account? ",
-                style: TextStyle(
-                  color: Colors.grey[600],
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
               ),
               TextButton(
                 onPressed: () {},

@@ -60,7 +60,10 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
               backgroundColor: Colors.green,
             ),
           );
-          context.pushReplacement(AppRoutes.password, extra: PasswordArguments(email: email, isExistingUser: true));
+          context.pushReplacement(
+            AppRoutes.password,
+            extra: PasswordArguments(email: email, isExistingUser: true),
+          );
         }
         return;
       }
@@ -173,7 +176,14 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
     try {
       await authRepository.sendOtp(email: email, purpose: "password_reset");
       if (mounted) {
-        context.push(AppRoutes.otp, extra: OtpArguments(email: email, isExistingUser: isExistingUser, isPasswordReset: true));
+        context.push(
+          AppRoutes.otp,
+          extra: OtpArguments(
+            email: email,
+            isExistingUser: isExistingUser,
+            isPasswordReset: true,
+          ),
+        );
       }
     } catch (e) {
       debugPrint("Send magic link error: $e");

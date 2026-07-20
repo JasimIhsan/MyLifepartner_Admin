@@ -54,11 +54,7 @@ class ProfileDetailsGrid extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    item.icon,
-                    size: 16,
-                    color: AppColors.primary,
-                  ),
+                  Icon(item.icon, size: 16, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Text(
                     item.value,
@@ -80,7 +76,6 @@ class ProfileDetailsGrid extends StatelessWidget {
   List<DetailItem> _buildDetailItems() {
     final p = profile;
     final items = <DetailItem>[];
-
 
     if (p['motherTongue'] != null) {
       items.add(
@@ -148,6 +143,4 @@ class ProfileDetailsGrid extends StatelessWidget {
         )
         .join(' ');
   }
-
-
 }

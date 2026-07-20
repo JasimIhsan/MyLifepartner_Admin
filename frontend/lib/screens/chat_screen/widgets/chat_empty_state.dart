@@ -10,11 +10,7 @@ class ChatEmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.waving_hand_rounded,
-            color: Colors.orangeAccent,
-            size: 48,
-          ),
+          Icon(Icons.waving_hand_rounded, color: Colors.orangeAccent, size: 48),
           SizedBox(height: 16),
           Text(
             'Say hi!',
@@ -27,10 +23,7 @@ class ChatEmptyState extends StatelessWidget {
           SizedBox(height: 8),
           Text(
             'Don\'t be shy, start the conversation.',
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-            ),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
         ],
       ),

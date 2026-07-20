@@ -85,10 +85,7 @@ class OtpWebBanner extends StatelessWidget {
           Text(
             "We've sent a 6-digit code to your email. Please enter it to verify your identity.",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
           ),
         ],
       ),

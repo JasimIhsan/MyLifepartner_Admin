@@ -5,7 +5,8 @@ import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/profile_image_upload/widgets/image_options_sheet.dart';
 
-mixin ManageProfilePicturesControllerState<T extends StatefulWidget> on State<T> {
+mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
+    on State<T> {
   final ProfileRepository profileRepository = ProfileRepository();
   final ImagePicker picker = ImagePicker();
 

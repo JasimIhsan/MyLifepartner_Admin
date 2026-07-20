@@ -74,7 +74,10 @@ class _MatchesListState extends State<MatchesList> {
     }
   }
 
-  Future<void> _showCancelConfirmation(BuildContext context, MatchRecommendation profile) async {
+  Future<void> _showCancelConfirmation(
+    BuildContext context,
+    MatchRecommendation profile,
+  ) async {
     final provider = context.read<MatchProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     final bool? confirm = await showDialog<bool>(
@@ -82,7 +85,9 @@ class _MatchesListState extends State<MatchesList> {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: const Text(
             'Cancel Interest?',
             style: TextStyle(
@@ -211,28 +216,28 @@ class _MatchesListState extends State<MatchesList> {
                     curve: Curves.easeOutBack,
                   ),
                   Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                      letterSpacing: -0.5,
-                    ),
-                  )
+                        title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -0.5,
+                        ),
+                      )
                       .animate()
                       .fadeIn(delay: 150.ms, duration: 450.ms)
                       .slideY(begin: 0.2, end: 0.0, curve: Curves.easeOutQuad),
                   const SizedBox(height: 12),
                   Text(
-                    subtitle,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
-                  )
+                        subtitle,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
+                          height: 1.5,
+                        ),
+                      )
                       .animate()
                       .fadeIn(delay: 300.ms, duration: 450.ms)
                       .slideY(begin: 0.2, end: 0.0, curve: Curves.easeOutQuad),

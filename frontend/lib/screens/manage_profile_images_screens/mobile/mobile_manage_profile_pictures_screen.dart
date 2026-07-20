@@ -17,8 +17,10 @@ class MobileManageProfilePicturesScreen extends StatefulWidget {
 
 class _MobileManageProfilePicturesScreenState
     extends State<MobileManageProfilePicturesScreen>
-    with ManageProfilePicturesControllerState<MobileManageProfilePicturesScreen> {
-  
+    with
+        ManageProfilePicturesControllerState<
+          MobileManageProfilePicturesScreen
+        > {
   Widget _buildSmallSlot(int index) {
     if (index < images.length) {
       return SmallImageSlot(
@@ -73,32 +75,32 @@ class _MobileManageProfilePicturesScreenState
                 ).animate().fade(duration: 400.ms).slideY(begin: 0.05),
                 const SizedBox(height: 16),
                 Row(
-                  children: [
-                    Expanded(
-                      child: AspectRatio(
-                        aspectRatio: 0.75,
-                        child: _buildSmallSlot(1),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: AspectRatio(
-                        aspectRatio: 0.75,
-                        child: _buildSmallSlot(2),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: AspectRatio(
-                        aspectRatio: 0.75,
-                        child: _buildSmallSlot(3),
-                      ),
-                    ),
-                  ],
-                )
-                .animate()
-                .fade(duration: 500.ms, delay: 100.ms)
-                .slideY(begin: 0.1),
+                      children: [
+                        Expanded(
+                          child: AspectRatio(
+                            aspectRatio: 0.75,
+                            child: _buildSmallSlot(1),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: AspectRatio(
+                            aspectRatio: 0.75,
+                            child: _buildSmallSlot(2),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: AspectRatio(
+                            aspectRatio: 0.75,
+                            child: _buildSmallSlot(3),
+                          ),
+                        ),
+                      ],
+                    )
+                    .animate()
+                    .fade(duration: 500.ms, delay: 100.ms)
+                    .slideY(begin: 0.1),
                 const SizedBox(height: 32),
                 _buildInfoFooter(),
               ],
@@ -171,25 +173,25 @@ class _MobileManageProfilePicturesScreenState
                 ).animate().scale(delay: 200.ms, duration: 250.ms),
                 const SizedBox(height: 60),
                 Row(
-                  children: List.generate(4, (index) {
-                    return Expanded(
-                      child: AspectRatio(
-                        aspectRatio: 0.75,
-                        child: Padding(
-                          padding: EdgeInsets.only(
-                            right: index < 3 ? 12.0 : 0,
+                      children: List.generate(4, (index) {
+                        return Expanded(
+                          child: AspectRatio(
+                            aspectRatio: 0.75,
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: index < 3 ? 12.0 : 0,
+                              ),
+                              child: CustomEmptySlot(
+                                onTap: isUploading ? null : pickAndUploadImage,
+                              ),
+                            ),
                           ),
-                          child: CustomEmptySlot(
-                            onTap: isUploading ? null : pickAndUploadImage,
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                )
-                .animate()
-                .fade(duration: 500.ms, delay: 300.ms)
-                .slideY(begin: 0.1),
+                        );
+                      }),
+                    )
+                    .animate()
+                    .fade(duration: 500.ms, delay: 300.ms)
+                    .slideY(begin: 0.1),
                 const SizedBox(height: 28),
                 _buildInfoFooter(),
               ],

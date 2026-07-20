@@ -45,8 +45,7 @@ class DashedBorderPainter extends CustomPainter {
       double pos = 0;
       while (pos < metric.length) {
         final remaining = metric.length - pos;
-        final segment = math.min(
-            drawing ? dashLength : gapLength, remaining);
+        final segment = math.min(drawing ? dashLength : gapLength, remaining);
 
         if (drawing) {
           final extractedPath = metric.extractPath(pos, pos + segment);

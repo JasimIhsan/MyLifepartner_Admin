@@ -114,7 +114,10 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (context, state) {
           final args = state.extra as OtpArguments?;
           if (args == null) {
-            return _buildErrorScreen(context, 'Session expired or invalid arguments.');
+            return _buildErrorScreen(
+              context,
+              'Session expired or invalid arguments.',
+            );
           }
           return OtpPage(
             email: args.email,
@@ -128,7 +131,10 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (context, state) {
           final args = state.extra as PasswordArguments?;
           if (args == null) {
-            return _buildErrorScreen(context, 'Session expired or invalid arguments.');
+            return _buildErrorScreen(
+              context,
+              'Session expired or invalid arguments.',
+            );
           }
           return PasswordScreen(
             email: args.email,
@@ -195,7 +201,9 @@ GoRouter createRouter(AuthProvider authProvider) {
             path: AppRoutes.chatDetail,
             builder: (context, state) {
               final args = state.extra as ChatDetailArguments?;
-              if (args == null) return _buildErrorScreen(context, 'Chat data not found.');
+              if (args == null) {
+                return _buildErrorScreen(context, 'Chat data not found.');
+              }
               return ChatDetailScreen(
                 profile: args.profile,
                 currentUserId: args.currentUserId,
@@ -236,7 +244,9 @@ GoRouter createRouter(AuthProvider authProvider) {
         path: AppRoutes.mediaPreview,
         builder: (context, state) {
           final args = state.extra as MediaPreviewArguments?;
-          if (args == null) return _buildErrorScreen(context, 'Media data not found.');
+          if (args == null) {
+            return _buildErrorScreen(context, 'Media data not found.');
+          }
           return MediaPreviewScreen(
             path: args.path,
             type: args.type,
@@ -248,7 +258,9 @@ GoRouter createRouter(AuthProvider authProvider) {
         path: AppRoutes.outgoingCall,
         builder: (context, state) {
           final args = state.extra as OutgoingCallArguments?;
-          if (args == null) return _buildErrorScreen(context, 'Call data not found.');
+          if (args == null) {
+            return _buildErrorScreen(context, 'Call data not found.');
+          }
           return OutgoingCallScreen(
             calleeName: args.calleeName,
             calleeAvatar: args.calleeAvatar,
@@ -261,7 +273,9 @@ GoRouter createRouter(AuthProvider authProvider) {
         path: AppRoutes.call,
         builder: (context, state) {
           final args = state.extra as CallArguments?;
-          if (args == null) return _buildErrorScreen(context, 'Call data not found.');
+          if (args == null) {
+            return _buildErrorScreen(context, 'Call data not found.');
+          }
           return CallScreen(
             callID: args.callID,
             userID: args.userID,

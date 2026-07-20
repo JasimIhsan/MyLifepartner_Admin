@@ -258,10 +258,7 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
           Text(
             "You've seen all recommendations for now.",
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 32),
           _buildRetryButton(provider),

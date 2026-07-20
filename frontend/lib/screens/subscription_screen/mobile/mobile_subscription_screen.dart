@@ -426,8 +426,10 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                   currentSub.id == plan.id;
                                               final isSelectedPage =
                                                   index == _currentPage;
-                                              
-                                              final visuals = getPlanVisuals(plan);
+
+                                              final visuals = getPlanVisuals(
+                                                plan,
+                                              );
 
                                               return AnimatedScale(
                                                 scale: isSelectedPage
@@ -441,17 +443,33 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                   plan: plan,
                                                   isCurrentPlan: isCurrentPlan,
                                                   isLoading: provider.isLoading,
-                                                  isSelectedPage: isSelectedPage,
-                                                  willRenew: provider.mySubscription?.willRenew ?? true,
+                                                  isSelectedPage:
+                                                      isSelectedPage,
+                                                  willRenew:
+                                                      provider
+                                                          .mySubscription
+                                                          ?.willRenew ??
+                                                      true,
                                                   visuals: visuals,
                                                   onSubscribe: () {
-                                                    if (isCurrentPlan && plan.price > 0) {
-                                                      handleSubscribe(provider.plans.firstWhere((p) => p.price == 0));
+                                                    if (isCurrentPlan &&
+                                                        plan.price > 0) {
+                                                      handleSubscribe(
+                                                        provider.plans
+                                                            .firstWhere(
+                                                              (p) =>
+                                                                  p.price == 0,
+                                                            ),
+                                                      );
                                                     } else {
                                                       handleSubscribe(plan);
                                                     }
                                                   },
-                                                  onInfoTap: () => _showPlanDetailsSheet(context, plan),
+                                                  onInfoTap: () =>
+                                                      _showPlanDetailsSheet(
+                                                        context,
+                                                        plan,
+                                                      ),
                                                 ),
                                               );
                                             },

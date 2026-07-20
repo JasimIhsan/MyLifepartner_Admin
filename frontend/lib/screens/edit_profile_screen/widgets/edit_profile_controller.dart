@@ -305,10 +305,11 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
   Future<void> selectDateOfBirth() async {
     final now = DateTime.now();
     final eighteenYearsAgo = DateTime(now.year - 18, now.month, now.day);
-    
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: dateOfBirth != null && dateOfBirth!.isBefore(eighteenYearsAgo)
+      initialDate:
+          dateOfBirth != null && dateOfBirth!.isBefore(eighteenYearsAgo)
           ? dateOfBirth!
           : eighteenYearsAgo,
       firstDate: DateTime(1900),

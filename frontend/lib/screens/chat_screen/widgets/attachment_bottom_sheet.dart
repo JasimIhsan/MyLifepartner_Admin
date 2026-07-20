@@ -6,10 +6,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 class AttachmentBottomSheet extends StatelessWidget {
   final Function(String path, String type) onMediaSelected;
 
-  const AttachmentBottomSheet({
-    super.key,
-    required this.onMediaSelected,
-  });
+  const AttachmentBottomSheet({super.key, required this.onMediaSelected});
 
   @override
   Widget build(BuildContext context) {

@@ -5,10 +5,7 @@ import '../lpa_guide_screen.dart';
 class ChatMessageBubble extends StatelessWidget {
   final ChatMessage message;
 
-  const ChatMessageBubble({
-    super.key,
-    required this.message,
-  });
+  const ChatMessageBubble({super.key, required this.message});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +14,9 @@ class ChatMessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
-        mainAxisAlignment: isAssistant ? MainAxisAlignment.start : MainAxisAlignment.end,
+        mainAxisAlignment: isAssistant
+            ? MainAxisAlignment.start
+            : MainAxisAlignment.end,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isAssistant) ...[
@@ -34,7 +33,9 @@ class ChatMessageBubble extends StatelessWidget {
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment: isAssistant ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+              crossAxisAlignment: isAssistant
+                  ? CrossAxisAlignment.start
+                  : CrossAxisAlignment.end,
               children: [
                 if (message.type == MessageType.text)
                   _buildTextBubble(message, isAssistant)

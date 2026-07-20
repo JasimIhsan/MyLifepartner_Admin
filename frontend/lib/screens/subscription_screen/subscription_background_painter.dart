@@ -6,9 +6,7 @@ class SubscriptionBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
-      child: CustomPaint(
-        painter: SubscriptionBackgroundPainter(),
-      ),
+      child: CustomPaint(painter: SubscriptionBackgroundPainter()),
     );
   }
 }
@@ -25,11 +23,7 @@ class SubscriptionBackgroundPainter extends CustomPainter {
       ..shader = const LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [
-          Color(0xFFFCFCFD),
-          Color(0xFFF8FAFC),
-          Color(0xFFF1F5F9),
-        ],
+        colors: [Color(0xFFFCFCFD), Color(0xFFF8FAFC), Color(0xFFF1F5F9)],
       ).createShader(rect);
     canvas.drawRect(rect, bgPaint);
 

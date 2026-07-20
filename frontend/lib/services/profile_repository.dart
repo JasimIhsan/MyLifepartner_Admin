@@ -200,9 +200,7 @@ class ProfileRepository {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      final response = await ApiService.client.get(
-        '/profile/images/$userId',
-      );
+      final response = await ApiService.client.get('/profile/images/$userId');
 
       return UserImageResponse.fromJson(response.data).data;
     } on DioException catch (e) {

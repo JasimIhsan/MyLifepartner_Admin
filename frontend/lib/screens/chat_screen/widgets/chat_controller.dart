@@ -34,9 +34,7 @@ mixin ChatControllerState<T extends StatefulWidget> on State<T>, RouteAware {
     await chatProvider.loadConversations();
 
     if (mounted) {
-      final userIds = matchProvider.mutualMatches
-          .map((m) => m.userId)
-          .toList();
+      final userIds = matchProvider.mutualMatches.map((m) => m.userId).toList();
       if (userIds.isNotEmpty) {
         chatProvider.subscribeToUsersStatus(userIds);
       }

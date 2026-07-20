@@ -29,7 +29,12 @@ class PlanFeature {
   final String? description;
   final Feature feature;
 
-  PlanFeature({required this.id, required this.limit, this.description, required this.feature});
+  PlanFeature({
+    required this.id,
+    required this.limit,
+    this.description,
+    required this.feature,
+  });
 
   factory PlanFeature.fromJson(Map<String, dynamic> json) {
     return PlanFeature(
@@ -130,7 +135,9 @@ class SubscriptionPlan {
   /// Helper to get a simple string list of feature descriptions for the UI
   List<String> get featureDescriptions {
     return features
-        .map((pf) => pf.description ?? pf.feature.description ?? pf.feature.name)
+        .map(
+          (pf) => pf.description ?? pf.feature.description ?? pf.feature.name,
+        )
         .toList();
   }
 }

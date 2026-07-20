@@ -17,7 +17,8 @@ class _WebLoginScreenState extends State<WebLoginScreen>
     with LoginControllerState {
   bool _showEmailForm = false;
 
-  final String _googleSvg = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+  final String _googleSvg =
+      '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
   <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
   <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
   <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
@@ -40,7 +41,9 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                 Positioned.fill(
                   child: Consumer<ImageAssetProvider>(
                     builder: (context, provider, _) {
-                      final asset = provider.getFeaturedAsset('ONBOARDING_SCREEN');
+                      final asset = provider.getFeaturedAsset(
+                        'ONBOARDING_SCREEN',
+                      );
                       if (asset != null) {
                         return CachedNetworkImage(
                           imageUrl: asset.imageUrl,
@@ -109,7 +112,7 @@ class _WebLoginScreenState extends State<WebLoginScreen>
               ],
             ),
           ),
-          
+
           // Right side - 40% Editorial Form Area
           Expanded(
             flex: 4,
@@ -150,17 +153,22 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                         child: AnimatedSize(
                           duration: const Duration(milliseconds: 400),
                           curve: Curves.easeOutQuint,
-                          child: _showEmailForm ? _buildEmailForm() : _buildActionList(),
+                          child: _showEmailForm
+                              ? _buildEmailForm()
+                              : _buildActionList(),
                         ),
                       ),
-                      
+
                       const Spacer(),
-                      
+
                       Center(
                         child: Text.rich(
                           TextSpan(
                             text: "By continuing, you agree to our ",
-                            style: const TextStyle(fontSize: 12, color: Colors.black54),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
                             children: [
                               const TextSpan(
                                 text: "Terms",
@@ -213,7 +221,7 @@ class _WebLoginScreenState extends State<WebLoginScreen>
           onPressed: null,
           isPrimary: true,
         ),
-        
+
         const SizedBox(height: 16),
 
         // Secondary (Email) - Active
@@ -284,11 +292,14 @@ class _WebLoginScreenState extends State<WebLoginScreen>
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.grey.shade50,
-            contentPadding: const EdgeInsets.symmetric(vertical: 24, horizontal: 20),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 24,
+              horizontal: 20,
+            ),
             hintText: "name@example.com",
             hintStyle: const TextStyle(color: Colors.black38),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(4), 
+              borderRadius: BorderRadius.circular(4),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
@@ -324,7 +335,7 @@ class _WebLoginScreenState extends State<WebLoginScreen>
               disabledBackgroundColor: Colors.grey.shade300,
               padding: const EdgeInsets.symmetric(vertical: 24),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4), 
+                borderRadius: BorderRadius.circular(4),
               ),
               elevation: 0,
             ),
@@ -332,7 +343,10 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                 ? const SizedBox(
                     height: 24,
                     width: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
                   )
                 : const Text(
                     "Continue",
@@ -354,10 +368,8 @@ class _WebLoginScreenState extends State<WebLoginScreen>
   }) {
     final bool disabled = onPressed == null;
 
-    final bgColor = isPrimary
-        ? Colors.white 
-        : Colors.transparent;
-    
+    final bgColor = isPrimary ? Colors.white : Colors.transparent;
+
     final borderColor = isPrimary
         ? Colors.grey.shade300
         : (isMuted ? Colors.transparent : Colors.grey.shade300);
@@ -380,7 +392,10 @@ class _WebLoginScreenState extends State<WebLoginScreen>
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: [
-                Opacity(opacity: isMuted ? 0.4 : (disabled ? 0.6 : 1.0), child: icon),
+                Opacity(
+                  opacity: isMuted ? 0.4 : (disabled ? 0.6 : 1.0),
+                  child: icon,
+                ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
@@ -394,7 +409,10 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                 ),
                 if (badgeText != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.grey.shade200,
                       borderRadius: BorderRadius.circular(4),

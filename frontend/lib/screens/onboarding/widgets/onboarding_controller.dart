@@ -18,6 +18,7 @@ import 'package:life_partner_again/services/job_service.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/providers/location_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -179,18 +180,22 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
 
   bool get canProceed {
     final nameRegex = RegExp(r"^[a-zA-Z\s\-\']+$");
-    final cityRegex = RegExp(r"^[a-zA-Z\s\-\'\.]+$");
     final professionRegex = RegExp(r"^[a-zA-Z0-9\s\-\'\.\,]+$");
 
     switch (currentStep) {
       case 0:
-        if (firstName == null || !nameRegex.hasMatch(firstName!.trim())) return false;
-        if (lastName == null || !nameRegex.hasMatch(lastName!.trim())) return false;
+        if (firstName == null || !nameRegex.hasMatch(firstName!.trim())) {
+          return false;
+        }
+        if (lastName == null || !nameRegex.hasMatch(lastName!.trim())) {
+          return false;
+        }
         if (dateOfBirth == null) return false;
         final today = DateTime.now();
         int age = today.year - dateOfBirth!.year;
         if (today.month < dateOfBirth!.month ||
-            (today.month == dateOfBirth!.month && today.day < dateOfBirth!.day)) {
+            (today.month == dateOfBirth!.month &&
+                today.day < dateOfBirth!.day)) {
           age--;
         }
         return age >= 18;
@@ -201,9 +206,10 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       case 3:
         return maritalStatus != null;
       case 4:
-        return country != null &&
-            city != null &&
-            cityRegex.hasMatch(city!.trim());
+        if (!mounted) return false;
+        final locProvider = context.read<LocationProvider>();
+        return locProvider.selectedCountry != null &&
+            locProvider.selectedCity != null;
       case 5:
         return emotionalReadiness != null;
       case 6:
@@ -264,6 +270,9 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
         } catch (_) {}
       }
 
+      if (!mounted) return;
+      final locProvider = context.read<LocationProvider>();
+
       await profileRepo.updateBasicProfile({
         'name': name,
         'bio': bio,
@@ -271,8 +280,9 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
         'dateOfBirth': dateOfBirth != null
             ? '${dateOfBirth!.toIso8601String()}Z'
             : null,
-        'country': country,
-        'city': city,
+        'country': locProvider.selectedCountry?.name ?? country,
+        'city': locProvider.selectedCity?.name ?? city,
+        'state': locProvider.selectedState?.name,
         'heightCm': heightCm,
         'maritalStatus': maritalStatus,
         'childrenStatus': childrenStatus,
@@ -419,21 +429,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
           },
         );
       case 4:
-        return LocationStep(
-          country: country,
-          cityCtrl: cityCtrl,
-          onCountryChanged: (v) {
-            setState(() {
-              country = v;
-              countryCtrl.text = v;
-            });
-            saveToCache('onboarding_country', v);
-          },
-          onCityChanged: (v) {
-            setState(() => city = v);
-            saveToCache('onboarding_city', v);
-          },
-        );
+        return const LocationStep();
       case 5:
         return EmotionalReadinessStep(
           selectedReadiness: emotionalReadiness,

@@ -75,13 +75,17 @@ class HeightStep extends StatelessWidget {
                     height: boxHeight,
                     decoration: BoxDecoration(
                       color: isSelected ? Colors.black : Colors.transparent,
-                      borderRadius: BorderRadius.circular(isSmallDevice ? 12 : 16),
+                      borderRadius: BorderRadius.circular(
+                        isSmallDevice ? 12 : 16,
+                      ),
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       "${formatImperial(cm)} ($cm cm)",
                       style: TextStyle(
-                        fontSize: isSelected ? selectedFontSize : unselectedFontSize,
+                        fontSize: isSelected
+                            ? selectedFontSize
+                            : unselectedFontSize,
                         fontWeight: isSelected
                             ? FontWeight.w700
                             : FontWeight.w500,

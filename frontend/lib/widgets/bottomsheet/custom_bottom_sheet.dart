@@ -204,8 +204,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
             width: double.infinity,
             height: 48,
             child: TextButton(
-              onPressed:
-                  widget.onSecondaryPressed ?? () => context.pop(),
+              onPressed: widget.onSecondaryPressed ?? () => context.pop(),
               style: TextButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -392,8 +391,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
         children: [
           Expanded(
             child: CustomButton(
-              onPressed:
-                  widget.onSecondaryPressed ?? () => context.pop(),
+              onPressed: widget.onSecondaryPressed ?? () => context.pop(),
               text: widget.secondaryButtonText ?? 'Cancel',
               type: CustomButtonType.outline,
               borderRadius: 16,

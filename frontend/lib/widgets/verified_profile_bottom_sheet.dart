@@ -27,11 +27,7 @@ class VerifiedProfileBottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 32),
-          Image.asset(
-            'assets/icons/verified_icon.png',
-            width: 80,
-            height: 80,
-          ),
+          Image.asset('assets/icons/verified_icon.png', width: 80, height: 80),
           const SizedBox(height: 24),
           Text(
             'Fully Verified',

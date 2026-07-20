@@ -25,7 +25,7 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
   Future<void> init(String userId) async {
     _authenticatedUserId = userId;
-    
+
     if (_isInitialized) return;
 
     try {
@@ -51,10 +51,12 @@ class SubscriptionProvider extends ChangeNotifier {
     try {
       final appUserID = await Purchases.appUserID;
       if (appUserID != userId) {
-         debugPrint("CRITICAL ERROR: RevenueCat identity mismatch! RC ID: $appUserID, Backend ID: $userId");
-         await Purchases.logOut();
-         await Purchases.logIn(userId);
-         return true; // We forcefully logged them back in
+        debugPrint(
+          "CRITICAL ERROR: RevenueCat identity mismatch! RC ID: $appUserID, Backend ID: $userId",
+        );
+        await Purchases.logOut();
+        await Purchases.logIn(userId);
+        return true; // We forcefully logged them back in
       }
       return true;
     } catch (e) {
@@ -130,7 +132,7 @@ class SubscriptionProvider extends ChangeNotifier {
       debugPrint("🌐 Fetching backend plans...");
       final plans = await _subscriptionService.getPlans();
       debugPrint("✅ Backend plans count: ${plans.length}");
-      return plans; 
+      return plans;
     } catch (e, stack) {
       debugPrint("❌ Error fetching backend plans: $e");
       debugPrint("$stack");
@@ -250,8 +252,12 @@ class SubscriptionProvider extends ChangeNotifier {
         _mySubscription!.plan!.name.toUpperCase() != "FREE" &&
         _mySubscription!.plan!.price > 0) {
       final match = plans.where((p) => p.id == _mySubscription!.plan!.id);
-      currentSubscription = match.isNotEmpty ? match.first : _mySubscription!.plan!;
-      debugPrint("👉 currentSubscription [1. Backend Paid]: ${currentSubscription?.name}");
+      currentSubscription = match.isNotEmpty
+          ? match.first
+          : _mySubscription!.plan!;
+      debugPrint(
+        "👉 currentSubscription [1. Backend Paid]: ${currentSubscription?.name}",
+      );
       return;
     }
 
@@ -260,12 +266,15 @@ class SubscriptionProvider extends ChangeNotifier {
     if (active.isNotEmpty) {
       final entitlement = active.values.first;
       final match = plans.where(
-        (p) => (p.identifier ?? p.id.toString()) == entitlement.productIdentifier,
+        (p) =>
+            (p.identifier ?? p.id.toString()) == entitlement.productIdentifier,
       );
 
       if (match.isNotEmpty) {
         currentSubscription = match.first;
-        debugPrint("👉 currentSubscription [2. RevenueCat Temporary UI Fallback]: ${currentSubscription?.name}");
+        debugPrint(
+          "👉 currentSubscription [2. RevenueCat Temporary UI Fallback]: ${currentSubscription?.name}",
+        );
         return;
       } else {
         final fallbackMatch = plans.where(
@@ -273,10 +282,14 @@ class SubscriptionProvider extends ChangeNotifier {
         );
         if (fallbackMatch.isNotEmpty) {
           currentSubscription = fallbackMatch.first;
-          debugPrint("👉 currentSubscription [2. RevenueCat Temporary UI Fallback]: ${currentSubscription?.name}");
+          debugPrint(
+            "👉 currentSubscription [2. RevenueCat Temporary UI Fallback]: ${currentSubscription?.name}",
+          );
           return;
         } else {
-          debugPrint("⚠️ Could not match RevenueCat entitlement ${entitlement.identifier} to any backend plan.");
+          debugPrint(
+            "⚠️ Could not match RevenueCat entitlement ${entitlement.identifier} to any backend plan.",
+          );
         }
       }
     }
@@ -286,8 +299,12 @@ class SubscriptionProvider extends ChangeNotifier {
         _mySubscription!.isActive &&
         _mySubscription!.plan != null) {
       final match = plans.where((p) => p.id == _mySubscription!.plan!.id);
-      currentSubscription = match.isNotEmpty ? match.first : _mySubscription!.plan!;
-      debugPrint("👉 currentSubscription [3. Backend FREE]: ${currentSubscription?.name}");
+      currentSubscription = match.isNotEmpty
+          ? match.first
+          : _mySubscription!.plan!;
+      debugPrint(
+        "👉 currentSubscription [3. Backend FREE]: ${currentSubscription?.name}",
+      );
       return;
     }
 
@@ -301,12 +318,12 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
   Future<bool> subscribeToPlan(String id) async {
     if (_isPurchasing || _authenticatedUserId == null) return false;
-    
+
     // Safety identity verification before purchase
     bool identityOk = await _ensureRevenueCatIdentity(_authenticatedUserId!);
     if (!identityOk) {
-       error = "Identity mismatch occurred. Please try restarting the app.";
-       return false;
+      error = "Identity mismatch occurred. Please try restarting the app.";
+      return false;
     }
 
     debugPrint("🔥 id: $id");
@@ -328,7 +345,8 @@ class SubscriptionProvider extends ChangeNotifier {
           _handleCustomerInfoUpdate(customerInfo);
 
           if (customerInfo.entitlements.active.isNotEmpty) {
-            error = "Plan downgraded! Please remember to also cancel your active subscription in your App Store / Play Store settings so you aren't charged.";
+            error =
+                "Plan downgraded! Please remember to also cancel your active subscription in your App Store / Play Store settings so you aren't charged.";
             return false;
           }
         } catch (_) {}
@@ -348,13 +366,15 @@ class SubscriptionProvider extends ChangeNotifier {
 
       // Trigger verification and sync with the backend
       try {
-         final syncedSub = await _subscriptionService.syncSubscription();
-         if (syncedSub != null) {
-           _mySubscription = syncedSub;
-         }
+        final syncedSub = await _subscriptionService.syncSubscription();
+        if (syncedSub != null) {
+          _mySubscription = syncedSub;
+        }
       } catch (syncError) {
-         debugPrint("Backend sync failed after purchase (will retry via webhook or later manually): $syncError");
-         // We do NOT reset the UI fallback, because the user just paid. Let them see their plan locally.
+        debugPrint(
+          "Backend sync failed after purchase (will retry via webhook or later manually): $syncError",
+        );
+        // We do NOT reset the UI fallback, because the user just paid. Let them see their plan locally.
       }
 
       // Re-trigger update in case backend sync changed things
@@ -384,14 +404,16 @@ class SubscriptionProvider extends ChangeNotifier {
 
   Future<void> fetchMySubscription() async {
     if (!_isInitialized || _authenticatedUserId == null) {
-      debugPrint("⚠️ fetchMySubscription called but Purchases not initialized yet.");
+      debugPrint(
+        "⚠️ fetchMySubscription called but Purchases not initialized yet.",
+      );
       return;
     }
     try {
       await _ensureRevenueCatIdentity(_authenticatedUserId!);
-      
+
       final customerInfo = await Purchases.getCustomerInfo();
-      
+
       try {
         final syncedSub = await _subscriptionService.syncSubscription();
         if (syncedSub != null) {
@@ -418,8 +440,7 @@ class SubscriptionProvider extends ChangeNotifier {
         if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
           return "Purchase was cancelled.";
         }
-      } catch (_) {
-      }
+      } catch (_) {}
       return e.message ?? "A payment service error occurred. Please try again.";
     }
     final raw = e.toString();

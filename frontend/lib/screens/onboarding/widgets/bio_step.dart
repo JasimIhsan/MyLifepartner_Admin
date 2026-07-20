@@ -7,26 +7,22 @@ class BioStep extends StatelessWidget {
   final TextEditingController bioCtrl;
   final ValueChanged<String> onBioChanged;
 
-  const BioStep({
-    super.key,
-    required this.bioCtrl,
-    required this.onBioChanged,
-  });
+  const BioStep({super.key, required this.bioCtrl, required this.onBioChanged});
 
   @override
   Widget build(BuildContext context) {
     const templates = [
       (
         'Balanced & Caring',
-        'I am a family-oriented individual who values honesty, kindness, and deep conversations. I enjoy traveling, reading, and exploring new cuisines, and I am looking for a life partner to share this journey with.'
+        'I am a family-oriented individual who values honesty, kindness, and deep conversations. I enjoy traveling, reading, and exploring new cuisines, and I am looking for a life partner to share this journey with.',
       ),
       (
         'Ambitious & Active',
-        'An ambitious professional who loves balancing career goals with personal growth. I enjoy outdoor activities, fitness, and weekend getaways. Looking for someone supportive and ready for a serious commitment.'
+        'An ambitious professional who loves balancing career goals with personal growth. I enjoy outdoor activities, fitness, and weekend getaways. Looking for someone supportive and ready for a serious commitment.',
       ),
       (
         'Creative & Curious',
-        'A creative soul with a passion for art, music, and travel. I love learning new things, visiting museums, and spending time in nature. Looking for an open-minded partner who shares similar interests.'
+        'A creative soul with a passion for art, music, and travel. I love learning new things, visiting museums, and spending time in nature. Looking for an open-minded partner who shares similar interests.',
       ),
     ];
 
@@ -35,10 +31,13 @@ class BioStep extends StatelessWidget {
       children: [
         const OnboardingStepTitle(title: "Tell us about yourself"),
         const SizedBox(height: 20),
-        const OnboardingSectionLabel(text: "Write a short bio (min 50 characters)"),
+        const OnboardingSectionLabel(
+          text: "Write a short bio (min 50 characters)",
+        ),
         OnboardingInputField(
           controller: bioCtrl,
-          hint: "Describe your personality, interests, and what you are looking for in a partner...",
+          hint:
+              "Describe your personality, interests, and what you are looking for in a partner...",
           keyboardType: TextInputType.multiline,
           capitalization: TextCapitalization.sentences,
           inputFormatters: [LengthLimitingTextInputFormatter(1000)],
@@ -50,7 +49,9 @@ class BioStep extends StatelessWidget {
               : null,
         ),
         const SizedBox(height: 10),
-        const OnboardingSectionLabel(text: "Need inspiration? Choose a starting template:"),
+        const OnboardingSectionLabel(
+          text: "Need inspiration? Choose a starting template:",
+        ),
         const SizedBox(height: 8),
         SizedBox(
           height: 140,

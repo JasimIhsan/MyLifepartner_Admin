@@ -155,7 +155,8 @@ class User {
       hasCompletedImageUpload: json['hasCompletedImageUpload'] ?? false,
       hasCompletedPartnerPreference:
           json['hasCompletedPartnerPreference'] ?? false,
-      privacyEnabled: json['privacyEnabled'] ?? privacySettings?['privacyEnabled'] ?? false,
+      privacyEnabled:
+          json['privacyEnabled'] ?? privacySettings?['privacyEnabled'] ?? false,
       selfieStatus: json['selfieStatus'],
       name: json['name'],
       email: json['email'],
@@ -180,17 +181,17 @@ class User {
       relationshipTimeline: json['relationshipTimeline'],
       languages: rawLanguages is List
           ? rawLanguages
-              .whereType<dynamic>()
-              .map((item) => item.toString())
-              .where((item) => item.trim().isNotEmpty)
-              .toList()
+                .whereType<dynamic>()
+                .map((item) => item.toString())
+                .where((item) => item.trim().isNotEmpty)
+                .toList()
           : rawLanguages is String
-              ? rawLanguages
-                  .split(',')
-                  .map((item) => item.trim())
-                  .where((item) => item.isNotEmpty)
-                  .toList()
-              : const [],
+          ? rawLanguages
+                .split(',')
+                .map((item) => item.trim())
+                .where((item) => item.isNotEmpty)
+                .toList()
+          : const [],
       smokingHabit: json['smokingHabit'],
       drinkingHabit: json['drinkingHabit'],
     );
