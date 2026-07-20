@@ -14,7 +14,7 @@ const LOG_COLORS = {
    warn: "yellow",
    info: "green",
    http: "magenta",
-   debug: "white",
+   debug: "blue",
 };
 
 winston.addColors(LOG_COLORS);
@@ -29,7 +29,38 @@ const getLogLevel = (): keyof typeof LOG_LEVELS => {
    return "info";
 };
 
+export const serializeError = (error: unknown) => {
+   if (error instanceof Error) {
+      return {
+         name: error.name,
+         message: error.message,
+         stack: error.stack,
+      };
+   }
+
+   return {
+      message: String(error),
+   };
+};
+
+const serializeErrors = winston.format((info) => {
+   for (const key of Object.keys(info)) {
+      if (info[key] instanceof Error) {
+         info[key] = serializeError(info[key]);
+      } else if (typeof info[key] === "object" && info[key] !== null) {
+         const obj = info[key] as Record<string, unknown>;
+         for (const subKey of Object.keys(obj)) {
+            if (obj[subKey] instanceof Error) {
+               obj[subKey] = serializeError(obj[subKey]);
+            }
+         }
+      }
+   }
+   return info;
+});
+
 const developmentFormat = winston.format.combine(
+   serializeErrors(),
    winston.format.timestamp({
       format: "YYYY-MM-DD HH:mm:ss",
    }),
@@ -49,6 +80,7 @@ const developmentFormat = winston.format.combine(
 );
 
 const productionFormat = winston.format.combine(
+   serializeErrors(),
    winston.format.timestamp(),
    winston.format.errors({
       stack: true,
@@ -58,6 +90,7 @@ const productionFormat = winston.format.combine(
    }),
    winston.format.json()
 );
+
 
 const logger = winston.createLogger({
    levels: LOG_LEVELS,
@@ -75,19 +108,5 @@ const logger = winston.createLogger({
    ],
    exitOnError: false,
 });
-
-export const serializeError = (error: unknown) => {
-   if (error instanceof Error) {
-      return {
-         name: error.name,
-         message: error.message,
-         stack: error.stack,
-      };
-   }
-
-   return {
-      message: String(error),
-   };
-};
-
 export default logger;
+

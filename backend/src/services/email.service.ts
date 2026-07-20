@@ -49,7 +49,7 @@ export class EmailService implements IEmailService {
             html: this.getOtpEmailHtml(otp, headerImageUrl),
          });
       } catch (error) {
-         logger.error("Error in sendOtpEmail:", error);
+         logger.error("Error in sendOtpEmail", { error });
          throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send OTP email");
       }
    }
@@ -71,7 +71,7 @@ export class EmailService implements IEmailService {
             html: this.getWelcomeEmailHtml(userName, headerImageUrl),
          });
       } catch (error) {
-         logger.error("Error in sendWelcomeEmail:", error);
+         logger.error("Error in sendWelcomeEmail", { error });
          throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Welcome email");
       }
    }

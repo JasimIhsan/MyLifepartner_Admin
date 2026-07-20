@@ -15,10 +15,15 @@ const errorMiddleware = (err: ErrorWithStatus, req: Request, res: Response, _nex
    const error = normalizeError(err);
    const originalMessage = err.message || "Unknown error";
 
-   logger.error(`[${req.method}] ${req.originalUrl} >> StatusCode:: ${error.statusCode}, Message:: ${originalMessage}`);
+   const logMessage = `[${req.method}] ${req.originalUrl} >> StatusCode:: ${error.statusCode}, Message:: ${originalMessage}`;
 
-   if (env.NODE_ENV === "development" && error.stack) {
-      logger.error(`Error Stack: ${error.stack}`);
+   if (error.statusCode >= 500) {
+      logger.error(logMessage);
+      if (env.NODE_ENV === "development" && error.stack) {
+         logger.error(`Error Stack: ${error.stack}`);
+      }
+   } else {
+      logger.warn(logMessage);
    }
 
    return res.status(error.statusCode).json({

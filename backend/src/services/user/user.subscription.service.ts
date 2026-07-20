@@ -197,7 +197,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    async handleWebhook(payload: Record<string, unknown>, _signatureHeader?: string): Promise<void> {
       const event = payload.event as RevenueCatWebhookEventData | undefined;
 
-      logger.info("👉👉👉 WEBHOOK EVENT: ", event);
+      logger.debug("👉👉👉 WEBHOOK EVENT: ", event);
 
       if (!event) {
          return;

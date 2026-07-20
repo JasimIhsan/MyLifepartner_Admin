@@ -47,7 +47,8 @@ export class OtpService implements IOtpService {
 
       await this.emailService.sendOtpEmail(email, otp);
 
-      logger.info(`OTP [${otp}] generated for ${email} with purpose ${purpose}`);
+      logger.debug(`OTP [${otp}] generated for ${email} with purpose ${purpose}`);
+      logger.info(`OTP email successfully sent to ${email} for ${purpose}`);
 
       return toOtpResponseDto(otp);
    }
