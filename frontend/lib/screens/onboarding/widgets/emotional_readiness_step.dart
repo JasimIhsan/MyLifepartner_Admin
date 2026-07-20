@@ -16,7 +16,7 @@ class EmotionalReadinessStep extends StatelessWidget {
     return Column(
       children: [
         const OnboardingStepTitle(
-          title: "Are you ready for a serious relationship?",
+          title: "Are you ready to find your life partner again?",
         ),
         const SizedBox(height: 20),
         OnboardingSelectionTile(
@@ -27,7 +27,7 @@ class EmotionalReadinessStep extends StatelessWidget {
           onTap: () => onReadinessChanged('YES'),
         ),
         OnboardingSelectionTile(
-          label: "I think so",
+          label: "I'm open to it",
           value: 'MOSTLY',
           selectedValue: selectedReadiness,
           emoji: '😊',

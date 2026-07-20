@@ -1,6 +1,8 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/providers/location_provider.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/basic_info_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/bio_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/children_step.dart';
@@ -15,10 +17,9 @@ import 'package:life_partner_again/screens/onboarding/widgets/looking_for_step.d
 import 'package:life_partner_again/screens/onboarding/widgets/marital_status_step.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/profession_step.dart';
 import 'package:life_partner_again/services/job_service.dart';
+import 'package:life_partner_again/services/location_service.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
-import 'package:life_partner_again/providers/auth_provider.dart';
-import 'package:life_partner_again/providers/location_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -207,7 +208,15 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
         return maritalStatus != null;
       case 4:
         if (!mounted) return false;
-        final locProvider = context.read<LocationProvider>();
+        final locProvider = context.watch<LocationProvider>();
+        final isFetching =
+            locProvider.currentLocationStatus ==
+                CurrentLocationStatus.fetchingCoordinates ||
+            locProvider.currentLocationStatus ==
+                CurrentLocationStatus.reverseGeocoding ||
+            locProvider.currentLocationStatus ==
+                CurrentLocationStatus.checkingPermission;
+        if (isFetching) return false;
         return locProvider.selectedCountry != null &&
             locProvider.selectedCity != null;
       case 5:
