@@ -2,10 +2,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/age_pref_step.dart';
-import 'package:life_partner_again/screens/partner_preference/widgets/education_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/languages_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/marital_pref_step.dart';
-import 'package:life_partner_again/screens/partner_preference/widgets/occupation_pref_step.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
@@ -18,13 +16,11 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
   int currentStep = 0;
   bool goingForward = true;
 
-  final int totalSteps = 5;
+  final int totalSteps = 3;
 
   // Data
   RangeValues ageRange = const RangeValues(25, 45);
   final List<String> maritalStatus = [];
-  final List<String> education = [];
-  final List<String> occupation = [];
   final List<String> languages = [];
 
   @override
@@ -44,18 +40,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       if (marital != null) {
         maritalStatus.clear();
         maritalStatus.addAll(marital);
-      }
-
-      final edu = prefs.getStringList('pref_education');
-      if (edu != null) {
-        education.clear();
-        education.addAll(edu);
-      }
-
-      final occ = prefs.getStringList('pref_occupation');
-      if (occ != null) {
-        occupation.clear();
-        occupation.addAll(occ);
       }
 
       final langs = prefs.getStringList('pref_languages');
@@ -89,8 +73,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       'pref_age_start',
       'pref_age_end',
       'pref_marital_status',
-      'pref_education',
-      'pref_occupation',
       'pref_languages',
       'pref_current_step',
     ];
@@ -104,10 +86,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       case 1:
         return maritalStatus.isNotEmpty;
       case 2:
-        return education.isNotEmpty;
-      case 3:
-        return occupation.isNotEmpty;
-      case 4:
         return languages.isNotEmpty;
       default:
         return true;
@@ -143,8 +121,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
         'ageFrom': ageRange.start.round(),
         'ageTo': ageRange.end.round(),
         'maritalStatus': maritalStatus,
-        'highestEducation': education,
-        'occupation': occupation,
         'motherTongue': languages,
       });
 
@@ -181,10 +157,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       case 1:
         return "Marital Status";
       case 2:
-        return "Highest Education";
-      case 3:
-        return "Occupation / Profession";
-      case 4:
         return "Languages / Mother Tongue";
       default:
         return "Partner Preferences";
@@ -198,10 +170,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       case 1:
         return "Choose one or more acceptable marital status options.";
       case 2:
-        return "Select the highest education levels you would like matches to have.";
-      case 3:
-        return "Select the professions or career backgrounds you prefer.";
-      case 4:
         return "Select the languages or mother tongues your partner should speak.";
       default:
         return "Set your requirements to find compatible recommendations.";
@@ -225,16 +193,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
           onToggle: (v) => toggle(maritalStatus, v, 'pref_marital_status'),
         );
       case 2:
-        return EducationPrefStep(
-          selectedEducation: education,
-          onToggle: (v) => toggle(education, v, 'pref_education'),
-        );
-      case 3:
-        return OccupationPrefStep(
-          selectedOccupation: occupation,
-          onToggle: (v) => toggle(occupation, v, 'pref_occupation'),
-        );
-      case 4:
         return LanguagesPrefStep(
           selectedLanguages: languages,
           onToggle: (v) => toggle(languages, v, 'pref_languages'),

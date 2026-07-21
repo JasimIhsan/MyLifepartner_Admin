@@ -61,8 +61,6 @@ export const partnerPreferenceSchema = z.object({
          ageTo: z.number().int().min(18, "Minimum age is 18").max(100, "Maximum age is 100"),
          maritalStatus: arrayOrSingle(MaritalStatusEnum, "Select at least one marital status"),
          motherTongue: arrayOrSingle(z.string(), "Select at least one language"),
-         highestEducation: arrayOrSingle(z.string(), "Select at least one education level"),
-         occupation: arrayOrSingle(z.string(), "Select at least one occupation"),
       })
       .refine(
          (data) => {

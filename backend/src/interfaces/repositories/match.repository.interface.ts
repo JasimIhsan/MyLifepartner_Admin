@@ -43,8 +43,6 @@ export interface UserPreferenceData {
    ageFrom: number | null;
    ageTo: number | null;
    motherTongue: string[];
-   highestEducation: string[];
-   occupation: string[];
 }
 
 export interface UserAnswerData {

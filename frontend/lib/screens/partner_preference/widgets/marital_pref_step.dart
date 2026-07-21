@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 
 class MaritalPrefStep extends StatelessWidget {
@@ -14,16 +15,23 @@ class MaritalPrefStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const options = [
+      ('Separated', 'SEPARATED'),
       ('Divorced', 'DIVORCED'),
       ('Widowed', 'WIDOWED'),
-      ('Annulled', 'ANNULLED'),
-      ('Legally Separated', 'LEGALLY_SEPARATED'),
-      ('Awaiting Divorce', 'AWATING_DIVORCE'),
+      ('Awaiting Divorce', 'AWAITING_DIVORCE'),
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const OnboardingStepTitle(title: "Which background are you open to?"),
+        const OnboardingStepTitle(
+          title: "Who would you consider matching with?",
+        ),
+        const SizedBox(height: 15),
+        const Text(
+          "You can select more than one",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        ),
         const Spacer(),
         Center(
           child: Wrap(

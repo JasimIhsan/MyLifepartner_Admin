@@ -49,8 +49,6 @@ export interface PartnerPreference {
    ageTo: number | null;
    maritalStatus: string[];
    motherTongue: string[];
-   highestEducation: string[];
-   occupation: string[];
 }
 
 export interface IProfileService {

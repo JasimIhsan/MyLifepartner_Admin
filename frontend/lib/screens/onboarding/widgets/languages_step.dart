@@ -164,49 +164,52 @@ class _LanguagesStepState extends State<LanguagesStep> {
                 ),
               ),
               const SizedBox(height: 16),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredLangs.length,
-                separatorBuilder: (context, index) => const Divider(
-                  height: 1,
-                  color: AppColors.divider,
-                ),
-                itemBuilder: (context, index) {
-                  final lang = filteredLangs[index];
-                  return ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    title: Text(
-                      lang,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w400,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    trailing: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.borderColor,
-                          width: 1.5,
+              Column(
+                children: filteredLangs.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final lang = entry.value;
+                  return Column(
+                    children: [
+                      ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
                         ),
+                        title: Text(
+                          lang,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        trailing: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.borderColor,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.add,
+                            size: 14,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        onTap: () {
+                          widget.onLanguageToggled(lang);
+                        },
                       ),
-                      child: const Icon(
-                        Icons.add,
-                        size: 14,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    onTap: () {
-                      widget.onLanguageToggled(lang);
-                    },
+                      if (index < filteredLangs.length - 1)
+                        const Divider(
+                          height: 1,
+                          color: AppColors.divider,
+                        ),
+                    ],
                   );
-                },
+                }).toList(),
               ),
               if (filteredLangs.isEmpty)
                 Padding(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 
 class EducationPrefStep extends StatelessWidget {
@@ -27,6 +28,12 @@ class EducationPrefStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const OnboardingStepTitle(title: "What education level do you prefer?"),
+        const SizedBox(height: 15),
+        const Text(
+          "You can select more than one",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+        ),
         const Spacer(),
         Center(
           child: Wrap(

@@ -96,8 +96,6 @@ model PartnerPreference {
   ageTo            Int?
   maritalStatus    MaritalStatus[]
   motherTongue     String[]
-  highestEducation String[]
-  occupation       String[]
 
   @@map("partner_preferences")
 }

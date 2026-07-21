@@ -469,16 +469,12 @@ export async function seedUsers(prisma: PrismaClient) {
             ageFrom: p.preference.ageFrom,
             ageTo: p.preference.ageTo,
             maritalStatus: p.preference.maritalStatus,
-            highestEducation: p.preference.highestEducation,
-            occupation: p.preference.occupation,
          },
          create: {
             userId: user.id,
             ageFrom: p.preference.ageFrom,
             ageTo: p.preference.ageTo,
             maritalStatus: p.preference.maritalStatus,
-            highestEducation: p.preference.highestEducation,
-            occupation: p.preference.occupation,
          },
       });
 

@@ -227,22 +227,19 @@ export class ProfileRepository implements IProfileRepository {
 
       if (data.name !== undefined) updateData.name = data.name;
 
-      const dobVal = data.dateOfBirth !== undefined ? data.dateOfBirth : data.dob;
-      if (dobVal !== undefined) updateData.dateOfBirth = typeof dobVal === "string" ? new Date(dobVal) : dobVal;
+      if (data.dateOfBirth !== undefined) updateData.dateOfBirth = typeof data.dateOfBirth === "string" ? new Date(data.dateOfBirth) : data.dateOfBirth;
 
       if (data.gender !== undefined) updateData.gender = data.gender as Gender;
       if (data.motherTongue !== undefined) updateData.motherTongue = data.motherTongue;
       if (data.maritalStatus !== undefined) updateData.maritalStatus = data.maritalStatus as MaritalStatus;
 
-      const bioVal = data.bio !== undefined ? data.bio : data.about;
-      if (bioVal !== undefined) updateData.bio = bioVal;
+      if (data.bio !== undefined) updateData.bio = data.bio;
 
       if (data.city !== undefined) updateData.city = data.city;
       if (data.state !== undefined) updateData.state = data.state;
       if (data.country !== undefined) updateData.country = data.country;
 
-      const eduVal = data.highestEducation !== undefined ? data.highestEducation : data.education;
-      if (eduVal !== undefined) updateData.highestEducation = eduVal;
+      if (data.highestEducation !== undefined) updateData.highestEducation = data.highestEducation;
 
       if (data.jobId !== undefined) {
          if (data.jobId) {
@@ -266,11 +263,9 @@ export class ProfileRepository implements IProfileRepository {
          }
       }
 
-      const smokeVal = data.smokingHabit !== undefined ? data.smokingHabit : data.smoke;
-      if (smokeVal !== undefined) updateData.smokingHabit = smokeVal as SmokingHabit;
+      if (data.smokingHabit !== undefined) updateData.smokingHabit = data.smokingHabit as SmokingHabit;
 
-      const drinkVal = data.drinkingHabit !== undefined ? data.drinkingHabit : data.drink;
-      if (drinkVal !== undefined) updateData.drinkingHabit = drinkVal as DrinkingHabit;
+      if (data.drinkingHabit !== undefined) updateData.drinkingHabit = data.drinkingHabit as DrinkingHabit;
 
       if (data.languages !== undefined) updateData.languages = data.languages;
       if (data.childrenStatus !== undefined) updateData.childrenStatus = data.childrenStatus as any;
@@ -300,12 +295,10 @@ export class ProfileRepository implements IProfileRepository {
       await this.findOrCreateProfile(userId);
 
       const preferenceData = {
-         ageFrom: data.ageFrom !== undefined ? data.ageFrom : data.ageMin,
-         ageTo: data.ageTo !== undefined ? data.ageTo : data.ageMax,
+         ageFrom: data.ageFrom,
+         ageTo: data.ageTo,
          maritalStatus: toArrayOrUndefined(data.maritalStatus) as MaritalStatus[] | undefined,
          motherTongue: toArrayOrUndefined(data.motherTongue),
-         highestEducation: toArrayOrUndefined(data.highestEducation !== undefined ? data.highestEducation : data.education),
-         occupation: toArrayOrUndefined(data.occupation),
       };
 
       const partnerPreference = await prisma.partnerPreference.upsert({
