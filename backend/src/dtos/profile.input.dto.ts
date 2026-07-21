@@ -45,12 +45,8 @@ export interface UpdateProfileDto {
 export interface CreatePartnerPreferenceDto {
    ageMin?: number;
    ageMax?: number;
-   heightMin?: number;
-   heightMax?: number;
    ageFrom?: number;
    ageTo?: number;
-   heightFrom?: number;
-   heightTo?: number;
    maritalStatus?: string | string[];
    religion?: string;
    caste?: string;

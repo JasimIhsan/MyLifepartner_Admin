@@ -47,8 +47,6 @@ export interface PartnerPreference {
    userId: number;
    ageFrom: number | null;
    ageTo: number | null;
-   heightFrom: number | null;
-   heightTo: number | null;
    maritalStatus: string[];
    motherTongue: string[];
    highestEducation: string[];

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/age_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/education_pref_step.dart';
-import 'package:life_partner_again/screens/partner_preference/widgets/height_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/languages_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/marital_pref_step.dart';
 import 'package:life_partner_again/screens/partner_preference/widgets/occupation_pref_step.dart';
@@ -19,11 +18,10 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
   int currentStep = 0;
   bool goingForward = true;
 
-  final int totalSteps = 6;
+  final int totalSteps = 5;
 
   // Data
   RangeValues ageRange = const RangeValues(25, 45);
-  RangeValues heightRange = const RangeValues(150, 185);
   final List<String> maritalStatus = [];
   final List<String> education = [];
   final List<String> occupation = [];
@@ -41,10 +39,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       final ageStart = prefs.getDouble('pref_age_start') ?? 25.0;
       final ageEnd = prefs.getDouble('pref_age_end') ?? 45.0;
       ageRange = RangeValues(ageStart, ageEnd);
-
-      final heightStart = prefs.getDouble('pref_height_start') ?? 150.0;
-      final heightEnd = prefs.getDouble('pref_height_end') ?? 185.0;
-      heightRange = RangeValues(heightStart, heightEnd);
 
       final marital = prefs.getStringList('pref_marital_status');
       if (marital != null) {
@@ -94,8 +88,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
     final keys = [
       'pref_age_start',
       'pref_age_end',
-      'pref_height_start',
-      'pref_height_end',
       'pref_marital_status',
       'pref_education',
       'pref_occupation',
@@ -109,13 +101,13 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
 
   bool get isCurrentStepValid {
     switch (currentStep) {
-      case 2:
+      case 1:
         return maritalStatus.isNotEmpty;
-      case 3:
+      case 2:
         return education.isNotEmpty;
-      case 4:
+      case 3:
         return occupation.isNotEmpty;
-      case 5:
+      case 4:
         return languages.isNotEmpty;
       default:
         return true;
@@ -150,8 +142,6 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       await profileRepo.updatePartnerPreference({
         'ageFrom': ageRange.start.round(),
         'ageTo': ageRange.end.round(),
-        'heightFrom': heightRange.start.round(),
-        'heightTo': heightRange.end.round(),
         'maritalStatus': maritalStatus,
         'highestEducation': education,
         'occupation': occupation,
@@ -189,14 +179,12 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       case 0:
         return "Preferred Age";
       case 1:
-        return "Preferred Height";
-      case 2:
         return "Marital Status";
-      case 3:
+      case 2:
         return "Highest Education";
-      case 4:
+      case 3:
         return "Occupation / Profession";
-      case 5:
+      case 4:
         return "Languages / Mother Tongue";
       default:
         return "Partner Preferences";
@@ -208,14 +196,12 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
       case 0:
         return "Select the age range you prefer for your ideal partner.";
       case 1:
-        return "Specify the height range in centimeters for your matches.";
-      case 2:
         return "Choose one or more acceptable marital status options.";
-      case 3:
+      case 2:
         return "Select the highest education levels you would like matches to have.";
-      case 4:
+      case 3:
         return "Select the professions or career backgrounds you prefer.";
-      case 5:
+      case 4:
         return "Select the languages or mother tongues your partner should speak.";
       default:
         return "Set your requirements to find compatible recommendations.";
@@ -234,30 +220,21 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
           },
         );
       case 1:
-        return HeightPrefStep(
-          heightRange: heightRange,
-          onHeightRangeChanged: (v) {
-            setState(() => heightRange = v);
-            saveToCache('pref_height_start', v.start);
-            saveToCache('pref_height_end', v.end);
-          },
-        );
-      case 2:
         return MaritalPrefStep(
           selectedMaritalStatus: maritalStatus,
           onToggle: (v) => toggle(maritalStatus, v, 'pref_marital_status'),
         );
-      case 3:
+      case 2:
         return EducationPrefStep(
           selectedEducation: education,
           onToggle: (v) => toggle(education, v, 'pref_education'),
         );
-      case 4:
+      case 3:
         return OccupationPrefStep(
           selectedOccupation: occupation,
           onToggle: (v) => toggle(occupation, v, 'pref_occupation'),
         );
-      case 5:
+      case 4:
         return LanguagesPrefStep(
           selectedLanguages: languages,
           onToggle: (v) => toggle(languages, v, 'pref_languages'),

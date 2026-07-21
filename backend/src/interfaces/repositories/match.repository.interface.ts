@@ -42,8 +42,6 @@ export interface CandidateProfile {
 export interface UserPreferenceData {
    ageFrom: number | null;
    ageTo: number | null;
-   heightFrom: number | null;
-   heightTo: number | null;
    motherTongue: string[];
    highestEducation: string[];
    occupation: string[];

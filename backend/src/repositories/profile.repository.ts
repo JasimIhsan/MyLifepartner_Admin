@@ -302,8 +302,6 @@ export class ProfileRepository implements IProfileRepository {
       const preferenceData = {
          ageFrom: data.ageFrom !== undefined ? data.ageFrom : data.ageMin,
          ageTo: data.ageTo !== undefined ? data.ageTo : data.ageMax,
-         heightFrom: data.heightFrom !== undefined ? data.heightFrom : data.heightMin,
-         heightTo: data.heightTo !== undefined ? data.heightTo : data.heightMax,
          maritalStatus: toArrayOrUndefined(data.maritalStatus) as MaritalStatus[] | undefined,
          motherTongue: toArrayOrUndefined(data.motherTongue),
          highestEducation: toArrayOrUndefined(data.highestEducation !== undefined ? data.highestEducation : data.education),

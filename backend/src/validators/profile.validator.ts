@@ -59,8 +59,6 @@ export const partnerPreferenceSchema = z.object({
       .object({
          ageFrom: z.number().int().min(18, "Minimum age is 18").max(100, "Maximum age is 100"),
          ageTo: z.number().int().min(18, "Minimum age is 18").max(100, "Maximum age is 100"),
-         heightFrom: z.number().int().min(50, "Minimum height is 50cm").max(300, "Maximum height is 300cm"),
-         heightTo: z.number().int().min(50, "Minimum height is 50cm").max(300, "Maximum height is 300cm"),
          maritalStatus: arrayOrSingle(MaritalStatusEnum, "Select at least one marital status"),
          motherTongue: arrayOrSingle(z.string(), "Select at least one language"),
          highestEducation: arrayOrSingle(z.string(), "Select at least one education level"),
@@ -73,15 +71,6 @@ export const partnerPreferenceSchema = z.object({
          {
             message: "ageFrom must be less than or equal to ageTo",
             path: ["ageFrom"],
-         }
-      )
-      .refine(
-         (data) => {
-            return data.heightFrom <= data.heightTo;
-         },
-         {
-            message: "heightFrom must be less than or equal to heightTo",
-            path: ["heightFrom"],
          }
       )
 });

@@ -42,8 +42,8 @@ class AgePrefStep extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _labelWithSuffix('From', ageRange.start.round(), 'yrs'),
-              _labelWithSuffix('To', ageRange.end.round(), 'yrs'),
+              _labelWithSuffix('Minimum', ageRange.start.round(), 'yrs'),
+              _labelWithSuffix('Maximum', ageRange.end.round(), 'yrs'),
             ],
           ),
         ),

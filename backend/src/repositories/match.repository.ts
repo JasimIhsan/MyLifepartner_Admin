@@ -92,8 +92,6 @@ export class MatchRepository implements IMatchRepository {
       return {
          ageFrom: preference.ageFrom,
          ageTo: preference.ageTo,
-         heightFrom: preference.heightFrom,
-         heightTo: preference.heightTo,
          motherTongue: preference.motherTongue,
          highestEducation: preference.highestEducation,
          occupation: preference.occupation,
