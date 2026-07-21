@@ -44,7 +44,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Never',
-                  subtitle: "I don't drink",
+                  // subtitle: "I don't drink",
                   icon: Icons.no_drinks_outlined,
                   value: 'NEVER',
                   selectedValue: drinkingHabit,
@@ -55,7 +55,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Occasionally',
-                  subtitle: 'Once in a while',
+                  // subtitle: 'Once in a while',
                   icon: Icons.calendar_month_outlined,
                   value: 'OCCASIONALLY',
                   selectedValue: drinkingHabit,
@@ -73,7 +73,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Socially',
-                  subtitle: 'With friends / at events',
+                  // subtitle: 'With friends / at events',
                   icon: Icons.groups_outlined,
                   value: 'SOCIALLY',
                   selectedValue: drinkingHabit,
@@ -84,7 +84,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Regularly',
-                  subtitle: 'Often / frequently',
+                  // subtitle: 'Often / frequently',
                   icon: Icons.local_bar_outlined,
                   value: 'REGULARLY',
                   selectedValue: drinkingHabit,
@@ -108,7 +108,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Never',
-                  subtitle: "I don't smoke",
+                  // subtitle: "I don't smoke",
                   icon: Icons.smoke_free_outlined,
                   value: 'NEVER',
                   selectedValue: smokingHabit,
@@ -119,7 +119,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Occasionally',
-                  subtitle: 'Once in a while',
+                  // subtitle: 'Once in a while',
                   icon: Icons.calendar_month_outlined,
                   value: 'OCCASIONALLY',
                   selectedValue: smokingHabit,
@@ -137,7 +137,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Socially',
-                  subtitle: 'With friends / at events',
+                  // subtitle: 'With friends / at events',
                   icon: Icons.groups_outlined,
                   value: 'SOCIALLY',
                   selectedValue: smokingHabit,
@@ -148,7 +148,7 @@ class HabitsStep extends StatelessWidget {
               Expanded(
                 child: HabitSelectionCard(
                   title: 'Regularly',
-                  subtitle: 'Often / frequently',
+                  // subtitle: 'Often / frequently',
                   icon: Icons.smoking_rooms_outlined,
                   value: 'REGULARLY',
                   selectedValue: smokingHabit,
@@ -182,7 +182,7 @@ class HabitsStep extends StatelessWidget {
 
 class HabitSelectionCard extends StatelessWidget {
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final IconData icon;
   final String value;
   final String? selectedValue;
@@ -191,11 +191,11 @@ class HabitSelectionCard extends StatelessWidget {
   const HabitSelectionCard({
     super.key,
     required this.title,
-    required this.subtitle,
     required this.icon,
     required this.value,
     required this.selectedValue,
     required this.onTap,
+    this.subtitle,
   });
 
   @override
@@ -249,15 +249,16 @@ class HabitSelectionCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
+                  if (subtitle != null)
+                    Text(
+                      subtitle!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textSecondary,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
               ),
             ),
