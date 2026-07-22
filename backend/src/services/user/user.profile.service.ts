@@ -52,6 +52,7 @@ type DeleteImageResponse = {
 };
 
 const MAX_USER_IMAGES = 4;
+const MIN_USER_IMAGES = 1;
 const DEFAULT_NEXT_PENDING_SECTION_ORDER = 1;
 
 export class ProfileService implements IProfileService {
@@ -332,8 +333,12 @@ export class ProfileService implements IProfileService {
    async completeImageUpload(userId: number): Promise<ImageUploadStatusDto> {
       const images = await this.profileRepository.getUserImages(userId);
 
-      if (images.length !== MAX_USER_IMAGES) {
-         throw new ApiError(400, "Exactly 4 images are required to proceed");
+      if (images.length < MIN_USER_IMAGES) {
+         throw new ApiError(400, `At least ${MIN_USER_IMAGES} image(s) are required to proceed`);
+      }
+
+      if (images.length > MAX_USER_IMAGES) {
+         throw new ApiError(400, `At most ${MAX_USER_IMAGES} image(s) are allowed`);
       }
 
       const hasPrimaryImage = images.some((image) => image.isPrimary);

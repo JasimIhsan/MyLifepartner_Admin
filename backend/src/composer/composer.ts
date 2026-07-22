@@ -27,6 +27,7 @@ import { ProcessedRevenueCatEventRepository } from "@/repositories/processed-rev
 import { ProfileRepository } from "@/repositories/profile.repository";
 import { QuestionnaireRepository } from "@/repositories/questionnaire.repository";
 import { SubscriptionPlanRepository } from "@/repositories/subscription-plan.repository";
+import { SubscriptionWebhookRepository } from "@/repositories/subscription-webhook.repository";
 import { UserSubscriptionRepository } from "@/repositories/user-subscription.repository";
 import { UserFeatureRepository } from "@/repositories/user.feature.repository";
 import { UserRepository } from "@/repositories/user.repository";
@@ -108,6 +109,7 @@ export const processedRevenueCatEventRepository = new ProcessedRevenueCatEventRe
 export const profileRepository = new ProfileRepository();
 export const questionnaireRepository = new QuestionnaireRepository();
 export const subscriptionPlanRepository = new SubscriptionPlanRepository();
+export const subscriptionWebhookRepository = new SubscriptionWebhookRepository();
 export const userFeatureRepository = new UserFeatureRepository();
 export const userRepository = new UserRepository();
 export const jobRepository = new JobRepository();
@@ -144,7 +146,7 @@ export const authService = new AuthService(userRepository, otpService, jwtServic
 export const imageProcessorService = new ImageProcessorService();
 export const profileService = new ProfileService(profileRepository, s3Service, imageProcessorService);
 export const jobService = new JobService(jobRepository);
-export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository);
+export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository, subscriptionWebhookRepository);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);

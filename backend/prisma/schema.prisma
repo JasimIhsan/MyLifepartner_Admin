@@ -271,6 +271,13 @@ model UserSubscription {
   store                 String? // TEST_STORE, PLAY_STORE, APP_STORE
   environment           String? // SANDBOX, PRODUCTION
 
+  // Lifecycle audit timestamps (fixes C-3, C-7, M-4, M-5)
+  cancelledAt            DateTime? // Set when CANCELLATION event received
+  billingIssueDetectedAt DateTime? // Set when BILLING_ISSUE event received (grace period start)
+  planChangesAt          DateTime? // Set when PRODUCT_CHANGE deferred downgrade is scheduled
+  refundedAt             DateTime? // Set when REFUND event received (distinct from expiration)
+  expiredAt              DateTime? // Set when EXPIRATION event received
+
   @@index([userId, status])
   @@map("user_subscriptions")
 }

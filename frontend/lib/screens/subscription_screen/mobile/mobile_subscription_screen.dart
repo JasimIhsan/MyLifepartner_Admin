@@ -1,12 +1,12 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_background_painter.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_error_widget.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_controller.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_ui_helpers.dart';
-import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:provider/provider.dart';
 
 class MobileSubscriptionScreen extends StatefulWidget {
@@ -105,7 +105,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '\${plan.name} Plan Details',
+                    "${plan.name} Plan Details",
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
@@ -142,7 +142,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Price: \${plan.displayPrice}',
+                      'Price: ${plan.displayPrice}',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,

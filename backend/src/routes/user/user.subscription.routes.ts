@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import { userSubscriptionController } from "@/composer/composer";
 import { verifyJWT } from "@/middlewares/auth.middleware";
+import { subscriptionActionLimiter, webhookLimiter } from "@/middlewares/rateLimiter.middleware";
 
 const router = Router();
 
@@ -14,9 +15,12 @@ const router = Router();
 /**
  * @route POST /user/subscriptions/webhook
  * @desc RevenueCat webhook endpoint
- * @access Public
+ * @access Public (protected by REVENUECAT_WEBHOOK_SECRET signature check
+ *
+ * webhookLimiter is applied here BEFORE auth middleware to rate-limit
+ * unauthenticated callers
  */
-router.post("/webhook", userSubscriptionController.webhook);
+router.post("/webhook", webhookLimiter, userSubscriptionController.webhook);
 
 /**
  * ─────────────────────────────────────────────
@@ -61,10 +65,10 @@ router.get("/features", userSubscriptionController.getUserFeatures);
 
 /**
  * @route POST /user/subscriptions/subscribe
- * @desc Subscribe to a plan
+ * @desc Subscribe to the FREE plan (paid plans must be purchased via store)
  * @access Private
  */
-router.post("/subscribe", userSubscriptionController.subscribe);
+router.post("/subscribe", subscriptionActionLimiter, userSubscriptionController.subscribe);
 
 /**
  * @route POST /user/subscriptions/check-call
@@ -75,9 +79,9 @@ router.post("/check-call", userSubscriptionController.checkCallAccess);
 
 /**
  * @route POST /user/subscriptions/sync
- * @desc Sync active subscriptions from RevenueCat
+ * @desc Sync active subscriptions from RevenueCat (rate limited)
  * @access Private
  */
-router.post("/sync", userSubscriptionController.sync);
+router.post("/sync", subscriptionActionLimiter, userSubscriptionController.sync);
 
 export default router;

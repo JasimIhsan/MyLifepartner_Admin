@@ -1,5 +1,6 @@
-import 'package:go_router/go_router.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/subscription_plan.dart' as model;
@@ -66,16 +67,141 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success
-              ? 'Successfully subscribed to \${plan.name}'
-              : (provider.error ?? 'Failed to subscribe'),
-          style: const TextStyle(color: Colors.white),
+    if (success) {
+      if (kIsWeb) {
+        _showSuccessDialog(plan);
+      } else {
+        _showSuccessBottomSheet(plan);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            provider.error ?? 'Failed to subscribe',
+            style: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.black,
         ),
-        backgroundColor: Colors.black,
+      );
+    }
+  }
+
+  void _showSuccessDialog(model.SubscriptionPlan plan) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          contentPadding: const EdgeInsets.all(32),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.green,
+                size: 64,
+              ),
+              const SizedBox(height: 24),
+              const Text(
+                'Subscription Successful!',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'You are now successfully subscribed to the ${plan.name} plan.',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: CustomButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  text: 'Continue',
+                  type: CustomButtonType.primary,
+                  backgroundColor: AppColors.primary,
+                  textColor: Colors.white,
+                  height: 52,
+                  borderRadius: 16,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSuccessBottomSheet(model.SubscriptionPlan plan) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Colors.green,
+                  size: 64,
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'Subscription Successful!',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'You are now successfully subscribed to the ${plan.name} plan.',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.textSecondary,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    text: 'Awesome',
+                    type: CustomButtonType.primary,
+                    backgroundColor: AppColors.primary,
+                    textColor: Colors.white,
+                    height: 52,
+                    borderRadius: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

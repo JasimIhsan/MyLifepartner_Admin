@@ -20,6 +20,10 @@ const envSchema = z.object({
    SMTP_PASS: z.string().min(1),
    SMTP_FROM: z.string().email().optional(),
 
+   // RevenueCat — both required; app will NOT start without them
+   REVENUECAT_SECRET_API_KEY: z.string().min(1),
+   REVENUECAT_WEBHOOK_SECRET: z.string().min(1),
+
    // ZEGOCLOUD — populate from https://console.zegocloud.com/
    ZEGO_APP_ID: z.coerce.number().default(0),
    ZEGO_APP_SIGN: z.string().default(""),
@@ -27,6 +31,10 @@ const envSchema = z.object({
 
    // Google Maps
    GOOGLE_PLACES_API_KEY: z.string().default("random-dev-key"),
+
+   // CORS — comma-separated allowed origins for production (e.g. https://app.example.com)
+   // Leave empty in development to allow all origins
+   ALLOWED_ORIGINS: z.string().default(""),
 });
 
 const _env = envSchema.safeParse(process.env);

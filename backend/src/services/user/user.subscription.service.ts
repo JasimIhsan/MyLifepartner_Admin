@@ -1,4 +1,4 @@
-import prisma from "@/config/prisma";
+import env from "@/config/env";
 import { SYSTEM_FEATURES } from "@/constants/SYSTEM_FEATURES";
 import { FeatureKey } from "@/enums/feature-key.enum";
 import { RevenueCatWebhookEvent } from "@/enums/revenuecat-event.enum";
@@ -6,10 +6,13 @@ import { IProcessedRevenueCatEventRepository } from "@/interfaces/repositories/p
 import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
 import { IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
+import { ISubscriptionWebhookRepository, RevenueCatWebhookEventData, FeatureFullPayload, FeatureLimitsOnlyPayload } from "@/interfaces/repositories/subscription-webhook.repository.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
+
+// ─── RevenueCat API types ────────────────────────────────────────────────────
 
 type RevenueCatSubscription = {
    expires_date?: string;
@@ -25,63 +28,48 @@ type RevenueCatSubscriberResponse = {
    };
 };
 
-type RevenueCatWebhookEventData = {
-   id: string;
-   type: RevenueCatWebhookEvent;
-   app_user_id: string;
-   original_app_user_id: string;
-   aliases?: string[];
-   event_timestamp_ms: number;
-   original_transaction_id: string;
-   store: string;
-   environment: string;
-   entitlement_id?: string;
-   entitlement_ids?: string[];
-   product_id: string;
-   expiration_at_ms?: number;
-};
-
-type FeatureLimitPayload = {
-   isProfileBlurEnabled: boolean;
-   maxInterests: number;
-   maxVideoCallMinutes: number;
-   maxAudioCallMinutes: number;
-   maxMessages: number;
-   interests: number;
-   videoCallMinutes: number;
-   audioCallMinutes: number;
-   messages: number;
-};
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const FREE_PLAN_NAME = "FREE";
 const DEFAULT_SUBSCRIPTION_DURATION_DAYS = 30;
+/**
+ * FREE plan subscriptions use a 100-year endDate to avoid spurious local-clock
+ * expiration inconsistency between auth service and expiration handler.
+ */
+const FREE_PLAN_DURATION_DAYS = 365 * 100;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const PURCHASE_SYNC_GRACE_PERIOD_MS = 2 * 60 * 1000; // 2 minutes
+const REVENUECAT_API_TIMEOUT_MS = 10_000; // 10 seconds
+
+// ─── Service ──────────────────────────────────────────────────────────────────
 
 export class UserSubscriptionService implements IUserSubscriptionService {
    constructor(
       private readonly subscriptionPlanRepository: ISubscriptionPlanRepository,
       private readonly userSubscriptionRepository: IUserSubscriptionRepository,
       private readonly processedRevenueCatEventRepository: IProcessedRevenueCatEventRepository,
-      private readonly userFeatureRepository: IUserFeatureRepository
+      private readonly userFeatureRepository: IUserFeatureRepository,
+      private readonly subscriptionWebhookRepository: ISubscriptionWebhookRepository
    ) {}
+
+   // ── Public API ────────────────────────────────────────────────────────────
 
    async getPlans(): Promise<EnrichedSubscriptionPlan[]> {
       const plans = await this.subscriptionPlanRepository.getAllPlansWithFeatures();
       return this.sortPlans(plans).map((plan) => this.enrichPlan(plan));
    }
 
+   /**
+    * Returns the user's active subscription.
+    *
+    * NOTE: This is now a PURE READ — it no longer writes to the database when a
+    * local endDate has passed.  Expiration-driven state changes
+    * are driven exclusively by RevenueCat EXPIRATION webhooks and the periodic
+    * reconciliation job.  Relying on local endDate alone to downgrade would bypass
+    * RevenueCat as the source of truth (e.g. it would ignore grace periods).
+    */
    async getMySubscription(userId: number): Promise<EnrichedUserSubscription | null> {
-      let subscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
-
-      if (subscription && this.isSubscriptionExpired(subscription.endDate)) {
-         await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
-         subscription = null;
-      }
-
-      if (!subscription) {
-         subscription = await this.subscribeToFreePlan(userId);
-      }
+      const subscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
 
       if (!subscription) {
          return null;
@@ -97,22 +85,34 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       return this.userFeatureRepository.findByUserId(userId);
    }
 
+   /**
+    * Subscribes a user to a plan.
+    *
+    * SECURITY: This endpoint is restricted to the FREE plan only.  Any attempt to
+    * activate a paid plan directly is rejected.  Paid plan
+    * activations must go through the RevenueCat webhook or /sync endpoint so that
+    * the store receipt is independently verified.
+    */
    async subscribe(userId: number, planId: number): Promise<EnrichedUserSubscription> {
       const plan = await this.getRequiredActivePlan(planId);
       const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
+      // C-2 — Reject any attempt to activate a paid plan from the client
+      if (!freePlan || plan.id !== freePlan.id) {
+         throw new ApiError(403, "Direct plan subscription is not allowed. Paid plans must be purchased through the app store.");
+      }
+
       const currentSubscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
 
-      if (currentSubscription) {
-         if (!currentSubscription.willRenew && planId === freePlan?.id) {
-            throw new ApiError(400, "Your plan is already cancelled and will downgrade on expiration.");
-         }
+      // If the user already has an active FREE plan subscription, return it
+      if (currentSubscription && currentSubscription.planId === freePlan.id) {
+         return this.enrichUserSubscription(currentSubscription);
       }
 
       await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
 
       const startDate = new Date();
-      const endDate = this.addDays(startDate, plan.durationDays);
+      const endDate = this.addDays(startDate, FREE_PLAN_DURATION_DAYS); // M-6
 
       const subscription = await this.userSubscriptionRepository.createUserSubscription({
          user: { connect: { id: userId } },
@@ -120,10 +120,10 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          status: SubscriptionStatus.ACTIVE,
          startDate,
          endDate,
-         willRenew: true,
+         willRenew: false, // FREE plan never auto-renews
       });
 
-      await this.applyFeaturesForPlan(userId, plan);
+      await this.applyFeaturesForPlan(userId, plan, true /* resetUsage */);
 
       return this.enrichUserSubscription(subscription);
    }
@@ -159,20 +159,21 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          throw new ApiError(404, `Plan mapping for product identifier '${activeProduct.productIdentifier}' not found on backend`);
       }
 
+      // Use the RevenueCat-verified expiry date; fall back to a safe default
       const endDate = activeProduct.expiryTime ?? this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS);
 
       if (!currentSubscription || currentSubscription.planId === freePlan?.id) {
-         await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew);
+         await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */);
          return this.getMySubscription(userId);
       }
 
       if (currentSubscription.planId === targetPlan.id) {
+         // Same plan — update endDate and willRenew from trusted source
          await this.userSubscriptionRepository.updateUserSubscription(currentSubscription.id, {
             endDate,
             willRenew: activeProduct.willRenew,
             nextPlanId: null,
          });
-
          return this.getMySubscription(userId);
       }
 
@@ -183,29 +184,57 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       if (targetPlan.price >= currentPlan.price) {
-         await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew);
+         // Upgrade — activate immediately
+         await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew, false /* preserve usage */);
       } else {
+         // Downgrade — defer until end of billing period (C-5: also update endDate from RC)
          await this.userSubscriptionRepository.updateUserSubscription(currentSubscription.id, {
             nextPlanId: targetPlan.id,
             willRenew: false,
+            endDate, // C-5 fix: update to RC-verified endDate so expiry is accurate
          });
       }
 
       return this.getMySubscription(userId);
    }
 
-   async handleWebhook(payload: Record<string, unknown>, _signatureHeader?: string): Promise<void> {
+   /**
+    * Handles a RevenueCat webhook event.
+    *
+    * Security fixes applied here:
+    *   C-1  — Validates REVENUECAT_WEBHOOK_SECRET against the Authorization header.
+    *   C-4  — Idempotency is now atomic: the ProcessedRevenueCatEvent row is inserted
+    *           inside the same database transaction as the subscription update.
+    *           A unique-constraint violation is caught and treated as "already processed".
+    */
+   async handleWebhook(payload: Record<string, unknown>, signatureHeader?: string): Promise<void> {
+      // ── C-1: Validate webhook signature ─────────────────────────────────────
+      const webhookSecret = env.REVENUECAT_WEBHOOK_SECRET;
+      if (!signatureHeader || signatureHeader !== webhookSecret) {
+         logger.warn("Webhook: rejected — invalid or missing Authorization header");
+         throw new ApiError(401, "Unauthorized");
+      }
+
       const event = payload.event as RevenueCatWebhookEventData | undefined;
 
-      logger.debug("👉👉👉 WEBHOOK EVENT: ", event);
-
-      if (!event) {
+      if (!event?.id || !event.type) {
+         // Malformed payload — return 200 so RevenueCat does not retry
+         logger.warn("Webhook: received malformed payload (missing event.id or event.type)");
          return;
       }
 
-      let userId: number | undefined;
+      // M-3: Log only safe fields, never the full event object
+      logger.info("Webhook event received", {
+         eventId: event.id,
+         type: event.type,
+         productId: event.product_id,
+         store: event.store,
+         environment: event.environment,
+         timestampMs: event.event_timestamp_ms,
+      });
 
-      // Attempt to resolve the true user identity from RevenueCat's identifiers
+      // ── Resolve userId ───────────────────────────────────────────────────────
+      let userId: number | undefined;
       const potentialIds = [event.original_app_user_id, event.app_user_id, ...(event.aliases || [])];
 
       for (const idStr of potentialIds) {
@@ -213,182 +242,52 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          const parsed = Number.parseInt(idStr, 10);
          if (!Number.isNaN(parsed) && parsed > 0) {
             userId = parsed;
-            break; // Found the primary integer user ID
+            break;
          }
       }
 
       if (userId === undefined) {
-         logger.warn("Could not resolve valid integer userId from RevenueCat event", event);
-         return;
-      }
-
-      const alreadyProcessed = await this.processedRevenueCatEventRepository.hasProcessedEvent(event.id);
-
-      if (alreadyProcessed) {
+         logger.warn("Webhook: could not resolve valid integer userId from event identifiers", {
+            eventId: event.id,
+            appUserId: event.app_user_id,
+            originalAppUserId: event.original_app_user_id,
+         });
          return;
       }
 
       await this.handleRevenueCatEvent(userId, event);
-      await this.processedRevenueCatEventRepository.markEventProcessed(event.id, event.type);
    }
+
+   // ── Private: event processing ─────────────────────────────────────────────
 
    private async handleRevenueCatEvent(userId: number, event: RevenueCatWebhookEventData): Promise<void> {
       const targetPlanId = await this.resolveTargetPlanId(event);
+      const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
-      await prisma.$transaction(async (tx) => {
-         const currentSubscription = await tx.userSubscription.findFirst({
-            where: { userId, status: "ACTIVE" },
-            include: { plan: true },
-            orderBy: { createdAt: "desc" },
-         });
-
-         const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
-
-         switch (event.type) {
-            case RevenueCatWebhookEvent.INITIAL_PURCHASE:
-            case RevenueCatWebhookEvent.RENEWAL:
-            case RevenueCatWebhookEvent.UNCANCELLATION:
-            case RevenueCatWebhookEvent.PRODUCT_CHANGE: {
-               if (!targetPlanId) {
-                  // Fallback to sync if plan couldn't be resolved via event data directly
-                  await this.syncSubscription(userId);
-                  return;
-               }
-
-               const endDate = event.expiration_at_ms ? new Date(event.expiration_at_ms) : this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS);
-
-               if (currentSubscription && currentSubscription.planId !== targetPlanId && currentSubscription.planId !== freePlan?.id) {
-                  if (event.type === RevenueCatWebhookEvent.PRODUCT_CHANGE) {
-                     const newPlan = await tx.subscriptionPlan.findUnique({ where: { id: targetPlanId } });
-                     if (newPlan && newPlan.price < currentSubscription.plan.price) {
-                        await tx.userSubscription.update({
-                           where: { id: currentSubscription.id },
-                           data: { nextPlanId: targetPlanId, willRenew: false },
-                        });
-                        return;
-                     }
-                  }
-               }
-
-               await tx.userSubscription.updateMany({
-                  where: { userId, status: "ACTIVE" },
-                  data: { status: "EXPIRED" },
-               });
-
-               const originalTransactionId = event.original_transaction_id;
-
-               let subscription;
-
-               if (originalTransactionId) {
-                  subscription = await tx.userSubscription.upsert({
-                     where: { originalTransactionId },
-                     create: {
-                        userId,
-                        planId: targetPlanId,
-                        status: "ACTIVE",
-                        startDate: new Date(),
-                        endDate,
-                        willRenew: true,
-                        revenueCatEventId: event.id,
-                        lastEventTimestampMs: event.event_timestamp_ms,
-                        originalTransactionId,
-                        store: event.store,
-                        environment: event.environment,
-                     },
-                     update: {
-                        userId,
-                        planId: targetPlanId,
-                        status: "ACTIVE",
-                        endDate,
-                        willRenew: true,
-                        revenueCatEventId: event.id,
-                        lastEventTimestampMs: event.event_timestamp_ms,
-                        store: event.store,
-                        environment: event.environment,
-                     },
-                     include: { plan: { include: { features: true } } },
-                  });
-               } else {
-                  subscription = await tx.userSubscription.create({
-                     data: {
-                        userId,
-                        planId: targetPlanId,
-                        status: "ACTIVE",
-                        startDate: new Date(),
-                        endDate,
-                        willRenew: true,
-                        revenueCatEventId: event.id,
-                        lastEventTimestampMs: event.event_timestamp_ms,
-                        originalTransactionId: null,
-                        store: event.store,
-                        environment: event.environment,
-                     },
-                     include: { plan: { include: { features: true } } },
-                  });
-               }
-
-               const featurePayload = this.buildFeaturePayload(subscription.plan as EnrichedSubscriptionPlan);
-
-               const existingFeatures = await tx.userFeature.findUnique({ where: { userId } });
-               if (existingFeatures) {
-                  await tx.userFeature.update({ where: { userId }, data: featurePayload });
-               } else {
-                  await tx.userFeature.create({ data: { userId, ...featurePayload } });
-               }
-
-               break;
-            }
-
-            case RevenueCatWebhookEvent.CANCELLATION: {
-               if (currentSubscription) {
-                  await tx.userSubscription.update({
-                     where: { id: currentSubscription.id },
-                     data: { willRenew: false, lastEventTimestampMs: event.event_timestamp_ms, revenueCatEventId: event.id },
-                  });
-               }
-               break;
-            }
-
-            case RevenueCatWebhookEvent.EXPIRATION:
-            case RevenueCatWebhookEvent.REFUND: {
-               await tx.userSubscription.updateMany({
-                  where: { userId, status: "ACTIVE" },
-                  data: { status: "EXPIRED" },
-               });
-               if (freePlan) {
-                  const subscription = await tx.userSubscription.create({
-                     data: {
-                        userId,
-                        planId: freePlan.id,
-                        status: "ACTIVE",
-                        startDate: new Date(),
-                        endDate: this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS),
-                        willRenew: true,
-                        revenueCatEventId: event.id,
-                        lastEventTimestampMs: event.event_timestamp_ms,
-                        originalTransactionId: null,
-                     },
-                     include: { plan: { include: { features: true } } },
-                  });
-                  const featurePayload = this.buildFeaturePayload(subscription.plan as EnrichedSubscriptionPlan);
-                  const existingFeatures = await tx.userFeature.findUnique({ where: { userId } });
-                  if (existingFeatures) {
-                     await tx.userFeature.update({ where: { userId }, data: featurePayload });
-                  } else {
-                     await tx.userFeature.create({ data: { userId, ...featurePayload } });
-                  }
-               }
-               break;
-            }
-         }
+      const processed = await this.subscriptionWebhookRepository.processWebhookEvent({
+         userId,
+         event,
+         targetPlanId,
+         freePlanId: freePlan?.id,
+         freePlanDurationDays: FREE_PLAN_DURATION_DAYS,
+         defaultSubscriptionDurationDays: DEFAULT_SUBSCRIPTION_DURATION_DAYS,
+         buildFeatureFullPayload: (plan) => this.buildFeatureFullPayload(this.enrichPlan(plan as any)),
+         buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan as any))
       });
+
+      // If the event wasn't processed due to a missing targetPlanId, fallback to sync
+      if (!processed && !targetPlanId && [
+            RevenueCatWebhookEvent.INITIAL_PURCHASE,
+            RevenueCatWebhookEvent.RENEWAL,
+            RevenueCatWebhookEvent.UNCANCELLATION,
+            RevenueCatWebhookEvent.PRODUCT_CHANGE
+         ].includes(event.type)) {
+         await this.syncSubscription(userId);
+      }
    }
 
    private async resolveTargetPlanId(event: RevenueCatWebhookEventData): Promise<number | null> {
-      let identifier = event.product_id;
-      if (!identifier && event.entitlement_ids && event.entitlement_ids.length > 0) {
-         // Default logic assuming mapping is equal or something
-      }
+      const identifier = event.product_id;
       if (identifier) {
          const plan = await this.subscriptionPlanRepository.findPlanByIdentifier(identifier);
          if (plan) return plan.id;
@@ -396,8 +295,8 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       return null;
    }
 
-   private async applyFeaturesForPlan(userId: number, plan: EnrichedSubscriptionPlan): Promise<void> {
-      const featurePayload = this.buildFeaturePayload(plan);
+   private async applyFeaturesForPlan(userId: number, plan: EnrichedSubscriptionPlan, resetUsage: boolean): Promise<void> {
+      const featurePayload = resetUsage ? this.buildFeatureFullPayload(plan) : this.buildFeatureLimitsOnlyPayload(plan);
 
       const existingUserFeature = await this.userFeatureRepository.findByUserId(userId);
 
@@ -408,26 +307,45 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       await this.userFeatureRepository.create({
          user: { connect: { id: userId } },
-         ...featurePayload,
+         ...this.buildFeatureFullPayload(plan),
       });
    }
 
-   private buildFeaturePayload(plan: EnrichedSubscriptionPlan): FeatureLimitPayload {
-      const limits: FeatureLimitPayload = {
-         isProfileBlurEnabled: false,
-         maxInterests: 0,
-         maxVideoCallMinutes: 0,
-         maxAudioCallMinutes: 0,
-         maxMessages: 0,
+   /**
+    * Builds a full feature payload including usage counters set to zero.
+    * Use only for INITIAL_PURCHASE or downgrade/expiration events (C-8).
+    */
+   private buildFeatureFullPayload(plan: EnrichedSubscriptionPlan): FeatureFullPayload {
+      const limits = this.parsePlanLimits(plan);
+      return {
+         ...limits,
          interests: 0,
          videoCallMinutes: 0,
          audioCallMinutes: 0,
          messages: 0,
       };
+   }
+
+   /**
+    * Builds a limits-only feature payload that does NOT include usage counters.
+    * Prisma partial update means existing usage values are preserved in the DB.
+    * Use for RENEWAL, PRODUCT_CHANGE, CANCELLATION events (C-8).
+    */
+   private buildFeatureLimitsOnlyPayload(plan: EnrichedSubscriptionPlan): FeatureLimitsOnlyPayload {
+      return this.parsePlanLimits(plan);
+   }
+
+   private parsePlanLimits(plan: EnrichedSubscriptionPlan): FeatureLimitsOnlyPayload {
+      const limits: FeatureLimitsOnlyPayload = {
+         isProfileBlurEnabled: false,
+         maxInterests: 0,
+         maxVideoCallMinutes: 0,
+         maxAudioCallMinutes: 0,
+         maxMessages: 0,
+      };
 
       for (const planFeature of plan.features) {
          const featureKey = planFeature.featureKey as FeatureKey;
-
          switch (featureKey) {
             case FeatureKey.PROFILE_BLUR:
                limits.isProfileBlurEnabled = planFeature.limit === "true";
@@ -450,20 +368,33 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       return limits;
    }
 
+   /**
+    * Calls the RevenueCat subscriber API with a 10-second timeout (M-12).
+    */
    private async getRevenueCatSubscriberData(userId: number): Promise<RevenueCatSubscriberResponse> {
-      const apiKey = process.env.REVENUECAT_SECRET_API_KEY;
+      const apiKey = env.REVENUECAT_SECRET_API_KEY;
 
-      if (!apiKey) {
-         throw new ApiError(500, "RevenueCat API key is not configured on backend");
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REVENUECAT_API_TIMEOUT_MS);
+
+      let response: Response;
+      try {
+         response = await fetch(`https://api.revenuecat.com/v1/subscribers/${userId}`, {
+            method: "GET",
+            headers: {
+               Authorization: `Bearer ${apiKey}`,
+               "Content-Type": "application/json",
+            },
+            signal: controller.signal,
+         });
+      } catch (err: unknown) {
+         if (err instanceof Error && err.name === "AbortError") {
+            throw new ApiError(504, "RevenueCat API request timed out");
+         }
+         throw err;
+      } finally {
+         clearTimeout(timeoutId);
       }
-
-      const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${userId}`, {
-         method: "GET",
-         headers: {
-            Authorization: `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-         },
-      });
 
       if (!response.ok) {
          throw new ApiError(response.status, `Failed to retrieve subscriber info from RevenueCat: ${response.statusText}`);
@@ -511,20 +442,24 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
 
-      return this.subscribe(userId, freePlan.id);
+      const startDate = new Date();
+      const endDate = this.addDays(startDate, FREE_PLAN_DURATION_DAYS); // M-6
+
+      const subscription = await this.userSubscriptionRepository.createUserSubscription({
+         user: { connect: { id: userId } },
+         plan: { connect: { id: freePlan.id } },
+         status: SubscriptionStatus.ACTIVE,
+         startDate,
+         endDate,
+         willRenew: false,
+      });
+
+      await this.applyFeaturesForPlan(userId, subscription.plan, true /* resetUsage */);
+
+      return this.enrichUserSubscription(subscription);
    }
 
-   private async subscribeToFreePlan(userId: number): Promise<EnrichedUserSubscription | null> {
-      const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
-
-      if (!freePlan) {
-         return null;
-      }
-
-      return this.subscribe(userId, freePlan.id);
-   }
-
-   private async activatePlan(userId: number, planId: number, endDate: Date, willRenew: boolean): Promise<void> {
+   private async activatePlan(userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean): Promise<void> {
       await this.userSubscriptionRepository.deactivateUserSubscriptions(userId);
 
       const subscription = await this.userSubscriptionRepository.createUserSubscription({
@@ -536,7 +471,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          willRenew,
       });
 
-      await this.applyFeaturesForPlan(userId, subscription.plan);
+      await this.applyFeaturesForPlan(userId, subscription.plan, resetUsage);
    }
 
    private async getRequiredActivePlan(planId: number): Promise<EnrichedSubscriptionPlan> {
@@ -592,7 +527,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          ...plan,
          features: plan.features.map((planFeature) => {
             const feature = SYSTEM_FEATURES.find((systemFeature) => systemFeature.key === planFeature.featureKey);
-
             return {
                ...planFeature,
                description: planFeature.description || feature?.description || null,
@@ -604,14 +538,8 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
    private sortPlans(plans: EnrichedSubscriptionPlan[]): EnrichedSubscriptionPlan[] {
       return [...plans].sort((firstPlan, secondPlan) => {
-         if (firstPlan.name === FREE_PLAN_NAME) {
-            return -1;
-         }
-
-         if (secondPlan.name === FREE_PLAN_NAME) {
-            return 1;
-         }
-
+         if (firstPlan.name === FREE_PLAN_NAME) return -1;
+         if (secondPlan.name === FREE_PLAN_NAME) return 1;
          return firstPlan.price - secondPlan.price;
       });
    }
