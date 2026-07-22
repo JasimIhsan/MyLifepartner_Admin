@@ -3,14 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
+enum ActiveColumn { day, month, year }
+
 class PrimayDatePicker extends StatefulWidget {
   final DateTime? initialDate;
   final ValueChanged<DateTime> onDateChanged;
+  final DateTime? minDate;
+  final DateTime? maxDate;
 
   const PrimayDatePicker({
     super.key,
     required this.initialDate,
     required this.onDateChanged,
+    this.minDate,
+    this.maxDate,
   });
 
   @override
@@ -26,8 +32,10 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
   late FixedExtentScrollController _monthController;
   late FixedExtentScrollController _dayController;
 
-  final int _startYear = 1920;
-  late final int _endYear;
+  late final DateTime _effectiveMinDate;
+  late final DateTime _effectiveMaxDate;
+
+  ActiveColumn _activeColumn = ActiveColumn.year;
 
   final List<String> _months = [
     'January',
@@ -44,60 +52,49 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
     'December',
   ];
 
+  final List<String> _shortMonths = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
   @override
   void initState() {
     super.initState();
-    _endYear = DateTime.now().year;
 
-    final baseDate =
+    _effectiveMinDate = widget.minDate ?? DateTime(1920, 1, 1);
+    _effectiveMaxDate = widget.maxDate ?? DateTime.now();
+
+    DateTime baseDate =
         widget.initialDate ??
         DateTime.now().subtract(const Duration(days: 365 * 25));
+
+    if (baseDate.isBefore(_effectiveMinDate)) {
+      baseDate = _effectiveMinDate;
+    } else if (baseDate.isAfter(_effectiveMaxDate)) {
+      baseDate = _effectiveMaxDate;
+    }
+
     _selectedYear = baseDate.year;
     _selectedMonth = baseDate.month;
     _selectedDay = baseDate.day;
 
     _yearController = FixedExtentScrollController(
-      initialItem: _selectedYear - _startYear,
+      initialItem: _selectedYear - _effectiveMinDate.year,
     );
     _monthController = FixedExtentScrollController(
       initialItem: _selectedMonth - 1,
     );
     _dayController = FixedExtentScrollController(initialItem: _selectedDay - 1);
-
-    if (widget.initialDate == null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        widget.onDateChanged(baseDate);
-      });
-    }
-  }
-
-  @override
-  void didUpdateWidget(covariant PrimayDatePicker oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.initialDate != null) {
-      final newDate = widget.initialDate!;
-      if (newDate.year != _selectedYear ||
-          newDate.month != _selectedMonth ||
-          newDate.day != _selectedDay) {
-        setState(() {
-          _selectedYear = newDate.year;
-          _selectedMonth = newDate.month;
-
-          final maxDays = _getDaysInMonth(_selectedYear, _selectedMonth);
-          _selectedDay = newDate.day.clamp(1, maxDays);
-
-          if (_yearController.hasClients) {
-            _yearController.jumpToItem(_selectedYear - _startYear);
-          }
-          if (_monthController.hasClients) {
-            _monthController.jumpToItem(_selectedMonth - 1);
-          }
-          if (_dayController.hasClients) {
-            _dayController.jumpToItem(_selectedDay - 1);
-          }
-        });
-      }
-    }
   }
 
   @override
@@ -113,272 +110,116 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
   }
 
   void _updateDate({int? year, int? month, int? day}) {
+    int proposedYear = year ?? _selectedYear;
+    int proposedMonth = month ?? _selectedMonth;
+    int proposedDay = day ?? _selectedDay;
+
+    final maxDays = _getDaysInMonth(proposedYear, proposedMonth);
+    if (proposedDay > maxDays) {
+      proposedDay = maxDays;
+    }
+
+    DateTime proposedDate = DateTime(proposedYear, proposedMonth, proposedDay);
+
+    if (proposedDate.isBefore(_effectiveMinDate)) {
+      proposedDate = _effectiveMinDate;
+    } else if (proposedDate.isAfter(_effectiveMaxDate)) {
+      proposedDate = _effectiveMaxDate;
+    }
+
     setState(() {
-      int proposedYear = year ?? _selectedYear;
-      int proposedMonth = month ?? _selectedMonth;
-      int proposedDay = day ?? _selectedDay;
-
-      // First clamp proposedDay to max days of the proposed month/year
-      final maxDaysProposed = _getDaysInMonth(proposedYear, proposedMonth);
-      proposedDay = proposedDay.clamp(1, maxDaysProposed);
-
-      // Prevent choosing future dates relative to today
-      final now = DateTime.now();
-      if (proposedYear >= now.year) {
-        proposedYear = now.year;
-        if (proposedMonth >= now.month) {
-          proposedMonth = now.month;
-          if (proposedDay > now.day) {
-            proposedDay = now.day;
-          }
-        }
-      }
-
-      _selectedYear = proposedYear;
-      _selectedMonth = proposedMonth;
-      _selectedDay = proposedDay;
-
-      // Sync and animate wheel scroll controllers to current/clamped positions
-      if (_yearController.hasClients) {
-        final targetIndex = _selectedYear - _startYear;
-        if (_yearController.selectedItem != targetIndex) {
-          _yearController.animateToItem(
-            targetIndex,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-          );
-        }
-      }
-      if (_monthController.hasClients) {
-        final targetIndex = _selectedMonth - 1;
-        if (_monthController.selectedItem != targetIndex) {
-          _monthController.animateToItem(
-            targetIndex,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-          );
-        }
-      }
-      if (_dayController.hasClients) {
-        final targetIndex = _selectedDay - 1;
-        if (_dayController.selectedItem != targetIndex) {
-          _dayController.animateToItem(
-            targetIndex,
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-          );
-        }
-      }
+      _selectedYear = proposedDate.year;
+      _selectedMonth = proposedDate.month;
+      _selectedDay = proposedDate.day;
     });
 
-    final date = DateTime(_selectedYear, _selectedMonth, _selectedDay);
-    widget.onDateChanged(date);
+    _syncScrollControllers();
     HapticFeedback.selectionClick();
-
-    // Auto-scroll to the bottom of the ancestor scrollable to make age validation visible
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        final scrollable = Scrollable.maybeOf(context);
-        if (scrollable != null) {
-          scrollable.position.animateTo(
-            scrollable.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      }
-    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final maxMonth = _selectedYear == _endYear ? now.month : 12;
-    final maxDays = (_selectedYear == _endYear && _selectedMonth == now.month)
-        ? now.day
-        : _getDaysInMonth(_selectedYear, _selectedMonth);
+  void _syncScrollControllers() {
+    final yearIndex = _selectedYear - _effectiveMinDate.year;
+    final monthIndex = _selectedMonth - 1;
+    final dayIndex = _selectedDay - 1;
 
-    return Container(
-      height: 220,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Content clipped to rounded corners
-          Positioned.fill(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(24),
-              child: Stack(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 3,
-                        child: CupertinoPicker(
-                          scrollController: _monthController,
-                          itemExtent: 44,
-                          magnification: 1.1,
-                          squeeze: 1.25,
-                          diameterRatio: 1.5,
-                          selectionOverlay: _buildSelectionOverlay(),
-                          onSelectedItemChanged: (index) {
-                            _updateDate(month: index + 1);
-                          },
-                          children: List.generate(maxMonth, (index) {
-                            final isSelected = (index + 1) == _selectedMonth;
-                            return Center(
-                              child: Text(
-                                _months[index],
-                                style: TextStyle(
-                                  fontSize: isSelected ? 20 : 16,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                  color: isSelected
-                                      ? AppColors.textPrimary
-                                      : AppColors.textSecondary.withValues(
-                                          alpha: 0.3,
-                                        ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: CupertinoPicker(
-                          scrollController: _dayController,
-                          itemExtent: 44,
-                          magnification: 1.1,
-                          squeeze: 1.25,
-                          diameterRatio: 1.5,
-                          selectionOverlay: _buildSelectionOverlay(),
-                          onSelectedItemChanged: (index) {
-                            _updateDate(day: index + 1);
-                          },
-                          children: List.generate(maxDays, (index) {
-                            final isSelected = (index + 1) == _selectedDay;
-                            return Center(
-                              child: Text(
-                                '${index + 1}',
-                                style: TextStyle(
-                                  fontSize: isSelected ? 20 : 16,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                  color: isSelected
-                                      ? AppColors.textPrimary
-                                      : AppColors.textSecondary.withValues(
-                                          alpha: 0.3,
-                                        ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: CupertinoPicker(
-                          scrollController: _yearController,
-                          itemExtent: 44,
-                          magnification: 1.1,
-                          squeeze: 1.25,
-                          diameterRatio: 1.5,
-                          selectionOverlay: _buildSelectionOverlay(),
-                          onSelectedItemChanged: (index) {
-                            _updateDate(year: _startYear + index);
-                          },
-                          children: List.generate((_endYear - _startYear) + 1, (
-                            index,
-                          ) {
-                            final year = _startYear + index;
-                            final isSelected = year == _selectedYear;
-                            return Center(
-                              child: Text(
-                                '$year',
-                                style: TextStyle(
-                                  fontSize: isSelected ? 20 : 16,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w700
-                                      : FontWeight.w400,
-                                  color: isSelected
-                                      ? AppColors.textPrimary
-                                      : AppColors.textSecondary.withValues(
-                                          alpha: 0.3,
-                                        ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 50,
-                    child: IgnorePointer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.white,
-                              Colors.white.withValues(alpha: 0.0),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 50,
-                    child: IgnorePointer(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.white,
-                              Colors.white.withValues(alpha: 0.0),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Top-level border overlay to ensure rounded corners are visible and not hidden
-          IgnorePointer(
-            child: Container(
+    if (_yearController.hasClients &&
+        _yearController.selectedItem != yearIndex) {
+      _yearController.jumpToItem(yearIndex);
+    }
+    if (_monthController.hasClients &&
+        _monthController.selectedItem != monthIndex) {
+      _monthController.jumpToItem(monthIndex);
+    }
+    if (_dayController.hasClients && _dayController.selectedItem != dayIndex) {
+      _dayController.jumpToItem(dayIndex);
+    }
+  }
+
+  void _focusColumn(ActiveColumn column) {
+    setState(() {
+      _activeColumn = column;
+    });
+    HapticFeedback.lightImpact();
+  }
+
+  Widget _buildDisplayCard({
+    required String value,
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          children: [
+            Container(
+              height: 56,
+              alignment: Alignment.center,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: AppColors.borderColor, width: 1),
+                color: isDark ? const Color(0xFF2C2C2C) : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isActive
+                      ? AppColors.primary
+                      : (isDark
+                            ? const Color(0xFF444444)
+                            : AppColors.borderColor),
+                  width: isActive ? 1.5 : 1,
+                ),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [],
+              ),
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: isActive
+                      ? AppColors.primary
+                      : (isDark ? Colors.white : AppColors.textPrimary),
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white60 : AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -386,9 +227,266 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
   Widget _buildSelectionOverlay() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.05),
+        color: AppColors.primary.withValues(alpha: 0.06),
       ),
       margin: const EdgeInsets.symmetric(vertical: 2),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final dividerColor = isDark
+        ? const Color(0xFF2C2C2C)
+        : AppColors.borderColor;
+
+    final totalYears = _effectiveMaxDate.year - _effectiveMinDate.year + 1;
+    final totalDays = _getDaysInMonth(_selectedYear, _selectedMonth);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag Handle
+          Container(
+            width: 36,
+            height: 4.5,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF444444) : const Color(0xFFE2E8F0),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Header: Cancel, Select Date, Done
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white70 : AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+                Text(
+                  "Select Date",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : AppColors.textPrimary,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    final date = DateTime(
+                      _selectedYear,
+                      _selectedMonth,
+                      _selectedDay,
+                    );
+                    widget.onDateChanged(date);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "Done",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Header Display Row
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                _buildDisplayCard(
+                  value: '$_selectedDay',
+                  label: 'Day',
+                  isActive: _activeColumn == ActiveColumn.day,
+                  onTap: () => _focusColumn(ActiveColumn.day),
+                ),
+                const SizedBox(width: 12),
+                _buildDisplayCard(
+                  value: _shortMonths[_selectedMonth - 1],
+                  label: 'Month',
+                  isActive: _activeColumn == ActiveColumn.month,
+                  onTap: () => _focusColumn(ActiveColumn.month),
+                ),
+                const SizedBox(width: 12),
+                _buildDisplayCard(
+                  value: '$_selectedYear',
+                  label: 'Year',
+                  isActive: _activeColumn == ActiveColumn.year,
+                  onTap: () => _focusColumn(ActiveColumn.year),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Divider
+          Divider(color: dividerColor, height: 1, thickness: 1),
+
+          // Column Pickers
+          Container(
+            height: 220,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                // Day Column
+                Expanded(
+                  child: CupertinoPicker(
+                    scrollController: _dayController,
+                    itemExtent: 44,
+                    looping: true,
+                    selectionOverlay: _buildSelectionOverlay(),
+                    onSelectedItemChanged: (index) {
+                      setState(() {
+                        _activeColumn = ActiveColumn.day;
+                      });
+                      _updateDate(day: index + 1);
+                    },
+                    children: List.generate(totalDays, (index) {
+                      final isSelected = (index + 1) == _selectedDay;
+                      return Center(
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            fontSize: isSelected ? 20 : 16,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                            color: isSelected
+                                ? (isDark
+                                      ? Colors.white
+                                      : AppColors.textPrimary)
+                                : (isDark
+                                      ? Colors.white38
+                                      : AppColors.textSecondary.withValues(
+                                          alpha: 0.3,
+                                        )),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+
+                // Vertical Divider
+                Container(width: 1, height: 160, color: dividerColor),
+
+                // Month Column
+                Expanded(
+                  child: CupertinoPicker(
+                    scrollController: _monthController,
+                    itemExtent: 44,
+                    looping: true,
+                    selectionOverlay: _buildSelectionOverlay(),
+                    onSelectedItemChanged: (index) {
+                      setState(() {
+                        _activeColumn = ActiveColumn.month;
+                      });
+                      _updateDate(month: index + 1);
+                    },
+                    children: List.generate(12, (index) {
+                      final isSelected = (index + 1) == _selectedMonth;
+                      return Center(
+                        child: Text(
+                          _months[index],
+                          style: TextStyle(
+                            fontSize: isSelected ? 20 : 16,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                            color: isSelected
+                                ? (isDark
+                                      ? Colors.white
+                                      : AppColors.textPrimary)
+                                : (isDark
+                                      ? Colors.white38
+                                      : AppColors.textSecondary.withValues(
+                                          alpha: 0.3,
+                                        )),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+
+                // Vertical Divider
+                Container(width: 1, height: 160, color: dividerColor),
+
+                // Year Column
+                Expanded(
+                  child: CupertinoPicker(
+                    scrollController: _yearController,
+                    itemExtent: 44,
+                    looping: false,
+                    selectionOverlay: _buildSelectionOverlay(),
+                    onSelectedItemChanged: (index) {
+                      setState(() {
+                        _activeColumn = ActiveColumn.year;
+                      });
+                      _updateDate(year: _effectiveMinDate.year + index);
+                    },
+                    children: List.generate(totalYears, (index) {
+                      final year = _effectiveMinDate.year + index;
+                      final isSelected = year == _selectedYear;
+                      return Center(
+                        child: Text(
+                          '$year',
+                          style: TextStyle(
+                            fontSize: isSelected ? 20 : 16,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                            color: isSelected
+                                ? (isDark
+                                      ? Colors.white
+                                      : AppColors.textPrimary)
+                                : (isDark
+                                      ? Colors.white38
+                                      : AppColors.textSecondary.withValues(
+                                          alpha: 0.3,
+                                        )),
+                          ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

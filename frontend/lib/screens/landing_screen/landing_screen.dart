@@ -106,7 +106,7 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
                         const Spacer(),
                         _buildTextSection(),
                         const SizedBox(height: 32),
-                        _buildTrustCards(),
+                        Center(child: _buildTrustCards()),
                         const SizedBox(height: 40),
                         _buildCtaButton(),
                         const SizedBox(height: 32),

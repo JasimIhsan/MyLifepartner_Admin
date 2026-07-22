@@ -136,10 +136,10 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
   }
 
   Future<void> _completeUpload() async {
-    if (_images.length != _maxImages) {
+    if (_images.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please upload all 4 photos to continue.'),
+          content: Text('Please upload at least 1 photo to continue.'),
         ),
       );
       return;
@@ -235,7 +235,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isValid =
-        _images.length == _maxImages &&
+        _images.isNotEmpty &&
         _images.any((img) => img.isPrimary == true);
 
     return PopScope(
@@ -295,7 +295,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Upload 4 clear photos of yourself. Tap any photo to manage it.',
+                              'Upload at least 1 clear photo of yourself. Tap any photo to manage it.',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: AppColors.textSecondary,

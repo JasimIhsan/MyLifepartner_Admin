@@ -227,7 +227,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
         _buildEditorialButton(
           icon: SvgPicture.string(_googleSvg, width: 22, height: 22),
           label: "Continue with Google",
-          onPressed: null, // Disabled per user request
+          onPressed: () {},
           isPrimary: true,
         ),
         const SizedBox(height: 16),
@@ -236,7 +236,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
         _buildEditorialButton(
           icon: const Icon(Icons.apple, color: AppColors.black, size: 26),
           label: "Continue with Apple",
-          onPressed: null,
+          onPressed: () {},
           isPrimary: true,
         ),
 

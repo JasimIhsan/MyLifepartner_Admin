@@ -53,9 +53,11 @@ class _LanguagesStepState extends State<LanguagesStep> {
   Widget build(BuildContext context) {
     // Filter remaining languages that match search and are NOT selected
     final filteredLangs = _allLangs
-        .where((l) =>
-            l.toLowerCase().contains(_searchQuery.toLowerCase()) &&
-            !widget.selectedLanguages.contains(l))
+        .where(
+          (l) =>
+              l.toLowerCase().contains(_searchQuery.toLowerCase()) &&
+              !widget.selectedLanguages.contains(l),
+        )
         .toList();
 
     return Column(
@@ -203,10 +205,7 @@ class _LanguagesStepState extends State<LanguagesStep> {
                         },
                       ),
                       if (index < filteredLangs.length - 1)
-                        const Divider(
-                          height: 1,
-                          color: AppColors.divider,
-                        ),
+                        const Divider(height: 1, color: AppColors.divider),
                     ],
                   );
                 }).toList(),
