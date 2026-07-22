@@ -558,8 +558,8 @@ export class MatchRepository implements IMatchRepository {
          occupation: profile.job?.name || null,
          bio: profile.bio,
          gender: profile.gender,
-         privacyEnabled: (profile.user as any)?.privacySettings?.privacyEnabled ?? false,
-         blurredImageUrl: (profile.user as any)?.privacySettings?.blurredImageUrl ?? null,
+         privacyEnabled: profile.user.privacySettings?.privacyEnabled ?? false,
+         blurredImageUrl: profile.user.privacySettings?.blurredImageUrl ?? null,
          images: profile.images.map((image) => ({
             id: image.id,
             imageUrl: image.imageUrl,

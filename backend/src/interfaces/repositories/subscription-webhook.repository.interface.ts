@@ -1,4 +1,5 @@
 import { RevenueCatWebhookEvent } from "@/enums/revenuecat-event.enum";
+import { SubscriptionPlan } from "@prisma/client";
 
 export type RevenueCatWebhookEventData = {
    id: string;
@@ -43,8 +44,8 @@ export interface ProcessWebhookParams {
    freePlanId: number | undefined;
    freePlanDurationDays: number;
    defaultSubscriptionDurationDays: number;
-   buildFeatureFullPayload: (plan: any) => FeatureFullPayload;
-   buildFeatureLimitsOnlyPayload: (plan: any) => FeatureLimitsOnlyPayload;
+   buildFeatureFullPayload: (plan: SubscriptionPlan) => FeatureFullPayload;
+   buildFeatureLimitsOnlyPayload: (plan: SubscriptionPlan) => FeatureLimitsOnlyPayload;
 }
 
 export interface ISubscriptionWebhookRepository {

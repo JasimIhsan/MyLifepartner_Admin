@@ -30,7 +30,13 @@ export class LocationService {
             break;
       }
 
-      const requestBody: any = {
+      const requestBody: {
+         input: string;
+         includedPrimaryTypes: string[];
+         sessionToken: string;
+         languageCode: string;
+         includedRegionCodes?: string[];
+      } = {
          input,
          includedPrimaryTypes,
          sessionToken,
@@ -66,8 +72,8 @@ export class LocationService {
             const placeId = s.placePrediction.place.replace("places/", "");
             return {
                placeId,
-               name: s.placePrediction.structuredFormat.mainText.text,
-               description: s.placePrediction.structuredFormat.secondaryText?.text || s.placePrediction.text.text,
+               name: s.placePrediction.structuredFormat?.mainText?.text || s.placePrediction.text.text,
+               description: s.placePrediction.structuredFormat?.secondaryText?.text || s.placePrediction.text.text,
                types: s.placePrediction.types || [],
             };
          });

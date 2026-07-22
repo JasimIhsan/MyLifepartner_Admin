@@ -390,7 +390,7 @@ export class MatchService implements IMatchService {
     * @param preference - User preference data.
     * @returns True if height matches.
     */
-   private isHeightMatched(candidate: any, preference: UserPreferenceData): boolean {
+   private isHeightMatched(candidate: CandidateProfile, preference: UserPreferenceData): boolean {
       return true;
    }
 

@@ -6,18 +6,18 @@ export interface GooglePlacePrediction {
       placeId: string;
       text: {
          text: string;
-         matches: any[];
+         matches?: unknown[];
       };
-      structuredFormat: {
-         mainText: {
+      structuredFormat?: {
+         mainText?: {
             text: string;
-            matches: any[];
+            matches?: unknown[];
          };
-         secondaryText: {
+         secondaryText?: {
             text: string;
          };
       };
-      types: string[];
+      types?: string[];
    };
 }
 

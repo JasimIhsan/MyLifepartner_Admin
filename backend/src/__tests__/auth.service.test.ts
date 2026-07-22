@@ -1,6 +1,13 @@
 import { AuthService } from "@/services/user/user.auth.service";
 import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS, HTTP_STATUS, RATE_LIMIT_CONFIG } from "@/utils/constants";
+import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
+import { IOtpService } from "@/interfaces/services/otp.service.interface";
+import { IJwtService } from "@/interfaces/services/jwt.service.interface";
+import { ICacheService } from "@/interfaces/services/cache.service.interface";
+import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
+import { IUserSubscriptionRepository } from "@/interfaces/repositories/user-subscription.repository.interface";
+import { IEmailService } from "@/interfaces/services/email.service.interface";
 import bcrypt from "bcrypt";
 
 // ─── Mocks ───────────────────────────────────────────────────────────────────
@@ -62,13 +69,13 @@ describe("AuthService", () => {
    beforeEach(() => {
       jest.clearAllMocks();
       authService = new AuthService(
-         mockUserRepo as any,
-         mockOtpService as any,
-         mockJwtService as any,
-         mockCacheService as any,
-         mockSubPlanRepo as any,
-         mockUserSubRepo as any,
-         mockEmailService as any
+         mockUserRepo as unknown as IUserRepository,
+         mockOtpService as unknown as IOtpService,
+         mockJwtService as unknown as IJwtService,
+         mockCacheService as unknown as ICacheService,
+         mockSubPlanRepo as unknown as ISubscriptionPlanRepository,
+         mockUserSubRepo as unknown as IUserSubscriptionRepository,
+         mockEmailService as unknown as IEmailService
       );
    });
 

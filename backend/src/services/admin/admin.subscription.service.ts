@@ -11,7 +11,7 @@ type CreateSubscriptionPlanData = {
    name: string;
    price: number;
    durationDays: number;
-   identifier: string;
+   storeProductId: string;
    description?: string;
 };
 
@@ -20,7 +20,7 @@ type UpdateSubscriptionPlanData = {
    durationDays?: number;
    isActive?: boolean;
    isMostPopular?: boolean;
-   identifier?: string;
+   storeProductId?: string;
 };
 
 type AddPlanFeatureData = {
@@ -57,7 +57,7 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
          name: normalizedPlanName,
          price: data.price,
          durationDays: data.durationDays,
-         identifier: data.identifier,
+         storeProductId: data.storeProductId,
          description: data.description,
       });
 

@@ -7,7 +7,7 @@ export interface ISubscriptionPlanRepository {
    getAllPlansWithFeatures(): Promise<PlanWithFeatures[]>;
    getPlanById(id: number): Promise<PlanWithFeatures | null>;
    getPlanByName(name: string): Promise<PlanWithFeatures | null>;
-   findPlanByIdentifier(identifier: string): Promise<PlanWithFeatures | null>;
+   findPlanByStoreProductId(storeProductId: string): Promise<PlanWithFeatures | null>;
    updatePlan(id: number, data: Prisma.SubscriptionPlanUpdateInput): Promise<PlanWithFeatures>;
    untoggleMostPopularPlans(): Promise<Prisma.BatchPayload>;
    deletePlan(id: number): Promise<SubscriptionPlan>;

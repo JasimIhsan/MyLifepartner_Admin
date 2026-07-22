@@ -361,6 +361,20 @@ export async function seedUsers(prisma: PrismaClient) {
    ];
 
    for (const p of dummyProfiles) {
+      // 0) Find or create Job record
+      let jobId: number | undefined;
+      if (p.occupation) {
+         let job = await prisma.job.findFirst({
+            where: { name: { equals: p.occupation, mode: "insensitive" } },
+         });
+         if (!job) {
+            job = await prisma.job.create({
+               data: { name: p.occupation },
+            });
+         }
+         jobId = job.id;
+      }
+
       // 1) Create or update user
       const user = await prisma.user.upsert({
          where: { email: p.email },
@@ -387,13 +401,14 @@ export async function seedUsers(prisma: PrismaClient) {
             gender: p.gender,
             dateOfBirth: p.dob,
             maritalStatus: p.maritalStatus,
+            motherTongue: p.languages?.[0] ?? null,
             city: p.city,
             state: p.state,
             country: p.country,
             lastLocationLat: p.lat,
             lastLocationLng: p.lng,
             highestEducation: p.highestEducation,
-            // occupation: p.occupation,
+            jobId: jobId ?? null,
             bio: p.bio,
             languages: p.languages,
             childrenStatus: p.childrenStatus,
@@ -416,13 +431,14 @@ export async function seedUsers(prisma: PrismaClient) {
             gender: p.gender,
             dateOfBirth: p.dob,
             maritalStatus: p.maritalStatus,
+            motherTongue: p.languages?.[0] ?? null,
             city: p.city,
             state: p.state,
             country: p.country,
             lastLocationLat: p.lat,
             lastLocationLng: p.lng,
             highestEducation: p.highestEducation,
-            // occupation: p.occupation,
+            jobId: jobId ?? null,
             bio: p.bio,
             languages: p.languages,
             childrenStatus: p.childrenStatus,
@@ -469,12 +485,14 @@ export async function seedUsers(prisma: PrismaClient) {
             ageFrom: p.preference.ageFrom,
             ageTo: p.preference.ageTo,
             maritalStatus: p.preference.maritalStatus,
+            motherTongue: p.languages ?? [],
          },
          create: {
             userId: user.id,
             ageFrom: p.preference.ageFrom,
             ageTo: p.preference.ageTo,
             maritalStatus: p.preference.maritalStatus,
+            motherTongue: p.languages ?? [],
          },
       });
 

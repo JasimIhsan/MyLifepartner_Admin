@@ -1,6 +1,6 @@
 import prisma from "@/config/prisma";
 import { CreatePartnerPreferenceDto, UpdateProfileDto } from "@/dtos/profile.input.dto";
-import { DrinkingHabit, Gender, MaritalStatus, Prisma, Profile, ProfileStatus, SmokingHabit } from "@prisma/client";
+import { ChildrenStatus, DrinkingHabit, EmotionalReadiness, Gender, LookingFor, MaritalStatus, Prisma, Profile, ProfileStatus, RelationshipTimeline, SmokingHabit } from "@prisma/client";
 import { IProfileRepository } from "../interfaces/repositories/profile.repository.interface";
 
 /**
@@ -268,10 +268,10 @@ export class ProfileRepository implements IProfileRepository {
       if (data.drinkingHabit !== undefined) updateData.drinkingHabit = data.drinkingHabit as DrinkingHabit;
 
       if (data.languages !== undefined) updateData.languages = data.languages;
-      if (data.childrenStatus !== undefined) updateData.childrenStatus = data.childrenStatus as any;
-      if (data.emotionalReadiness !== undefined) updateData.emotionalReadiness = data.emotionalReadiness as any;
-      if (data.lookingFor !== undefined) updateData.lookingFor = data.lookingFor as any;
-      if (data.relationshipTimeline !== undefined) updateData.relationshipTimeline = data.relationshipTimeline as any;
+      if (data.childrenStatus !== undefined) updateData.childrenStatus = data.childrenStatus as ChildrenStatus;
+      if (data.emotionalReadiness !== undefined) updateData.emotionalReadiness = data.emotionalReadiness as EmotionalReadiness;
+      if (data.lookingFor !== undefined) updateData.lookingFor = data.lookingFor as LookingFor;
+      if (data.relationshipTimeline !== undefined) updateData.relationshipTimeline = data.relationshipTimeline as RelationshipTimeline;
 
       return prisma.profile.update({
          where: {

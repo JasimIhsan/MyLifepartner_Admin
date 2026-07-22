@@ -15,7 +15,7 @@ export const createPlanSchema = z.object({
       .number({ message: "Duration must be a positive integer (days)" })
       .int("Duration must be an integer")
       .min(1, "Duration must be at least 1 day"),
-   identifier: z.string().min(1, "Identifier is required"),
+   storeProductId: z.string().min(1, "Store product ID is required"),
    description: z.string().optional(),
 });
 
@@ -26,7 +26,7 @@ export const updatePlanSchema = z
       durationDays: z.number().int("Duration must be an integer").min(1, "Duration must be at least 1 day").optional(),
       isActive: z.boolean().optional(),
       isMostPopular: z.boolean().optional(),
-      identifier: z.string().min(1, "Identifier is required").optional(),
+      storeProductId: z.string().min(1, "Store product ID is required").optional(),
       description: z.string().optional(),
    })
    .refine((v) => Object.keys(v).length > 0, { message: "At least one field must be provided for update" });

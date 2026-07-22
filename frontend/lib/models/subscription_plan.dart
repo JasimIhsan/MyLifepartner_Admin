@@ -115,7 +115,7 @@ class SubscriptionPlan {
       durationDays: json['durationDays'] ?? 0,
       isActive: json['isActive'] ?? true,
       isMostPopular: json['isMostPopular'] ?? false,
-      identifier: json['identifier'],
+      identifier: json['storeProductId'],
       features:
           (json['features'] as List?)
               ?.map((e) => PlanFeature.fromJson(e))

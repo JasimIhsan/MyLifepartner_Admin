@@ -4,6 +4,7 @@ import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
 import { ImageAccessRequest, ImageAccessStatus } from "@prisma/client";
+import { ImageAccessRequestResponseDto } from "@/dtos/image-access-request.dto";
 
 export class ImageAccessRequestService implements IImageAccessRequestService {
    constructor(
@@ -27,13 +28,13 @@ export class ImageAccessRequestService implements IImageAccessRequestService {
       return this.requestRepository.createOrUpdatePendingRequest(targetUserId, requesterUserId);
    }
 
-   async getReceivedRequests(ownerUserId: number): Promise<any[]> {
+   async getReceivedRequests(ownerUserId: number): Promise<ImageAccessRequestResponseDto[]> {
       const requests = await this.requestRepository.findReceivedRequests(ownerUserId);
       return Promise.all(requests.map(async (req) => {
          const profile = req.requester?.profile;
          let imageUrl = null;
          if (profile?.images) {
-            const primaryImg = profile.images.find((img: any) => img.isPrimary) || profile.images[0];
+            const primaryImg = profile.images.find((img) => img.isPrimary) || profile.images[0];
             if (primaryImg) {
                imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
             }
@@ -54,13 +55,13 @@ export class ImageAccessRequestService implements IImageAccessRequestService {
       }));
    }
 
-   async getSentRequests(requesterUserId: number): Promise<any[]> {
+   async getSentRequests(requesterUserId: number): Promise<ImageAccessRequestResponseDto[]> {
       const requests = await this.requestRepository.findSentRequests(requesterUserId);
       return Promise.all(requests.map(async (req) => {
          const profile = req.owner?.profile;
          let imageUrl = null;
          if (profile?.images) {
-            const primaryImg = profile.images.find((img: any) => img.isPrimary) || profile.images[0];
+            const primaryImg = profile.images.find((img) => img.isPrimary) || profile.images[0];
             if (primaryImg) {
                imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
             }

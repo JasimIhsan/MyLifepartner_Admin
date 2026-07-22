@@ -64,17 +64,21 @@ jest.mock("@/utils/logger", () => ({
 // ─── Mock fetch ───────────────────────────────────────────────────────────────
 global.fetch = jest.fn();
 
-import { UserSubscriptionService } from "@/services/user/user.subscription.service";
-import { SubscriptionWebhookRepository } from "@/repositories/subscription-webhook.repository";
 import { RevenueCatWebhookEvent } from "@/enums/revenuecat-event.enum";
+import { IProcessedRevenueCatEventRepository } from "@/interfaces/repositories/processed-revenuecat-event.repository.interface";
+import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
+import { IUserSubscriptionRepository } from "@/interfaces/repositories/user-subscription.repository.interface";
+import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
+import { SubscriptionWebhookRepository } from "@/repositories/subscription-webhook.repository";
+import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 import { ApiError } from "@/utils/ApiError";
-import { Prisma } from "@prisma/client";
 import logger from "@/utils/logger";
+import { Prisma } from "@prisma/client";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const FREE_PLAN = { id: 1, name: "FREE", price: 0, durationDays: 36500, isActive: true, isMostPopular: false, identifier: null, description: null, createdAt: new Date(), updatedAt: new Date(), features: [] };
-const PREMIUM_PLAN = { id: 2, name: "PREMIUM", price: 29900, durationDays: 30, isActive: true, isMostPopular: true, identifier: "premium_monthly", description: null, createdAt: new Date(), updatedAt: new Date(), features: [] };
+const FREE_PLAN = { id: 1, name: "FREE", price: 0, durationDays: 36500, isActive: true, isMostPopular: false, storeProductId: null, description: null, createdAt: new Date(), updatedAt: new Date(), features: [] };
+const PREMIUM_PLAN = { id: 2, name: "PREMIUM", price: 29900, durationDays: 30, isActive: true, isMostPopular: true, storeProductId: "premium_monthly", description: null, createdAt: new Date(), updatedAt: new Date(), features: [] };
 
 const makeActiveSub = (overrides = {}) => ({
    id: 100,
@@ -101,19 +105,21 @@ const makeActiveSub = (overrides = {}) => ({
    ...overrides,
 });
 
-const makeWebhookEvent = (overrides: Partial<{
-   id: string;
-   type: RevenueCatWebhookEvent;
-   product_id: string;
-   app_user_id: string;
-   original_app_user_id: string;
-   original_transaction_id: string;
-   event_timestamp_ms: number;
-   expiration_at_ms: number;
-   store: string;
-   environment: string;
-   aliases: string[];
-}> = {}) => ({
+const makeWebhookEvent = (
+   overrides: Partial<{
+      id: string;
+      type: RevenueCatWebhookEvent;
+      product_id: string;
+      app_user_id: string;
+      original_app_user_id: string;
+      original_transaction_id: string;
+      event_timestamp_ms: number;
+      expiration_at_ms: number;
+      store: string;
+      environment: string;
+      aliases: string[];
+   }> = {}
+) => ({
    id: "evt_new",
    type: RevenueCatWebhookEvent.RENEWAL,
    product_id: "premium_monthly",
@@ -138,7 +144,7 @@ const mockSubPlanRepo = {
    getAllPlansWithFeatures: jest.fn(),
    getPlanByName: jest.fn(),
    getPlanById: jest.fn(),
-   findPlanByIdentifier: jest.fn(),
+   findPlanByStoreProductId: jest.fn(),
    createPlan: jest.fn(),
    updatePlan: jest.fn(),
    deletePlan: jest.fn(),
@@ -167,10 +173,10 @@ const mockFeatureRepo = {
 
 function makeService() {
    return new UserSubscriptionService(
-      mockSubPlanRepo as any,
-      mockSubRepo as any,
-      mockEventRepo as any,
-      mockFeatureRepo as any,
+      mockSubPlanRepo as unknown as ISubscriptionPlanRepository,
+      mockSubRepo as unknown as IUserSubscriptionRepository,
+      mockEventRepo as unknown as IProcessedRevenueCatEventRepository,
+      mockFeatureRepo as unknown as IUserFeatureRepository,
       new SubscriptionWebhookRepository()
    );
 }
@@ -200,16 +206,12 @@ describe("UserSubscriptionService", () => {
    describe("C-1: webhook signature validation", () => {
       it("rejects webhook with missing Authorization header", async () => {
          const svc = makeService();
-         await expect(
-            svc.handleWebhook(makeWebhookPayload(), undefined)
-         ).rejects.toThrow(ApiError);
+         await expect(svc.handleWebhook(makeWebhookPayload(), undefined)).rejects.toThrow(ApiError);
       });
 
       it("rejects webhook with wrong Authorization header", async () => {
          const svc = makeService();
-         await expect(
-            svc.handleWebhook(makeWebhookPayload(), "wrong-secret")
-         ).rejects.toThrow(ApiError);
+         await expect(svc.handleWebhook(makeWebhookPayload(), "wrong-secret")).rejects.toThrow(ApiError);
          const err = await svc.handleWebhook(makeWebhookPayload(), "wrong-secret").catch((e) => e);
          expect((err as ApiError).statusCode).toBe(401);
       });
@@ -217,7 +219,7 @@ describe("UserSubscriptionService", () => {
       it("accepts webhook with correct Authorization header", async () => {
          mockTx.userSubscription.findFirst.mockResolvedValue(null);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(PREMIUM_PLAN);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockTx.userSubscription.updateMany.mockResolvedValue({ count: 0 });
          const subWithPlan = {
             ...makeActiveSub(),
@@ -229,9 +231,7 @@ describe("UserSubscriptionService", () => {
          mockTx.userFeature.create.mockResolvedValue({});
 
          const svc = makeService();
-         await expect(
-            svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")
-         ).resolves.not.toThrow();
+         await expect(svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")).resolves.not.toThrow();
       });
    });
 
@@ -273,10 +273,7 @@ describe("UserSubscriptionService", () => {
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
 
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.BILLING_ISSUE }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.BILLING_ISSUE }), "test-webhook-secret");
 
          // updateMany with status EXPIRED must NOT be called
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
@@ -288,10 +285,7 @@ describe("UserSubscriptionService", () => {
          mockTx.userSubscription.update.mockResolvedValue({});
 
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.BILLING_ISSUE }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.BILLING_ISSUE }), "test-webhook-secret");
 
          expect(mockTx.userSubscription.update).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -315,9 +309,7 @@ describe("UserSubscriptionService", () => {
 
          const svc = makeService();
          // Should resolve without throwing (not re-throw P2002)
-         await expect(
-            svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")
-         ).resolves.not.toThrow();
+         await expect(svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")).resolves.not.toThrow();
 
          // Subscription should not be modified
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
@@ -329,9 +321,7 @@ describe("UserSubscriptionService", () => {
          mockTx.processedRevenueCatEvent.create.mockRejectedValue(dbError);
 
          const svc = makeService();
-         await expect(
-            svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")
-         ).rejects.toThrow("Connection lost");
+         await expect(svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")).rejects.toThrow("Connection lost");
       });
    });
 
@@ -339,14 +329,14 @@ describe("UserSubscriptionService", () => {
 
    describe("C-5: deferred downgrade sets endDate from RevenueCat", () => {
       it("updates endDate when scheduling a deferred downgrade", async () => {
-         const MEDIUM_PLAN = { id: 3, name: "MEDIUM", price: 14900, durationDays: 30, isActive: true, isMostPopular: false, identifier: "medium_monthly", description: null, createdAt: new Date(), updatedAt: new Date(), features: [] };
+         const MEDIUM_PLAN = { id: 3, name: "MEDIUM", price: 14900, durationDays: 30, isActive: true, isMostPopular: false, storeProductId: "medium_monthly", description: null, createdAt: new Date(), updatedAt: new Date(), features: [] };
          const rcEndDate = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000);
 
          // Current active subscription is PREMIUM (higher plan)
          mockSubRepo.findActiveSubscriptionByUserId.mockResolvedValue(makeActiveSub({ planId: PREMIUM_PLAN.id, plan: PREMIUM_PLAN }));
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
          // RC says the new product is MEDIUM (lower plan)
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(MEDIUM_PLAN);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(MEDIUM_PLAN);
          mockSubPlanRepo.getPlanById.mockResolvedValue(PREMIUM_PLAN);
          mockSubRepo.updateUserSubscription.mockResolvedValue({ ...makeActiveSub(), nextPlanId: 3, endDate: rcEndDate });
 
@@ -396,10 +386,7 @@ describe("UserSubscriptionService", () => {
 
       it("EXPIRATION sets expiredAt but NOT refundedAt", async () => {
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.EXPIRATION }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.EXPIRATION }), "test-webhook-secret");
 
          expect(mockTx.userSubscription.updateMany).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -413,10 +400,7 @@ describe("UserSubscriptionService", () => {
 
       it("REFUND sets refundedAt but NOT expiredAt", async () => {
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.REFUND }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.REFUND }), "test-webhook-secret");
 
          expect(mockTx.userSubscription.updateMany).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -434,7 +418,7 @@ describe("UserSubscriptionService", () => {
       const setupActiveSubscriptionRenewal = (eventType: RevenueCatWebhookEvent) => {
          mockTx.userSubscription.findFirst.mockResolvedValue(makeActiveSub());
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(PREMIUM_PLAN);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockTx.userSubscription.updateMany.mockResolvedValue({ count: 1 });
          mockTx.userSubscription.upsert.mockResolvedValue({
             ...makeActiveSub(),
@@ -447,10 +431,7 @@ describe("UserSubscriptionService", () => {
          setupActiveSubscriptionRenewal(RevenueCatWebhookEvent.RENEWAL);
 
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.RENEWAL }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.RENEWAL }), "test-webhook-secret");
 
          // The feature update should NOT include usage counters
          const featureUpdateCall = mockTx.userFeature.update.mock.calls[0];
@@ -471,10 +452,7 @@ describe("UserSubscriptionService", () => {
          });
 
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.INITIAL_PURCHASE }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.INITIAL_PURCHASE }), "test-webhook-secret");
 
          const featureUpdateCall = mockTx.userFeature.update.mock.calls[0];
          if (featureUpdateCall) {
@@ -497,10 +475,7 @@ describe("UserSubscriptionService", () => {
 
          const svc = makeService();
          // Send an event with timestamp 1000, but current subscription is at 9999999
-         await svc.handleWebhook(
-            makeWebhookPayload({ event_timestamp_ms: 1000 }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ event_timestamp_ms: 1000 }), "test-webhook-secret");
 
          // No subscription modifications should occur
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
@@ -513,7 +488,7 @@ describe("UserSubscriptionService", () => {
          const currentSub = makeActiveSub({ lastEventTimestampMs: BigInt(5000) });
          mockTx.userSubscription.findFirst.mockResolvedValue(currentSub);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(PREMIUM_PLAN);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockTx.userSubscription.updateMany.mockResolvedValue({ count: 1 });
          mockTx.userSubscription.upsert.mockResolvedValue({
             ...makeActiveSub(),
@@ -522,9 +497,7 @@ describe("UserSubscriptionService", () => {
          mockTx.userFeature.findUnique.mockResolvedValue({ userId: 42 });
 
          const svc = makeService();
-         await expect(
-            svc.handleWebhook(makeWebhookPayload({ event_timestamp_ms: 5001 }), "test-webhook-secret")
-         ).resolves.not.toThrow();
+         await expect(svc.handleWebhook(makeWebhookPayload({ event_timestamp_ms: 5001 }), "test-webhook-secret")).resolves.not.toThrow();
       });
    });
 
@@ -563,9 +536,7 @@ describe("UserSubscriptionService", () => {
          mockTx.user.findUnique.mockResolvedValue(null); // user does not exist
 
          const svc = makeService();
-         await expect(
-            svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")
-         ).resolves.not.toThrow();
+         await expect(svc.handleWebhook(makeWebhookPayload(), "test-webhook-secret")).resolves.not.toThrow();
 
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
          expect(mockTx.userSubscription.create).not.toHaveBeenCalled();
@@ -581,10 +552,7 @@ describe("UserSubscriptionService", () => {
          mockTx.userSubscription.update.mockResolvedValue({});
 
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.CANCELLATION }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.CANCELLATION }), "test-webhook-secret");
 
          // Must NOT expire the subscription
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
@@ -614,10 +582,7 @@ describe("UserSubscriptionService", () => {
          }));
 
          const svc = makeService();
-         await svc.handleWebhook(
-            makeWebhookPayload({ type: RevenueCatWebhookEvent.EXPIRATION }),
-            "test-webhook-secret"
-         );
+         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.EXPIRATION }), "test-webhook-secret");
 
          const createCall = mockTx.userSubscription.create.mock.calls[0];
          expect(createCall).toBeDefined();
@@ -633,7 +598,7 @@ describe("UserSubscriptionService", () => {
       it("logs eventId, type, productId — not the full event object", async () => {
          mockTx.userSubscription.findFirst.mockResolvedValue(null);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(PREMIUM_PLAN);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockTx.userSubscription.create.mockResolvedValue({
             ...makeActiveSub(),
             plan: { ...PREMIUM_PLAN, features: [] },
@@ -663,7 +628,7 @@ describe("UserSubscriptionService", () => {
          mockTx.userSubscription.findFirst.mockResolvedValue(null);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
          // No plan found for identifier
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(null);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(null);
 
          // Mock RC API for the sync fallback
          (global.fetch as jest.Mock).mockResolvedValue({
@@ -678,9 +643,7 @@ describe("UserSubscriptionService", () => {
 
          const svc = makeService();
          // Should not throw — falls back gracefully
-         await expect(
-            svc.handleWebhook(makeWebhookPayload({ product_id: "unknown_plan_xyz" }), "test-webhook-secret")
-         ).resolves.not.toThrow();
+         await expect(svc.handleWebhook(makeWebhookPayload({ product_id: "unknown_plan_xyz" }), "test-webhook-secret")).resolves.not.toThrow();
       });
    });
    // ── getPlans ───────────────────────────────────────────────────────────────
@@ -688,11 +651,7 @@ describe("UserSubscriptionService", () => {
    describe("getPlans", () => {
       it("returns enriched and sorted plans (FREE first, then by price)", async () => {
          const midPlan = { ...PREMIUM_PLAN, id: 3, name: "MID", price: 10000 };
-         mockSubPlanRepo.getAllPlansWithFeatures.mockResolvedValue([
-            PREMIUM_PLAN,
-            FREE_PLAN,
-            midPlan,
-         ]);
+         mockSubPlanRepo.getAllPlansWithFeatures.mockResolvedValue([PREMIUM_PLAN, FREE_PLAN, midPlan]);
 
          const svc = makeService();
          const plans = await svc.getPlans();
@@ -722,7 +681,7 @@ describe("UserSubscriptionService", () => {
          mockSubPlanRepo.getPlanById.mockResolvedValue(null);
          const svc = makeService();
          await expect(svc.subscribe(42, 999)).rejects.toThrow(ApiError);
-         const err = await svc.subscribe(42, 999).catch(e => e);
+         const err = await svc.subscribe(42, 999).catch((e) => e);
          expect(err.statusCode).toBe(404);
       });
 
@@ -730,7 +689,7 @@ describe("UserSubscriptionService", () => {
          mockSubPlanRepo.getPlanById.mockResolvedValue({ ...FREE_PLAN, isActive: false });
          const svc = makeService();
          await expect(svc.subscribe(42, FREE_PLAN.id)).rejects.toThrow(ApiError);
-         const err = await svc.subscribe(42, FREE_PLAN.id).catch(e => e);
+         const err = await svc.subscribe(42, FREE_PLAN.id).catch((e) => e);
          expect(err.statusCode).toBe(400);
       });
 
@@ -742,7 +701,7 @@ describe("UserSubscriptionService", () => {
 
          const svc = makeService();
          const sub = await svc.subscribe(42, FREE_PLAN.id);
-         
+
          expect(sub.id).toBe(currentFreeSub.id);
          expect(mockSubRepo.deactivateUserSubscriptions).not.toHaveBeenCalled();
       });
@@ -759,7 +718,7 @@ describe("UserSubscriptionService", () => {
 
          const svc = makeService();
          await expect(svc.syncSubscription(42)).rejects.toThrow(ApiError);
-         const err = await svc.syncSubscription(42).catch(e => e);
+         const err = await svc.syncSubscription(42).catch((e) => e);
          expect(err.statusCode).toBe(504);
       });
 
@@ -771,7 +730,7 @@ describe("UserSubscriptionService", () => {
 
          const svc = makeService();
          await expect(svc.syncSubscription(42)).rejects.toThrow(ApiError);
-         const err = await svc.syncSubscription(42).catch(e => e);
+         const err = await svc.syncSubscription(42).catch((e) => e);
          expect(err.statusCode).toBe(409);
       });
 
@@ -780,7 +739,7 @@ describe("UserSubscriptionService", () => {
             ok: true,
             json: async () => ({ subscriber: { original_app_user_id: "42", aliases: [], subscriptions: {} } }),
          });
-         
+
          // User currently has premium, grace period expired (createdAt long ago)
          const currentSub = makeActiveSub({ planId: PREMIUM_PLAN.id, createdAt: new Date(Date.now() - 5 * 60 * 1000) });
          mockSubRepo.findActiveSubscriptionByUserId.mockResolvedValue(currentSub);
@@ -792,9 +751,11 @@ describe("UserSubscriptionService", () => {
          await svc.syncSubscription(42);
 
          expect(mockSubRepo.deactivateUserSubscriptions).toHaveBeenCalled();
-         expect(mockSubRepo.createUserSubscription).toHaveBeenCalledWith(expect.objectContaining({
-            plan: { connect: { id: FREE_PLAN.id } }
-         }));
+         expect(mockSubRepo.createUserSubscription).toHaveBeenCalledWith(
+            expect.objectContaining({
+               plan: { connect: { id: FREE_PLAN.id } },
+            })
+         );
       });
 
       it("returns current subscription if no active product but in grace period", async () => {
@@ -802,7 +763,7 @@ describe("UserSubscriptionService", () => {
             ok: true,
             json: async () => ({ subscriber: { original_app_user_id: "42", aliases: [], subscriptions: {} } }),
          });
-         
+
          // Grace period: createdAt is within 2 minutes
          const currentSub = makeActiveSub({ planId: PREMIUM_PLAN.id, createdAt: new Date(Date.now() - 1 * 60 * 1000) });
          mockSubRepo.findActiveSubscriptionByUserId.mockResolvedValue(currentSub);
@@ -818,52 +779,55 @@ describe("UserSubscriptionService", () => {
       it("upgrades immediately if new plan price is higher", async () => {
          (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
-            json: async () => ({ subscriber: { 
-               original_app_user_id: "42", 
-               subscriptions: { "premium_monthly": { expires_date: new Date(Date.now() + 10000).toISOString() } } 
-            } }),
+            json: async () => ({
+               subscriber: {
+                  original_app_user_id: "42",
+                  subscriptions: { premium_monthly: { expires_date: new Date(Date.now() + 10000).toISOString() } },
+               },
+            }),
          });
 
          const currentSub = makeActiveSub({ planId: FREE_PLAN.id, plan: FREE_PLAN });
          mockSubRepo.findActiveSubscriptionByUserId.mockResolvedValue(currentSub);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(PREMIUM_PLAN);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockSubRepo.createUserSubscription.mockResolvedValue(makeActiveSub({ planId: PREMIUM_PLAN.id, plan: PREMIUM_PLAN }));
 
          const svc = makeService();
          await svc.syncSubscription(42);
 
          expect(mockSubRepo.deactivateUserSubscriptions).toHaveBeenCalled();
-         expect(mockSubRepo.createUserSubscription).toHaveBeenCalledWith(expect.objectContaining({
-            plan: { connect: { id: PREMIUM_PLAN.id } }
-         }));
+         expect(mockSubRepo.createUserSubscription).toHaveBeenCalledWith(
+            expect.objectContaining({
+               plan: { connect: { id: PREMIUM_PLAN.id } },
+            })
+         );
       });
 
       it("schedules a deferred downgrade if new plan price is lower", async () => {
          (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
-            json: async () => ({ subscriber: { 
-               original_app_user_id: "42", 
-               subscriptions: { "mid_plan": { expires_date: new Date(Date.now() + 10000).toISOString() } } 
-            } }),
+            json: async () => ({
+               subscriber: {
+                  original_app_user_id: "42",
+                  subscriptions: { mid_plan: { expires_date: new Date(Date.now() + 10000).toISOString() } },
+               },
+            }),
          });
 
-         const midPlan = { ...PREMIUM_PLAN, id: 3, price: 5000, identifier: "mid_plan" };
+         const midPlan = { ...PREMIUM_PLAN, id: 3, price: 5000, storeProductId: "mid_plan" };
          const currentSub = makeActiveSub({ planId: PREMIUM_PLAN.id, plan: PREMIUM_PLAN });
-         
+
          mockSubRepo.findActiveSubscriptionByUserId.mockResolvedValue(currentSub);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-         mockSubPlanRepo.findPlanByIdentifier.mockResolvedValue(midPlan);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(midPlan);
          mockSubPlanRepo.getPlanById.mockResolvedValue(PREMIUM_PLAN); // for currentPlan lookup
 
          const svc = makeService();
          await svc.syncSubscription(42);
 
          // Downgrade: update current sub with nextPlanId
-         expect(mockSubRepo.updateUserSubscription).toHaveBeenCalledWith(
-            currentSub.id,
-            expect.objectContaining({ nextPlanId: midPlan.id, willRenew: false })
-         );
+         expect(mockSubRepo.updateUserSubscription).toHaveBeenCalledWith(currentSub.id, expect.objectContaining({ nextPlanId: midPlan.id, willRenew: false }));
       });
    });
 
@@ -876,9 +840,8 @@ describe("UserSubscriptionService", () => {
          await svc.handleWebhook({ event: { type: RevenueCatWebhookEvent.RENEWAL } }, "test-webhook-secret");
          // Missing Type
          await svc.handleWebhook({ event: { id: "evt_123" } }, "test-webhook-secret");
-         
+
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
       });
    });
-
 });

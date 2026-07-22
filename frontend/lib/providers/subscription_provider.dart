@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/models/subscription_plan.dart';
@@ -52,15 +52,17 @@ class SubscriptionProvider extends ChangeNotifier {
       final appUserID = await Purchases.appUserID;
       if (appUserID != userId) {
         debugPrint(
-          "CRITICAL ERROR: RevenueCat identity mismatch! RC ID: $appUserID, Backend ID: $userId",
+          "⚠️ RevenueCat identity mismatch! Current RC ID: $appUserID, Authenticated User ID: $userId. Syncing identity...",
         );
-        await Purchases.logOut();
-        await Purchases.logIn(userId);
-        return true; // We forcefully logged them back in
+        final logInResult = await Purchases.logIn(userId);
+        final newAppUserId = logInResult.customerInfo.originalAppUserId;
+        debugPrint(
+          "✅ RevenueCat logged in successfully for user $userId (RC original app user ID: $newAppUserId)",
+        );
       }
       return true;
     } catch (e) {
-      debugPrint("Error checking RevenueCat identity: $e");
+      debugPrint("❌ Error verifying RevenueCat identity for user $userId: $e");
       return false;
     }
   }
@@ -354,9 +356,49 @@ class SubscriptionProvider extends ChangeNotifier {
         return true;
       }
 
+      final storeProductId = backendPlan.identifier;
+
       final package = _rcPackages.firstWhere(
-        (p) => p.storeProduct.identifier == id,
+        (p) =>
+            p.storeProduct.identifier == id ||
+            (storeProductId != null &&
+                p.storeProduct.identifier == storeProductId),
+        orElse: () {
+          if (kDebugMode) {
+            debugPrint(
+              "⚠️ [SubscriptionProvider] Store product '$storeProductId' (id: '$id') not found in RevenueCat offerings. Available packages: ${_rcPackages.map((p) => p.storeProduct.identifier).join(', ')}",
+            );
+          }
+          throw Exception(
+            "Product not found in store offerings. Please try again later.",
+          );
+        },
       );
+
+      debugPrint("🎯 Package: ${package.storeProduct}");
+
+      final currentRcAppUserId = await Purchases.appUserID;
+      final customerInfo = await Purchases.getCustomerInfo();
+      debugPrint("==================================================");
+      debugPrint("🔍 [DEBUG USER IDENTITY VERIFICATION]");
+      debugPrint("👉 Authenticated User ID (Backend): '$_authenticatedUserId'");
+      debugPrint(
+        "👉 RevenueCat appUserID (Purchases.appUserID): '$currentRcAppUserId'",
+      );
+      debugPrint(
+        "👉 RevenueCat originalAppUserId: '${customerInfo.originalAppUserId}'",
+      );
+      debugPrint(
+        "👉 RevenueCat activeEntitlements: ${customerInfo.entitlements.active.keys.toList()}",
+      );
+      debugPrint(
+        "👉 RevenueCat activeSubscriptions: ${customerInfo.activeSubscriptions}",
+      );
+      debugPrint("==================================================");
+
+      error =
+          "DEBUG: Purchase stopped for identity verification. Check debug console logs! (Auth ID: $_authenticatedUserId vs RC AppUserID: $currentRcAppUserId / Original: ${customerInfo.originalAppUserId})";
+      // return false;
 
       // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);

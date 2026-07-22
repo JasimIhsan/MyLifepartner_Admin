@@ -4,11 +4,11 @@ import { FeatureKey } from "@/enums/feature-key.enum";
 import { RevenueCatWebhookEvent } from "@/enums/revenuecat-event.enum";
 import { IProcessedRevenueCatEventRepository } from "@/interfaces/repositories/processed-revenuecat-event.repository.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
+import { FeatureFullPayload, FeatureLimitsOnlyPayload, ISubscriptionWebhookRepository, RevenueCatWebhookEventData } from "@/interfaces/repositories/subscription-webhook.repository.interface";
 import { IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
-import { ISubscriptionWebhookRepository, RevenueCatWebhookEventData, FeatureFullPayload, FeatureLimitsOnlyPayload } from "@/interfaces/repositories/subscription-webhook.repository.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
-import { EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
+import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
 
@@ -129,13 +129,21 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    async syncSubscription(userId: number): Promise<EnrichedUserSubscription | null> {
+      logger.info(`[SYNC_SUBSCRIPTION] Starting sync for userId: ${userId}`);
       const revenueCatData = await this.getRevenueCatSubscriberData(userId);
 
       const originalUserIdStr = revenueCatData.subscriber?.original_app_user_id;
       const aliases = revenueCatData.subscriber?.aliases || [];
       const userIdStr = userId.toString();
 
-      if (originalUserIdStr !== userIdStr && !aliases.includes(userIdStr)) {
+      const isOriginalMatch = originalUserIdStr === userIdStr;
+      const isAliasMatch = aliases.includes(userIdStr);
+      const isAnonymousOriginal = originalUserIdStr ? originalUserIdStr.startsWith("$RCAnonymousID:") : false;
+
+      logger.info(`[SYNC_SUBSCRIPTION] Identity check for userId ${userId}: original='${originalUserIdStr}', aliases=${JSON.stringify(aliases)}, isOriginalMatch=${isOriginalMatch}, isAliasMatch=${isAliasMatch}, isAnonymousOriginal=${isAnonymousOriginal}`);
+
+      if (!isOriginalMatch && !isAliasMatch && !isAnonymousOriginal) {
+         logger.warn(`[SYNC_SUBSCRIPTION] Identity mismatch for userId ${userId}! Rejecting sync.`);
          throw new ApiError(409, "RevenueCat subscriber identity does not match authenticated user.");
       }
 
@@ -143,19 +151,26 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       const currentSubscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
       const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
+      logger.info(`[SYNC_SUBSCRIPTION] activeProduct: ${JSON.stringify(activeProduct)}, currentSubscription planId: ${currentSubscription?.planId}, freePlan id: ${freePlan?.id}`);
+
       if (!activeProduct) {
          if (currentSubscription && currentSubscription.planId !== freePlan?.id) {
             const timeSinceCreated = new Date().getTime() - currentSubscription.createdAt.getTime();
+            logger.warn(`[SYNC_SUBSCRIPTION] No active product in RevenueCat for userId ${userId}. currentSubscription planId=${currentSubscription.planId}, timeSinceCreatedMs=${timeSinceCreated}, gracePeriodMs=${PURCHASE_SYNC_GRACE_PERIOD_MS}`);
             if (timeSinceCreated < PURCHASE_SYNC_GRACE_PERIOD_MS) {
+               logger.info(`[SYNC_SUBSCRIPTION] Within purchase sync grace period (${timeSinceCreated}ms < ${PURCHASE_SYNC_GRACE_PERIOD_MS}ms). Retaining current subscription.`);
                return this.getMySubscription(userId);
             }
          }
+         logger.warn(`[SYNC_SUBSCRIPTION] Triggering downgradeToFreePlan for userId ${userId} because activeProduct is null.`);
          return this.downgradeToFreePlan(userId);
       }
 
-      const targetPlan = await this.subscriptionPlanRepository.findPlanByIdentifier(activeProduct.productIdentifier);
+      const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
+      logger.info(`[SYNC_SUBSCRIPTION] Product identifier '${activeProduct.productIdentifier}' mapped to targetPlan: ${targetPlan ? targetPlan.name + ' (id: ' + targetPlan.id + ')' : 'NOT FOUND'}`);
 
       if (!targetPlan) {
+         logger.error(`[SYNC_SUBSCRIPTION] Plan mapping for storeProductId '${activeProduct.productIdentifier}' not found on backend!`);
          throw new ApiError(404, `Plan mapping for product identifier '${activeProduct.productIdentifier}' not found on backend`);
       }
 
@@ -163,12 +178,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       const endDate = activeProduct.expiryTime ?? this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS);
 
       if (!currentSubscription || currentSubscription.planId === freePlan?.id) {
+         logger.info(`[SYNC_SUBSCRIPTION] Activating new paid plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
          await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */);
          return this.getMySubscription(userId);
       }
 
       if (currentSubscription.planId === targetPlan.id) {
          // Same plan — update endDate and willRenew from trusted source
+         logger.info(`[SYNC_SUBSCRIPTION] Updating existing plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
          await this.userSubscriptionRepository.updateUserSubscription(currentSubscription.id, {
             endDate,
             willRenew: activeProduct.willRenew,
@@ -185,9 +202,11 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       if (targetPlan.price >= currentPlan.price) {
          // Upgrade — activate immediately
+         logger.info(`[SYNC_SUBSCRIPTION] Upgrading userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name}`);
          await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew, false /* preserve usage */);
       } else {
          // Downgrade — defer until end of billing period (C-5: also update endDate from RC)
+         logger.info(`[SYNC_SUBSCRIPTION] Deferring downgrade for userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name} until ${endDate.toISOString()}`);
          await this.userSubscriptionRepository.updateUserSubscription(currentSubscription.id, {
             nextPlanId: targetPlan.id,
             willRenew: false,
@@ -271,17 +290,12 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          freePlanId: freePlan?.id,
          freePlanDurationDays: FREE_PLAN_DURATION_DAYS,
          defaultSubscriptionDurationDays: DEFAULT_SUBSCRIPTION_DURATION_DAYS,
-         buildFeatureFullPayload: (plan) => this.buildFeatureFullPayload(this.enrichPlan(plan as any)),
-         buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan as any))
+         buildFeatureFullPayload: (plan) => this.buildFeatureFullPayload(this.enrichPlan(plan)),
+         buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan)),
       });
 
       // If the event wasn't processed due to a missing targetPlanId, fallback to sync
-      if (!processed && !targetPlanId && [
-            RevenueCatWebhookEvent.INITIAL_PURCHASE,
-            RevenueCatWebhookEvent.RENEWAL,
-            RevenueCatWebhookEvent.UNCANCELLATION,
-            RevenueCatWebhookEvent.PRODUCT_CHANGE
-         ].includes(event.type)) {
+      if (!processed && !targetPlanId && [RevenueCatWebhookEvent.INITIAL_PURCHASE, RevenueCatWebhookEvent.RENEWAL, RevenueCatWebhookEvent.UNCANCELLATION, RevenueCatWebhookEvent.PRODUCT_CHANGE].includes(event.type)) {
          await this.syncSubscription(userId);
       }
    }
@@ -289,7 +303,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    private async resolveTargetPlanId(event: RevenueCatWebhookEventData): Promise<number | null> {
       const identifier = event.product_id;
       if (identifier) {
-         const plan = await this.subscriptionPlanRepository.findPlanByIdentifier(identifier);
+         const plan = await this.subscriptionPlanRepository.findPlanByStoreProductId(identifier);
          if (plan) return plan.id;
       }
       return null;
@@ -401,6 +415,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       const data = (await response.json()) as RevenueCatSubscriberResponse;
+      logger.info(`[REVENUECAT_API] Fetched subscriber data for userId ${userId}: ${JSON.stringify(data)}`);
 
       if (!data.subscriber) {
          throw new ApiError(500, "Subscriber data not found in RevenueCat response");
@@ -415,21 +430,28 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       willRenew: boolean;
    } | null {
       const subscriptions = data.subscriber?.subscriptions ?? {};
+      logger.info(`[REVENUECAT_API] Subscriptions object entries: ${JSON.stringify(subscriptions)}`);
 
       for (const [productIdentifier, subscription] of Object.entries(subscriptions)) {
          const expiryTime = subscription.expires_date ? new Date(subscription.expires_date) : null;
+         const isExpired = expiryTime ? expiryTime <= new Date() : false;
 
-         if (expiryTime && expiryTime <= new Date()) {
+         logger.info(`[REVENUECAT_API] Evaluating product '${productIdentifier}': expires_date=${subscription.expires_date}, expiryTime=${expiryTime?.toISOString()}, isExpired=${isExpired}, unsubscribe_detected_at=${subscription.unsubscribe_detected_at}`);
+
+         if (isExpired) {
             continue;
          }
 
-         return {
+         const result = {
             productIdentifier,
             expiryTime,
             willRenew: !subscription.unsubscribe_detected_at,
          };
+         logger.info(`[REVENUECAT_API] Active product selected: ${JSON.stringify(result)}`);
+         return result;
       }
 
+      logger.warn(`[REVENUECAT_API] No active product found among ${Object.keys(subscriptions).length} subscriptions.`);
       return null;
    }
 
@@ -522,10 +544,11 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       };
    }
 
-   private enrichPlan(plan: EnrichedSubscriptionPlan): EnrichedSubscriptionPlan {
+   private enrichPlan(plan: SubscriptionPlan & { features?: EnrichedPlanFeature[] }): EnrichedSubscriptionPlan {
+      const features = plan.features || [];
       return {
          ...plan,
-         features: plan.features.map((planFeature) => {
+         features: features.map((planFeature) => {
             const feature = SYSTEM_FEATURES.find((systemFeature) => systemFeature.key === planFeature.featureKey);
             return {
                ...planFeature,

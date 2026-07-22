@@ -13,7 +13,7 @@ const router = Router();
  */
 
 /**
- * @route POST /user/subscriptions/webhook
+ * @route POST /user/subscription/webhook
  * @desc RevenueCat webhook endpoint
  * @access Public (protected by REVENUECAT_WEBHOOK_SECRET signature check
  *
@@ -37,21 +37,21 @@ router.use(verifyJWT);
  */
 
 /**
- * @route GET /user/subscriptions/plans
+ * @route GET /user/subscription/plans
  * @desc Get available subscription plans
  * @access Private
  */
 router.get("/plans", userSubscriptionController.getPlans);
 
 /**
- * @route GET /user/subscriptions/my-subscription
+ * @route GET /user/subscription/my-subscription
  * @desc Get the current user's active subscription
  * @access Private
  */
 router.get("/my-subscription", userSubscriptionController.getMySubscription);
 
 /**
- * @route GET /user/subscriptions/features
+ * @route GET /user/subscription/features
  * @desc Get the current user's power/features
  * @access Private
  */
@@ -64,21 +64,21 @@ router.get("/features", userSubscriptionController.getUserFeatures);
  */
 
 /**
- * @route POST /user/subscriptions/subscribe
+ * @route POST /user/subscription/subscribe
  * @desc Subscribe to the FREE plan (paid plans must be purchased via store)
  * @access Private
  */
 router.post("/subscribe", subscriptionActionLimiter, userSubscriptionController.subscribe);
 
 /**
- * @route POST /user/subscriptions/check-call
+ * @route POST /user/subscription/check-call
  * @desc Check if user can initiate an audio or video call
  * @access Private
  */
 router.post("/check-call", userSubscriptionController.checkCallAccess);
 
 /**
- * @route POST /user/subscriptions/sync
+ * @route POST /user/subscription/sync
  * @desc Sync active subscriptions from RevenueCat (rate limited)
  * @access Private
  */

@@ -11,8 +11,6 @@ type PaginatedUsersDto = {
    total: number;
 };
 
-
-
 const PRESIGNED_URL_EXPIRY_SECONDS = 60 * 60;
 
 export class UserService implements IUserService {
