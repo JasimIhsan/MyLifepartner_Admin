@@ -101,6 +101,12 @@ describe("AuthService", () => {
          expect(result.exists).toBe(false);
          expect(mockUserRepo.findByEmail).toHaveBeenCalledWith("new@example.com"); // checking normalization
       });
+
+      it("throws BAD_REQUEST if email is empty", async () => {
+         await expect(authService.initiateAuth("", ip, purpose)).rejects.toThrow(ApiError);
+         const err = await authService.initiateAuth("", ip, purpose).catch(e => e);
+         expect(err.statusCode).toBe(HTTP_STATUS.BAD_REQUEST);
+      });
    });
 
    // ── verifyOtp ─────────────────────────────────────────────────────────────
@@ -226,6 +232,13 @@ describe("AuthService", () => {
          });
       });
 
+      it("throws FORBIDDEN if OTP is not verified", async () => {
+         mockCacheService.getCache.mockResolvedValue(null);
+         await expect(authService.register(validEmail, "password")).rejects.toThrow(ApiError);
+         const err = await authService.register(validEmail, "password").catch(e => e);
+         expect(err.statusCode).toBe(HTTP_STATUS.FORBIDDEN);
+      });
+
       it("throws CONFLICT if user already exists", async () => {
          mockUserRepo.findByEmail.mockResolvedValue({ id: 1 });
 
@@ -269,6 +282,13 @@ describe("AuthService", () => {
             if (key === CACHE_KEYS.OTP_VERIFIED(normalizedEmail, resetPurpose)) return "true";
             return null;
          });
+      });
+
+      it("throws FORBIDDEN if OTP is not verified", async () => {
+         mockCacheService.getCache.mockResolvedValue(null);
+         await expect(authService.forgotPassword(validEmail, "new-password")).rejects.toThrow(ApiError);
+         const err = await authService.forgotPassword(validEmail, "new-password").catch(e => e);
+         expect(err.statusCode).toBe(HTTP_STATUS.FORBIDDEN);
       });
 
       it("throws NOT_FOUND if user does not exist", async () => {
@@ -319,6 +339,34 @@ describe("AuthService", () => {
 
          expect(result.accessToken).toBe("new-access");
          expect(result.refreshToken).toBe("new-refresh");
+      });
+   });
+
+   // ── sendOtp ───────────────────────────────────────────────────────────────
+
+   describe("sendOtp", () => {
+      it("sends OTP and returns it", async () => {
+         mockOtpService.sendOtp.mockResolvedValue("654321");
+         const result = await authService.sendOtp(validEmail, ip, purpose);
+         
+         expect(result.otp).toBe("654321");
+         expect(mockOtpService.sendOtp).toHaveBeenCalledWith(normalizedEmail, ip, purpose);
+      });
+
+      it("throws BAD_REQUEST if email is empty", async () => {
+         await expect(authService.sendOtp("", ip, purpose)).rejects.toThrow(ApiError);
+      });
+   });
+
+   // ── resendOtp ─────────────────────────────────────────────────────────────
+
+   describe("resendOtp", () => {
+      it("resends OTP and returns it", async () => {
+         mockOtpService.resendOtp.mockResolvedValue("654321");
+         const result = await authService.resendOtp(validEmail, ip, purpose);
+         
+         expect(result.otp).toBe("654321");
+         expect(mockOtpService.resendOtp).toHaveBeenCalledWith(normalizedEmail, ip, purpose);
       });
    });
 
