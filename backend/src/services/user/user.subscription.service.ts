@@ -197,6 +197,15 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                willRenew: activeProduct.willRenew,
                nextPlanId: null,
             });
+            await this.writeSyncAuditLog(ctx, {
+               userId,
+               previousPlanId: currentSubscription.planId,
+               newPlanId: targetPlan.id,
+               previousStatus: currentSubscription.status,
+               newStatus: "ACTIVE",
+               reason: "Subscription renewed/refreshed via /sync — verified active product in RevenueCat",
+               source: "SYNC",
+            });
             return;
          }
 
@@ -538,6 +547,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          throw new ApiError(500, "FREE plan not found in database");
       }
 
+      const currentSub = await ctx.findActiveSubscriptionByUserId(userId);
       await ctx.deactivateUserSubscriptions(userId);
 
       const subscription = await ctx.createUserSubscription({
@@ -549,6 +559,16 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          willRenew: false,
          lastEventTimestampMs: BigInt(Date.now()), // RC-1 fix
       } as any);
+
+      await this.writeSyncAuditLog(ctx, {
+         userId,
+         previousPlanId: currentSub?.planId ?? null,
+         newPlanId: freePlanId,
+         previousStatus: currentSub?.status ?? undefined,
+         newStatus: "ACTIVE",
+         reason: "Downgraded to FREE plan via /sync",
+         source: "SYNC",
+      });
 
       await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), true);
    }

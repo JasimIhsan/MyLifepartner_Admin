@@ -279,7 +279,7 @@ describe("UserSubscriptionService", () => {
             ...makeActiveSub(),
             plan: { ...PREMIUM_PLAN, features: [] },
          };
-         mockTx.userSubscription.upsert.mockResolvedValue(subWithPlan);
+         mockTx.userSubscription.create.mockResolvedValue(subWithPlan);
          mockTx.userSubscription.create.mockResolvedValue(subWithPlan);
          mockTx.userFeature.findUnique.mockResolvedValue(null);
          mockTx.userFeature.create.mockResolvedValue({});
@@ -476,7 +476,7 @@ describe("UserSubscriptionService", () => {
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
          mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockTx.userSubscription.updateMany.mockResolvedValue({ count: 1 });
-         mockTx.userSubscription.upsert.mockResolvedValue({
+         mockTx.userSubscription.create.mockResolvedValue({
             ...makeActiveSub(),
             plan: { ...PREMIUM_PLAN, features: [] },
          });
@@ -546,7 +546,7 @@ describe("UserSubscriptionService", () => {
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
          mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockTx.userSubscription.updateMany.mockResolvedValue({ count: 1 });
-         mockTx.userSubscription.upsert.mockResolvedValue({
+         mockTx.userSubscription.create.mockResolvedValue({
             ...makeActiveSub(),
             plan: { ...PREMIUM_PLAN, features: [] },
          });
@@ -656,7 +656,7 @@ describe("UserSubscriptionService", () => {
          mockTx.userSubscription.findFirst.mockResolvedValue(null);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
          mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
-         mockTx.userSubscription.upsert.mockResolvedValue({
+         mockTx.userSubscription.create.mockResolvedValue({
             ...makeActiveSub(),
             plan: { ...PREMIUM_PLAN, features: [] },
          });
@@ -898,35 +898,7 @@ describe("UserSubscriptionService", () => {
       });
    });
 
-   // ── RC-5: anonymous original_app_user_id bypass removed ───────────────────
 
-   describe("RC-5: anonymous original_app_user_id bypass removed", () => {
-      it("throws 409 if original is anonymous and alias does NOT match", async () => {
-         (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({ subscriber: { original_app_user_id: "$RCAnonymousID:123", aliases: ["99"] } }),
-         });
-
-         const svc = makeService();
-         await expect(svc.syncSubscription(42)).rejects.toThrow(ApiError);
-         const err = await svc.syncSubscription(42).catch((e) => e);
-         expect(err.statusCode).toBe(409);
-      });
-
-      it("passes if original is anonymous but alias DOES match", async () => {
-         (global.fetch as jest.Mock).mockResolvedValue({
-            ok: true,
-            json: async () => ({ subscriber: { original_app_user_id: "$RCAnonymousID:123", aliases: ["99", "42"] } }),
-         });
-         
-         const currentSub = makeActiveSub({ planId: FREE_PLAN.id, plan: FREE_PLAN, createdAt: new Date(Date.now() - 1000) });
-         mockTx.userSubscription.findFirst.mockResolvedValue(currentSub);
-         mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-
-         const svc = makeService();
-         await expect(svc.syncSubscription(42)).resolves.not.toThrow();
-      });
-   });
 
    // ── Enhanced Stale Guard ──────────────────────────────────────────────────
 

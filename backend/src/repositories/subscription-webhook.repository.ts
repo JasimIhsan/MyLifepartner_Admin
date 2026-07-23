@@ -133,6 +133,22 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                            revenueCatEventId: event.id,
                         },
                      });
+                     await tx.userSubscriptionLog.create({
+                        data: {
+                           userId,
+                           previousPlanId: currentSubscription.planId,
+                           newPlanId: targetPlanId,
+                           previousStatus: currentSubscription.status,
+                           newStatus: currentSubscription.status,
+                           reason: `Deferred downgrade scheduled via webhook event: ${event.type}`,
+                           source: "WEBHOOK",
+                           eventType: event.type,
+                           eventId: event.id,
+                           productId: event.product_id ?? null,
+                           originalTransactionId: event.original_transaction_id ?? null,
+                           eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                        },
+                     });
                      logger.info("Webhook: deferred downgrade scheduled", {
                         userId,
                         eventId: event.id,
@@ -152,69 +168,54 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
 
                const originalTransactionId = event.original_transaction_id;
                // Enhanced stale guard
-         if (currentSubscription) {
-            const isDowngradeEvent = DOWNGRADE_EVENT_TYPES.includes(event.type);
-            if (isDowngradeEvent) {
-               if (currentSubscription.lastEventTimestampMs && BigInt(event.event_timestamp_ms) < currentSubscription.lastEventTimestampMs) {
-                  logger.warn("Webhook: stale downgrade event ignored", { userId, eventId: event.id });
-                  return;
-               } else if (!currentSubscription.lastEventTimestampMs && event.event_timestamp_ms < currentSubscription.createdAt.getTime()) {
-                  logger.warn("Webhook: stale downgrade event (fallback) ignored", { userId, eventId: event.id });
-                  return;
+               if (currentSubscription) {
+                  const isDowngradeEvent = DOWNGRADE_EVENT_TYPES.includes(event.type);
+                  if (isDowngradeEvent) {
+                     if (currentSubscription.lastEventTimestampMs && BigInt(event.event_timestamp_ms) < currentSubscription.lastEventTimestampMs) {
+                        logger.warn("Webhook: stale downgrade event ignored", { userId, eventId: event.id });
+                        return;
+                     } else if (!currentSubscription.lastEventTimestampMs && event.event_timestamp_ms < currentSubscription.createdAt.getTime()) {
+                        logger.warn("Webhook: stale downgrade event (fallback) ignored", { userId, eventId: event.id });
+                        return;
+                     }
+                  }
                }
-            }
-         }
 
-         const isInitialPurchase = event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE;
+               const isInitialPurchase = event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE;
 
-               let subscription;
-               if (originalTransactionId) {
-                  subscription = await tx.userSubscription.upsert({
-                     where: { originalTransactionId },
-                     create: {
-                        userId,
-                        planId: targetPlanId,
-                        status: "ACTIVE",
-                        startDate: new Date(),
-                        endDate,
-                        willRenew: true,
-                        revenueCatEventId: event.id,
-                        lastEventTimestampMs: event.event_timestamp_ms,
-                        originalTransactionId,
-                        store: event.store,
-                        environment: event.environment,
-                     },
-                     update: {
-                        userId,
-                        planId: targetPlanId,
-                        status: "ACTIVE",
-                        endDate,
-                        willRenew: true,
-                        revenueCatEventId: event.id,
-                        lastEventTimestampMs: event.event_timestamp_ms,
-                        store: event.store,
-                        environment: event.environment,
-                     },
-                     include: { plan: { include: { features: true } } },
-                  });
-               } else {
-                  subscription = await tx.userSubscription.create({
-                     data: {
-                        userId,
-                        planId: targetPlanId,
-                        status: "ACTIVE",
-                        startDate: new Date(),
-                        endDate,
-                        willRenew: true,
-                        revenueCatEventId: event.id,
-                        lastEventTimestampMs: event.event_timestamp_ms,
-                        originalTransactionId: null,
-                        store: event.store,
-                        environment: event.environment,
-                     },
-                     include: { plan: { include: { features: true } } },
-                  });
-               }
+               const subscription = await tx.userSubscription.create({
+                  data: {
+                     userId,
+                     planId: targetPlanId,
+                     status: "ACTIVE",
+                     startDate: new Date(),
+                     endDate,
+                     willRenew: true,
+                     revenueCatEventId: event.id,
+                     lastEventTimestampMs: event.event_timestamp_ms,
+                     originalTransactionId: originalTransactionId ?? null,
+                     store: event.store,
+                     environment: event.environment,
+                  },
+                  include: { plan: { include: { features: true } } },
+               });
+
+               await tx.userSubscriptionLog.create({
+                  data: {
+                     userId,
+                     previousPlanId: currentSubscription?.planId ?? null,
+                     newPlanId: targetPlanId,
+                     previousStatus: currentSubscription?.status ?? null,
+                     newStatus: "ACTIVE",
+                     reason: `Subscription activated/updated via webhook event: ${event.type}`,
+                     source: "WEBHOOK",
+                     eventType: event.type,
+                     eventId: event.id,
+                     productId: event.product_id ?? null,
+                     originalTransactionId: originalTransactionId ?? null,
+                     eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                  },
+               });
 
                const featurePayload = isInitialPurchase ? buildFeatureFullPayload(subscription.plan) : buildFeatureLimitsOnlyPayload(subscription.plan);
                const existingFeatures = await tx.userFeature.findUnique({ where: { userId } });
@@ -248,6 +249,22 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         revenueCatEventId: event.id,
                      },
                   });
+                  await tx.userSubscriptionLog.create({
+                     data: {
+                        userId,
+                        previousPlanId: currentSubscription.planId,
+                        newPlanId: currentSubscription.planId,
+                        previousStatus: currentSubscription.status,
+                        newStatus: currentSubscription.status,
+                        reason: `Subscription cancellation recorded via webhook event: ${event.type}`,
+                        source: "WEBHOOK",
+                        eventType: event.type,
+                        eventId: event.id,
+                        productId: event.product_id ?? null,
+                        originalTransactionId: event.original_transaction_id ?? null,
+                        eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                     },
+                  });
                   logger.info("Webhook: cancellation recorded — access preserved until expiry", {
                      userId,
                      eventId: event.id,
@@ -265,6 +282,22 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         billingIssueDetectedAt: new Date(),
                         lastEventTimestampMs: event.event_timestamp_ms,
                         revenueCatEventId: event.id,
+                     },
+                  });
+                  await tx.userSubscriptionLog.create({
+                     data: {
+                        userId,
+                        previousPlanId: currentSubscription.planId,
+                        newPlanId: currentSubscription.planId,
+                        previousStatus: currentSubscription.status,
+                        newStatus: currentSubscription.status,
+                        reason: `Billing issue detected via webhook event: ${event.type}`,
+                        source: "WEBHOOK",
+                        eventType: event.type,
+                        eventId: event.id,
+                        productId: event.product_id ?? null,
+                        originalTransactionId: event.original_transaction_id ?? null,
+                        eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
                      },
                   });
                   logger.warn("Webhook: billing issue detected — access preserved during grace period", {
@@ -292,6 +325,23 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   data: { status: "EXPIRED", expiredAt: new Date(), lastEventTimestampMs: event.event_timestamp_ms, revenueCatEventId: event.id },
                });
 
+               await tx.userSubscriptionLog.create({
+                  data: {
+                     userId,
+                     previousPlanId: currentSubscription?.planId ?? null,
+                     newPlanId: null,
+                     previousStatus: currentSubscription?.status ?? "ACTIVE",
+                     newStatus: "EXPIRED",
+                     reason: `Subscription expired via webhook event: ${event.type}`,
+                     source: "WEBHOOK",
+                     eventType: event.type,
+                     eventId: event.id,
+                     productId: event.product_id ?? null,
+                     originalTransactionId: event.original_transaction_id ?? null,
+                     eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                  },
+               });
+
                const remaining = await tx.userSubscription.findFirst({ where: { userId, status: "ACTIVE" } });
                if (remaining) break;
 
@@ -310,6 +360,23 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         originalTransactionId: null,
                      },
                      include: { plan: { include: { features: true } } },
+                  });
+
+                  await tx.userSubscriptionLog.create({
+                     data: {
+                        userId,
+                        previousPlanId: currentSubscription?.planId ?? null,
+                        newPlanId: freePlanId,
+                        previousStatus: "EXPIRED",
+                        newStatus: "ACTIVE",
+                        reason: `Downgraded to FREE plan after expiration via webhook event: ${event.type}`,
+                        source: "WEBHOOK",
+                        eventType: event.type,
+                        eventId: event.id,
+                        productId: event.product_id ?? null,
+                        originalTransactionId: event.original_transaction_id ?? null,
+                        eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                     },
                   });
 
                   const featurePayload = buildFeatureFullPayload(freeSub.plan);
@@ -339,6 +406,23 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   data: { status: "EXPIRED", refundedAt: new Date(), lastEventTimestampMs: event.event_timestamp_ms, revenueCatEventId: event.id },
                });
 
+               await tx.userSubscriptionLog.create({
+                  data: {
+                     userId,
+                     previousPlanId: currentSubscription?.planId ?? null,
+                     newPlanId: null,
+                     previousStatus: currentSubscription?.status ?? "ACTIVE",
+                     newStatus: "EXPIRED",
+                     reason: `Subscription refunded via webhook event: ${event.type}`,
+                     source: "WEBHOOK",
+                     eventType: event.type,
+                     eventId: event.id,
+                     productId: event.product_id ?? null,
+                     originalTransactionId: event.original_transaction_id ?? null,
+                     eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                  },
+               });
+
                const remaining = await tx.userSubscription.findFirst({ where: { userId, status: "ACTIVE" } });
                if (remaining) break;
 
@@ -357,6 +441,23 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         originalTransactionId: null,
                      },
                      include: { plan: { include: { features: true } } },
+                  });
+
+                  await tx.userSubscriptionLog.create({
+                     data: {
+                        userId,
+                        previousPlanId: currentSubscription?.planId ?? null,
+                        newPlanId: freePlanId,
+                        previousStatus: "EXPIRED",
+                        newStatus: "ACTIVE",
+                        reason: `Downgraded to FREE plan after refund via webhook event: ${event.type}`,
+                        source: "WEBHOOK",
+                        eventType: event.type,
+                        eventId: event.id,
+                        productId: event.product_id ?? null,
+                        originalTransactionId: event.original_transaction_id ?? null,
+                        eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                     },
                   });
 
                   const featurePayload = buildFeatureFullPayload(freeSub.plan);

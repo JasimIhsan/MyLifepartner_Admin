@@ -26,6 +26,11 @@ export interface ISyncTransactionContext {
       newStatus: string;
       reason: string;
       source: string;
+      eventType?: string;
+      eventId?: string;
+      productId?: string;
+      originalTransactionId?: string;
+      eventTimestampMs?: bigint | number;
    }): Promise<void>;
 }
 
