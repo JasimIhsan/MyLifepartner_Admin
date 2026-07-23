@@ -261,6 +261,31 @@ model ProcessedRevenueCatEvent {
   @@map("processed_revenuecat_events")
 }
 
+/**
+ * Append-only audit log for every subscription state change.
+ * Never update or delete rows — only insert.
+ * This is the source of truth for "why did this user's plan change?"
+ */
+model UserSubscriptionLog {
+  id                    Int      @id @default(autoincrement())
+  userId                Int
+  previousPlanId        Int?
+  newPlanId             Int?
+  previousStatus        String?
+  newStatus             String
+  reason                String
+  source                String
+  eventType             String?
+  eventId               String?
+  productId             String?
+  originalTransactionId String?
+  eventTimestampMs      BigInt?
+  createdAt             DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("user_subscription_logs")
+}
+
 model UserFeature {
   id                   Int      @id @default(autoincrement())
   userId               Int      @unique

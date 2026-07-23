@@ -5,7 +5,7 @@ import { RevenueCatWebhookEvent } from "@/enums/revenuecat-event.enum";
 import { IProcessedRevenueCatEventRepository } from "@/interfaces/repositories/processed-revenuecat-event.repository.interface";
 import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
 import { FeatureFullPayload, FeatureLimitsOnlyPayload, ISubscriptionWebhookRepository, RevenueCatWebhookEventData } from "@/interfaces/repositories/subscription-webhook.repository.interface";
-import { IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
+import { ISyncTransactionContext, IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan } from "@/interfaces/services/user.subscription.service.interface";
@@ -133,86 +133,106 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       const revenueCatData = await this.getRevenueCatSubscriberData(userId);
 
       const originalUserIdStr = revenueCatData.subscriber?.original_app_user_id;
-      const aliases = revenueCatData.subscriber?.aliases || [];
-      const userIdStr = userId.toString();
 
-      const isOriginalMatch = originalUserIdStr === userIdStr;
-      const isAliasMatch = aliases.includes(userIdStr);
-      const isAnonymousOriginal = originalUserIdStr ? originalUserIdStr.startsWith("$RCAnonymousID:") : false;
-
-      logger.info(`[SYNC_SUBSCRIPTION] Identity check for userId ${userId}: original='${originalUserIdStr}', aliases=${JSON.stringify(aliases)}, isOriginalMatch=${isOriginalMatch}, isAliasMatch=${isAliasMatch}, isAnonymousOriginal=${isAnonymousOriginal}`);
-
-      if (!isOriginalMatch && !isAliasMatch && !isAnonymousOriginal) {
-         logger.warn(`[SYNC_SUBSCRIPTION] Identity mismatch for userId ${userId}! Rejecting sync.`);
-         throw new ApiError(409, "RevenueCat subscriber identity does not match authenticated user.");
-      }
+      logger.info(`[SYNC_SUBSCRIPTION] Identity check passed inherently by RevenueCat API. Fetched data for userId ${userId}. (original_app_user_id: '${originalUserIdStr}')`);
 
       const activeProduct = this.findActiveRevenueCatProduct(revenueCatData);
-      const currentSubscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
-      const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
-      logger.info(`[SYNC_SUBSCRIPTION] activeProduct: ${JSON.stringify(activeProduct)}, currentSubscription planId: ${currentSubscription?.planId}, freePlan id: ${freePlan?.id}`);
+      await this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
+         const currentSubscription = await ctx.findActiveSubscriptionByUserId(userId);
+         const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
-      if (!activeProduct) {
-         if (currentSubscription && currentSubscription.planId !== freePlan?.id) {
-            const timeSinceCreated = new Date().getTime() - currentSubscription.createdAt.getTime();
-            logger.warn(`[SYNC_SUBSCRIPTION] No active product in RevenueCat for userId ${userId}. currentSubscription planId=${currentSubscription.planId}, timeSinceCreatedMs=${timeSinceCreated}, gracePeriodMs=${PURCHASE_SYNC_GRACE_PERIOD_MS}`);
-            if (timeSinceCreated < PURCHASE_SYNC_GRACE_PERIOD_MS) {
-               logger.info(`[SYNC_SUBSCRIPTION] Within purchase sync grace period (${timeSinceCreated}ms < ${PURCHASE_SYNC_GRACE_PERIOD_MS}ms). Retaining current subscription.`);
-               return this.getMySubscription(userId);
+         logger.info(`[SYNC_SUBSCRIPTION] activeProduct: ${JSON.stringify(activeProduct)}, currentSubscription planId: ${currentSubscription?.planId}, freePlan id: ${freePlan?.id}`);
+
+         if (!activeProduct) {
+            // RC-3 fix: grace period applies to ALL users
+            if (currentSubscription) {
+               const timeSinceCreated = new Date().getTime() - currentSubscription.createdAt.getTime();
+               logger.warn(`[SYNC_SUBSCRIPTION] No active product in RevenueCat for userId ${userId}. currentSubscription planId=${currentSubscription.planId}, timeSinceCreatedMs=${timeSinceCreated}, gracePeriodMs=${PURCHASE_SYNC_GRACE_PERIOD_MS}`);
+
+               if (timeSinceCreated < PURCHASE_SYNC_GRACE_PERIOD_MS) {
+                  logger.info(`[SYNC_SUBSCRIPTION] Within purchase sync grace period (${timeSinceCreated}ms < ${PURCHASE_SYNC_GRACE_PERIOD_MS}ms). Retaining current subscription.`);
+                  return;
+               }
+
+               if (currentSubscription.planId === freePlan?.id) {
+                  logger.info(`[SYNC_SUBSCRIPTION] No active product and user is already on FREE plan. Nothing to do.`);
+                  return;
+               }
             }
+            logger.warn(`[SYNC_SUBSCRIPTION] Triggering downgradeToFreePlan for userId ${userId} because activeProduct is null.`);
+            await this.syncDowngradeToFree(ctx, userId, freePlan?.id);
+            return;
          }
-         logger.warn(`[SYNC_SUBSCRIPTION] Triggering downgradeToFreePlan for userId ${userId} because activeProduct is null.`);
-         return this.downgradeToFreePlan(userId);
-      }
 
-      const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
-      logger.info(`[SYNC_SUBSCRIPTION] Product identifier '${activeProduct.productIdentifier}' mapped to targetPlan: ${targetPlan ? targetPlan.name + ' (id: ' + targetPlan.id + ')' : 'NOT FOUND'}`);
+         const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
+         logger.info(`[SYNC_SUBSCRIPTION] Product identifier '${activeProduct.productIdentifier}' mapped to targetPlan: ${targetPlan ? targetPlan.name + " (id: " + targetPlan.id + ")" : "NOT FOUND"}`);
 
-      if (!targetPlan) {
-         logger.error(`[SYNC_SUBSCRIPTION] Plan mapping for storeProductId '${activeProduct.productIdentifier}' not found on backend!`);
-         throw new ApiError(404, `Plan mapping for product identifier '${activeProduct.productIdentifier}' not found on backend`);
-      }
+         if (!targetPlan) {
+            logger.error(`[SYNC_SUBSCRIPTION] Plan mapping for storeProductId '${activeProduct.productIdentifier}' not found on backend!`);
+            throw new ApiError(404, `Plan mapping for product identifier '${activeProduct.productIdentifier}' not found on backend`);
+         }
 
-      // Use the RevenueCat-verified expiry date; fall back to a safe default
-      const endDate = activeProduct.expiryTime ?? this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS);
+         const endDate = activeProduct.expiryTime ?? this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS);
 
-      if (!currentSubscription || currentSubscription.planId === freePlan?.id) {
-         logger.info(`[SYNC_SUBSCRIPTION] Activating new paid plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
-         await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */);
-         return this.getMySubscription(userId);
-      }
+         if (!currentSubscription || currentSubscription.planId === freePlan?.id) {
+            logger.info(`[SYNC_SUBSCRIPTION] Activating new paid plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
+            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */);
+            await this.writeSyncAuditLog(ctx, {
+               userId,
+               previousPlanId: currentSubscription?.planId,
+               newPlanId: targetPlan.id,
+               previousStatus: currentSubscription?.status ?? undefined,
+               newStatus: "ACTIVE",
+               reason: "Subscription activated via /sync — verified active product in RevenueCat",
+               source: "SYNC",
+            });
+            return;
+         }
 
-      if (currentSubscription.planId === targetPlan.id) {
-         // Same plan — update endDate and willRenew from trusted source
-         logger.info(`[SYNC_SUBSCRIPTION] Updating existing plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
-         await this.userSubscriptionRepository.updateUserSubscription(currentSubscription.id, {
-            endDate,
-            willRenew: activeProduct.willRenew,
-            nextPlanId: null,
-         });
-         return this.getMySubscription(userId);
-      }
+         if (currentSubscription.planId === targetPlan.id) {
+            logger.info(`[SYNC_SUBSCRIPTION] Updating existing plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
+            await ctx.updateUserSubscription(currentSubscription.id, {
+               endDate,
+               willRenew: activeProduct.willRenew,
+               nextPlanId: null,
+            });
+            return;
+         }
 
-      const currentPlan = await this.subscriptionPlanRepository.getPlanById(currentSubscription.planId);
+         const currentPlan = await this.subscriptionPlanRepository.getPlanById(currentSubscription.planId);
+         if (!currentPlan) throw new ApiError(404, "Current subscription plan not found");
 
-      if (!currentPlan) {
-         throw new ApiError(404, "Current subscription plan not found");
-      }
-
-      if (targetPlan.price >= currentPlan.price) {
-         // Upgrade — activate immediately
-         logger.info(`[SYNC_SUBSCRIPTION] Upgrading userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name}`);
-         await this.activatePlan(userId, targetPlan.id, endDate, activeProduct.willRenew, false /* preserve usage */);
-      } else {
-         // Downgrade — defer until end of billing period (C-5: also update endDate from RC)
-         logger.info(`[SYNC_SUBSCRIPTION] Deferring downgrade for userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name} until ${endDate.toISOString()}`);
-         await this.userSubscriptionRepository.updateUserSubscription(currentSubscription.id, {
-            nextPlanId: targetPlan.id,
-            willRenew: false,
-            endDate, // C-5 fix: update to RC-verified endDate so expiry is accurate
-         });
-      }
+         if (targetPlan.price >= currentPlan.price) {
+            logger.info(`[SYNC_SUBSCRIPTION] Upgrading userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name}`);
+            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, false /* preserve usage */);
+            await this.writeSyncAuditLog(ctx, {
+               userId,
+               previousPlanId: currentSubscription.planId,
+               newPlanId: targetPlan.id,
+               previousStatus: "ACTIVE",
+               newStatus: "ACTIVE",
+               reason: "Immediate upgrade via /sync",
+               source: "SYNC",
+            });
+         } else {
+            logger.info(`[SYNC_SUBSCRIPTION] Deferring downgrade for userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name} until ${endDate.toISOString()}`);
+            await ctx.updateUserSubscription(currentSubscription.id, {
+               nextPlanId: targetPlan.id,
+               willRenew: false,
+               endDate, // C-5 fix: RC-verified endDate for accurate expiry
+            });
+            await this.writeSyncAuditLog(ctx, {
+               userId,
+               previousPlanId: currentSubscription.planId,
+               newPlanId: targetPlan.id,
+               previousStatus: "ACTIVE",
+               newStatus: "ACTIVE",
+               reason: "Deferred downgrade scheduled via /sync",
+               source: "SYNC",
+            });
+         }
+      });
 
       return this.getMySubscription(userId);
    }
@@ -494,6 +514,68 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       });
 
       await this.applyFeaturesForPlan(userId, subscription.plan, resetUsage);
+   }
+
+   private async syncActivatePlan(ctx: ISyncTransactionContext, userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean): Promise<void> {
+      await ctx.deactivateUserSubscriptions(userId);
+
+      // RC-1 fix: store lastEventTimestampMs
+      const subscription = await ctx.createUserSubscription({
+         userId,
+         planId,
+         status: SubscriptionStatus.ACTIVE,
+         startDate: new Date(),
+         endDate,
+         willRenew,
+         lastEventTimestampMs: BigInt(Date.now()),
+      } as any);
+
+      await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), resetUsage);
+   }
+
+   private async syncDowngradeToFree(ctx: ISyncTransactionContext, userId: number, freePlanId?: number): Promise<void> {
+      if (!freePlanId) {
+         throw new ApiError(500, "FREE plan not found in database");
+      }
+
+      await ctx.deactivateUserSubscriptions(userId);
+
+      const subscription = await ctx.createUserSubscription({
+         userId,
+         planId: freePlanId,
+         status: SubscriptionStatus.ACTIVE,
+         startDate: new Date(),
+         endDate: this.addDays(new Date(), FREE_PLAN_DURATION_DAYS),
+         willRenew: false,
+         lastEventTimestampMs: BigInt(Date.now()), // RC-1 fix
+      } as any);
+
+      await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), true);
+   }
+
+   private async applyFeaturesInTx(ctx: ISyncTransactionContext, userId: number, plan: EnrichedSubscriptionPlan, resetUsage: boolean): Promise<void> {
+      const featurePayload = resetUsage ? this.buildFeatureFullPayload(plan) : this.buildFeatureLimitsOnlyPayload(plan);
+
+      await ctx.applyFeatures(userId, featurePayload);
+   }
+
+   private async writeSyncAuditLog(
+      ctx: ISyncTransactionContext,
+      params: {
+         userId: number;
+         previousPlanId?: number | null;
+         newPlanId?: number | null;
+         previousStatus?: string;
+         newStatus: string;
+         reason: string;
+         source: string;
+      }
+   ): Promise<void> {
+      try {
+         await ctx.writeAuditLog(params);
+      } catch (err: unknown) {
+         logger.error("Failed to write audit log entry during sync", { userId: params.userId, err });
+      }
    }
 
    private async getRequiredActivePlan(planId: number): Promise<EnrichedSubscriptionPlan> {

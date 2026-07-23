@@ -6,6 +6,9 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/widgets/bottomsheet/subscription/dynamic_loading_ui.dart';
+import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_failure_ui.dart';
+import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_success_ui.dart';
 import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,7 +35,7 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
   void initSubscriptions() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId') ?? 0;
-    debugPrint("UserId from prefs: \$userId");
+    debugPrint("UserId from prefs: $userId");
     if (userId == 0) {
       debugPrint("Invalid userId");
       return;
@@ -61,148 +64,36 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
       if (confirm != true) return;
     }
 
+    bool dialogShown = false;
+    final ValueNotifier<bool> isCompleted = ValueNotifier(false);
+    Future<void>? dialogFuture;
+
     final success = await provider.subscribeToPlan(
       plan.identifier ?? plan.id.toString(),
+      onPurchaseCompleted: () {
+        dialogShown = true;
+        dialogFuture = showDynamicLoadingUI(context, isCompleted);
+      },
     );
 
     if (!mounted) return;
 
+    if (dialogShown) {
+      isCompleted.value = true;
+      if (dialogFuture != null) {
+        await dialogFuture;
+      }
+    }
+
     if (success) {
-      if (kIsWeb) {
-        _showSuccessDialog(plan);
-      } else {
-        _showSuccessBottomSheet(plan);
+      await showSubscriptionSuccessUI(context, plan);
+
+      if (mounted) {
+        initSubscriptions();
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            provider.error ?? 'Failed to subscribe',
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.black,
-        ),
-      );
+      await showSubscriptionFailureUI(context, provider.error);
     }
-  }
-
-  void _showSuccessDialog(model.SubscriptionPlan plan) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: AppColors.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          contentPadding: const EdgeInsets.all(32),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.check_circle_rounded,
-                color: Colors.green,
-                size: 64,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Subscription Successful!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'You are now successfully subscribed to the ${plan.name} plan.',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: CustomButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  text: 'Continue',
-                  type: CustomButtonType.primary,
-                  backgroundColor: AppColors.primary,
-                  textColor: Colors.white,
-                  height: 52,
-                  borderRadius: 16,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showSuccessBottomSheet(model.SubscriptionPlan plan) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.check_circle_rounded,
-                  color: Colors.green,
-                  size: 64,
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Subscription Successful!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'You are now successfully subscribed to the ${plan.name} plan.',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: AppColors.textSecondary,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    text: 'Awesome',
-                    type: CustomButtonType.primary,
-                    backgroundColor: AppColors.primary,
-                    textColor: Colors.white,
-                    height: 52,
-                    borderRadius: 16,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   Widget buildCancelConfirmationSheet() {

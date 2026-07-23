@@ -21,6 +21,14 @@ function isPrismaUniqueConstraintError(error: unknown): boolean {
    return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
 }
 
+// ─── Downgrade-class event types ────────────────────────────────────────────
+const DOWNGRADE_EVENT_TYPES: RevenueCatWebhookEvent[] = [
+   RevenueCatWebhookEvent.EXPIRATION,
+   RevenueCatWebhookEvent.REFUND,
+   RevenueCatWebhookEvent.CANCELLATION,
+   RevenueCatWebhookEvent.BILLING_ISSUE,
+];
+
 export class SubscriptionWebhookRepository implements ISubscriptionWebhookRepository {
    async processWebhookEvent(params: ProcessWebhookParams): Promise<boolean> {
       const { 
@@ -48,7 +56,8 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
          }
 
          // Advisory lock per user to prevent concurrent state corruption
-         await tx.$executeRaw`SELECT pg_advisory_xact_lock(${userId})`;
+         await tx.$executeRaw`SET LOCAL lock_timeout = '5s'`;
+         await tx.$executeRaw`SELECT id FROM \"users\" WHERE id = ${userId} FOR UPDATE`;
 
          // Idempotency check via unique constraint
          try {
@@ -75,14 +84,22 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
          });
 
          // Reject stale events
-         if (currentSubscription?.lastEventTimestampMs && event.event_timestamp_ms < Number(currentSubscription.lastEventTimestampMs)) {
-            logger.warn("Webhook: ignoring stale event (older than current subscription state)", {
-               eventId: event.id,
-               type: event.type,
-               eventTs: event.event_timestamp_ms,
-               currentTs: Number(currentSubscription.lastEventTimestampMs),
-            });
-            return;
+         if (currentSubscription) {
+            const isDowngradeEvent = DOWNGRADE_EVENT_TYPES.includes(event.type);
+            const currentTs = currentSubscription.lastEventTimestampMs ? Number(currentSubscription.lastEventTimestampMs) : null;
+            
+            if (currentTs && event.event_timestamp_ms < currentTs) {
+               logger.warn("Webhook: ignoring stale event (older than current subscription state)", {
+                  eventId: event.id,
+                  type: event.type,
+                  eventTs: event.event_timestamp_ms,
+                  currentTs,
+               });
+               return;
+            } else if (isDowngradeEvent && !currentTs && event.event_timestamp_ms < currentSubscription.createdAt.getTime()) {
+               logger.warn("Webhook: stale downgrade event (fallback) ignored", { userId, eventId: event.id });
+               return;
+            }
          }
 
          switch (event.type) {
@@ -134,7 +151,21 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                });
 
                const originalTransactionId = event.original_transaction_id;
-               const isInitialPurchase = event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE;
+               // Enhanced stale guard
+         if (currentSubscription) {
+            const isDowngradeEvent = DOWNGRADE_EVENT_TYPES.includes(event.type);
+            if (isDowngradeEvent) {
+               if (currentSubscription.lastEventTimestampMs && BigInt(event.event_timestamp_ms) < currentSubscription.lastEventTimestampMs) {
+                  logger.warn("Webhook: stale downgrade event ignored", { userId, eventId: event.id });
+                  return;
+               } else if (!currentSubscription.lastEventTimestampMs && event.event_timestamp_ms < currentSubscription.createdAt.getTime()) {
+                  logger.warn("Webhook: stale downgrade event (fallback) ignored", { userId, eventId: event.id });
+                  return;
+               }
+            }
+         }
+
+         const isInitialPurchase = event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE;
 
                let subscription;
                if (originalTransactionId) {
@@ -251,10 +282,19 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
             }
 
             case RevenueCatWebhookEvent.EXPIRATION: {
+               const txnId = event.original_transaction_id;
+               const whereClause = txnId
+                  ? { userId, status: "ACTIVE" as const, originalTransactionId: txnId }
+                  : { userId, status: "ACTIVE" as const };
+
                await tx.userSubscription.updateMany({
-                  where: { userId, status: "ACTIVE" },
-                  data: { status: "EXPIRED", expiredAt: new Date() },
+                  where: whereClause,
+                  data: { status: "EXPIRED", expiredAt: new Date(), lastEventTimestampMs: event.event_timestamp_ms, revenueCatEventId: event.id },
                });
+
+               const remaining = await tx.userSubscription.findFirst({ where: { userId, status: "ACTIVE" } });
+               if (remaining) break;
+
 
                if (freePlanId) {
                   const freeSub = await tx.userSubscription.create({
@@ -289,10 +329,19 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
             }
 
             case RevenueCatWebhookEvent.REFUND: {
+               const txnId = event.original_transaction_id;
+               const whereClause = txnId
+                  ? { userId, status: "ACTIVE" as const, originalTransactionId: txnId }
+                  : { userId, status: "ACTIVE" as const };
+
                await tx.userSubscription.updateMany({
-                  where: { userId, status: "ACTIVE" },
-                  data: { status: "EXPIRED", refundedAt: new Date() },
+                  where: whereClause,
+                  data: { status: "EXPIRED", refundedAt: new Date(), lastEventTimestampMs: event.event_timestamp_ms, revenueCatEventId: event.id },
                });
+
+               const remaining = await tx.userSubscription.findFirst({ where: { userId, status: "ACTIVE" } });
+               if (remaining) break;
+
 
                if (freePlanId) {
                   const freeSub = await tx.userSubscription.create({
@@ -331,7 +380,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                break;
             }
          }
-      });
+      }, { maxWait: 5000, timeout: 10000 });
 
       return processed;
    }

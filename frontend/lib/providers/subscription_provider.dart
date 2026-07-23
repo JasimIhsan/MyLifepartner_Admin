@@ -318,13 +318,13 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
   /// PURCHASE FLOW
   /// =========================
-  Future<bool> subscribeToPlan(String id) async {
+  Future<bool> subscribeToPlan(String id, {VoidCallback? onPurchaseCompleted}) async {
     if (_isPurchasing || _authenticatedUserId == null) return false;
 
     // Safety identity verification before purchase
     bool identityOk = await _ensureRevenueCatIdentity(_authenticatedUserId!);
     if (!identityOk) {
-      error = "Identity mismatch occurred. Please try restarting the app.";
+      error = "Unable to verify user session. Please try logging in again.";
       return false;
     }
 
@@ -339,6 +339,7 @@ class SubscriptionProvider extends ChangeNotifier {
       );
 
       if (backendPlan.price == 0) {
+        onPurchaseCompleted?.call();
         final sub = await _subscriptionService.subscribe(backendPlan.id);
         _mySubscription = sub;
 
@@ -347,8 +348,14 @@ class SubscriptionProvider extends ChangeNotifier {
           _handleCustomerInfoUpdate(customerInfo);
 
           if (customerInfo.entitlements.active.isNotEmpty) {
+            final String storeName = (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS)
+                ? "App Store"
+                : (defaultTargetPlatform == TargetPlatform.android)
+                    ? "Google Play Store"
+                    : "App Store / Play Store";
+
             error =
-                "Plan downgraded! Please remember to also cancel your active subscription in your App Store / Play Store settings so you aren't charged.";
+                "Plan downgraded! Please remember to also cancel your active subscription in your $storeName settings so you aren't charged.";
             return false;
           }
         } catch (_) {}
@@ -396,15 +403,13 @@ class SubscriptionProvider extends ChangeNotifier {
       );
       debugPrint("==================================================");
 
-      error =
-          "DEBUG: Purchase stopped for identity verification. Check debug console logs! (Auth ID: $_authenticatedUserId vs RC AppUserID: $currentRcAppUserId / Original: ${customerInfo.originalAppUserId})";
-      // return false;
-
       // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);
 
-      // Temporarily update UI locally before backend verifies
-      _handleCustomerInfoUpdate(result.customerInfo);
+      onPurchaseCompleted?.call();
+
+      // Update UI only after backend verifies
+      // _handleCustomerInfoUpdate(result.customerInfo);
 
       // Trigger verification and sync with the backend
       try {
@@ -479,8 +484,27 @@ class SubscriptionProvider extends ChangeNotifier {
     if (e is PlatformException) {
       try {
         final errorCode = PurchasesErrorHelper.getErrorCode(e);
-        if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
-          return "Purchase was cancelled.";
+        switch (errorCode) {
+          case PurchasesErrorCode.purchaseCancelledError:
+            return "Purchase was cancelled.";
+          case PurchasesErrorCode.storeProblemError:
+            return "Unable to connect to the store. Please check your internet connection or try again later.";
+          case PurchasesErrorCode.purchaseNotAllowedError:
+            return "In-app purchases are disabled or not allowed on this device.";
+          case PurchasesErrorCode.purchaseInvalidError:
+            return "The selected plan or payment details are invalid. Please try again.";
+          case PurchasesErrorCode.productNotAvailableForPurchaseError:
+            return "This plan is currently not available in your store region.";
+          case PurchasesErrorCode.productAlreadyPurchasedError:
+            return "You are already subscribed to this plan.";
+          case PurchasesErrorCode.networkError:
+            return "Network connection issue. Please check your internet connection and try again.";
+          case PurchasesErrorCode.paymentPendingError:
+            return "Your payment is currently processing. Access will unlock once confirmed.";
+          case PurchasesErrorCode.insufficientPermissionsError:
+            return "Permission denied. Please check your store payment settings.";
+          default:
+            return e.message ?? "A payment service error occurred. Please try again.";
         }
       } catch (_) {}
       return e.message ?? "A payment service error occurred. Please try again.";
