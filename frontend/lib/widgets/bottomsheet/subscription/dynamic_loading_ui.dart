@@ -106,7 +106,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: AppColors.primary, size: 20),
@@ -138,7 +138,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
             : BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 30,
             spreadRadius: 10,
           ),
@@ -223,7 +223,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
                         value: value,
-                        backgroundColor: AppColors.primary.withOpacity(0.15),
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                         valueColor: const AlwaysStoppedAnimation<Color>(
                           AppColors.primary,
                         ),
@@ -270,7 +270,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.05),
+              color: AppColors.primary.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
@@ -288,7 +288,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
                 const Spacer(),
                 Icon(
                   Icons.favorite_rounded,
-                  color: AppColors.primary.withOpacity(0.8),
+                  color: AppColors.primary.withValues(alpha: 0.8),
                   size: 16,
                 ),
               ],

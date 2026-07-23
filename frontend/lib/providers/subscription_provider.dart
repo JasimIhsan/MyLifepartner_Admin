@@ -318,7 +318,10 @@ class SubscriptionProvider extends ChangeNotifier {
   /// =========================
   /// PURCHASE FLOW
   /// =========================
-  Future<bool> subscribeToPlan(String id, {VoidCallback? onPurchaseCompleted}) async {
+  Future<bool> subscribeToPlan(
+    String id, {
+    VoidCallback? onPurchaseCompleted,
+  }) async {
     if (_isPurchasing || _authenticatedUserId == null) return false;
 
     // Safety identity verification before purchase
@@ -348,11 +351,13 @@ class SubscriptionProvider extends ChangeNotifier {
           _handleCustomerInfoUpdate(customerInfo);
 
           if (customerInfo.entitlements.active.isNotEmpty) {
-            final String storeName = (defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS)
+            final String storeName =
+                (defaultTargetPlatform == TargetPlatform.iOS ||
+                    defaultTargetPlatform == TargetPlatform.macOS)
                 ? "App Store"
                 : (defaultTargetPlatform == TargetPlatform.android)
-                    ? "Google Play Store"
-                    : "App Store / Play Store";
+                ? "Google Play Store"
+                : "App Store / Play Store";
 
             error =
                 "Plan downgraded! Please remember to also cancel your active subscription in your $storeName settings so you aren't charged.";
@@ -504,7 +509,8 @@ class SubscriptionProvider extends ChangeNotifier {
           case PurchasesErrorCode.insufficientPermissionsError:
             return "Permission denied. Please check your store payment settings.";
           default:
-            return e.message ?? "A payment service error occurred. Please try again.";
+            return e.message ??
+                "A payment service error occurred. Please try again.";
         }
       } catch (_) {}
       return e.message ?? "A payment service error occurred. Please try again.";

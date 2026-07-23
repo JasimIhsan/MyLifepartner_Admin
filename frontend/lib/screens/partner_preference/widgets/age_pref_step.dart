@@ -70,7 +70,7 @@ class _AgePrefStepState extends State<AgePrefStep> {
         border: Border.all(color: AppColors.primary, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -136,7 +136,7 @@ class _AgePrefStepState extends State<AgePrefStep> {
               enabledThumbRadius: 14,
               elevation: 2,
             ),
-            overlayColor: AppColors.primary.withOpacity(0.1),
+            overlayColor: AppColors.primary.withValues(alpha: 0.1),
             overlayShape: const RoundSliderOverlayShape(
               overlayRadius: sliderPadding,
             ),

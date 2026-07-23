@@ -69,8 +69,8 @@ class SubscriptionFailureUI extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: isCancelled
-                ? Colors.amber.withOpacity(0.1)
-                : Colors.red.withOpacity(0.1),
+                ? Colors.amber.withValues(alpha: 0.1)
+                : Colors.red.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(

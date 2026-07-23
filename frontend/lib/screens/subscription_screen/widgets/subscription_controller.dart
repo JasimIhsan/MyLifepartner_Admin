@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/config/env.dart';
@@ -84,6 +83,8 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         await dialogFuture;
       }
     }
+
+    if (!mounted) return;
 
     if (success) {
       await showSubscriptionSuccessUI(context, plan);
