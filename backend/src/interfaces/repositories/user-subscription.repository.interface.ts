@@ -4,6 +4,7 @@ export enum SubscriptionStatus {
    ACTIVE = "ACTIVE",
    INACTIVE = "INACTIVE",
    CANCELLED = "CANCELLED",
+   CANCELLED_PENDING_EXPIRY = "CANCELLED_PENDING_EXPIRY",
    EXPIRED = "EXPIRED",
 }
 export type UserSubscriptionWithPlan = UserSubscription & {

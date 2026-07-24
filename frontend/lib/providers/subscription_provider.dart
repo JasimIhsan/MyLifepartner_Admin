@@ -4,6 +4,7 @@ import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/models/subscription_plan.dart';
 import 'package:life_partner_again/services/subscription_service.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SubscriptionProvider extends ChangeNotifier {
   bool isLoading = false;
@@ -434,6 +435,20 @@ class SubscriptionProvider extends ChangeNotifier {
 
       return true;
     } catch (e) {
+      if (e is PlatformException) {
+        try {
+          final errorCode = PurchasesErrorHelper.getErrorCode(e);
+          if (errorCode == PurchasesErrorCode.productAlreadyPurchasedError) {
+            debugPrint(
+              "ℹ️ Product already purchased according to store. Triggering automatic restore/sync...",
+            );
+            onPurchaseCompleted?.call();
+            await fetchMySubscription();
+            error = null;
+            return true;
+          }
+        } catch (_) {}
+      }
       error = _getReadableError(e);
       return false;
     } finally {
@@ -454,6 +469,65 @@ class SubscriptionProvider extends ChangeNotifier {
   /// UTILS
   /// =========================
 
+  Future<void> openGooglePlaySubscription() async {
+    try {
+      final info = await Purchases.getCustomerInfo();
+      
+      // Use RevenueCat's native management URL if available (supports both iOS and Android dynamically)
+      if (info.managementURL != null && info.managementURL!.isNotEmpty) {
+        final Uri uri = Uri.parse(info.managementURL!);
+        debugPrint("🚀 Launching native subscription management URL: $uri");
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+          return;
+        }
+      }
+
+      // Fallback for Android (currently the primary platform)
+      // TODO: Implement iOS specific fallback link (itms-apps://apps.apple.com/account/subscriptions) for future iOS support
+      String? sku;
+      if (info.entitlements.active.isNotEmpty) {
+        sku = info.entitlements.active.values.first.productIdentifier;
+      }
+
+      final Uri uri;
+      if (sku != null && sku.isNotEmpty) {
+        uri = Uri.parse(
+          'https://play.google.com/store/account/subscriptions?sku=$sku&package=com.ciltriq.lifepartneragain',
+        );
+      } else {
+        uri = Uri.parse('https://play.google.com/store/account/subscriptions');
+      }
+
+      debugPrint("🚀 Launching Play Store subscription URL fallback: $uri");
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        debugPrint("⚠️ Could not launch URL: $uri");
+      }
+    } catch (e) {
+      debugPrint("❌ Error launching subscription page: $e");
+    }
+  }
+
+  Future<void> refreshWithRetry({
+    int maxRetries = 3,
+    Duration delay = const Duration(seconds: 2),
+  }) async {
+    for (int i = 0; i < maxRetries; i++) {
+      debugPrint("🔄 Subscription refresh retry attempt ${i + 1}/$maxRetries...");
+      await fetchMySubscription();
+      final sub = _mySubscription;
+      if (sub != null && !sub.willRenew) {
+        debugPrint("✅ Refresh retry detected updated cancellation state (willRenew=false).");
+        break;
+      }
+      if (i < maxRetries - 1) {
+        await Future.delayed(delay);
+      }
+    }
+  }
+
   Future<void> fetchMySubscription() async {
     if (!_isInitialized || _authenticatedUserId == null) {
       debugPrint(
@@ -463,6 +537,9 @@ class SubscriptionProvider extends ChangeNotifier {
     }
     try {
       await _ensureRevenueCatIdentity(_authenticatedUserId!);
+
+      // Invalidate the local cache to ensure we get the absolute latest state after returning from the store
+      await Purchases.invalidateCustomerInfoCache();
 
       final customerInfo = await Purchases.getCustomerInfo();
 

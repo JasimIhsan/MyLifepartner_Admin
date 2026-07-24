@@ -601,8 +601,8 @@ describe("UserSubscriptionService", () => {
 
    // ── Cancellation: access preserved until expiry ───────────────────────────
 
-   describe("Cancellation: keeps willRenew=false, preserves ACTIVE status", () => {
-      it("sets willRenew=false and cancelledAt without expiring the subscription", async () => {
+   describe("Cancellation: keeps willRenew=false, updates status to CANCELLED_PENDING_EXPIRY", () => {
+      it("sets willRenew=false, status=CANCELLED_PENDING_EXPIRY and cancelledAt without expiring the subscription", async () => {
          mockTx.userSubscription.findFirst.mockResolvedValue(makeActiveSub());
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
          mockTx.userSubscription.update.mockResolvedValue({});
@@ -613,10 +613,11 @@ describe("UserSubscriptionService", () => {
          // Must NOT expire the subscription
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
 
-         // Must set willRenew=false and record cancelledAt
+         // Must set status=CANCELLED_PENDING_EXPIRY, willRenew=false and record cancelledAt
          expect(mockTx.userSubscription.update).toHaveBeenCalledWith(
             expect.objectContaining({
                data: expect.objectContaining({
+                  status: "CANCELLED_PENDING_EXPIRY",
                   willRenew: false,
                   cancelledAt: expect.any(Date),
                }),

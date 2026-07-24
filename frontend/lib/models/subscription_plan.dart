@@ -178,5 +178,7 @@ class UserSubscription {
     );
   }
 
-  bool get isActive => status == 'ACTIVE' && endDate.isAfter(DateTime.now());
+  bool get isActive =>
+      (status == 'ACTIVE' || status == 'CANCELLED_PENDING_EXPIRY') &&
+      endDate.isAfter(DateTime.now());
 }

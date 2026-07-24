@@ -59,6 +59,8 @@ const serializeErrors = winston.format((info) => {
    return info;
 });
 
+const colorizer = winston.format.colorize();
+
 const developmentFormat = winston.format.combine(
    serializeErrors(),
    winston.format.timestamp({
@@ -67,15 +69,14 @@ const developmentFormat = winston.format.combine(
    winston.format.errors({
       stack: true,
    }),
-   winston.format.colorize({
-      all: true,
-   }),
    winston.format.printf(({ timestamp, level, message, stack, ...metadata }) => {
       const output = stack || message;
-
       const extraData = Object.keys(metadata).length > 0 ? `\n${JSON.stringify(metadata, null, 2)}` : "";
 
-      return `${timestamp} [${level}]: ${output}${extraData}`;
+      const rawLevel = level.replace(/\u001b\[\d+m/g, "");
+      const formattedMessage = `${timestamp} [${rawLevel}]: ${output}${extraData}`;
+
+      return colorizer.colorize(rawLevel, formattedMessage);
    })
 );
 

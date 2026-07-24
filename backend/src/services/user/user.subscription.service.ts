@@ -175,15 +175,17 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
          const endDate = activeProduct.expiryTime ?? this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS);
 
+         const targetStatus = activeProduct.willRenew ? SubscriptionStatus.ACTIVE : SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
+
          if (!currentSubscription || currentSubscription.planId === freePlan?.id) {
-            logger.info(`[SYNC_SUBSCRIPTION] Activating new paid plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
-            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */);
+            logger.info(`[SYNC_SUBSCRIPTION] Activating new paid plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}, status=${targetStatus}`);
+            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */, targetStatus);
             await this.writeSyncAuditLog(ctx, {
                userId,
                previousPlanId: currentSubscription?.planId,
                newPlanId: targetPlan.id,
                previousStatus: currentSubscription?.status ?? undefined,
-               newStatus: "ACTIVE",
+               newStatus: targetStatus,
                reason: "Subscription activated via /sync — verified active product in RevenueCat",
                source: "SYNC",
             });
@@ -191,10 +193,21 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          }
 
          if (currentSubscription.planId === targetPlan.id) {
-            logger.info(`[SYNC_SUBSCRIPTION] Updating existing plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}`);
+            let finalStatus = targetStatus;
+            let finalWillRenew = activeProduct.willRenew;
+
+            // C-9 fix: Prevent stale RevenueCat REST API from overwriting a webhook cancellation
+            if (currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY && targetStatus === SubscriptionStatus.ACTIVE) {
+               logger.warn(`[SYNC_SUBSCRIPTION] DB shows CANCELLED_PENDING_EXPIRY but RevenueCat API shows ACTIVE. Trusting DB/Webhook to prevent stale cache overwrite.`);
+               finalStatus = SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
+               finalWillRenew = false;
+            }
+
+            logger.info(`[SYNC_SUBSCRIPTION] Updating existing plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${finalWillRenew}, status=${finalStatus}`);
             await ctx.updateUserSubscription(currentSubscription.id, {
                endDate,
-               willRenew: activeProduct.willRenew,
+               willRenew: finalWillRenew,
+               status: finalStatus as unknown as any,
                nextPlanId: null,
             });
             await this.writeSyncAuditLog(ctx, {
@@ -202,7 +215,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                previousPlanId: currentSubscription.planId,
                newPlanId: targetPlan.id,
                previousStatus: currentSubscription.status,
-               newStatus: "ACTIVE",
+               newStatus: finalStatus,
                reason: "Subscription renewed/refreshed via /sync — verified active product in RevenueCat",
                source: "SYNC",
             });
@@ -525,14 +538,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       await this.applyFeaturesForPlan(userId, subscription.plan, resetUsage);
    }
 
-   private async syncActivatePlan(ctx: ISyncTransactionContext, userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean): Promise<void> {
+   private async syncActivatePlan(ctx: ISyncTransactionContext, userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean, status: SubscriptionStatus = SubscriptionStatus.ACTIVE): Promise<void> {
       await ctx.deactivateUserSubscriptions(userId);
 
       // RC-1 fix: store lastEventTimestampMs
       const subscription = await ctx.createUserSubscription({
          userId,
          planId,
-         status: SubscriptionStatus.ACTIVE,
+         status,
          startDate: new Date(),
          endDate,
          willRenew,
@@ -615,7 +628,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    private async buildSubscriptionMessage(subscription: EnrichedUserSubscription): Promise<string> {
       const endDate = new Date(subscription.endDate).toLocaleDateString();
 
-      if (subscription.status !== SubscriptionStatus.ACTIVE) {
+      if (subscription.status === SubscriptionStatus.EXPIRED || subscription.status === SubscriptionStatus.INACTIVE) {
          return "Your subscription is currently inactive.";
       }
 
@@ -632,7 +645,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          return `Your plan will ${action} to ${nextPlan.name} on ${endDate}`;
       }
 
-      if (!subscription.willRenew) {
+      if (!subscription.willRenew || subscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY || subscription.status === SubscriptionStatus.CANCELLED) {
          return `Your plan has been cancelled and will expire on ${endDate}`;
       }
 

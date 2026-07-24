@@ -541,53 +541,15 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                           children: [
                             TextButton(
                               onPressed: () async {
-                                final provider = context
-                                    .read<SubscriptionProvider>();
-                                if (provider.mySubscription != null &&
-                                    !provider.mySubscription!.willRenew) {
+                                final provider = context.read<SubscriptionProvider>();
+                                await provider.fetchMySubscription();
+                                if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text(
-                                        'Your plan is already cancelled and will downgrade on expiration.',
-                                      ),
+                                      content: Text('Subscription status restored & synced.'),
                                       backgroundColor: Colors.black,
                                     ),
                                   );
-                                  return;
-                                }
-
-                                if (provider.currentSubscription == null ||
-                                    provider.currentSubscription!.price == 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'You are already on the Free plan.',
-                                      ),
-                                      backgroundColor: Colors.black,
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                final confirm =
-                                    await showModalBottomSheet<bool>(
-                                      context: context,
-                                      backgroundColor: AppColors.surface,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(24),
-                                        ),
-                                      ),
-                                      builder: (context) =>
-                                          buildCancelConfirmationSheet(),
-                                    );
-
-                                if (confirm == true) {
-                                  // Locate the FREE plan identifier/id in plans list
-                                  final freePlan = provider.plans.firstWhere(
-                                    (p) => p.price == 0,
-                                  );
-                                  handleSubscribe(freePlan);
                                 }
                               },
                               child: const Text(

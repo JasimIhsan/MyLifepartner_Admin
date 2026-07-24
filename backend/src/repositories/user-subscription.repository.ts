@@ -34,7 +34,7 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
       return prisma.userSubscription.findFirst({
          where: {
             userId,
-            status: SubscriptionStatus.ACTIVE as unknown as PrismaSubscriptionStatus,
+            status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] },
          },
          include: userSubscriptionIncludePlanAndFeatures,
          orderBy: {
@@ -53,7 +53,7 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
       return prisma.userSubscription.updateMany({
          where: {
             userId,
-            status: SubscriptionStatus.ACTIVE as unknown as PrismaSubscriptionStatus,
+            status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] },
          },
          data: {
             status: SubscriptionStatus.EXPIRED as unknown as PrismaSubscriptionStatus,
@@ -94,14 +94,14 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
             const ctx: ISyncTransactionContext = {
                findActiveSubscriptionByUserId: async (uid: number) => {
                   return tx.userSubscription.findFirst({
-                     where: { userId: uid, status: PrismaSubscriptionStatus.ACTIVE },
+                     where: { userId: uid, status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] } },
                      include: userSubscriptionIncludePlanAndFeatures,
                      orderBy: { createdAt: "desc" },
                   }) as Promise<UserSubscriptionWithPlan | null>;
                },
                deactivateUserSubscriptions: async (uid: number) => {
                   await tx.userSubscription.updateMany({
-                     where: { userId: uid, status: PrismaSubscriptionStatus.ACTIVE },
+                     where: { userId: uid, status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] } },
                      data: { status: PrismaSubscriptionStatus.EXPIRED },
                   });
                },

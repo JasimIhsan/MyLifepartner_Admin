@@ -31,6 +31,32 @@ class PlanVisuals {
 }
 
 mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
+  bool _awaitingStoreReturn = false;
+  late final _SubscriptionLifecycleObserver _lifecycleObserver;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycleObserver = _SubscriptionLifecycleObserver(
+      onResumed: () {
+        if (_awaitingStoreReturn) {
+          _awaitingStoreReturn = false;
+          debugPrint("📱 App resumed after store redirect. Triggering subscription refresh retry...");
+          if (mounted) {
+            context.read<SubscriptionProvider>().refreshWithRetry();
+          }
+        }
+      },
+    );
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
+    super.dispose();
+  }
+
   void initSubscriptions() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = prefs.getInt('userId') ?? 0;
@@ -45,22 +71,32 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
     context.read<SubscriptionProvider>().loadSubscriptions(userId.toString());
   }
 
+  Future<void> handleCancelSubscription() async {
+    final confirm = await showModalBottomSheet<bool>(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => buildCancelConfirmationSheet(),
+    );
+
+    if (confirm == true) {
+      _awaitingStoreReturn = true;
+      if (mounted) {
+        await context.read<SubscriptionProvider>().openGooglePlaySubscription();
+      }
+    }
+  }
+
   void handleSubscribe(model.SubscriptionPlan plan) async {
     final provider = context.read<SubscriptionProvider>();
 
     if (plan.price == 0 &&
         provider.currentSubscription != null &&
         provider.currentSubscription!.price > 0) {
-      final confirm = await showModalBottomSheet<bool>(
-        context: context,
-        backgroundColor: AppColors.surface,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        builder: (context) => buildCancelConfirmationSheet(),
-      );
-
-      if (confirm != true) return;
+      await handleCancelSubscription();
+      return;
     }
 
     bool dialogShown = false;
@@ -116,7 +152,7 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
           ),
           const SizedBox(height: 12),
           const Text(
-            'Are you sure you want to cancel your premium plan? You will lose access to all premium features immediately.',
+            'To cancel your subscription, you will be directed to your Google Play subscription settings. Your premium features will remain active until the end of your current billing period.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
@@ -198,6 +234,19 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         isPopular: false,
         badgeText: null,
       );
+    }
+  }
+}
+
+class _SubscriptionLifecycleObserver with WidgetsBindingObserver {
+  final VoidCallback onResumed;
+
+  _SubscriptionLifecycleObserver({required this.onResumed});
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      onResumed();
     }
   }
 }

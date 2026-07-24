@@ -103,9 +103,61 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
          }
 
          switch (event.type) {
+            case RevenueCatWebhookEvent.UNCANCELLATION: {
+               const txnId = event.original_transaction_id;
+               let subToRestore = currentSubscription;
+               
+               if (txnId && currentSubscription?.originalTransactionId !== txnId) {
+                  subToRestore = await tx.userSubscription.findFirst({
+                     where: { userId, status: "CANCELLED_PENDING_EXPIRY", originalTransactionId: txnId },
+                     orderBy: { createdAt: "desc" },
+                     include: { plan: true }
+                  }) || currentSubscription;
+               }
+
+               if (subToRestore && subToRestore.status === "CANCELLED_PENDING_EXPIRY") {
+                  await tx.userSubscription.update({
+                     where: { id: subToRestore.id },
+                     data: {
+                        status: "ACTIVE",
+                        willRenew: true,
+                        cancelledAt: null,
+                        lastEventTimestampMs: event.event_timestamp_ms,
+                        revenueCatEventId: event.id,
+                     },
+                  });
+                  await tx.userSubscriptionLog.create({
+                     data: {
+                        userId,
+                        previousPlanId: subToRestore.planId,
+                        newPlanId: subToRestore.planId,
+                        previousStatus: "CANCELLED_PENDING_EXPIRY",
+                        newStatus: "ACTIVE",
+                        reason: `Subscription un-cancelled (auto-renew restored) via webhook event: ${event.type}`,
+                        source: "WEBHOOK",
+                        eventType: event.type,
+                        eventId: event.id,
+                        productId: event.product_id ?? null,
+                        originalTransactionId: event.original_transaction_id ?? null,
+                        eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                     },
+                  });
+                  logger.info("Webhook: uncancellation processed — subscription restored to ACTIVE", {
+                     userId,
+                     eventId: event.id,
+                     subscriptionId: subToRestore.id
+                  });
+               } else {
+                  logger.warn("Webhook: UNCANCELLATION received but no matching CANCELLED_PENDING_EXPIRY subscription found", {
+                     userId,
+                     eventId: event.id,
+                  });
+               }
+               break;
+            }
+
             case RevenueCatWebhookEvent.INITIAL_PURCHASE:
             case RevenueCatWebhookEvent.RENEWAL:
-            case RevenueCatWebhookEvent.UNCANCELLATION:
             case RevenueCatWebhookEvent.PRODUCT_CHANGE: {
                if (!targetPlanId) {
                   logger.warn("Webhook: could not resolve targetPlanId from event product_id — skipping webhook sync fallback should be handled by caller", {
@@ -160,9 +212,9 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   }
                }
 
-               // Expire active subscriptions
+               // Expire active/cancelled-pending-expiry subscriptions
                await tx.userSubscription.updateMany({
-                  where: { userId, status: "ACTIVE" },
+                  where: { userId, status: { in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY"] } },
                   data: { status: "EXPIRED" },
                });
 
@@ -239,10 +291,22 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
             }
 
             case RevenueCatWebhookEvent.CANCELLATION: {
-               if (currentSubscription) {
+               const txnId = event.original_transaction_id;
+               let subToCancel = currentSubscription;
+               
+               if (txnId && currentSubscription?.originalTransactionId !== txnId) {
+                  subToCancel = await tx.userSubscription.findFirst({
+                     where: { userId, status: "ACTIVE", originalTransactionId: txnId },
+                     orderBy: { createdAt: "desc" },
+                     include: { plan: true }
+                  }) || currentSubscription;
+               }
+
+               if (subToCancel) {
                   await tx.userSubscription.update({
-                     where: { id: currentSubscription.id },
+                     where: { id: subToCancel.id },
                      data: {
+                        status: "CANCELLED_PENDING_EXPIRY",
                         willRenew: false,
                         cancelledAt: new Date(),
                         lastEventTimestampMs: event.event_timestamp_ms,
@@ -252,10 +316,10 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   await tx.userSubscriptionLog.create({
                      data: {
                         userId,
-                        previousPlanId: currentSubscription.planId,
-                        newPlanId: currentSubscription.planId,
-                        previousStatus: currentSubscription.status,
-                        newStatus: currentSubscription.status,
+                        previousPlanId: subToCancel.planId,
+                        newPlanId: subToCancel.planId,
+                        previousStatus: subToCancel.status,
+                        newStatus: "CANCELLED_PENDING_EXPIRY",
                         reason: `Subscription cancellation recorded via webhook event: ${event.type}`,
                         source: "WEBHOOK",
                         eventType: event.type,
@@ -268,8 +332,11 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   logger.info("Webhook: cancellation recorded — access preserved until expiry", {
                      userId,
                      eventId: event.id,
-                     endDate: currentSubscription.endDate.toISOString(),
+                     subscriptionId: subToCancel.id,
+                     endDate: subToCancel.endDate.toISOString(),
                   });
+               } else {
+                  logger.warn("Webhook: CANCELLATION received but no active subscription found", { userId, eventId: event.id });
                }
                break;
             }
@@ -316,9 +383,16 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
 
             case RevenueCatWebhookEvent.EXPIRATION: {
                const txnId = event.original_transaction_id;
-               const whereClause = txnId
-                  ? { userId, status: "ACTIVE" as const, originalTransactionId: txnId }
-                  : { userId, status: "ACTIVE" as const };
+               let whereClause: any = { 
+                  userId, 
+                  status: { in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY"] } 
+               };
+               
+               if (txnId) {
+                  whereClause.originalTransactionId = txnId;
+               } else if (targetPlanId) {
+                  whereClause.planId = targetPlanId;
+               }
 
                await tx.userSubscription.updateMany({
                   where: whereClause,
@@ -397,9 +471,16 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
 
             case RevenueCatWebhookEvent.REFUND: {
                const txnId = event.original_transaction_id;
-               const whereClause = txnId
-                  ? { userId, status: "ACTIVE" as const, originalTransactionId: txnId }
-                  : { userId, status: "ACTIVE" as const };
+               let whereClause: any = { 
+                  userId, 
+                  status: { in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY"] } 
+               };
+               
+               if (txnId) {
+                  whereClause.originalTransactionId = txnId;
+               } else if (targetPlanId) {
+                  whereClause.planId = targetPlanId;
+               }
 
                await tx.userSubscription.updateMany({
                   where: whereClause,
