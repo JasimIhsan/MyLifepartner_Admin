@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:zego_zim/zego_zim.dart';
 import 'package:life_partner_again/config/env.dart';
+import 'package:zego_zim/zego_zim.dart';
 
 /// Singleton service to manage ZEGOCLOUD ZIM (In-app Messaging) lifecycle.
 class ZegoService {
@@ -23,17 +24,19 @@ class ZegoService {
   bool get isLoggedIn => _isLoggedIn;
 
   /// Initialize ZIM with app credentials. Call once at app startup.
+  /// Always uses token-only mode (appSign is blank); tokens are issued by the
+  /// backend via GET /zego/token and renewed via POST /zego/renew-token.
   void init() {
     if (_isInitialized) return;
 
     final appConfig = ZIMAppConfig()
       ..appID = Env.zegoAppId
-      ..appSign = kIsWeb ? '' : Env.zegoAppSign;
+      ..appSign = ''; // Always blank — token-only mode on all platforms
 
     ZIM.create(appConfig);
     _isInitialized = true;
     _setupEventHandlers();
-    debugPrint('[ZegoService] ZIM initialized');
+    debugPrint('[ZegoService] ZIM initialized (token-only mode)');
   }
 
   ZIM _getZIM() {
@@ -46,7 +49,7 @@ class ZegoService {
       if (retryZim == null) {
         throw StateError(
           'ZIM native instance not available. '
-          'Check zegoAppId (${Env.zegoAppId}) and zegoAppSign.',
+          'Check zegoAppId (${Env.zegoAppId}) and ZEGO_SERVER_SECRET on the backend.',
         );
       }
       return retryZim;
@@ -230,6 +233,18 @@ class ZegoService {
       debugPrint('[ZegoService] Logged out');
     } catch (e) {
       debugPrint('[ZegoService] Logout failed: $e');
+    }
+  }
+
+  /// Renews the ZIM token mid-session without requiring a full re-login.
+  /// The [newToken] must come from the backend POST /zego/renew-token endpoint.
+  /// Call this ~15 minutes before the current token expires.
+  Future<void> renewToken(String newToken) async {
+    try {
+      await ZIM.getInstance()?.renewToken(newToken);
+      debugPrint('[ZegoService] Token renewed successfully');
+    } catch (e) {
+      debugPrint('[ZegoService] Token renewal failed: $e');
     }
   }
 

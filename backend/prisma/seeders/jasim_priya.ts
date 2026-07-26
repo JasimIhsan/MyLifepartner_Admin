@@ -1,4 +1,4 @@
-import { ChildrenStatus, EmotionalReadiness, Gender, LookingFor, MaritalStatus, PrismaClient, ProfileStatus, RelationshipTimeline, Role, SelfieStatus, SwipeAction } from "@prisma/client";
+import { ChildrenStatus, EmotionalReadiness, Gender, LookingFor, MaritalStatus, PrismaClient, ProfileStatus, RelationshipTimeline, Role, SelfieStatus, SwipeAction, SubscriptionStatus } from "@prisma/client";
 
 interface ImageItem {
    imageUrl: string;
@@ -278,6 +278,75 @@ export async function seedJasimAndPriya(prisma: PrismaClient) {
       }
       console.log("Jasim and Priya are now mutual connections.");
    }
+
+   // 6) Create Premium Subscription and User Features for both
+   let premiumPlan = await prisma.subscriptionPlan.findUnique({
+      where: { name: "PREMIUM" },
+   });
+
+   if (!premiumPlan) {
+      premiumPlan = await prisma.subscriptionPlan.create({
+         data: {
+            name: "PREMIUM",
+            price: 999,
+            durationDays: 30,
+            isActive: true,
+            isMostPopular: true,
+            description: "Unlock all premium features, unlimited interest requests, video calls, and priority matching.",
+            storeProductId: "premium:monthly",
+         },
+      });
+   }
+
+   const oneMonthFromNow = new Date();
+   oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+
+   for (const u of [jasimUser, priyaUser]) {
+      if (u) {
+         // Delete existing active premium subscriptions to avoid duplicates on re-seed
+         await prisma.userSubscription.deleteMany({
+            where: { userId: u.id, planId: premiumPlan.id, status: SubscriptionStatus.ACTIVE },
+         });
+
+         await prisma.userSubscription.create({
+            data: {
+               userId: u.id,
+               planId: premiumPlan.id,
+               startDate: new Date(),
+               endDate: oneMonthFromNow,
+               status: SubscriptionStatus.ACTIVE,
+            }
+         });
+
+         await prisma.userFeature.upsert({
+            where: { userId: u.id },
+            update: {
+               isProfileBlurEnabled: true,
+               maxInterests: 100,
+               maxVideoCallMinutes: 100,
+               maxAudioCallMinutes: 100,
+               maxMessages: 1000,
+               interests: 100,
+               videoCallMinutes: 100,
+               audioCallMinutes: 100,
+               messages: 1000,
+            },
+            create: {
+               userId: u.id,
+               isProfileBlurEnabled: true,
+               maxInterests: 100,
+               maxVideoCallMinutes: 100,
+               maxAudioCallMinutes: 100,
+               maxMessages: 1000,
+               interests: 100,
+               videoCallMinutes: 100,
+               audioCallMinutes: 100,
+               messages: 1000,
+            },
+         });
+      }
+   }
+   console.log("Premium subscriptions and features added for Jasim and Priya.");
 
    console.log("Jasim and Priya seeding completed successfully.");
 }

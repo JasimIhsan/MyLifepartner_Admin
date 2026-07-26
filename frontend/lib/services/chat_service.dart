@@ -41,9 +41,16 @@ class ChatApiService {
     return response.data?['data'] as Map<String, dynamic>? ?? {};
   }
 
-  /// Get ZEGOCLOUD access token
+  /// Get ZEGOCLOUD access token (initial login / call start)
   static Future<Map<String, dynamic>?> getZegoToken() async {
     final response = await _dio.get('/zego/token');
+    return response.data?['data'] as Map<String, dynamic>?;
+  }
+
+  /// Renew an existing ZEGOCLOUD token mid-session (call before expiry).
+  /// The caller should pass the returned token to [ZegoService.instance.renewToken].
+  static Future<Map<String, dynamic>?> renewZegoToken() async {
+    final response = await _dio.post('/zego/renew-token');
     return response.data?['data'] as Map<String, dynamic>?;
   }
 
