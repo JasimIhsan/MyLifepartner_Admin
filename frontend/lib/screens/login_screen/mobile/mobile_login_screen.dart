@@ -223,11 +223,17 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Primary (Google) - Disabled
+        // Primary (Google) - Enabled
         _buildEditorialButton(
-          icon: SvgPicture.string(_googleSvg, width: 22, height: 22),
+          icon: isGoogleLoading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : SvgPicture.string(_googleSvg, width: 22, height: 22),
           label: "Continue with Google",
-          onPressed: () {},
+          onPressed: isGoogleLoading ? null : initiateGoogleAuth,
           isPrimary: true,
         ),
         const SizedBox(height: 16),

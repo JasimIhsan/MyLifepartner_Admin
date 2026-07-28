@@ -35,6 +35,10 @@ const envSchema = z.object({
    // CORS — comma-separated allowed origins for production (e.g. https://app.example.com)
    // Leave empty in development to allow all origins
    ALLOWED_ORIGINS: z.string().default(""),
+
+   // Google Auth
+   GOOGLE_CLIENT_ID: z.string().default("default-google-client-id"),
+   GOOGLE_CLIENT_SECRET: z.string().default("default-google-client-secret"),
 });
 
 const _env = envSchema.safeParse(process.env);

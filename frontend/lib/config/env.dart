@@ -15,4 +15,8 @@ class Env {
 
   // RevenueCat - Payment Gatway
   static const String revenueCatApiKey = 'goog_iPFGEdyRedFAtyobbTVSFapcuRW';
+
+  // Google Sign-In Server Client ID
+  static const String googleServerClientId =
+      '856649629853-6ma089cfgf930e29mstdj9ga8g20jltj.apps.googleusercontent.com';
 }

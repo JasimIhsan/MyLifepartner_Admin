@@ -1,5 +1,6 @@
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/services/api_service.dart';
+import 'package:life_partner_again/services/token_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserRepository {
@@ -9,6 +10,7 @@ class UserRepository {
       final userId = prefs.getInt('userId');
 
       if (userId == null) {
+        await ApiService.logoutAndRedirect();
         throw Exception('User not logged in');
       }
 
@@ -26,6 +28,7 @@ class UserRepository {
       final userId = prefs.getInt('userId');
 
       if (userId == null) {
+        await ApiService.logoutAndRedirect();
         throw Exception('User not logged in');
       }
 

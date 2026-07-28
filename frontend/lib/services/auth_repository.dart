@@ -66,6 +66,27 @@ class AuthRepository {
     }
   }
 
+  Future<AuthResultResponse> googleSignIn({
+    required String idToken,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/oauth/google",
+        data: {"idToken": idToken},
+      );
+      final verifyResponse = AuthResultResponse.fromJson(response.data);
+      if (verifyResponse.success) {
+        await TokenService.saveTokens(
+          accessToken: verifyResponse.accessToken,
+          refreshToken: verifyResponse.refreshToken,
+        );
+      }
+      return verifyResponse;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<AuthResultResponse> register({
     required String email,
     required String password,

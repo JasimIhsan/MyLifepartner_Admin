@@ -12,6 +12,7 @@ import userRoutes from "@routes/user/user.routes";
 import userSubscriptionRoutes from "@routes/user/user.subscription.routes";
 import zegoRoutes from "@routes/user/zego.routes";
 import locationRoutes from "@routes/user/location.routes";
+import userOauthRoutes from "@routes/user/user.oauth.routes";
 
 const router = Router();
 
@@ -37,6 +38,7 @@ router.use("/jobs", jobRoutes);
 router.use("/image-assets", imageAssetRoutes);
 router.use("/image-access", imageAccessRequestRoutes);
 router.use("/locations", locationRoutes);
+router.use("/oauth", userOauthRoutes);
 router.use("/", userRoutes);
 
 export default router;
