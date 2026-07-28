@@ -63,21 +63,26 @@ class ChatConversation {
   /// Returns a clean UI string avoiding raw JSON for CALL_LOG types
   String get displayLastMessage {
     if (lastMessage == null) return 'Tap to start chatting';
-    
+
     // Check if messageType is explicitly CALL_LOG or if the content is a JSON call log
-    if (lastMessageType == 'CALL_LOG' || (lastMessage!.startsWith('{') && lastMessage!.contains('"CALL_LOG"'))) {
+    if (lastMessageType == 'CALL_LOG' ||
+        (lastMessage!.startsWith('{') && lastMessage!.contains('"CALL_LOG"'))) {
       try {
         final Map<String, dynamic> data = dart_convert.jsonDecode(lastMessage!);
         final isVideo = data['callType'] == 'video';
         final status = data['status'] as String?;
-        final isMissed = status == 'canceled' || status == 'missed' || status == 'declined' || status == 'timeout';
+        final isMissed =
+            status == 'canceled' ||
+            status == 'missed' ||
+            status == 'declined' ||
+            status == 'timeout';
         final callTypeName = isVideo ? 'Video call' : 'Audio call';
         return isMissed ? 'Missed $callTypeName' : callTypeName;
       } catch (_) {
         // Fallback in case it's not valid JSON
       }
     }
-    
+
     // Check if it's a ZegoCloud media URL
     if (lastMessage!.contains('zim/file_access')) {
       return 'Attachment';

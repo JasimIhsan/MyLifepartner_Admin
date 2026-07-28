@@ -92,11 +92,7 @@ export class MatchRepository implements IMatchRepository {
       return {
          ageFrom: preference.ageFrom,
          ageTo: preference.ageTo,
-         heightFrom: preference.heightFrom,
-         heightTo: preference.heightTo,
          motherTongue: preference.motherTongue,
-         highestEducation: preference.highestEducation,
-         occupation: preference.occupation,
       };
    }
 
@@ -553,7 +549,6 @@ export class MatchRepository implements IMatchRepository {
          name: profile.name,
          isVerified: profile.user.isVerified,
          dateOfBirth: profile.dateOfBirth,
-         heightCm: profile.heightCm,
          maritalStatus: profile.maritalStatus,
          city: profile.city,
          state: profile.state,
@@ -563,8 +558,8 @@ export class MatchRepository implements IMatchRepository {
          occupation: profile.job?.name || null,
          bio: profile.bio,
          gender: profile.gender,
-         privacyEnabled: (profile.user as any)?.privacySettings?.privacyEnabled ?? false,
-         blurredImageUrl: (profile.user as any)?.privacySettings?.blurredImageUrl ?? null,
+         privacyEnabled: profile.user.privacySettings?.privacyEnabled ?? false,
+         blurredImageUrl: profile.user.privacySettings?.blurredImageUrl ?? null,
          images: profile.images.map((image) => ({
             id: image.id,
             imageUrl: image.imageUrl,

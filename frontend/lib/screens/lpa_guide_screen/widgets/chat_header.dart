@@ -5,10 +5,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 class ChatHeader extends StatelessWidget {
   final VoidCallback onRestartChat;
 
-  const ChatHeader({
-    super.key,
-    required this.onRestartChat,
-  });
+  const ChatHeader({super.key, required this.onRestartChat});
 
   @override
   Widget build(BuildContext context) {

@@ -3,6 +3,7 @@ import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
+import logger from "@/utils/logger";
 import fs from "fs";
 import nodemailer, { SentMessageInfo, Transporter } from "nodemailer";
 import path from "path";
@@ -48,7 +49,7 @@ export class EmailService implements IEmailService {
             html: this.getOtpEmailHtml(otp, headerImageUrl),
          });
       } catch (error) {
-         console.error("Error in sendOtpEmail:", error);
+         logger.error("Error in sendOtpEmail", { error });
          throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send OTP email");
       }
    }
@@ -70,7 +71,7 @@ export class EmailService implements IEmailService {
             html: this.getWelcomeEmailHtml(userName, headerImageUrl),
          });
       } catch (error) {
-         console.error("Error in sendWelcomeEmail:", error);
+         logger.error("Error in sendWelcomeEmail", { error });
          throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Welcome email");
       }
    }

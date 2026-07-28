@@ -1,12 +1,12 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_background_painter.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_error_widget.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_controller.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_ui_helpers.dart';
-import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:provider/provider.dart';
 
 class MobileSubscriptionScreen extends StatefulWidget {
@@ -105,7 +105,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '\${plan.name} Plan Details',
+                    "${plan.name} Plan Details",
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
@@ -142,7 +142,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Price: \${plan.displayPrice}',
+                      'Price: ${plan.displayPrice}',
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -426,8 +426,10 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                   currentSub.id == plan.id;
                                               final isSelectedPage =
                                                   index == _currentPage;
-                                              
-                                              final visuals = getPlanVisuals(plan);
+
+                                              final visuals = getPlanVisuals(
+                                                plan,
+                                              );
 
                                               return AnimatedScale(
                                                 scale: isSelectedPage
@@ -441,17 +443,33 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                   plan: plan,
                                                   isCurrentPlan: isCurrentPlan,
                                                   isLoading: provider.isLoading,
-                                                  isSelectedPage: isSelectedPage,
-                                                  willRenew: provider.mySubscription?.willRenew ?? true,
+                                                  isSelectedPage:
+                                                      isSelectedPage,
+                                                  willRenew:
+                                                      provider
+                                                          .mySubscription
+                                                          ?.willRenew ??
+                                                      true,
                                                   visuals: visuals,
                                                   onSubscribe: () {
-                                                    if (isCurrentPlan && plan.price > 0) {
-                                                      handleSubscribe(provider.plans.firstWhere((p) => p.price == 0));
+                                                    if (isCurrentPlan &&
+                                                        plan.price > 0) {
+                                                      handleSubscribe(
+                                                        provider.plans
+                                                            .firstWhere(
+                                                              (p) =>
+                                                                  p.price == 0,
+                                                            ),
+                                                      );
                                                     } else {
                                                       handleSubscribe(plan);
                                                     }
                                                   },
-                                                  onInfoTap: () => _showPlanDetailsSheet(context, plan),
+                                                  onInfoTap: () =>
+                                                      _showPlanDetailsSheet(
+                                                        context,
+                                                        plan,
+                                                      ),
                                                 ),
                                               );
                                             },
@@ -523,53 +541,15 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                           children: [
                             TextButton(
                               onPressed: () async {
-                                final provider = context
-                                    .read<SubscriptionProvider>();
-                                if (provider.mySubscription != null &&
-                                    !provider.mySubscription!.willRenew) {
+                                final provider = context.read<SubscriptionProvider>();
+                                await provider.fetchMySubscription();
+                                if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text(
-                                        'Your plan is already cancelled and will downgrade on expiration.',
-                                      ),
+                                      content: Text('Subscription status restored & synced.'),
                                       backgroundColor: Colors.black,
                                     ),
                                   );
-                                  return;
-                                }
-
-                                if (provider.currentSubscription == null ||
-                                    provider.currentSubscription!.price == 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'You are already on the Free plan.',
-                                      ),
-                                      backgroundColor: Colors.black,
-                                    ),
-                                  );
-                                  return;
-                                }
-
-                                final confirm =
-                                    await showModalBottomSheet<bool>(
-                                      context: context,
-                                      backgroundColor: AppColors.surface,
-                                      shape: const RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(24),
-                                        ),
-                                      ),
-                                      builder: (context) =>
-                                          buildCancelConfirmationSheet(),
-                                    );
-
-                                if (confirm == true) {
-                                  // Locate the FREE plan identifier/id in plans list
-                                  final freePlan = provider.plans.firstWhere(
-                                    (p) => p.price == 0,
-                                  );
-                                  handleSubscribe(freePlan);
                                 }
                               },
                               child: const Text(

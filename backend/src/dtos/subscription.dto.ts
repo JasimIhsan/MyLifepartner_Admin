@@ -1,4 +1,4 @@
-import { EnrichedUserSubscription, EnrichedSubscriptionPlan, EnrichedPlanFeature } from "@/interfaces/services/user.subscription.service.interface";
+import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription } from "@/interfaces/services/user.subscription.service.interface";
 
 export interface PlanFeatureDto {
    id: number;
@@ -19,7 +19,7 @@ export interface SubscriptionPlanDto {
    durationDays: number;
    isActive: boolean;
    isMostPopular: boolean;
-   identifier: string | null;
+   storeProductId: string | null;
    createdAt: Date;
    updatedAt: Date;
    features: PlanFeatureDto[];
@@ -64,7 +64,7 @@ export const toSubscriptionPlanDto = (plan: EnrichedSubscriptionPlan): Subscript
    durationDays: plan.durationDays,
    isActive: plan.isActive,
    isMostPopular: plan.isMostPopular,
-   identifier: plan.identifier,
+   storeProductId: plan.storeProductId,
    createdAt: plan.createdAt,
    updatedAt: plan.updatedAt,
    features: plan.features.map(toPlanFeatureDto),
@@ -82,9 +82,7 @@ export const toUserSubscriptionDto = (sub: EnrichedUserSubscription): UserSubscr
    createdAt: sub.createdAt,
    updatedAt: sub.updatedAt,
    revenueCatEventId: sub.revenueCatEventId,
-   lastEventTimestampMs: sub.lastEventTimestampMs !== null && sub.lastEventTimestampMs !== undefined
-      ? (Number.isSafeInteger(Number(sub.lastEventTimestampMs)) ? Number(sub.lastEventTimestampMs) : sub.lastEventTimestampMs.toString())
-      : null,
+   lastEventTimestampMs: sub.lastEventTimestampMs !== null && sub.lastEventTimestampMs !== undefined ? (Number.isSafeInteger(Number(sub.lastEventTimestampMs)) ? Number(sub.lastEventTimestampMs) : sub.lastEventTimestampMs.toString()) : null,
    originalTransactionId: sub.originalTransactionId,
    store: sub.store,
    environment: sub.environment,

@@ -22,6 +22,15 @@ export class JobController {
          .json(new ApiResponse(HTTP_STATUS.OK, jobs, "Jobs retrieved successfully"));
    });
 
+   public getPopularJobs = asyncHandler(async (req: Request, res: Response) => {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
+      const jobs = await this.jobService.getPopularJobs(limit);
+
+      return res
+         .status(HTTP_STATUS.OK)
+         .json(new ApiResponse(HTTP_STATUS.OK, jobs, "Popular jobs retrieved successfully"));
+   });
+
    public createJob = asyncHandler(async (req: Request, res: Response) => {
       const parsed = createJobSchema.safeParse(req.body);
       if (!parsed.success) {

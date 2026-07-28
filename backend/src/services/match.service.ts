@@ -106,7 +106,6 @@ export class MatchService implements IMatchService {
          name,
          age: this.getCandidateAge(candidate),
          gender: isRestricted ? null : candidate.gender,
-         heightCm: isRestricted ? null : candidate.heightCm,
          maritalStatus: isRestricted ? null : candidate.maritalStatus,
          city: candidate.city,
          state: isRestricted ? null : candidate.state,
@@ -211,7 +210,6 @@ export class MatchService implements IMatchService {
          userId: candidate.userId,
          name,
          age: this.getCandidateAge(candidate),
-         heightCm: isRestricted ? null : candidate.heightCm,
          city: candidate.city,
          country: candidate.country,
          isVerified: candidate.isVerified,
@@ -348,19 +346,11 @@ export class MatchService implements IMatchService {
          score += 10;
       }
 
-      if (this.isEducationMatched(candidate, preference)) {
-         score += 10;
-      }
-
-      if (this.isOccupationMatched(candidate, preference)) {
-         score += 10;
-      }
-
       if (candidate.city) {
          score += 10;
       }
 
-      return Math.round((score / 60) * 90);
+      return Math.round((score / 40) * 90);
    }
 
    /**
@@ -375,14 +365,6 @@ export class MatchService implements IMatchService {
 
       if (this.isMotherTongueMatched(candidate, preference)) {
          highlights.push("✔ Same Mother Tongue");
-      }
-
-      if (this.isEducationMatched(candidate, preference)) {
-         highlights.push("✔ Similar Education");
-      }
-
-      if (this.isOccupationMatched(candidate, preference)) {
-         highlights.push("✔ Similar Occupation");
       }
 
       return highlights.slice(0, 3);
@@ -409,7 +391,7 @@ export class MatchService implements IMatchService {
     * @returns True if height matches.
     */
    private isHeightMatched(candidate: CandidateProfile, preference: UserPreferenceData): boolean {
-      return candidate.heightCm !== null && preference.heightFrom !== null && preference.heightTo !== null && candidate.heightCm >= preference.heightFrom && candidate.heightCm <= preference.heightTo;
+      return true;
    }
 
    /**
@@ -423,27 +405,7 @@ export class MatchService implements IMatchService {
       return Boolean(candidate.motherTongue && preference.motherTongue.length > 0 && preference.motherTongue.includes(candidate.motherTongue));
    }
 
-   /**
-    * Checks education match.
-    *
-    * @param candidate - Candidate profile.
-    * @param preference - User preference data.
-    * @returns True if education matches.
-    */
-   private isEducationMatched(candidate: CandidateProfile, preference: UserPreferenceData): boolean {
-      return Boolean(candidate.highestEducation && preference.highestEducation.length > 0 && preference.highestEducation.includes(candidate.highestEducation));
-   }
 
-   /**
-    * Checks occupation match.
-    *
-    * @param candidate - Candidate profile.
-    * @param preference - User preference data.
-    * @returns True if occupation matches.
-    */
-   private isOccupationMatched(candidate: CandidateProfile, preference: UserPreferenceData): boolean {
-      return Boolean(candidate.occupation && preference.occupation.length > 0 && preference.occupation.includes(candidate.occupation));
-   }
 
    /**
     * Calculates personality score.

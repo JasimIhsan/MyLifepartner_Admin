@@ -53,123 +53,139 @@ class _ChatListTileState extends State<ChatListTile> {
       onTapUp: (_) => setState(() => _isTapped = false),
       onTapCancel: () => setState(() => _isTapped = false),
       onTap: widget.onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        color: _isTapped || widget.isSelected
-            ? AppColors.primary.withValues(alpha: 0.1)
-            : Colors.transparent,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 14,
-        ),
-        child: Row(
-          children: [
-            _buildAvatar(isOnline),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.profile.name,
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                            letterSpacing: -0.3,
+      child:
+          AnimatedContainer(
+                duration: const Duration(milliseconds: 150),
+                color: _isTapped || widget.isSelected
+                    ? AppColors.primary.withValues(alpha: 0.1)
+                    : Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
+                child: Row(
+                  children: [
+                    _buildAvatar(isOnline),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  widget.profile.name,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              if (hasUnread)
+                                Container(
+                                  width: 12,
+                                  height: 12,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.primary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                )
+                              else if (conversation == null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'NEW',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      if (hasUnread)
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                        )
-                      else if (conversation == null)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'NEW',
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      if (lastMessageStr == 'Attachment' ||
-                          lastMessageStr.toLowerCase().contains('video call') ||
-                          lastMessageStr.toLowerCase().contains('audio call')) ...[
-                        Icon(
-                          lastMessageStr == 'Attachment'
-                              ? Icons.attachment_rounded
-                              : lastMessageStr.toLowerCase().contains('video call')
-                                  ? Icons.videocam_rounded
-                                  : Icons.call_rounded,
-                          size: 14,
-                          color: lastMessageStr.startsWith('Missed')
-                              ? Colors.red
-                              : (hasUnread ? AppColors.textPrimary : AppColors.textSecondary),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      Expanded(
-                        child: Text(
-                          lastMessageStr,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: isTyping
-                                ? AppColors.primary
-                                : (lastMessageStr.startsWith('Missed')
-                                    ? Colors.red
-                                    : (conversation == null
-                                        ? AppColors.textSecondary
-                                        : (hasUnread
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              if (lastMessageStr == 'Attachment' ||
+                                  lastMessageStr.toLowerCase().contains(
+                                    'video call',
+                                  ) ||
+                                  lastMessageStr.toLowerCase().contains(
+                                    'audio call',
+                                  )) ...[
+                                Icon(
+                                  lastMessageStr == 'Attachment'
+                                      ? Icons.attachment_rounded
+                                      : lastMessageStr.toLowerCase().contains(
+                                          'video call',
+                                        )
+                                      ? Icons.videocam_rounded
+                                      : Icons.call_rounded,
+                                  size: 14,
+                                  color: lastMessageStr.startsWith('Missed')
+                                      ? Colors.red
+                                      : (hasUnread
                                             ? AppColors.textPrimary
-                                            : AppColors.textSecondary))),
-                            fontWeight: isTyping || hasUnread
-                                ? FontWeight.w600
-                                : (conversation == null
-                                    ? FontWeight.normal
-                                    : FontWeight.w400),
+                                            : AppColors.textSecondary),
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  lastMessageStr,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: isTyping
+                                        ? AppColors.primary
+                                        : (lastMessageStr.startsWith('Missed')
+                                              ? Colors.red
+                                              : (conversation == null
+                                                    ? AppColors.textSecondary
+                                                    : (hasUnread
+                                                          ? AppColors
+                                                                .textPrimary
+                                                          : AppColors
+                                                                .textSecondary))),
+                                    fontWeight: isTyping || hasUnread
+                                        ? FontWeight.w600
+                                        : (conversation == null
+                                              ? FontWeight.normal
+                                              : FontWeight.w400),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ).animate().fadeIn(delay: widget.delay, duration: 400.ms).slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
+                    ),
+                  ],
+                ),
+              )
+              .animate()
+              .fadeIn(delay: widget.delay, duration: 400.ms)
+              .slideY(begin: 0.1, end: 0, curve: Curves.easeOutQuad),
     );
   }
 

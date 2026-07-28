@@ -47,16 +47,19 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
     provider.acceptCall();
 
     // Use navigatorKey to push onto MaterialApp's navigator.
-    navigatorKey.currentContext?.push('/call/${call.callId}', extra: CallArguments(
-          callID: call.callId,
-          userID: provider.currentUserId ?? '',
-          userName: provider.currentUserName ?? 'User',
-          localUserAvatar: provider.currentUserAvatar,
-          remoteUserAvatar: call.callerAvatar,
-          isVideoCall: call.isVideo,
-          isCaller: false,
-          otherUserId: call.callerId,
-        ));
+    navigatorKey.currentContext?.push(
+      '/call/${call.callId}',
+      extra: CallArguments(
+        callID: call.callId,
+        userID: provider.currentUserId ?? '',
+        userName: provider.currentUserName ?? 'User',
+        localUserAvatar: provider.currentUserAvatar,
+        remoteUserAvatar: call.callerAvatar,
+        isVideoCall: call.isVideo,
+        isCaller: false,
+        otherUserId: call.callerId,
+      ),
+    );
 
     provider.clearIncomingCall();
   }

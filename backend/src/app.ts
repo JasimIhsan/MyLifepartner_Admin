@@ -1,6 +1,7 @@
 import errorMiddleware from "@/middlewares/error.middleware";
 import { globalLimiter } from "@/middlewares/rateLimiter.middleware";
 import indexRoute from "@/routes/index.route";
+import env from "@/config/env";
 import logger from "@/utils/logger";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -29,7 +30,20 @@ app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(cors({ origin: true, credentials: true }));
+
+// CORS: restrict to allowlist in production, open in development
+const allowedOrigins = env.ALLOWED_ORIGINS
+   ? env.ALLOWED_ORIGINS.split(",")
+        .map((o) => o.trim())
+        .filter(Boolean)
+   : [];
+
+app.use(
+   cors({
+      origin: env.NODE_ENV === "production" && allowedOrigins.length > 0 ? allowedOrigins : true,
+      credentials: true,
+   })
+);
 app.use(helmet());
 
 // Logger middleware

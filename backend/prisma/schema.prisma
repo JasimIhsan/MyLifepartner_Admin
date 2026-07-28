@@ -6,113 +6,93 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─── User Management ─────────────────────────────────────────────────────────
-
 model User {
-  id           Int      @id @default(autoincrement())
-  mobileNumber String?  @unique
-  email        String   @unique
-  password     String?
-  isVerified   Boolean  @default(false)
-  isBlocked    Boolean  @default(false)
-  isDeleted    Boolean  @default(false)
-  role         Role     @default(USER)
-  createdAt    DateTime @default(now())
-  //@muhammedsirajudeen - this is the lastLoginAt
-  updatedAt    DateTime @updatedAt
-
-  profile           Profile?
-  partnerPreference PartnerPreference?
-  profileSwipes     ProfileSwipe[]     @relation("UserSwipes")
-  subscriptions     UserSubscription[]
-  userFeature       UserFeature?
-  privacySettings   PrivacySettings?
-
-  conversationsAsOne Conversation[] @relation("ConversationUserOne")
-  conversationsAsTwo Conversation[] @relation("ConversationUserTwo")
-  chatMessages       ChatMessage[]
-
+  id                    Int                  @id @default(autoincrement())
+  mobileNumber          String?              @unique
+  email                 String               @unique
+  password              String?
+  isVerified            Boolean              @default(false)
+  isBlocked             Boolean              @default(false)
+  isDeleted             Boolean              @default(false)
+  role                  Role                 @default(USER)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  chatMessages          ChatMessage[]
+  conversationsAsOne    Conversation[]       @relation("ConversationUserOne")
+  conversationsAsTwo    Conversation[]       @relation("ConversationUserTwo")
   receivedImageRequests ImageAccessRequest[] @relation("ReceivedRequests")
   sentImageRequests     ImageAccessRequest[] @relation("SentRequests")
+  partnerPreference     PartnerPreference?
+  privacySettings       PrivacySettings?
+  profileSwipes         ProfileSwipe[]       @relation("UserSwipes")
+  profile               Profile?
+  userFeature           UserFeature?
+  subscriptions         UserSubscription[]
 
   @@map("users")
 }
 
 model Profile {
-  id     Int  @id @default(autoincrement())
-  userId Int  @unique
-  user   User @relation(fields: [userId], references: [id])
-
-  name          String?
-  gender        Gender?
-  dateOfBirth   DateTime?
-  maritalStatus MaritalStatus?
-  heightCm      Int?
-  motherTongue  String?
-
-  city    String?
-  state   String?
-  country String?
-
-  lastLocationLat Float?
-  lastLocationLng Float?
-
-  highestEducation String?
-  jobId            Int?
-  job              Job?    @relation(fields: [jobId], references: [id])
-  bio              String?
-
-  languages String[]
-
-  childrenStatus       ChildrenStatus?
-  emotionalReadiness   EmotionalReadiness?
-  lookingFor           LookingFor?
-  relationshipTimeline RelationshipTimeline?
-  smokingHabit         SmokingHabit?
-  drinkingHabit        DrinkingHabit?
-
-  profileCompletion Int           @default(10)
-  profileStatus     ProfileStatus @default(INCOMPLETE)
-
-  hasCompletedBasicDetails      Boolean       @default(false)
-  hasCompletedPartnerPreference Boolean       @default(false)
-  hasCompletedImageUpload       Boolean       @default(false)
+  id                            Int                   @id @default(autoincrement())
+  userId                        Int                   @unique
+  name                          String?
+  gender                        Gender?
+  dateOfBirth                   DateTime?
+  maritalStatus                 MaritalStatus?
+  motherTongue                  String?
+  city                          String?
+  state                         String?
+  country                       String?
+  highestEducation              String?
+  bio                           String?
+  profileCompletion             Int                   @default(10)
+  profileStatus                 ProfileStatus         @default(INCOMPLETE)
+  hasCompletedImageUpload       Boolean               @default(false)
   selfieUrl                     String?
+  selfieStatus                  SelfieStatus?
+  hasCompletedBasicDetails      Boolean               @default(false)
+  hasCompletedPartnerPreference Boolean               @default(false)
+  childrenStatus                ChildrenStatus?
+  drinkingHabit                 DrinkingHabit?
+  emotionalReadiness            EmotionalReadiness?
+  languages                     String[]
+  lookingFor                    LookingFor?
+  relationshipTimeline          RelationshipTimeline?
+  smokingHabit                  SmokingHabit?
   leftSelfieUrl                 String?
   rightSelfieUrl                String?
-  selfieStatus                  SelfieStatus?
-
-  images     UserImage[]
-  answers    UserAnswer[]
-  swipesOnMe ProfileSwipe[] @relation("ProfileMatches")
+  lastLocationLat               Float?
+  lastLocationLng               Float?
+  jobId                         Int?
+  swipesOnMe                    ProfileSwipe[]        @relation("ProfileMatches")
+  job                           Job?                  @relation(fields: [jobId], references: [id])
+  user                          User                  @relation(fields: [userId], references: [id])
+  answers                       UserAnswer[]
+  images                        UserImage[]
 
   @@map("profiles")
 }
 
 model PartnerPreference {
-  id               Int             @id @default(autoincrement())
-  userId           Int             @unique
-  user             User            @relation(fields: [userId], references: [id])
-  ageFrom          Int?
-  ageTo            Int?
-  heightFrom       Int?
-  heightTo         Int?
-  maritalStatus    MaritalStatus[]
-  motherTongue     String[]
-  highestEducation String[]
-  occupation       String[]
+  id            Int             @id @default(autoincrement())
+  userId        Int             @unique
+  ageFrom       Int?
+  ageTo         Int?
+  maritalStatus MaritalStatus[]
+  motherTongue  String[]
+  user          User            @relation(fields: [userId], references: [id])
 
   @@map("partner_preferences")
 }
 
 model UserImage {
   id        Int      @id @default(autoincrement())
-  profileId Int
-  profile   Profile  @relation(fields: [profileId], references: [id])
   imageUrl  String
   isPrimary Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
 
   @@map("user_images")
 }
@@ -120,11 +100,11 @@ model UserImage {
 model PrivacySettings {
   id              Int      @id @default(autoincrement())
   userId          Int      @unique
-  user            User     @relation(fields: [userId], references: [id])
   privacyEnabled  Boolean  @default(false)
   blurredImageUrl String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
 
   @@map("privacy_settings")
 }
@@ -132,32 +112,28 @@ model PrivacySettings {
 model ProfileSwipe {
   id              Int         @id @default(autoincrement())
   userId          Int
-  user            User        @relation("UserSwipes", fields: [userId], references: [id])
   targetProfileId Int
-  targetProfile   Profile     @relation("ProfileMatches", fields: [targetProfileId], references: [id])
   action          SwipeAction
   createdAt       DateTime    @default(now())
+  targetProfile   Profile     @relation("ProfileMatches", fields: [targetProfileId], references: [id])
+  user            User        @relation("UserSwipes", fields: [userId], references: [id])
 
   @@map("profile_swipes")
 }
 
 model ImageAccessRequest {
-  id Int @id @default(autoincrement())
-
+  id              Int               @id @default(autoincrement())
   ownerUserId     Int
-  owner           User @relation("ReceivedRequests", fields: [ownerUserId], references: [id], onDelete: Cascade)
   requesterUserId Int
-  requester       User @relation("SentRequests", fields: [requesterUserId], references: [id], onDelete: Cascade)
-
-  status ImageAccessStatus @default(PENDING)
-
-  requestedAt     DateTime  @default(now())
+  status          ImageAccessStatus @default(PENDING)
+  requestedAt     DateTime          @default(now())
   respondedAt     DateTime?
   revokedAt       DateTime?
   revokedByUserId Int?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  owner           User              @relation("ReceivedRequests", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  requester       User              @relation("SentRequests", fields: [requesterUserId], references: [id], onDelete: Cascade)
 
   @@unique([ownerUserId, requesterUserId])
   @@index([ownerUserId, status])
@@ -165,11 +141,9 @@ model ImageAccessRequest {
   @@map("image_access_requests")
 }
 
-// ─── Survey & compatibility ──────────────────────────────────────────────────
-
 model ProfileSection {
   id        Int               @id @default(autoincrement())
-  key       String            @unique // e.g. "emotional_maturity"
+  key       String            @unique
   title     String
   orderNo   Int               @default(0)
   isPrimary Boolean           @default(false)
@@ -181,15 +155,15 @@ model ProfileSection {
 model ProfileQuestion {
   id         Int            @id @default(autoincrement())
   sectionId  Int
-  section    ProfileSection @relation(fields: [sectionId], references: [id])
   question   String
   answerType AnswerType
-  options    Json? // JSONB for choices/options
+  options    Json?
   minWords   Int?
   weight     Int            @default(1)
   isRequired Boolean        @default(true)
   orderNo    Int            @default(0)
   isActive   Boolean        @default(true)
+  section    ProfileSection @relation(fields: [sectionId], references: [id])
   answers    UserAnswer[]
 
   @@map("profile_questions")
@@ -197,19 +171,17 @@ model ProfileQuestion {
 
 model UserAnswer {
   id         Int             @id @default(autoincrement())
-  profileId  Int
-  profile    Profile         @relation(fields: [profileId], references: [id])
   questionId Int
-  question   ProfileQuestion @relation(fields: [questionId], references: [id])
-  answer     Json // JSONB for the answer content
+  answer     Json
   score      Int?
   createdAt  DateTime        @default(now())
+  profileId  Int
+  profile    Profile         @relation(fields: [profileId], references: [id])
+  question   ProfileQuestion @relation(fields: [questionId], references: [id])
 
-  @@unique([profileId, questionId]) // One answer per question per user
+  @@unique([profileId, questionId])
   @@map("user_answers")
 }
-
-// ─── Administration ──────────────────────────────────────────────────────────
 
 model Admins {
   id        Int      @id @default(autoincrement())
@@ -222,21 +194,19 @@ model Admins {
   @@map("admins")
 }
 
-// ─── Subscription Plans ──────────────────────────────────────────────────────
-
 model SubscriptionPlan {
   id                Int                @id @default(autoincrement())
-  name              String             @unique // FREE, PREMIUM, GOLD
-  description       String? // User understandable explanation of the plan
-  price             Int // price in paise (₹1 = 100 paise)
+  name              String             @unique
+  price             Int
   durationDays      Int
   isActive          Boolean            @default(true)
-  isMostPopular     Boolean            @default(false)
-  identifier        String?            @unique
-  features          PlanFeature[]
-  userSubscriptions UserSubscription[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  isMostPopular     Boolean            @default(false)
+  description       String?
+  storeProductId    String?            @unique
+  features          PlanFeature[]
+  userSubscriptions UserSubscription[]
 
   @@map("subscription_plans")
 }
@@ -244,37 +214,40 @@ model SubscriptionPlan {
 model PlanFeature {
   id          Int              @id @default(autoincrement())
   planId      Int
-  plan        SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  featureKey  String
-  description String? // User understandable feature explanation for the plan card
-  limit       String // e.g. "50", "UNLIMITED", "true"
   createdAt   DateTime         @default(now())
+  limit       String
+  featureKey  String
   updatedAt   DateTime         @updatedAt
+  description String?
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
-  @@unique([planId, featureKey]) // one limit per feature per plan
+  @@unique([planId, featureKey])
   @@map("plan_features")
 }
 
 model UserSubscription {
-  id         Int                @id @default(autoincrement())
-  userId     Int
-  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId     Int
-  plan       SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
-  startDate  DateTime           @default(now())
-  endDate    DateTime
-  status     SubscriptionStatus @default(ACTIVE)
-  willRenew  Boolean            @default(true)
-  nextPlanId Int?
-  createdAt  DateTime           @default(now())
-  updatedAt  DateTime           @updatedAt
-
-  // RevenueCat Audit fields
-  revenueCatEventId     String?
-  lastEventTimestampMs  BigInt?
-  originalTransactionId String? @unique
-  store                 String? // TEST_STORE, PLAY_STORE, APP_STORE
-  environment           String? // SANDBOX, PRODUCTION
+  id                     Int                @id @default(autoincrement())
+  userId                 Int
+  planId                 Int
+  startDate              DateTime           @default(now())
+  endDate                DateTime
+  status                 SubscriptionStatus @default(ACTIVE)
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  nextPlanId             Int?
+  willRenew              Boolean            @default(true)
+  environment            String?
+  lastEventTimestampMs   BigInt?
+  originalTransactionId  String?            @unique
+  revenueCatEventId      String?
+  store                  String?
+  cancelledAt            DateTime?
+  billingIssueDetectedAt DateTime?
+  planChangesAt          DateTime?
+  refundedAt             DateTime?
+  expiredAt              DateTime?
+  plan                   SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@map("user_subscriptions")
@@ -288,32 +261,46 @@ model ProcessedRevenueCatEvent {
   @@map("processed_revenuecat_events")
 }
 
+/**
+ * Append-only audit log for every subscription state change.
+ * Never update or delete rows — only insert.
+ * This is the source of truth for "why did this user's plan change?"
+ */
+model UserSubscriptionLog {
+  id                    Int      @id @default(autoincrement())
+  userId                Int
+  previousPlanId        Int?
+  newPlanId             Int?
+  previousStatus        String?
+  newStatus             String
+  reason                String
+  source                String
+  eventType             String?
+  eventId               String?
+  productId             String?
+  originalTransactionId String?
+  eventTimestampMs      BigInt?
+  createdAt             DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("user_subscription_logs")
+}
+
 model UserFeature {
-  id     Int  @id @default(autoincrement())
-  userId Int  @unique
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Boolean Features
-  isProfileBlurEnabled Boolean @default(false)
-
-  // Interest Limits
-  maxInterests Int @default(0)
-  interests    Int @default(0)
-
-  // Video Call Minutes
-  maxVideoCallMinutes Int @default(0)
-  videoCallMinutes    Int @default(0)
-
-  // Audio Call Minutes
-  maxAudioCallMinutes Int @default(0)
-  audioCallMinutes    Int @default(0)
-
-  // Message Limits
-  maxMessages Int @default(0)
-  messages    Int @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                   Int      @id @default(autoincrement())
+  userId               Int      @unique
+  isProfileBlurEnabled Boolean  @default(false)
+  maxInterests         Int      @default(0)
+  maxVideoCallMinutes  Int      @default(0)
+  maxAudioCallMinutes  Int      @default(0)
+  maxMessages          Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  audioCallMinutes     Int      @default(0)
+  interests            Int      @default(0)
+  messages             Int      @default(0)
+  videoCallMinutes     Int      @default(0)
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_features")
 }
@@ -345,7 +332,47 @@ model Job {
   @@map("jobs")
 }
 
-// ─── Enums ───────────────────────────────────────────────────────────────────
+model Conversation {
+  id        Int           @id @default(autoincrement())
+  userOneId Int
+  userTwoId Int
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+  userOne   User          @relation("ConversationUserOne", fields: [userOneId], references: [id])
+  userTwo   User          @relation("ConversationUserTwo", fields: [userTwoId], references: [id])
+
+  @@unique([userOneId, userTwoId])
+  @@map("conversations")
+}
+
+model ChatMessage {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String
+  messageType    MessageType  @default(TEXT)
+  zegoMessageId  String?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         User         @relation(fields: [senderId], references: [id])
+
+  @@index([conversationId, createdAt])
+  @@map("chat_messages")
+}
+
+model Guide {
+  id           Int      @id @default(autoincrement())
+  question     String   @unique
+  answer       String
+  categoryId   Int
+  bullets      String[] @default([])
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("guides")
+}
 
 enum ImageAccessStatus {
   PENDING
@@ -368,12 +395,10 @@ enum Gender {
 }
 
 enum MaritalStatus {
-  NEVER_MARRIED
-  AWATING_DIVORCE
+  AWAITING_DIVORCE
   DIVORCED
   WIDOWED
-  ANNULLED
-  LEGALLY_SEPARATED
+  SEPARATED
 }
 
 enum ChildrenStatus {
@@ -401,15 +426,17 @@ enum RelationshipTimeline {
 }
 
 enum SmokingHabit {
-  NO
+  NEVER
   OCCASIONALLY
-  YES
+  SOCIALLY
+  REGULARLY
 }
 
 enum DrinkingHabit {
-  NO
+  NEVER
+  OCCASIONALLY
   SOCIALLY
-  YES
+  REGULARLY
 }
 
 enum SelfieStatus {
@@ -442,6 +469,7 @@ enum SubscriptionStatus {
   ACTIVE
   INACTIVE
   CANCELLED
+  CANCELLED_PENDING_EXPIRY
   EXPIRED
 }
 
@@ -466,48 +494,4 @@ enum MessageType {
   AUDIO
   VIDEO
   CALL_LOG
-}
-
-// ─── Chat ───────────────────────────────────────────────────────────────────
-
-model Conversation {
-  id        Int           @id @default(autoincrement())
-  userOneId Int
-  userTwoId Int
-  userOne   User          @relation("ConversationUserOne", fields: [userOneId], references: [id])
-  userTwo   User          @relation("ConversationUserTwo", fields: [userTwoId], references: [id])
-  messages  ChatMessage[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  @@unique([userOneId, userTwoId])
-  @@map("conversations")
-}
-
-model ChatMessage {
-  id             Int          @id @default(autoincrement())
-  conversationId Int
-  conversation   Conversation @relation(fields: [conversationId], references: [id])
-  senderId       Int
-  sender         User         @relation(fields: [senderId], references: [id])
-  content        String
-  messageType    MessageType  @default(TEXT)
-  zegoMessageId  String?
-  createdAt      DateTime     @default(now())
-
-  @@index([conversationId, createdAt])
-  @@map("chat_messages")
-}
-
-model Guide {
-  id           Int      @id @default(autoincrement())
-  question     String   @unique
-  answer       String
-  categoryId   Int // 1 = About LPA, 2 = Safety & Privacy, 3 = Verification & Account, 4 = Membership & Subscription
-  bullets      String[] @default([])
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  @@map("guides")
 }

@@ -22,7 +22,6 @@ export interface CandidateProfile {
    name: string | null;
    isVerified: boolean;
    dateOfBirth: Date | null;
-   heightCm: number | null;
    maritalStatus: string | null;
    city: string | null;
    state: string | null;
@@ -43,11 +42,7 @@ export interface CandidateProfile {
 export interface UserPreferenceData {
    ageFrom: number | null;
    ageTo: number | null;
-   heightFrom: number | null;
-   heightTo: number | null;
    motherTongue: string[];
-   highestEducation: string[];
-   occupation: string[];
 }
 
 export interface UserAnswerData {

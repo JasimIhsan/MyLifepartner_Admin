@@ -68,9 +68,9 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
   Future<void> _revokeRequest(int requestId) async {
     final success = await ImageAccessService.revokeRequest(requestId);
     if (success && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Access revoked successfully')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Access revoked successfully')),
+      );
       _fetchRequests();
     }
   }

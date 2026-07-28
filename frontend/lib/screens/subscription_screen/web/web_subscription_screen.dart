@@ -231,7 +231,9 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                       Expanded(
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 40, vertical: 20),
+                            horizontal: 40,
+                            vertical: 20,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -259,28 +261,44 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                     runSpacing: 32,
                                     alignment: WrapAlignment.center,
                                     children: plans.map((plan) {
-                                      final isCurrentPlan = currentSub != null &&
+                                      final isCurrentPlan =
+                                          currentSub != null &&
                                           currentSub.id == plan.id;
                                       final visuals = getPlanVisuals(plan);
 
                                       return SizedBox(
                                         width: 320,
-                                        height: 450, // Fixed height for alignment
+                                        height:
+                                            450, // Fixed height for alignment
                                         child: PlanCardWidget(
                                           plan: plan,
                                           isCurrentPlan: isCurrentPlan,
                                           isLoading: provider.isLoading,
-                                          isSelectedPage: false, // For web, no scaling down
-                                          willRenew: provider.mySubscription?.willRenew ?? true,
+                                          isSelectedPage:
+                                              false, // For web, no scaling down
+                                          willRenew:
+                                              provider
+                                                  .mySubscription
+                                                  ?.willRenew ??
+                                              true,
                                           visuals: visuals,
                                           onSubscribe: () {
-                                            if (isCurrentPlan && plan.price > 0) {
-                                              handleSubscribe(provider.plans.firstWhere((p) => p.price == 0));
+                                            if (isCurrentPlan &&
+                                                plan.price > 0) {
+                                              handleSubscribe(
+                                                provider.plans.firstWhere(
+                                                  (p) => p.price == 0,
+                                                ),
+                                              );
                                             } else {
                                               handleSubscribe(plan);
                                             }
                                           },
-                                          onInfoTap: () => _showPlanDetailsSheet(context, plan),
+                                          onInfoTap: () =>
+                                              _showPlanDetailsSheet(
+                                                context,
+                                                plan,
+                                              ),
                                         ),
                                       );
                                     }).toList(),
@@ -289,7 +307,9 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                               else
                                 const Padding(
                                   padding: EdgeInsets.all(40.0),
-                                  child: Text('No subscription plans available.'),
+                                  child: Text(
+                                    'No subscription plans available.',
+                                  ),
                                 ),
                               const SizedBox(height: 48),
                             ],
@@ -299,14 +319,16 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                       // Footer
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 48.0, vertical: 24.0),
+                          horizontal: 48.0,
+                          vertical: 24.0,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             TextButton(
                               onPressed: () async {
-                                final provider =
-                                    context.read<SubscriptionProvider>();
+                                final provider = context
+                                    .read<SubscriptionProvider>();
                                 if (provider.mySubscription != null &&
                                     !provider.mySubscription!.willRenew) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -381,14 +403,16 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                           children: [
                                             Row(
                                               mainAxisAlignment:
-                                                  MainAxisAlignment.spaceBetween,
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
                                                 const Text(
                                                   'Terms & Privacy Policy',
                                                   style: TextStyle(
                                                     fontSize: 24,
                                                     fontWeight: FontWeight.bold,
-                                                    color: AppColors.textPrimary,
+                                                    color:
+                                                        AppColors.textPrimary,
                                                   ),
                                                 ),
                                                 IconButton(
@@ -406,48 +430,54 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                                     'Terms of Service',
                                                     style: TextStyle(
                                                       fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                   SizedBox(height: 8),
                                                   Text(
                                                     'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
                                                     style: TextStyle(
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        height: 1.5),
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      height: 1.5,
+                                                    ),
                                                   ),
                                                   SizedBox(height: 24),
                                                   Text(
                                                     'Privacy Policy',
                                                     style: TextStyle(
                                                       fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                   SizedBox(height: 8),
                                                   Text(
                                                     'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
                                                     style: TextStyle(
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        height: 1.5),
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      height: 1.5,
+                                                    ),
                                                   ),
                                                   SizedBox(height: 24),
                                                   Text(
                                                     'Subscription Management',
                                                     style: TextStyle(
                                                       fontSize: 18,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                   SizedBox(height: 8),
                                                   Text(
                                                     'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
                                                     style: TextStyle(
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        height: 1.5),
+                                                      color: AppColors
+                                                          .textSecondary,
+                                                      height: 1.5,
+                                                    ),
                                                   ),
                                                 ],
                                               ),

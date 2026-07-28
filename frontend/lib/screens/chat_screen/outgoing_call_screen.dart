@@ -77,16 +77,19 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           final call = provider.outgoingCall!;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             provider.clearOutgoingCall();
-            context.pushReplacement(AppRoutes.call, extra: CallArguments(
-                  callID: call.callId,
-                  userID: provider.currentUserId ?? '',
-                  userName: provider.currentUserName ?? 'User',
-                  localUserAvatar: provider.currentUserAvatar,
-                  remoteUserAvatar: widget.calleeAvatar,
-                  isVideoCall: call.isVideo,
-                  isCaller: true,
-                  otherUserId: call.calleeId,
-                ));
+            context.pushReplacement(
+              AppRoutes.call,
+              extra: CallArguments(
+                callID: call.callId,
+                userID: provider.currentUserId ?? '',
+                userName: provider.currentUserName ?? 'User',
+                localUserAvatar: provider.currentUserAvatar,
+                remoteUserAvatar: widget.calleeAvatar,
+                isVideoCall: call.isVideo,
+                isCaller: true,
+                otherUserId: call.calleeId,
+              ),
+            );
           });
         }
 
@@ -100,8 +103,11 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                 SnackBar(
                   content: Row(
                     children: [
-                      const Icon(Icons.call_end_rounded,
-                          color: Colors.white, size: 18),
+                      const Icon(
+                        Icons.call_end_rounded,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Text('${widget.calleeName} declined the call'),
                     ],
@@ -124,157 +130,156 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                const Spacer(flex: 2),
+                  const Spacer(flex: 2),
 
-                // Call type label
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        widget.isVideoCall
-                            ? Icons.videocam_rounded
-                            : Icons.call_rounded,
-                        color: Colors.white54,
-                        size: 16,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        widget.isVideoCall
-                            ? 'Video Call'
-                            : 'Voice Call',
-                        style: const TextStyle(
-                          color: Colors.white54,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 36),
-
-                // Animated avatar
-                ScaleTransition(
-                  scale: _pulseAnimation,
-                  child: Container(
-                    width: 110,
-                    height: 110,
+                  // Call type label
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          AppColors.primary.withValues(alpha: 0.7),
-                          AppColors.primaryDark,
+                      color: Colors.white.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          widget.isVideoCall
+                              ? Icons.videocam_rounded
+                              : Icons.call_rounded,
+                          color: Colors.white54,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          widget.isVideoCall ? 'Video Call' : 'Voice Call',
+                          style: const TextStyle(
+                            color: Colors.white54,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 36),
+
+                  // Animated avatar
+                  ScaleTransition(
+                    scale: _pulseAnimation,
+                    child: Container(
+                      width: 110,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.7),
+                            AppColors.primaryDark,
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                            blurRadius: 30,
+                            spreadRadius: 5,
+                          ),
                         ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.35),
-                          blurRadius: 30,
-                          spreadRadius: 5,
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: widget.calleeAvatar != null
-                          ? CircleAvatar(
-                              radius: 53,
-                              backgroundImage: NetworkImage(widget.calleeAvatar!),
-                              backgroundColor: Colors.transparent,
-                            )
-                          : Text(
-                              widget.calleeName.isNotEmpty
-                                  ? widget.calleeName[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 44,
-                                fontWeight: FontWeight.w600,
+                      child: Center(
+                        child: widget.calleeAvatar != null
+                            ? CircleAvatar(
+                                radius: 53,
+                                backgroundImage: NetworkImage(
+                                  widget.calleeAvatar!,
+                                ),
+                                backgroundColor: Colors.transparent,
+                              )
+                            : Text(
+                                widget.calleeName.isNotEmpty
+                                    ? widget.calleeName[0].toUpperCase()
+                                    : '?',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 44,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                            ),
+                      ),
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 24),
+                  const SizedBox(height: 24),
 
-                // Callee name
-                Text(
-                  widget.calleeName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // "Calling..." label
-                const Text(
-                  'Calling…',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 15,
-                  ),
-                ),
-
-                const Spacer(flex: 3),
-
-                // Cancel button
-                GestureDetector(
-                  onTap: _onCancel,
-                  child: Container(
-                    width: 70,
-                    height: 70,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFF3B30),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF3B30)
-                              .withValues(alpha: 0.4),
-                          blurRadius: 16,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.call_end_rounded,
+                  // Callee name
+                  Text(
+                    widget.calleeName,
+                    style: const TextStyle(
                       color: Colors.white,
-                      size: 32,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 10),
+                  const SizedBox(height: 8),
 
-                const Text(
-                  'Cancel',
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                  // "Calling..." label
+                  const Text(
+                    'Calling…',
+                    style: TextStyle(color: Colors.white54, fontSize: 15),
                   ),
-                ),
 
-                const SizedBox(height: 60),
-              ],
+                  const Spacer(flex: 3),
+
+                  // Cancel button
+                  GestureDetector(
+                    onTap: _onCancel,
+                    child: Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3B30),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(
+                              0xFFFF3B30,
+                            ).withValues(alpha: 0.4),
+                            blurRadius: 16,
+                            spreadRadius: 2,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.call_end_rounded,
+                        color: Colors.white,
+                        size: 32,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  const Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+
+                  const SizedBox(height: 60),
+                ],
+              ),
             ),
-          ),
           ),
         );
       },

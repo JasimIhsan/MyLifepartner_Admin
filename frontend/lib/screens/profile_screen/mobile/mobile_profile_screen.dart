@@ -13,7 +13,6 @@ import '../../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../../widgets/custom_button.dart';
 import '../widgets/profile_controller.dart';
 
-
 class MobileProfileScreen extends StatefulWidget {
   const MobileProfileScreen({super.key});
 
@@ -23,7 +22,6 @@ class MobileProfileScreen extends StatefulWidget {
 
 class _MobileProfileScreenState extends State<MobileProfileScreen>
     with RouteAware, ProfileControllerState<MobileProfileScreen> {
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();

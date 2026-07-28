@@ -252,7 +252,9 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                             // View Full Details click target (Solid Red Button)
                                             ElevatedButton(
                                               onPressed: () async {
-                                                context.push('/profile/${selectedProfile.id}');
+                                                context.push(
+                                                  '/profile/${selectedProfile.id}',
+                                                );
                                                 syncWithProvider();
                                               },
                                               style: ElevatedButton.styleFrom(

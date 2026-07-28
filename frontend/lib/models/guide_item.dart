@@ -21,7 +21,8 @@ class GuideItem {
       question: json['question'] as String,
       answer: json['answer'] as String,
       categoryId: json['categoryId'] as int,
-      bullets: (json['bullets'] as List<dynamic>?)
+      bullets:
+          (json['bullets'] as List<dynamic>?)
               ?.map((e) => e.toString())
               .toList() ??
           [],

@@ -13,8 +13,10 @@ class WebLikedMatchesScreen extends StatefulWidget {
 }
 
 class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
-    with TickerProviderStateMixin, RouteAware, LikesControllerState<WebLikedMatchesScreen> {
-
+    with
+        TickerProviderStateMixin,
+        RouteAware,
+        LikesControllerState<WebLikedMatchesScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -30,7 +32,9 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // A premium light gray for background
+      backgroundColor: const Color(
+        0xFFF8FAFC,
+      ), // A premium light gray for background
       body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1400),
@@ -106,7 +110,8 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                   clipBehavior: Clip.antiAlias,
                   child: TabBarView(
                     controller: tabController,
-                    physics: const NeverScrollableScrollPhysics(), // Disable swipe on web
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Disable swipe on web
                     children: [
                       _buildWebContent(0),
                       _buildWebContent(1),
@@ -132,8 +137,8 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
             index == 0
                 ? "Mutual Matches"
                 : index == 1
-                    ? "Received Interests"
-                    : "Sent Interests",
+                ? "Received Interests"
+                : "Sent Interests",
             style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
@@ -146,7 +151,8 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
         Expanded(
           child: MatchesList(
             tabIndex: index,
-            onScroll: setHeaderVisible, // No-op on web since there's no mobile header
+            onScroll:
+                setHeaderVisible, // No-op on web since there's no mobile header
             isWeb: true, // Grid will have 4 columns
           ),
         ),
@@ -173,10 +179,14 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
             curve: Curves.easeOutCubic,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
+              color: isSelected
+                  ? AppColors.primary.withValues(alpha: 0.08)
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? AppColors.primary.withValues(alpha: 0.5) : Colors.transparent,
+                color: isSelected
+                    ? AppColors.primary.withValues(alpha: 0.5)
+                    : Colors.transparent,
                 width: 1,
               ),
             ),
@@ -184,7 +194,9 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                  color: isSelected
+                      ? AppColors.primary
+                      : AppColors.textSecondary,
                   size: 22,
                 ),
                 const SizedBox(width: 16),
@@ -193,7 +205,9 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    color: isSelected
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                   ),
                 ),
               ],

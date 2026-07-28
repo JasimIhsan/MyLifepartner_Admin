@@ -10,7 +10,7 @@ export interface SubscriptionPlan {
    durationDays: number;
    isActive: boolean;
    isMostPopular: boolean;
-   identifier: string | null;
+   storeProductId: string | null;
    createdAt: Date;
    updatedAt: Date;
 }

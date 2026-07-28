@@ -11,7 +11,8 @@ class MobilePartnerPreferenceScreen extends StatefulWidget {
       _MobilePartnerPreferenceScreenState();
 }
 
-class _MobilePartnerPreferenceScreenState extends State<MobilePartnerPreferenceScreen>
+class _MobilePartnerPreferenceScreenState
+    extends State<MobilePartnerPreferenceScreen>
     with PartnerPreferenceControllerState {
   @override
   Widget build(BuildContext context) {
@@ -47,15 +48,16 @@ class _MobilePartnerPreferenceScreenState extends State<MobilePartnerPreferenceS
                               return FadeTransition(
                                 opacity: animation,
                                 child: SlideTransition(
-                                  position: Tween<Offset>(
-                                    begin: offsetBegin,
-                                    end: Offset.zero,
-                                  ).animate(
-                                    CurvedAnimation(
-                                      parent: animation,
-                                      curve: Curves.easeOutCubic,
-                                    ),
-                                  ),
+                                  position:
+                                      Tween<Offset>(
+                                        begin: offsetBegin,
+                                        end: Offset.zero,
+                                      ).animate(
+                                        CurvedAnimation(
+                                          parent: animation,
+                                          curve: Curves.easeOutCubic,
+                                        ),
+                                      ),
                                   child: child,
                                 ),
                               );
@@ -76,7 +78,7 @@ class _MobilePartnerPreferenceScreenState extends State<MobilePartnerPreferenceS
                 isLoading: isLoading,
                 isLastStep: false,
                 label: currentStep == totalSteps - 1
-                    ? 'Continue to Photo Upload'
+                    ? 'Set Profile Images'
                     : null,
                 onNext: next,
               ),

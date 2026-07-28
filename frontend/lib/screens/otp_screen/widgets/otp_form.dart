@@ -17,6 +17,8 @@ class OtpForm extends StatelessWidget {
   final int timerValue;
   final bool isResendEnabled;
 
+  final String? errorMessage;
+
   const OtpForm({
     super.key,
     required this.formKey,
@@ -30,6 +32,7 @@ class OtpForm extends StatelessWidget {
     required this.onVerify,
     required this.timerValue,
     required this.isResendEnabled,
+    this.errorMessage,
   });
 
   @override
@@ -43,7 +46,9 @@ class OtpForm extends StatelessWidget {
         fontWeight: FontWeight.bold,
       ),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE0E0E0), width: 3)),
+        border: Border(
+          bottom: BorderSide(color: AppColors.borderColor, width: 3),
+        ),
       ),
     );
 
@@ -61,6 +66,12 @@ class OtpForm extends StatelessWidget {
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               defaultPinTheme: defaultPinTheme,
               separatorBuilder: (index) => const SizedBox(width: 8),
+              forceErrorState: errorMessage != null,
+              errorText: errorMessage,
+              errorTextStyle: const TextStyle(
+                fontSize: 12,
+                color: AppColors.error,
+              ),
               validator: (value) {
                 if (value == null || value.length < 6) {
                   return 'Please enter 6-digit OTP';
@@ -94,6 +105,11 @@ class OtpForm extends StatelessWidget {
                 ),
               ),
               errorPinTheme: defaultPinTheme.copyWith(
+                textStyle: const TextStyle(
+                  fontSize: 26,
+                  color: AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                ),
                 decoration: const BoxDecoration(
                   border: Border(
                     bottom: BorderSide(color: AppColors.error, width: 4),
@@ -109,7 +125,7 @@ class OtpForm extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 text: "Didn't receive a code? ",
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
                 children: [
                   if (isResending)
                     const WidgetSpan(
@@ -161,7 +177,7 @@ class OtpForm extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black,
+                        color: AppColors.textPrimary,
                       ),
                     ),
                 ],
@@ -176,7 +192,8 @@ class OtpForm extends StatelessWidget {
             child: ValueListenableBuilder<TextEditingValue>(
               valueListenable: pinController,
               builder: (context, value, child) {
-                final isEnabled = !isLoading && value.text.isNotEmpty;
+                final isEnabled =
+                    !isLoading && !isResending && value.text.length == 6;
                 return CustomButton(
                   onPressed: isEnabled
                       ? () {

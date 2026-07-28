@@ -6,7 +6,9 @@ class ImageAccessService {
 
   static Future<bool> requestAccess(int targetUserId) async {
     try {
-      final response = await _client.post('/image-access/$targetUserId/request');
+      final response = await _client.post(
+        '/image-access/$targetUserId/request',
+      );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
       debugPrint("Request Access Failed: $e");

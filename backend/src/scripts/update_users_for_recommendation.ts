@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import logger from '../utils/logger';
 
 const prisma = new PrismaClient();
 
@@ -21,13 +22,12 @@ async function main() {
       profileCompletion: 100
     }
   });
-
-  console.log('Successfully updated users 1 and 2 to be recommended to each other');
+  logger.info('Successfully updated users 1 and 2 to be recommended to each other');
 }
 
 main()
   .catch(e => {
-    console.error(e);
+    logger.error(e);
     process.exit(1);
   })
   .finally(async () => {

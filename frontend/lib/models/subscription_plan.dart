@@ -29,7 +29,12 @@ class PlanFeature {
   final String? description;
   final Feature feature;
 
-  PlanFeature({required this.id, required this.limit, this.description, required this.feature});
+  PlanFeature({
+    required this.id,
+    required this.limit,
+    this.description,
+    required this.feature,
+  });
 
   factory PlanFeature.fromJson(Map<String, dynamic> json) {
     return PlanFeature(
@@ -110,7 +115,7 @@ class SubscriptionPlan {
       durationDays: json['durationDays'] ?? 0,
       isActive: json['isActive'] ?? true,
       isMostPopular: json['isMostPopular'] ?? false,
-      identifier: json['identifier'],
+      identifier: json['storeProductId'],
       features:
           (json['features'] as List?)
               ?.map((e) => PlanFeature.fromJson(e))
@@ -130,7 +135,9 @@ class SubscriptionPlan {
   /// Helper to get a simple string list of feature descriptions for the UI
   List<String> get featureDescriptions {
     return features
-        .map((pf) => pf.description ?? pf.feature.description ?? pf.feature.name)
+        .map(
+          (pf) => pf.description ?? pf.feature.description ?? pf.feature.name,
+        )
         .toList();
   }
 }
@@ -171,5 +178,7 @@ class UserSubscription {
     );
   }
 
-  bool get isActive => status == 'ACTIVE' && endDate.isAfter(DateTime.now());
+  bool get isActive =>
+      (status == 'ACTIVE' || status == 'CANCELLED_PENDING_EXPIRY') &&
+      endDate.isAfter(DateTime.now());
 }

@@ -6,11 +6,13 @@ class Env {
   // Environment flags
   // isProduction => Siraj
   // !isProduction => Jasim
-  static const bool isProduction = true;
+  static const bool isProduction = false;
 
-  // ZEGOCLOUD — populate from https://console.zegocloud.com/
-  static const int zegoAppId = 1331651742; // Replace with your AppID
-  static const String zegoAppSign =
-      '64d06b939f5431ce808c6236114075869ee1082ee1d44bc1e0f5030b254f6438'; // Replace with your AppSign
-  static const String revenueCatApiKey = 'test_XpBpMyOCaRGpgYiYdlQzzfVGWQP';
+  // ZEGOCLOUD — AppID only. AppSign is NEVER stored on the client.
+  // Authentication uses backend-generated tokens from /api/user/zego/token.
+  // Token renewal uses POST /api/user/zego/renew-token.
+  static const int zegoAppId = 1331651742;
+
+  // RevenueCat - Payment Gatway
+  static const String revenueCatApiKey = 'goog_iPFGEdyRedFAtyobbTVSFapcuRW';
 }

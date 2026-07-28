@@ -10,12 +10,15 @@ class MobileLikedMatchesScreen extends StatefulWidget {
   const MobileLikedMatchesScreen({super.key});
 
   @override
-  State<MobileLikedMatchesScreen> createState() => _MobileLikedMatchesScreenState();
+  State<MobileLikedMatchesScreen> createState() =>
+      _MobileLikedMatchesScreenState();
 }
 
 class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
-    with TickerProviderStateMixin, RouteAware, LikesControllerState<MobileLikedMatchesScreen> {
-
+    with
+        TickerProviderStateMixin,
+        RouteAware,
+        LikesControllerState<MobileLikedMatchesScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();

@@ -1,4 +1,4 @@
-import { ChildrenStatus, DrinkingHabit, EmotionalReadiness, Gender, LookingFor, MaritalStatus, PrismaClient, ProfileStatus, RelationshipTimeline, Role, SelfieStatus, SmokingHabit, SwipeAction } from "@prisma/client";
+import { ChildrenStatus, EmotionalReadiness, Gender, LookingFor, MaritalStatus, PrismaClient, ProfileStatus, RelationshipTimeline, Role, SelfieStatus, SwipeAction } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 export async function seedMutualConnections(prisma: PrismaClient) {
@@ -31,8 +31,7 @@ export async function seedMutualConnections(prisma: PrismaClient) {
                   profileStatus: ProfileStatus.COMPLETED,
                   gender: Gender.MALE,
                   dateOfBirth: dob,
-                  maritalStatus: MaritalStatus.NEVER_MARRIED,
-                  heightCm: 175,
+                  maritalStatus: MaritalStatus.DIVORCED,
                   city: "Bengaluru",
                   state: "Karnataka",
                   country: "India",
@@ -40,8 +39,6 @@ export async function seedMutualConnections(prisma: PrismaClient) {
                   emotionalReadiness: EmotionalReadiness.YES,
                   childrenStatus: ChildrenStatus.NO_CHILDREN,
                   relationshipTimeline: RelationshipTimeline.ZERO_TO_SIX_MONTHS,
-                  smokingHabit: SmokingHabit.NO,
-                  drinkingHabit: DrinkingHabit.NO,
                   hasCompletedBasicDetails: true,
                   hasCompletedPartnerPreference: true,
                   hasCompletedImageUpload: true,

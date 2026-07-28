@@ -12,8 +12,8 @@ class ImageAssetProvider extends ChangeNotifier {
   String? get error => _error;
 
   List<ImageAsset> getAssets(String section) => _sectionAssets[section] ?? [];
-  
-  ImageAssetLoadState getState(String section) => 
+
+  ImageAssetLoadState getState(String section) =>
       _states[section] ?? ImageAssetLoadState.idle;
 
   Future<void> loadAssets(String section) async {

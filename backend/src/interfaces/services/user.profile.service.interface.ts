@@ -15,7 +15,6 @@ export interface Profile {
    gender: string | null;
    dateOfBirth: Date | null;
    maritalStatus: string | null;
-   heightCm: number | null;
    motherTongue: string | null;
    city: string | null;
    state: string | null;
@@ -48,12 +47,8 @@ export interface PartnerPreference {
    userId: number;
    ageFrom: number | null;
    ageTo: number | null;
-   heightFrom: number | null;
-   heightTo: number | null;
    maritalStatus: string[];
    motherTongue: string[];
-   highestEducation: string[];
-   occupation: string[];
 }
 
 export interface IProfileService {

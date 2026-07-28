@@ -37,7 +37,9 @@ class _WebMainLayoutState extends State<WebMainLayout> {
     final location = GoRouterState.of(context).matchedLocation;
     if (location.startsWith(AppRoutes.matches)) return 1;
     if (location.startsWith(AppRoutes.chat)) return 2;
-    if (location.startsWith(AppRoutes.profile) && !location.contains(':')) return 3;
+    if (location.startsWith(AppRoutes.profile) && !location.contains(':')) {
+      return 3;
+    }
     // For anything else including discover, default to 0 if it's a root route
     return 0;
   }
@@ -58,12 +60,14 @@ class _WebMainLayoutState extends State<WebMainLayout> {
             children: [
               _buildWebNavBar(),
               Expanded(
-                child: _showNotifications 
-                    ? NotificationScreen(onBack: () {
-                        setState(() {
-                          _showNotifications = false;
-                        });
-                      })
+                child: _showNotifications
+                    ? NotificationScreen(
+                        onBack: () {
+                          setState(() {
+                            _showNotifications = false;
+                          });
+                        },
+                      )
                     : widget.child,
               ),
             ],
@@ -89,18 +93,14 @@ class _WebMainLayoutState extends State<WebMainLayout> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         onPressed: () {
           setState(() {
             _showGuideOverlay = !_showGuideOverlay;
           });
         },
         child: Icon(
-          _showGuideOverlay
-              ? Icons.close_rounded
-              : Icons.support_agent_rounded,
+          _showGuideOverlay ? Icons.close_rounded : Icons.support_agent_rounded,
         ),
       ),
     );
@@ -157,10 +157,30 @@ class _WebMainLayoutState extends State<WebMainLayout> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildWebNavItem(0, selectedIndex, Icons.explore_outlined, 'Discover'),
-              _buildWebNavItem(1, selectedIndex, Icons.favorite_border, 'Matches'),
-              _buildWebNavItem(2, selectedIndex, Icons.chat_bubble_outline, 'Chat'),
-              _buildWebNavItem(3, selectedIndex, Icons.person_outline, 'Profile'),
+              _buildWebNavItem(
+                0,
+                selectedIndex,
+                Icons.explore_outlined,
+                'Discover',
+              ),
+              _buildWebNavItem(
+                1,
+                selectedIndex,
+                Icons.favorite_border,
+                'Matches',
+              ),
+              _buildWebNavItem(
+                2,
+                selectedIndex,
+                Icons.chat_bubble_outline,
+                'Chat',
+              ),
+              _buildWebNavItem(
+                3,
+                selectedIndex,
+                Icons.person_outline,
+                'Profile',
+              ),
             ],
           ),
           const Spacer(),
@@ -190,7 +210,12 @@ class _WebMainLayoutState extends State<WebMainLayout> {
     );
   }
 
-  Widget _buildWebNavItem(int index, int selectedIndex, IconData icon, String label) {
+  Widget _buildWebNavItem(
+    int index,
+    int selectedIndex,
+    IconData icon,
+    String label,
+  ) {
     // Only highlight if no notifications are showing and we match the index
     final bool isSelected = selectedIndex == index && !_showNotifications;
     return InkWell(

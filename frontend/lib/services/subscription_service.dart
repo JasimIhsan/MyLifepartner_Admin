@@ -68,7 +68,9 @@ class SubscriptionService {
       final response = await _apiService.dio.post('/subscription/sync');
       if (response.statusCode == 200 && response.data['success'] == true) {
         final responseData = response.data['data'];
-        if (responseData == null || responseData['subscription'] == null) return null;
+        if (responseData == null || responseData['subscription'] == null) {
+          return null;
+        }
         return UserSubscription.fromJson(responseData['subscription']);
       }
       throw Exception(

@@ -62,7 +62,10 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                   const SizedBox(height: 12),
                   if (!isPrimary) ...[
                     ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 6,
+                      ),
                       leading: Container(
                         width: 44,
                         height: 44,
@@ -102,7 +105,10 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                     ),
                   ],
                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 6,
+                    ),
                     leading: Container(
                       width: 44,
                       height: 44,

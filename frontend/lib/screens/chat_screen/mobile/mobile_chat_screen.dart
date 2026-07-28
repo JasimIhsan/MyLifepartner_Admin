@@ -20,7 +20,6 @@ class MobileChatScreen extends StatefulWidget {
 
 class _MobileChatScreenState extends State<MobileChatScreen>
     with RouteAware, ChatControllerState<MobileChatScreen> {
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -93,7 +92,13 @@ class _MobileChatScreenState extends State<MobileChatScreen>
                         final prefs = await SharedPreferences.getInstance();
                         final currentUserId = prefs.getInt('userId') ?? 0;
                         if (!context.mounted) return;
-                        context.push('/chat-detail/${match.id}', extra: ChatDetailArguments(profile: match, currentUserId: currentUserId));
+                        context.push(
+                          '/chat-detail/${match.id}',
+                          extra: ChatDetailArguments(
+                            profile: match,
+                            currentUserId: currentUserId,
+                          ),
+                        );
                       },
                     );
                   },

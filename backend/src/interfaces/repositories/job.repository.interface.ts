@@ -4,4 +4,5 @@ export interface IJobRepository {
    findAll(search?: string): Promise<Job[]>;
    findByName(name: string): Promise<Job | null>;
    create(name: string): Promise<Job>;
+   getPopularJobs(limit: number): Promise<Job[]>;
 }

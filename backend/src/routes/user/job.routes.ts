@@ -4,6 +4,13 @@ import { jobController } from "@/composer/composer";
 const router = Router();
 
 /**
+ * @route   GET /api/v1/user/jobs/popular
+ * @desc    Get most popular jobs
+ * @access  Private
+ */
+router.get("/popular", jobController.getPopularJobs);
+
+/**
  * @route   GET /api/v1/user/jobs
  * @desc    Search/get all jobs
  * @access  Private

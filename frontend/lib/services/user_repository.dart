@@ -12,9 +12,7 @@ class UserRepository {
         throw Exception('User not logged in');
       }
 
-      final response = await ApiService.client.get(
-        '/$userId',
-      );
+      final response = await ApiService.client.get('/$userId');
 
       return User.fromJson(response.data['data']);
     } catch (e) {

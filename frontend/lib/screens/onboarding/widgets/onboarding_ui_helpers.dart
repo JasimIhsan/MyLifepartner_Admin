@@ -52,6 +52,7 @@ class OnboardingInputField extends StatelessWidget {
   final TextCapitalization capitalization;
   final bool isReadonly;
   final VoidCallback? onTap;
+  final Widget? prefixIcon;
   final Widget? suffixIcon;
   final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
@@ -68,6 +69,7 @@ class OnboardingInputField extends StatelessWidget {
     this.capitalization = TextCapitalization.words,
     this.isReadonly = false,
     this.onTap,
+    this.prefixIcon,
     this.suffixIcon,
     this.onChanged,
     this.inputFormatters,
@@ -115,6 +117,7 @@ class OnboardingInputField extends StatelessWidget {
                 vertical: 18,
               ),
               border: InputBorder.none,
+              prefixIcon: prefixIcon,
               suffixIcon: suffixIcon != null
                   ? Padding(
                       padding: const EdgeInsets.only(right: 12),
@@ -148,6 +151,7 @@ class OnboardingSelectionTile extends StatelessWidget {
   final String? selectedValue;
   final VoidCallback onTap;
   final String? emoji;
+  final IconData? icon;
 
   const OnboardingSelectionTile({
     super.key,
@@ -156,11 +160,19 @@ class OnboardingSelectionTile extends StatelessWidget {
     required this.selectedValue,
     required this.onTap,
     this.emoji,
+    this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
     final isSelected = selectedValue == value;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+    final borderColor = isDarkMode
+        ? theme.dividerColor
+        : const Color(0xFFF0E6E6);
+    final cardColor = isDarkMode ? theme.cardColor : Colors.white;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -168,22 +180,37 @@ class OnboardingSelectionTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cardColor,
           border: Border.all(
-            color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
+            color: isSelected ? AppColors.primary : borderColor,
             width: 1.2,
           ),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
           children: [
+            if (icon != null) ...[
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  color: isDarkMode ? Colors.white : AppColors.textPrimary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 16),
+            ],
             Expanded(
               child: Text(
                 label,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: AppColors.textPrimary,
+                  color: isDarkMode ? Colors.white : AppColors.textPrimary,
                 ),
               ),
             ),
@@ -195,6 +222,15 @@ class OnboardingSelectionTile extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.check, color: Colors.white, size: 14),
+              )
+            else
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.grey.shade400, width: 1.5),
+                ),
               ),
           ],
         ),

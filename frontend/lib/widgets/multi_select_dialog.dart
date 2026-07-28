@@ -51,10 +51,7 @@ class _MultiSelectDialogState extends State<MultiSelectDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => context.pop(),
-          child: const Text('Cancel'),
-        ),
+        TextButton(onPressed: () => context.pop(), child: const Text('Cancel')),
         ElevatedButton(
           onPressed: () => context.pop(_currentSelections),
           child: const Text('Confirm'),

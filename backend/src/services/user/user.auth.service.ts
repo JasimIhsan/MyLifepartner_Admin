@@ -9,6 +9,7 @@ import { IOtpService } from "@/interfaces/services/otp.service.interface";
 import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS, HTTP_STATUS, RATE_LIMIT_CONFIG } from "@/utils/constants";
+import logger from "@/utils/logger";
 import bcrypt from "bcrypt";
 
 const DEFAULT_AUTH_PURPOSE = "auth";
@@ -151,7 +152,7 @@ export class AuthService implements IUserAuthService {
 
       // Send welcome email asynchronously
       this.emailService.sendWelcomeEmail(user.email, "there").catch((error) => {
-         console.error(`Failed to send welcome email to ${user.email}:`, error);
+         logger.error(`Failed to send welcome email to ${user.email}:`, error);
       });
 
       const tokens = this.generateAuthTokens(user.id, user.email, user.role);

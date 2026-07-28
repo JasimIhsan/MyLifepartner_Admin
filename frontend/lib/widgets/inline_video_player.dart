@@ -7,7 +7,11 @@ class InlineVideoPlayer extends StatefulWidget {
   final String source;
   final bool isMe;
 
-  const InlineVideoPlayer({super.key, required this.source, required this.isMe});
+  const InlineVideoPlayer({
+    super.key,
+    required this.source,
+    required this.isMe,
+  });
 
   @override
   State<InlineVideoPlayer> createState() => _InlineVideoPlayerState();
@@ -23,7 +27,7 @@ class _InlineVideoPlayerState extends State<InlineVideoPlayer> {
     _controller = widget.source.startsWith('http')
         ? VideoPlayerController.networkUrl(Uri.parse(widget.source))
         : VideoPlayerController.file(File(widget.source));
-        
+
     _controller.initialize().then((_) {
       if (mounted) setState(() => _isInit = true);
     });
@@ -98,7 +102,9 @@ class _InlineVideoPlayerState extends State<InlineVideoPlayer> {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                _controller.value.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                _controller.value.isPlaying
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
                 color: Colors.white,
                 size: 36,
               ),

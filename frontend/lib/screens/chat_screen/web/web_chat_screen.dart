@@ -20,7 +20,6 @@ class WebChatScreen extends StatefulWidget {
 
 class _WebChatScreenState extends State<WebChatScreen>
     with RouteAware, ChatControllerState<WebChatScreen> {
-
   MatchRecommendation? selectedProfile;
   int currentUserId = 0;
 
@@ -92,18 +91,25 @@ class _WebChatScreenState extends State<WebChatScreen>
                       child: Row(
                         children: [
                           const Text(
-                            'Messages',
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
-                              letterSpacing: -0.5,
-                            ),
-                          ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
+                                'Messages',
+                                style: TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.textPrimary,
+                                  letterSpacing: -0.5,
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(duration: 400.ms)
+                              .slideX(begin: -0.1),
                         ],
                       ),
                     ),
-                    const Divider(height: 1, thickness: 1, color: AppColors.borderColor),
+                    const Divider(
+                      height: 1,
+                      thickness: 1,
+                      color: AppColors.borderColor,
+                    ),
                     Expanded(
                       child: Consumer<MatchProvider>(
                         builder: (context, provider, child) {
@@ -129,14 +135,17 @@ class _WebChatScreenState extends State<WebChatScreen>
                             itemCount: mutualMatches.length,
                             separatorBuilder: (context, index) => Divider(
                               height: 1,
-                              color: AppColors.borderColor.withValues(alpha: 0.5),
+                              color: AppColors.borderColor.withValues(
+                                alpha: 0.5,
+                              ),
                               indent: 96,
                             ),
                             itemBuilder: (context, index) {
                               final match = mutualMatches[index];
                               return ChatListTile(
                                 profile: match,
-                                isSelected: selectedProfile?.userId == match.userId,
+                                isSelected:
+                                    selectedProfile?.userId == match.userId,
                                 delay: Duration(milliseconds: index * 50),
                                 onTap: () => selectProfile(match),
                               );
@@ -203,7 +212,11 @@ class _WebChatScreenState extends State<WebChatScreen>
               size: 48,
               color: AppColors.primary,
             ),
-          ).animate().scale(delay: 200.ms, duration: 400.ms, curve: Curves.easeOutBack),
+          ).animate().scale(
+            delay: 200.ms,
+            duration: 400.ms,
+            curve: Curves.easeOutBack,
+          ),
           const SizedBox(height: 24),
           const Text(
             'No messages yet',

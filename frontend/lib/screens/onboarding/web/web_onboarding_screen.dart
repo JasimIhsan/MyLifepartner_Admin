@@ -206,7 +206,7 @@ class _WebOnboardingScreenState extends State<WebOnboardingScreen>
                               isLoading: isLoading,
                               isLastStep: false,
                               label: currentStep == totalSteps - 1
-                                  ? 'Continue to Partner Preferences'
+                                  ? 'Set Partner Preferences'
                                   : null,
                               onNext: next,
                             ),

@@ -17,7 +17,7 @@ class AppColors {
   // Background Colors
   static const Color background = Color(0xFFF2F2F2);
   static const Color surface = Colors.white;
-  static const Color inputBackground = Color(0xFFEAEAEA);
+  static const Color inputBackground = Color.fromARGB(255, 251, 251, 251);
 
   // Text Colors
   static const Color textPrimary = Color(0xFF000000);

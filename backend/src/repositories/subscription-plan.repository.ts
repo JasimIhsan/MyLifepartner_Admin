@@ -71,15 +71,15 @@ export class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
    }
 
    /**
-    * Finds a subscription plan by identifier.
+    * Finds a subscription plan by storeProductId.
     *
-    * @param identifier - Unique subscription plan identifier.
+    * @param storeProductId - Unique store product identifier.
     * @returns Subscription plan with features, or null if not found.
     */
-   async findPlanByIdentifier(identifier: string): Promise<PlanWithFeatures | null> {
+   async findPlanByStoreProductId(storeProductId: string): Promise<PlanWithFeatures | null> {
       return prisma.subscriptionPlan.findUnique({
          where: {
-            identifier,
+            storeProductId,
          },
          include: planIncludeFeatures,
       });

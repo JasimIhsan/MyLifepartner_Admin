@@ -9,7 +9,6 @@ import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 import '../../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../../widgets/custom_button.dart';
 import '../widgets/profile_controller.dart';

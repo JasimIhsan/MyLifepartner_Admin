@@ -8,7 +8,8 @@ import 'package:life_partner_again/services/match_service.dart';
 import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:provider/provider.dart';
 
-mixin DiscoverControllerState<T extends StatefulWidget> on State<T> implements RouteAware {
+mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
+    implements RouteAware {
   final PageController pageController = PageController();
   final Set<int> actionedProfileIds = {};
   List<MatchRecommendation> localProfiles = [];

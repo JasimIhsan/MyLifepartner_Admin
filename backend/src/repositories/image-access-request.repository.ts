@@ -1,5 +1,6 @@
 import { IImageAccessRequestRepository } from "@/interfaces/repositories/image-access-request.repository.interface";
-import { ImageAccessRequest, ImageAccessStatus } from "@prisma/client";
+import { ImageAccessRequest, ImageAccessStatus, Prisma } from "@prisma/client";
+import { ImageAccessRequestWithProfile } from "@/dtos/image-access-request.dto";
 import prisma from "@/config/prisma";
 
 export class ImageAccessRequestRepository implements IImageAccessRequestRepository {
@@ -38,7 +39,7 @@ export class ImageAccessRequestRepository implements IImageAccessRequestReposito
       });
    }
 
-   async findReceivedRequests(ownerUserId: number): Promise<any[]> {
+   async findReceivedRequests(ownerUserId: number): Promise<ImageAccessRequestWithProfile[]> {
       const requests = await prisma.imageAccessRequest.findMany({
          where: { ownerUserId },
          orderBy: { requestedAt: "desc" },
@@ -62,7 +63,7 @@ export class ImageAccessRequestRepository implements IImageAccessRequestReposito
       }));
    }
 
-   async findSentRequests(requesterUserId: number): Promise<any[]> {
+   async findSentRequests(requesterUserId: number): Promise<ImageAccessRequestWithProfile[]> {
       const requests = await prisma.imageAccessRequest.findMany({
          where: { requesterUserId },
          orderBy: { requestedAt: "desc" },
@@ -117,7 +118,7 @@ export class ImageAccessRequestRepository implements IImageAccessRequestReposito
    }
 
    async updateStatus(requestId: number, status: ImageAccessStatus, revokedByUserId?: number): Promise<ImageAccessRequest> {
-      const updateData: any = { status };
+      const updateData: Prisma.ImageAccessRequestUpdateInput = { status };
       
       if (status === ImageAccessStatus.APPROVED || status === ImageAccessStatus.REJECTED) {
          updateData.respondedAt = new Date();

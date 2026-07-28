@@ -39,15 +39,16 @@ class _MobileOnboardingScreenState extends State<MobileOnboardingScreen>
                       return FadeTransition(
                         opacity: animation,
                         child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: offsetBegin,
-                            end: Offset.zero,
-                          ).animate(
-                            CurvedAnimation(
-                              parent: animation,
-                              curve: Curves.easeOutCubic,
-                            ),
-                          ),
+                          position:
+                              Tween<Offset>(
+                                begin: offsetBegin,
+                                end: Offset.zero,
+                              ).animate(
+                                CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeOutCubic,
+                                ),
+                              ),
                           child: child,
                         ),
                       );
@@ -64,7 +65,7 @@ class _MobileOnboardingScreenState extends State<MobileOnboardingScreen>
                 isLoading: isLoading,
                 isLastStep: false,
                 label: currentStep == totalSteps - 1
-                    ? 'Continue to Partner Preferences'
+                    ? 'Set Partner Preferences'
                     : null,
                 onNext: next,
               ),

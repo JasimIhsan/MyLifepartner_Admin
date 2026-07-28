@@ -137,8 +137,8 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                 widget.isPasswordReset
                                     ? "Reset Password"
                                     : (widget.isExistingUser
-                                        ? "Enter Password"
-                                        : "Create Password"),
+                                          ? "Enter Password"
+                                          : "Create Password"),
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
@@ -174,7 +174,9 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                     horizontal: 16,
                                   ),
                                   hintText: "Enter password",
-                                  hintStyle: const TextStyle(color: Colors.grey),
+                                  hintStyle: const TextStyle(
+                                    color: Colors.grey,
+                                  ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       obscureText
@@ -237,7 +239,8 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                     return 'Password must contain at least one number';
                                   }
                                   if (!value.contains(
-                                      RegExp(r'[!@#\$%^&*(),.?":{}|<>]'))) {
+                                    RegExp(r'[!@#\$%^&*(),.?":{}|<>]'),
+                                  )) {
                                     return 'Password must contain at least one special character';
                                   }
                                   return null;
@@ -279,8 +282,9 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                       horizontal: 16,
                                     ),
                                     hintText: "Confirm password",
-                                    hintStyle:
-                                        const TextStyle(color: Colors.grey),
+                                    hintStyle: const TextStyle(
+                                      color: Colors.grey,
+                                    ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         obscureConfirmText
@@ -347,8 +351,8 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                   text: widget.isPasswordReset
                                       ? "Update Password"
                                       : (widget.isExistingUser
-                                          ? "Log In"
-                                          : "Register"),
+                                            ? "Log In"
+                                            : "Register"),
                                   backgroundColor: AppColors.primary,
                                   borderRadius: 12,
                                   height: 54,

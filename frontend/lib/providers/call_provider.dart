@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/services/zego_service.dart';
 
 /// Represents an incoming call invitation.
 class IncomingCall {
@@ -46,6 +48,7 @@ class CallProvider extends ChangeNotifier {
   String? _currentUserId;
   String? _currentUserName;
   String? _currentUserAvatar;
+  Timer? _incomingCallTimer; // Auto-dismiss if caller never cancels
 
   String? get currentUserId => _currentUserId;
   String? get currentUserName => _currentUserName;
@@ -75,7 +78,9 @@ class CallProvider extends ChangeNotifier {
     try {
       final repository = ProfileRepository();
       final images = await repository.getUserImages();
-      final primary = images.where((img) => img.isPrimary).firstOrNull ?? images.firstOrNull;
+      final primary =
+          images.where((img) => img.isPrimary).firstOrNull ??
+          images.firstOrNull;
       if (primary != null) {
         _currentUserAvatar = primary.imageUrl;
       }
@@ -87,8 +92,9 @@ class CallProvider extends ChangeNotifier {
   /// Start listening to ZIM messages for call signaling.
   void startListening() {
     _zimSubscription?.cancel();
-    _zimSubscription =
-        ZegoService.instance.onMessageReceived.listen(_handleMessage);
+    _zimSubscription = ZegoService.instance.onMessageReceived.listen(
+      _handleMessage,
+    );
   }
 
   void _handleMessage(ZegoZIMMessage msg) {
@@ -101,6 +107,8 @@ class CallProvider extends ChangeNotifier {
 
       switch (type) {
         case 'call_invite':
+          // Dedup: ignore if the same callId is already ringing
+          if (_incomingCall?.callId == data['callId'] as String?) break;
           _incomingCall = IncomingCall(
             callId: data['callId'] as String,
             callerId: msg.fromUserId,
@@ -108,24 +116,34 @@ class CallProvider extends ChangeNotifier {
             callerAvatar: data['callerAvatar'] as String?,
             isVideo: data['isVideo'] as bool? ?? false,
           );
+          // Auto-dismiss after 30 s if caller never sends call_cancel
+          _incomingCallTimer?.cancel();
+          _incomingCallTimer = Timer(const Duration(seconds: 30), () {
+            _incomingCall = null;
+            notifyListeners();
+          });
           notifyListeners();
           break;
 
         case 'call_decline':
-          // Callee declined — caller sees feedback.
+          // Guard: only apply if callId matches our outgoing call
+          if (data['callId'] != _outgoingCall?.callId) break;
           _wasDeclined = true;
           _outgoingCall = null;
           notifyListeners();
           break;
 
         case 'call_accept':
-          // Callee accepted — caller navigates to call screen.
+          // Guard: only apply if callId matches our outgoing call
+          if (data['callId'] != _outgoingCall?.callId) break;
           _wasAccepted = true;
           notifyListeners();
           break;
 
         case 'call_cancel':
-          // Caller cancelled before callee answered.
+          // Guard: only apply if callId matches our incoming call
+          if (data['callId'] != _incomingCall?.callId) break;
+          _incomingCallTimer?.cancel();
           _incomingCall = null;
           notifyListeners();
           break;
@@ -135,10 +153,11 @@ class CallProvider extends ChangeNotifier {
     }
   }
 
-  /// Generate a deterministic call ID from two user IDs.
+  /// Generate a unique call ID from two user IDs + current timestamp.
   String generateCallId(String userA, String userB) {
     final ids = [int.parse(userA), int.parse(userB)]..sort();
-    return 'call_${ids[0]}_${ids[1]}';
+    final ts = DateTime.now().millisecondsSinceEpoch;
+    return 'call_${ids[0]}_${ids[1]}_$ts';
   }
 
   /// Caller initiates a call — sends invitation and tracks outgoing state.
@@ -227,6 +246,12 @@ class CallProvider extends ChangeNotifier {
   @override
   void dispose() {
     _zimSubscription?.cancel();
+    _incomingCallTimer?.cancel();
     super.dispose();
   }
+
+  /// Exposes [_handleMessage] for unit testing without requiring ZIM SDK.
+  /// Only call this from test files.
+  @visibleForTesting
+  void testHandleMessage(ZegoZIMMessage msg) => _handleMessage(msg);
 }

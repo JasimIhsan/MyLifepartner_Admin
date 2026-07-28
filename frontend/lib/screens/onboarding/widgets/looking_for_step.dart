@@ -15,26 +15,35 @@ class LookingForStep extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const OnboardingStepTitle(title: "What are you looking for?"),
+        const OnboardingStepTitle(title: "What is your relationship goal?"),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 150,
+          child: Image.asset(
+            'assets/images/onboarding/relationship.png',
+            fit: BoxFit.contain,
+          ),
+        ),
         const SizedBox(height: 20),
+        OnboardingSelectionTile(
+          label: 'Long-term relationship',
+          value: 'LONG_TERM_RELATIONSHIP',
+          selectedValue: selectedLookingFor,
+          onTap: () => onLookingForChanged('LONG_TERM_RELATIONSHIP'),
+        ),
         OnboardingSelectionTile(
           label: 'Marriage',
           value: 'MARRIAGE',
           selectedValue: selectedLookingFor,
           onTap: () => onLookingForChanged('MARRIAGE'),
         ),
-        OnboardingSelectionTile(
-          label: 'Long-term commitment',
-          value: 'LONG_TERM_RELATIONSHIP',
-          selectedValue: selectedLookingFor,
-          onTap: () => onLookingForChanged('LONG_TERM_RELATIONSHIP'),
-        ),
-        OnboardingSelectionTile(
-          label: 'Serious companionship',
-          value: 'SERIOUS_COMPANIONSHIP',
-          selectedValue: selectedLookingFor,
-          onTap: () => onLookingForChanged('SERIOUS_COMPANIONSHIP'),
-        ),
+
+        // OnboardingSelectionTile(
+        //   label: 'Serious companionship',
+        //   value: 'SERIOUS_COMPANIONSHIP',
+        //   selectedValue: selectedLookingFor,
+        //   onTap: () => onLookingForChanged('SERIOUS_COMPANIONSHIP'),
+        // ),
       ],
     );
   }

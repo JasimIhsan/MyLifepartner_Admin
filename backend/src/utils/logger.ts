@@ -14,32 +14,100 @@ const LOG_COLORS = {
    warn: "yellow",
    info: "green",
    http: "magenta",
-   debug: "white",
-};
-
-const getLogLevel = (): string => {
-   return env.NODE_ENV === "development" ? "debug" : "warn";
+   debug: "blue",
 };
 
 winston.addColors(LOG_COLORS);
 
-const loggerFormat = winston.format.combine(
+const isDevelopment = env.NODE_ENV === "development";
+const isProduction = env.NODE_ENV === "production";
+
+const getLogLevel = (): keyof typeof LOG_LEVELS => {
+   if (isDevelopment) return "debug";
+   if (isProduction) return "info";
+
+   return "info";
+};
+
+export const serializeError = (error: unknown) => {
+   if (error instanceof Error) {
+      return {
+         name: error.name,
+         message: error.message,
+         stack: error.stack,
+      };
+   }
+
+   return {
+      message: String(error),
+   };
+};
+
+const serializeErrors = winston.format((info) => {
+   for (const key of Object.keys(info)) {
+      if (info[key] instanceof Error) {
+         info[key] = serializeError(info[key]);
+      } else if (typeof info[key] === "object" && info[key] !== null) {
+         const obj = info[key] as Record<string, unknown>;
+         for (const subKey of Object.keys(obj)) {
+            if (obj[subKey] instanceof Error) {
+               obj[subKey] = serializeError(obj[subKey]);
+            }
+         }
+      }
+   }
+   return info;
+});
+
+const colorizer = winston.format.colorize();
+
+const developmentFormat = winston.format.combine(
+   serializeErrors(),
    winston.format.timestamp({
       format: "YYYY-MM-DD HH:mm:ss",
    }),
-   winston.format.colorize({
-      all: true,
+   winston.format.errors({
+      stack: true,
    }),
-   winston.format.printf(({ timestamp, level, message }) => {
-      return `${timestamp} ${level}: ${message}`;
+   winston.format.printf(({ timestamp, level, message, stack, ...metadata }) => {
+      const output = stack || message;
+      const extraData = Object.keys(metadata).length > 0 ? `\n${JSON.stringify(metadata, null, 2)}` : "";
+
+      const rawLevel = level.replace(/\u001b\[\d+m/g, "");
+      const formattedMessage = `${timestamp} [${rawLevel}]: ${output}${extraData}`;
+
+      return colorizer.colorize(rawLevel, formattedMessage);
    })
 );
 
-const logger = winston.createLogger({
-   level: getLogLevel(),
-   levels: LOG_LEVELS,
-   format: loggerFormat,
-   transports: [new winston.transports.Console()],
-});
+const productionFormat = winston.format.combine(
+   serializeErrors(),
+   winston.format.timestamp(),
+   winston.format.errors({
+      stack: true,
+   }),
+   winston.format.metadata({
+      fillExcept: ["timestamp", "level", "message", "stack"],
+   }),
+   winston.format.json()
+);
 
+
+const logger = winston.createLogger({
+   levels: LOG_LEVELS,
+   level: getLogLevel(),
+   format: isDevelopment ? developmentFormat : productionFormat,
+   // defaultMeta: {
+   //    service: env.APP_NAME,
+   //    environment: env.NODE_ENV,
+   // },
+   transports: [
+      new winston.transports.Console({
+         handleExceptions: true,
+         handleRejections: true,
+      }),
+   ],
+   exitOnError: false,
+});
 export default logger;
+

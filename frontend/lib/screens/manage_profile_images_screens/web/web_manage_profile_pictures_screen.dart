@@ -18,7 +18,6 @@ class WebManageProfilePicturesScreen extends StatefulWidget {
 class _WebManageProfilePicturesScreenState
     extends State<WebManageProfilePicturesScreen>
     with ManageProfilePicturesControllerState<WebManageProfilePicturesScreen> {
-  
   Widget _buildSmallSlot(int index) {
     if (index < images.length) {
       return SmallImageSlot(
@@ -80,20 +79,20 @@ class _WebManageProfilePicturesScreenState
                   flex: 1,
                   child: Column(
                     children: [
-                      AspectRatio(
-                        aspectRatio: 1.0,
-                        child: _buildSmallSlot(1),
-                      ).animate().fade(duration: 500.ms, delay: 100.ms).slideX(begin: 0.05),
+                      AspectRatio(aspectRatio: 1.0, child: _buildSmallSlot(1))
+                          .animate()
+                          .fade(duration: 500.ms, delay: 100.ms)
+                          .slideX(begin: 0.05),
                       const SizedBox(height: 24),
-                      AspectRatio(
-                        aspectRatio: 1.0,
-                        child: _buildSmallSlot(2),
-                      ).animate().fade(duration: 500.ms, delay: 200.ms).slideX(begin: 0.05),
+                      AspectRatio(aspectRatio: 1.0, child: _buildSmallSlot(2))
+                          .animate()
+                          .fade(duration: 500.ms, delay: 200.ms)
+                          .slideX(begin: 0.05),
                       const SizedBox(height: 24),
-                      AspectRatio(
-                        aspectRatio: 1.0,
-                        child: _buildSmallSlot(3),
-                      ).animate().fade(duration: 500.ms, delay: 300.ms).slideX(begin: 0.05),
+                      AspectRatio(aspectRatio: 1.0, child: _buildSmallSlot(3))
+                          .animate()
+                          .fade(duration: 500.ms, delay: 300.ms)
+                          .slideX(begin: 0.05),
                     ],
                   ),
                 ),
@@ -140,7 +139,11 @@ class _WebManageProfilePicturesScreenState
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: pickAndUploadImage,
-              icon: const Icon(Icons.add_photo_alternate, color: Colors.white, size: 24),
+              icon: const Icon(
+                Icons.add_photo_alternate,
+                color: Colors.white,
+                size: 24,
+              ),
               label: const Text(
                 "Upload Your First Photo",
                 style: TextStyle(
@@ -163,25 +166,23 @@ class _WebManageProfilePicturesScreenState
             ).animate().scale(delay: 200.ms, duration: 250.ms),
             const SizedBox(height: 60),
             Row(
-              children: List.generate(4, (index) {
-                return Expanded(
-                  child: AspectRatio(
-                    aspectRatio: 1.0,
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        right: index < 3 ? 16.0 : 0,
+                  children: List.generate(4, (index) {
+                    return Expanded(
+                      child: AspectRatio(
+                        aspectRatio: 1.0,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: index < 3 ? 16.0 : 0),
+                          child: CustomEmptySlot(
+                            onTap: isUploading ? null : pickAndUploadImage,
+                          ),
+                        ),
                       ),
-                      child: CustomEmptySlot(
-                        onTap: isUploading ? null : pickAndUploadImage,
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            )
-            .animate()
-            .fade(duration: 500.ms, delay: 300.ms)
-            .slideY(begin: 0.1),
+                    );
+                  }),
+                )
+                .animate()
+                .fade(duration: 500.ms, delay: 300.ms)
+                .slideY(begin: 0.1),
           ],
         ),
       ),

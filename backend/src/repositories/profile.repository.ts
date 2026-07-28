@@ -1,6 +1,6 @@
 import prisma from "@/config/prisma";
 import { CreatePartnerPreferenceDto, UpdateProfileDto } from "@/dtos/profile.input.dto";
-import { DrinkingHabit, Gender, MaritalStatus, Prisma, Profile, ProfileStatus, SmokingHabit } from "@prisma/client";
+import { ChildrenStatus, DrinkingHabit, EmotionalReadiness, Gender, LookingFor, MaritalStatus, Prisma, Profile, ProfileStatus, RelationshipTimeline, SmokingHabit } from "@prisma/client";
 import { IProfileRepository } from "../interfaces/repositories/profile.repository.interface";
 
 /**
@@ -227,25 +227,19 @@ export class ProfileRepository implements IProfileRepository {
 
       if (data.name !== undefined) updateData.name = data.name;
 
-      const dobVal = data.dateOfBirth !== undefined ? data.dateOfBirth : data.dob;
-      if (dobVal !== undefined) updateData.dateOfBirth = typeof dobVal === "string" ? new Date(dobVal) : dobVal;
+      if (data.dateOfBirth !== undefined) updateData.dateOfBirth = typeof data.dateOfBirth === "string" ? new Date(data.dateOfBirth) : data.dateOfBirth;
 
       if (data.gender !== undefined) updateData.gender = data.gender as Gender;
       if (data.motherTongue !== undefined) updateData.motherTongue = data.motherTongue;
       if (data.maritalStatus !== undefined) updateData.maritalStatus = data.maritalStatus as MaritalStatus;
 
-      const heightVal = data.heightCm !== undefined ? data.heightCm : data.height;
-      if (heightVal !== undefined) updateData.heightCm = heightVal;
-
-      const bioVal = data.bio !== undefined ? data.bio : data.about;
-      if (bioVal !== undefined) updateData.bio = bioVal;
+      if (data.bio !== undefined) updateData.bio = data.bio;
 
       if (data.city !== undefined) updateData.city = data.city;
       if (data.state !== undefined) updateData.state = data.state;
       if (data.country !== undefined) updateData.country = data.country;
 
-      const eduVal = data.highestEducation !== undefined ? data.highestEducation : data.education;
-      if (eduVal !== undefined) updateData.highestEducation = eduVal;
+      if (data.highestEducation !== undefined) updateData.highestEducation = data.highestEducation;
 
       if (data.jobId !== undefined) {
          if (data.jobId) {
@@ -269,17 +263,15 @@ export class ProfileRepository implements IProfileRepository {
          }
       }
 
-      const smokeVal = data.smokingHabit !== undefined ? data.smokingHabit : data.smoke;
-      if (smokeVal !== undefined) updateData.smokingHabit = smokeVal as SmokingHabit;
+      if (data.smokingHabit !== undefined) updateData.smokingHabit = data.smokingHabit as SmokingHabit;
 
-      const drinkVal = data.drinkingHabit !== undefined ? data.drinkingHabit : data.drink;
-      if (drinkVal !== undefined) updateData.drinkingHabit = drinkVal as DrinkingHabit;
+      if (data.drinkingHabit !== undefined) updateData.drinkingHabit = data.drinkingHabit as DrinkingHabit;
 
       if (data.languages !== undefined) updateData.languages = data.languages;
-      if (data.childrenStatus !== undefined) updateData.childrenStatus = data.childrenStatus as any;
-      if (data.emotionalReadiness !== undefined) updateData.emotionalReadiness = data.emotionalReadiness as any;
-      if (data.lookingFor !== undefined) updateData.lookingFor = data.lookingFor as any;
-      if (data.relationshipTimeline !== undefined) updateData.relationshipTimeline = data.relationshipTimeline as any;
+      if (data.childrenStatus !== undefined) updateData.childrenStatus = data.childrenStatus as ChildrenStatus;
+      if (data.emotionalReadiness !== undefined) updateData.emotionalReadiness = data.emotionalReadiness as EmotionalReadiness;
+      if (data.lookingFor !== undefined) updateData.lookingFor = data.lookingFor as LookingFor;
+      if (data.relationshipTimeline !== undefined) updateData.relationshipTimeline = data.relationshipTimeline as RelationshipTimeline;
 
       return prisma.profile.update({
          where: {
@@ -303,14 +295,10 @@ export class ProfileRepository implements IProfileRepository {
       await this.findOrCreateProfile(userId);
 
       const preferenceData = {
-         ageFrom: data.ageFrom !== undefined ? data.ageFrom : data.ageMin,
-         ageTo: data.ageTo !== undefined ? data.ageTo : data.ageMax,
-         heightFrom: data.heightFrom !== undefined ? data.heightFrom : data.heightMin,
-         heightTo: data.heightTo !== undefined ? data.heightTo : data.heightMax,
+         ageFrom: data.ageFrom,
+         ageTo: data.ageTo,
          maritalStatus: toArrayOrUndefined(data.maritalStatus) as MaritalStatus[] | undefined,
          motherTongue: toArrayOrUndefined(data.motherTongue),
-         highestEducation: toArrayOrUndefined(data.highestEducation !== undefined ? data.highestEducation : data.education),
-         occupation: toArrayOrUndefined(data.occupation),
       };
 
       const partnerPreference = await prisma.partnerPreference.upsert({

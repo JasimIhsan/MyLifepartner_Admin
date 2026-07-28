@@ -167,7 +167,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
       titleWidget: Image.asset(

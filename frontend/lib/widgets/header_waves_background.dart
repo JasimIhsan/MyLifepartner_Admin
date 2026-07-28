@@ -4,10 +4,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 class HeaderWavesBackground extends StatelessWidget {
   final double height;
 
-  const HeaderWavesBackground({
-    super.key,
-    this.height = 320,
-  });
+  const HeaderWavesBackground({super.key, this.height = 320});
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +13,7 @@ class HeaderWavesBackground extends StatelessWidget {
       left: 0,
       right: 0,
       height: height,
-      child: CustomPaint(
-        painter: HeaderWavesPainter(),
-      ),
+      child: CustomPaint(painter: HeaderWavesPainter()),
     );
   }
 }

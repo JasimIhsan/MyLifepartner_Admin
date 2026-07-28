@@ -102,11 +102,11 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                     backgroundColor: Colors.grey[100],
                                     backgroundImage:
                                         primaryImageUrl != null &&
-                                                primaryImageUrl!.isNotEmpty
-                                            ? CachedNetworkImageProvider(
-                                                primaryImageUrl!,
-                                              )
-                                            : null,
+                                            primaryImageUrl!.isNotEmpty
+                                        ? CachedNetworkImageProvider(
+                                            primaryImageUrl!,
+                                          )
+                                        : null,
                                     child: loadingImage
                                         ? const SizedBox(
                                             width: 24,
@@ -117,13 +117,13 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                             ),
                                           )
                                         : (primaryImageUrl == null ||
-                                                primaryImageUrl!.isEmpty
-                                            ? const Icon(
-                                                Icons.person,
-                                                size: 54,
-                                                color: Colors.grey,
-                                              )
-                                            : null),
+                                                  primaryImageUrl!.isEmpty
+                                              ? const Icon(
+                                                  Icons.person,
+                                                  size: 54,
+                                                  color: Colors.grey,
+                                                )
+                                              : null),
                                   ),
                                 ),
                                 Container(
@@ -187,13 +187,14 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                   top: 24,
                                   bottom:
                                       MediaQuery.of(context).padding.bottom > 0
-                                          ? MediaQuery.of(context).padding.bottom
-                                          : 24,
+                                      ? MediaQuery.of(context).padding.bottom
+                                      : 24,
                                 ),
                                 child: Form(
                                   key: formKey,
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -319,10 +320,11 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                               ? const SizedBox(
                                                   height: 24,
                                                   width: 24,
-                                                  child: CircularProgressIndicator(
-                                                    color: Colors.white,
-                                                    strokeWidth: 2.5,
-                                                  ),
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        color: Colors.white,
+                                                        strokeWidth: 2.5,
+                                                      ),
                                                 )
                                               : Row(
                                                   mainAxisAlignment:
@@ -339,15 +341,16 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                                       height: 20,
                                                       color: Colors.white
                                                           .withValues(
-                                                        alpha: 0.35,
-                                                      ),
+                                                            alpha: 0.35,
+                                                          ),
                                                     ),
                                                     const SizedBox(width: 12),
                                                     const Text(
                                                       'Save Changes',
                                                       style: TextStyle(
                                                         fontSize: 16,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         color: Colors.white,
                                                       ),
                                                     ),

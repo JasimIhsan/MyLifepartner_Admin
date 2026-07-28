@@ -122,10 +122,7 @@ class _ConnectionPainter extends CustomPainter {
 
     final Paint pathPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [
-          AppColors.primaryLight,
-          AppColors.primaryDark,
-        ],
+        colors: [AppColors.primaryLight, AppColors.primaryDark],
       ).createShader(Rect.fromLTWH(w * 0.2, h * 0.2, w * 0.6, h * 0.6))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
@@ -142,10 +139,30 @@ class _ConnectionPainter extends CustomPainter {
   void _drawSparkle(Canvas canvas, Offset center, double radius) {
     final Path sparklePath = Path();
     sparklePath.moveTo(center.dx, center.dy - radius);
-    sparklePath.quadraticBezierTo(center.dx, center.dy, center.dx + radius, center.dy);
-    sparklePath.quadraticBezierTo(center.dx, center.dy, center.dx, center.dy + radius);
-    sparklePath.quadraticBezierTo(center.dx, center.dy, center.dx - radius, center.dy);
-    sparklePath.quadraticBezierTo(center.dx, center.dy, center.dx, center.dy - radius);
+    sparklePath.quadraticBezierTo(
+      center.dx,
+      center.dy,
+      center.dx + radius,
+      center.dy,
+    );
+    sparklePath.quadraticBezierTo(
+      center.dx,
+      center.dy,
+      center.dx,
+      center.dy + radius,
+    );
+    sparklePath.quadraticBezierTo(
+      center.dx,
+      center.dy,
+      center.dx - radius,
+      center.dy,
+    );
+    sparklePath.quadraticBezierTo(
+      center.dx,
+      center.dy,
+      center.dx,
+      center.dy - radius,
+    );
 
     final Paint sparklePaint = Paint()
       ..color = Colors.white.withValues(alpha: 0.9)

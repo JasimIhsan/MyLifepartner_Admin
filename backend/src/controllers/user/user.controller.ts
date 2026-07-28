@@ -5,6 +5,7 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
+import logger from "@/utils/logger";
 import { Request, Response } from "express";
 
 export class UserController {
@@ -28,8 +29,8 @@ export class UserController {
       const authUserId = this.getAuthenticatedUserId(req);
       const userId = Number(req.params.id);
 
-      console.info("User ID: ", userId);
-      console.info("Auth User ID: ", authUserId);
+      logger.debug(`User ID: ${userId}`);
+      logger.debug(`Auth User ID: ${authUserId}`);
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -77,7 +78,7 @@ export class UserController {
     */
    private getAuthenticatedUserId(req: AuthRequest): number {
       const userId = Number(req.user?.id);
-      console.info("Auth User Id: ", userId);
+      logger.debug(`Auth User ID: ${userId}`);
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Unauthorized");

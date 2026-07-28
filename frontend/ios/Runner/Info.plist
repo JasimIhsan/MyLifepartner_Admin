@@ -38,9 +38,19 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to take a selfie for verification.</string>
+	<string>Life Partner Again uses your camera for selfie verification during sign-up and for video calls with your matches.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app needs microphone access for the camera module.</string>
+	<string>Life Partner Again uses your microphone for audio and video calls with your matches.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>remote-notification</string>
+		<string>fetch</string>
+	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Your location is used to suggest your country, state, and city. You can edit these values at any time.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Life Partner Again needs access to your photo library so you can upload profile pictures and share photos with your matches.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

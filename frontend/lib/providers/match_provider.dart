@@ -124,7 +124,8 @@ class MatchProvider extends ChangeNotifier {
   }
 
   Future<void> swipeLeft({int? targetProfileId}) async {
-    final id = targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
+    final id =
+        targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
     if (id == null) return;
     try {
       await MatchService.swipe(targetProfileId: id, action: 'LEFT');
@@ -145,7 +146,8 @@ class MatchProvider extends ChangeNotifier {
   }
 
   Future<void> swipeRight({int? targetProfileId}) async {
-    final id = targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
+    final id =
+        targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
     if (id == null) return;
     try {
       await MatchService.swipe(targetProfileId: id, action: 'RIGHT');
@@ -166,7 +168,8 @@ class MatchProvider extends ChangeNotifier {
   }
 
   Future<void> swipeUp({int? targetProfileId}) async {
-    final id = targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
+    final id =
+        targetProfileId ?? (hasProfiles ? _profiles[_currentIndex].id : null);
     if (id == null) return;
     try {
       await MatchService.swipe(targetProfileId: id, action: 'UP');

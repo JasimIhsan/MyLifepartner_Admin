@@ -27,13 +27,24 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
   bool get isExistingUser => (widget as dynamic).isExistingUser;
   bool get isPasswordReset => (widget as dynamic).isPasswordReset;
 
+  String? errorMessage;
+
   @override
   void initState() {
     super.initState();
     startTimer();
+    pinController.addListener(_onPinChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ImageAssetProvider>().loadAssets('ONBOARDING_SCREEN');
     });
+  }
+
+  void _onPinChanged() {
+    if (errorMessage != null) {
+      setState(() {
+        errorMessage = null;
+      });
+    }
   }
 
   void startTimer() {
@@ -57,6 +68,7 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
   Future<void> verifyOtp(String pin) async {
     setState(() {
       isLoading = true;
+      errorMessage = null;
     });
     try {
       final response = await authRepository.verifyOtp(
@@ -79,14 +91,14 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
       }
     } catch (e) {
       debugPrint("OTP Verify Error: $e");
-      String errorMessage = "Invalid OTP. Please try again.";
+      String errorMsg = "Invalid OTP. Please try again.";
       if (e is DioException) {
-        errorMessage = getDioErrorMessage(e, fallback: errorMessage);
+        errorMsg = getDioErrorMessage(e, fallback: errorMsg);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage), backgroundColor: Colors.black),
-        );
+        setState(() {
+          errorMessage = errorMsg;
+        });
       }
     } finally {
       if (mounted) {
@@ -144,6 +156,7 @@ mixin OtpControllerState<T extends StatefulWidget> on State<T> {
 
   @override
   void dispose() {
+    pinController.removeListener(_onPinChanged);
     pinController.dispose();
     focusNode.dispose();
     timer?.cancel();
