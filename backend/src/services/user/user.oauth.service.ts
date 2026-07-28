@@ -36,13 +36,16 @@ export class OAuthService implements IOAuthService {
       }
 
       logger.debug(`Google Client ID: ${env.GOOGLE_CLIENT_ID}`);
+      logger.debug(`Google Web Client ID: ${env.GOOGLE_WEB_CLIENT_ID}`);
       logger.debug(`ID Token: ${idToken}`);
+
+      const validAudiences = [env.GOOGLE_CLIENT_ID, env.GOOGLE_WEB_CLIENT_ID].filter((id) => id && id.trim().length > 0);
 
       let payload;
       try {
          const ticket = await this.googleClient.verifyIdToken({
             idToken,
-            audience: env.GOOGLE_CLIENT_ID,
+            audience: validAudiences.length === 1 ? validAudiences[0] : validAudiences,
          });
          payload = ticket.getPayload();
       } catch (error) {

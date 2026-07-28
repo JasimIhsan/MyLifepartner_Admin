@@ -22,6 +22,10 @@
 	<string>$(FLUTTER_BUILD_NAME)</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>GIDClientID</key>
+	<string>856649629853-4kgi1o2obtvfjrme7jkg79q6tiffhrfm.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>856649629853-4ms5n5qt1aujob98co3gb5hse7hrkvun.apps.googleusercontent.com</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -30,9 +34,11 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>lifepartneragain</string>
+				<string>com.googleusercontent.apps.856649629853-4kgi1o2obtvfjrme7jkg79q6tiffhrfm</string>
 			</array>
 		</dict>
 	</array>
+
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>

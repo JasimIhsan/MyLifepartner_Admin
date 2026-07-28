@@ -39,6 +39,7 @@ const envSchema = z.object({
    // Google Auth
    GOOGLE_CLIENT_ID: z.string().default("default-google-client-id"),
    GOOGLE_CLIENT_SECRET: z.string().default("default-google-client-secret"),
+   GOOGLE_WEB_CLIENT_ID: z.string().default(""),
 });
 
 const _env = envSchema.safeParse(process.env);
