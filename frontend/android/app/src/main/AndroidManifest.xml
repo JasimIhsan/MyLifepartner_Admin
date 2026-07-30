@@ -62,6 +62,29 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <!--
+            Required by the sign_in_with_apple package on Android.
+
+            The backend receives Apple's form-POST at the HTTPS redirect URI, then
+            redirects 302 to lifepartneragain://apple-callback?code=...&id_token=...
+            Chrome Custom Tab intercepts custom URI schemes immediately (no App Links
+            domain verification needed), fires this intent, and SignInWithAppleCallback
+            extracts the credentials and resolves the Flutter Future.
+        -->
+        <activity
+            android:name="com.aboutyou.dart_packages.sign_in_with_apple.SignInWithAppleCallback"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="lifepartneragain"
+                    android:host="apple-callback" />
+            </intent-filter>
+        </activity>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

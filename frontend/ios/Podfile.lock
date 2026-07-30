@@ -1,6 +1,18 @@
 PODS:
   - app_links (6.4.1):
     - Flutter
+  - AppAuth (2.1.0):
+    - AppAuth/Core (= 2.1.0)
+    - AppAuth/ExternalUserAgent (= 2.1.0)
+  - AppAuth/Core (2.1.0)
+  - AppAuth/ExternalUserAgent (2.1.0):
+    - AppAuth/Core
+  - AppCheckCore (11.3.1):
+    - GoogleUtilities/Environment (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - PromisesObjC (~> 2.4)
+    - PromisesSwift (~> 2.4)
+    - RecaptchaInterop (~> 101.0)
   - audio_session (0.0.1):
     - Flutter
   - audioplayers_darwin (0.0.1):
@@ -61,6 +73,33 @@ PODS:
   - geolocator_apple (1.2.0):
     - Flutter
     - FlutterMacOS
+  - google_sign_in_ios (0.0.1):
+    - Flutter
+    - FlutterMacOS
+    - GoogleSignIn (~> 9.0)
+    - GTMSessionFetcher (>= 3.4.0)
+  - GoogleSignIn (9.2.0):
+    - AppAuth (~> 2.1)
+    - AppCheckCore (~> 11.0)
+    - GTMAppAuth (~> 5.0)
+    - GTMSessionFetcher/Core (~> 3.3)
+  - GoogleUtilities/Environment (8.1.2):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.1.2):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.1.2)
+  - GoogleUtilities/UserDefaults (8.1.2):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GTMAppAuth (5.0.0):
+    - AppAuth/Core (~> 2.0)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3)
+  - GTMSessionFetcher (3.5.0):
+    - GTMSessionFetcher/Full (= 3.5.0)
+  - GTMSessionFetcher/Core (3.5.0)
+  - GTMSessionFetcher/Full (3.5.0):
+    - GTMSessionFetcher/Core
   - image_picker_ios (0.0.1):
     - Flutter
   - just_audio (0.0.1):
@@ -71,34 +110,41 @@ PODS:
     - Flutter
   - package_info_plus (0.4.5):
     - Flutter
-  - permission_handler_apple (9.3.0):
+  - permission_handler_apple (9.4.8):
     - Flutter
+  - PromisesObjC (2.4.1)
+  - PromisesSwift (2.4.1):
+    - PromisesObjC (= 2.4.1)
   - proximity_sensor (0.0.1):
     - Flutter
-  - purchases_flutter (10.0.1):
+  - purchases_flutter (10.5.0):
     - Flutter
-    - PurchasesHybridCommon (= 18.1.0)
-  - purchases_ui_flutter (10.0.1):
+    - PurchasesHybridCommon (= 18.25.0)
+  - purchases_ui_flutter (10.5.0):
     - Flutter
-    - PurchasesHybridCommonUI (= 18.1.0)
-  - PurchasesHybridCommon (18.1.0):
-    - RevenueCat (= 5.68.0)
-  - PurchasesHybridCommonUI (18.1.0):
-    - PurchasesHybridCommon (= 18.1.0)
-    - RevenueCatUI (= 5.68.0)
-  - record_ios (1.2.0):
+    - PurchasesHybridCommonUI (= 18.25.0)
+  - PurchasesHybridCommon (18.25.0):
+    - RevenueCat (= 5.81.2)
+  - PurchasesHybridCommonUI (18.25.0):
+    - PurchasesHybridCommon (= 18.25.0)
+    - RevenueCatUI (= 5.81.2)
+  - RecaptchaInterop (101.0.0)
+  - record_ios (1.2.1):
     - Flutter
-  - RevenueCat (5.68.0)
-  - RevenueCatUI (5.68.0):
-    - RevenueCat (= 5.68.0)
+  - RevenueCat (5.81.2)
+  - RevenueCatUI (5.81.2):
+    - RevenueCat (= 5.81.2)
   - screen_brightness_ios (0.1.0):
     - Flutter
-  - SDWebImage (5.21.6):
-    - SDWebImage/Core (= 5.21.6)
-  - SDWebImage/Core (5.21.6)
+  - SDWebImage (5.21.7):
+    - SDWebImage/Core (= 5.21.7)
+  - SDWebImage/Core (5.21.7)
   - share_plus (0.0.1):
     - Flutter
   - shared_preferences_foundation (0.0.1):
+    - Flutter
+    - FlutterMacOS
+  - sign_in_with_apple (0.0.1):
     - Flutter
     - FlutterMacOS
   - sqflite_darwin (0.0.4):
@@ -116,27 +162,27 @@ PODS:
     - Flutter
   - zego_callkit (1.0.0):
     - Flutter
-  - zego_express_engine (3.23.0):
+  - zego_express_engine (3.24.1):
     - Flutter
-  - zego_uikit (2.28.44):
+  - zego_uikit (2.29.0):
     - Flutter
     - Masonry
     - zego_express_engine
     - ZegoUIKitReport (= 0.2.10)
-  - zego_uikit_prebuilt_call (4.22.4):
+  - zego_uikit_prebuilt_call (4.24.2):
     - Flutter
-  - zego_uikit_signaling_plugin (2.8.19):
+  - zego_uikit_signaling_plugin (2.8.21):
     - Flutter
-  - zego_zim (2.21.0):
+  - zego_zim (2.26.0):
     - Flutter
-    - ZIM (= 2.21.1)
+    - ZIM (= 2.29.0)
   - zego_zpns (2.6.0):
     - Flutter
-    - ZPNs (= 2.6.0)
+    - ZPNs (= 2.7.0)
   - ZegoUIKitReport (0.2.10)
-  - ZIM (2.21.1)
+  - ZIM (2.29.0)
   - ZIPFoundation (0.9.20)
-  - ZPNs (2.6.0)
+  - ZPNs (2.7.0)
 
 DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
@@ -152,6 +198,7 @@ DEPENDENCIES:
   - flutter_ringtone_player (from `.symlinks/plugins/flutter_ringtone_player/ios`)
   - flutter_volume_controller (from `.symlinks/plugins/flutter_volume_controller/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/darwin`)
+  - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
@@ -164,6 +211,7 @@ DEPENDENCIES:
   - screen_brightness_ios (from `.symlinks/plugins/screen_brightness_ios/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+  - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - vibration (from `.symlinks/plugins/vibration/ios`)
@@ -179,12 +227,21 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - AppAuth
+    - AppCheckCore
     - CryptoSwift
     - DKImagePickerController
     - DKPhotoGallery
+    - GoogleSignIn
+    - GoogleUtilities
+    - GTMAppAuth
+    - GTMSessionFetcher
     - Masonry
+    - PromisesObjC
+    - PromisesSwift
     - PurchasesHybridCommon
     - PurchasesHybridCommonUI
+    - RecaptchaInterop
     - RevenueCat
     - RevenueCatUI
     - SDWebImage
@@ -221,6 +278,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_volume_controller/ios"
   geolocator_apple:
     :path: ".symlinks/plugins/geolocator_apple/darwin"
+  google_sign_in_ios:
+    :path: ".symlinks/plugins/google_sign_in_ios/darwin"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
   just_audio:
@@ -245,6 +304,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/share_plus/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
+  sign_in_with_apple:
+    :path: ".symlinks/plugins/sign_in_with_apple/darwin"
   sqflite_darwin:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   url_launcher_ios:
@@ -272,6 +333,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   app_links: 3dbc685f76b1693c66a6d9dd1e9ab6f73d97dc0a
+  AppAuth: ef4da5a3fc2e10b90c09a0a94a9baeaedc0341d5
+  AppCheckCore: e215d35177a9cf469927863e69c13e220df32a8b
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
   audioplayers_darwin: 835ced6edd4c9fc8ebb0a7cc9e294a91d99917d5
   camera_avfoundation: 5675ca25298b6f81fa0a325188e7df62cc217741
@@ -287,42 +350,51 @@ SPEC CHECKSUMS:
   flutter_ringtone_player: a77c42464250845611eaa44c27e8714acc800138
   flutter_volume_controller: c2be490cb0487e8b88d0d9fc2b7e1c139a4ebccb
   geolocator_apple: ab36aa0e8b7d7a2d7639b3b4e48308394e8cef5e
+  google_sign_in_ios: 000870aa06da9b28d1d0bf7ef70ff0213059dd28
+  GoogleSignIn: e449a40a92e9f2eea56e98b5214d13725dc5a00a
+  GoogleUtilities: 766ace00c6b10d8148408f329d10c4f051931850
+  GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
+  GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
   just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   native_device_orientation: f3ba5f2ddbab3deee23a5f6693b4f97b02dafea2
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
-  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
-  proximity_sensor: 2aef59f90cf0382935faf58ad0a79e1e860773bd
-  purchases_flutter: 50a5d9fa83ee5605a8fc653792d667404ca90bce
-  purchases_ui_flutter: e89e9f04bfa136e068c75426fffc291741ca39bb
-  PurchasesHybridCommon: 32902b8fad349cf549f096183926ee33af00e36a
-  PurchasesHybridCommonUI: 658bc5ca18c14a4bcc543740a3acc092cd0064f6
-  record_ios: 412daca2350b228e698fffcd08f1f94ceb1e3844
-  RevenueCat: c535d3739d51163f6d9d5dbd01c7b5d93b718ff5
-  RevenueCatUI: fb23ded3007789db7a240f05c35c2237a197d629
+  permission_handler_apple: 92d754bbaa7361d436db2d6c3c1c2a0fdcec462e
+  PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273
+  PromisesSwift: 217dea0fd5d2ad65222a109c48698add13cc1c5b
+  proximity_sensor: e4a5a20c70f755eab2738ac72da143b86f8d46ce
+  purchases_flutter: 612ed1b8acf4b2bb197430c3db4b0e644c6ad819
+  purchases_ui_flutter: 21c75ac06037d311e10b4137921efa1d7c42985f
+  PurchasesHybridCommon: 3ecbd072abef4504ca68863319b27a5266678302
+  PurchasesHybridCommonUI: 1b641ef798226ef411194b57ef1aa5b02eeae9df
+  RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
+  record_ios: 980fd386a97a35987d0fce3dfda4b26a38c90f4c
+  RevenueCat: 20ef951452a36a81f8ade921719c85c4e01d08a9
+  RevenueCatUI: ead343e12f6513d9cc530faa77760ee858d4308e
   screen_brightness_ios: 5ed898fa50fa82a26171c086ca5e28228f932576
-  SDWebImage: 1bb6a1b84b6fe87b972a102bdc77dd589df33477
+  SDWebImage: e9fc87c1aab89a8ab1bbd74eba378c6f53be8abf
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb
+  sign_in_with_apple: 5e34677a4e74c5f42760f41b3bbe05343e84d171
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   url_launcher_ios: 7a95fa5b60cc718a708b8f2966718e93db0cef1b
   vibration: ca8104a8875b9c493e15b21b04e456befd0ff6eb
-  video_player_avfoundation: dd410b52df6d2466a42d28550e33e4146928280a
+  video_player_avfoundation: 3453f792138786248960ca029747fcd9f318ef52
   wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
   zego_callkit: 8e3bc2e9fc6895cff1b27841b1de1100344d2613
-  zego_express_engine: 9b73b5b83129ee033287f6597fd5d700b84b27c8
-  zego_uikit: 728c996bc68760fc203863b90440869d7c97a2ae
-  zego_uikit_prebuilt_call: 4f2c61947ae975cb93f7e532869b0c837e90705a
-  zego_uikit_signaling_plugin: ffced40608c89b1ac0241a6194dacb9bc5af19b7
-  zego_zim: 5cd4b8e8835adb4260473b4fe6864c4d142dae3c
-  zego_zpns: e2ef9b972e9b6be00b78b32b71c550c426584752
+  zego_express_engine: c5bb7c034b0618cecf84b109b8c5329fc73bc3a3
+  zego_uikit: ef50efb1fa64b6fda4b298a15ffd5fa27b65aa77
+  zego_uikit_prebuilt_call: 974aa1870e572ff74bbb439fcb58a3005cdd9113
+  zego_uikit_signaling_plugin: a6949c394bb2932a1d4bb8c016ed037923e5f7a4
+  zego_zim: 1f92e538dec9e159a91b7c186484f8b29eb2957e
+  zego_zpns: 9b41a69051477ba7067fd2e27937d62d4a90d79e
   ZegoUIKitReport: a993f7ccc5d243998a7e601a60e16fcd6c084417
-  ZIM: cf0cb6a5b7c40803056c421e289b58440ac98292
+  ZIM: 5776b00e3acfdba37550b0767a8144eae335ca08
   ZIPFoundation: dfd3d681c4053ff7e2f7350bc4e53b5dba3f5351
-  ZPNs: 73bad0046a74e37315201053f9a0e7ac625d9436
+  ZPNs: d0b2f60087ee72756d18a59642bae87b77bdc6ce
 
-PODFILE CHECKSUM: 14da968015507b454535b67d8c1cbf22228773f4
+PODFILE CHECKSUM: 098c94b827f747931487a6dd4c6ada3bfb40f588
 
 COCOAPODS: 1.16.2

@@ -223,20 +223,32 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Primary (Google) - Disabled
+        // Primary (Google) - Enabled
         _buildEditorialButton(
-          icon: SvgPicture.string(_googleSvg, width: 22, height: 22),
+          icon: isGoogleLoading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : SvgPicture.string(_googleSvg, width: 22, height: 22),
           label: "Continue with Google",
-          onPressed: () {},
+          onPressed: isGoogleLoading ? null : initiateGoogleAuth,
           isPrimary: true,
         ),
         const SizedBox(height: 16),
 
-        // Tertiary (Apple) - Disabled
+        // Tertiary (Apple) - Active
         _buildEditorialButton(
-          icon: const Icon(Icons.apple, color: AppColors.black, size: 26),
-          label: "Continue with Apple",
-          onPressed: () {},
+          icon: isAppleLoading
+              ? const SizedBox(
+                  width: 26,
+                  height: 26,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.apple, color: AppColors.black, size: 26),
+          label: isAppleLoading ? "Continuing with Apple..." : "Continue with Apple",
+          onPressed: isAppleLoading ? null : initiateAppleAuth,
           isPrimary: true,
         ),
 

@@ -4,17 +4,24 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/models/onboarding_status.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
+import 'package:life_partner_again/services/google_auth_service.dart';
+import 'package:life_partner_again/services/apple_auth_service.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 mixin LoginControllerState<T extends StatefulWidget> on State<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
   final AuthRepository authRepository = AuthRepository();
   bool isLoading = false;
+  bool isGoogleLoading = false;
+  bool isAppleLoading = false;
 
   @override
   void initState() {
@@ -36,6 +43,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
     setState(() {
       isLoading = true;
     });
+
     try {
       final email = emailController.text.trim().toLowerCase();
       final response = await authRepository.initiateAuth(email: email);
@@ -65,6 +73,216 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
       if (mounted) {
         setState(() {
           isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> processGoogleIdToken(String idToken, {bool skipLoadingCheck = false}) async {
+    if (!skipLoadingCheck && isGoogleLoading) return;
+
+    if (!isGoogleLoading) {
+      setState(() {
+        isGoogleLoading = true;
+      });
+    }
+
+    try {
+      debugPrint("Starting backend Google Sign-In with idToken length: ${idToken.length}");
+      final response = await authRepository.googleSignIn(idToken: idToken);
+      debugPrint("Backend Google Sign-In Response: success=${response.success}");
+
+      if (response.success && response.user != null) {
+        final sharedPrefs = await SharedPreferences.getInstance();
+        sharedPrefs.setBool("isLoggedIn", true);
+
+        final user = response.user!;
+        sharedPrefs.setInt("userId", user.id);
+        sharedPrefs.setString("profileStatus", user.profileStatus);
+        sharedPrefs.setBool(
+          "hasCompletedBasicDetails",
+          user.hasCompletedBasicDetails,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedImageUpload",
+          user.hasCompletedImageUpload,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedPartnerPreference",
+          user.hasCompletedPartnerPreference,
+        );
+        if (user.name != null) {
+          sharedPrefs.setString("name", user.name!);
+        } else {
+          sharedPrefs.remove("name");
+        }
+        sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
+
+        if (!mounted) return;
+
+        final onboardingStatus = OnboardingStatus(
+          id: user.id,
+          hasCompletedBasicDetails: user.hasCompletedBasicDetails,
+          hasCompletedPartnerPreference: user.hasCompletedPartnerPreference,
+          profileStatus: user.profileStatus,
+          hasCompletedImageUpload: user.hasCompletedImageUpload,
+          selfieStatus: user.selfieStatus,
+        );
+
+        context.read<AuthProvider>().loginSuccess(onboardingStatus);
+      }
+    } catch (e) {
+      debugPrint("Google Auth Backend Error: $e");
+      String errorMessage = "Failed to sign in with Google. Please try again.";
+      if (e is DioException) {
+        debugPrint("DioException Status Code: ${e.response?.statusCode}, Error: ${e.response?.data}");
+        errorMessage = getDioErrorMessage(e);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> initiateGoogleAuth() async {
+    if (isGoogleLoading) return;
+
+    setState(() {
+      isGoogleLoading = true;
+    });
+
+    try {
+      final String? idToken = await GoogleAuthService.instance.authenticate();
+      if (idToken == null) {
+        return;
+      }
+
+      await processGoogleIdToken(idToken, skipLoadingCheck: true);
+    } on GoogleAuthCancelledException {
+      debugPrint("Google Sign-In was cancelled by user.");
+    } catch (e) {
+      debugPrint("Google Auth Error: $e");
+      String errorMessage = "Failed to sign in with Google. Please try again.";
+      if (e is DioException) {
+        errorMessage = getDioErrorMessage(e);
+      } else if (e is GoogleAuthException) {
+        errorMessage = e.message;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> initiateAppleAuth() async {
+    if (isAppleLoading) return;
+
+    setState(() {
+      isAppleLoading = true;
+    });
+
+    try {
+      final result = await AppleAuthService.instance.authenticate();
+      if (result == null) {
+        return;
+      }
+
+      debugPrint("Starting backend Apple Sign-In");
+      final response = await authRepository.appleSignIn(
+        identityToken: result.identityToken,
+        authorizationCode: result.authorizationCode,
+        platform: result.platform,
+        email: result.email,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        nonce: result.rawNonce,
+      );
+      
+      debugPrint("Backend Apple Sign-In Response: success=${response.success}");
+
+      if (response.success && response.user != null) {
+        final sharedPrefs = await SharedPreferences.getInstance();
+        sharedPrefs.setBool("isLoggedIn", true);
+
+        final user = response.user!;
+        sharedPrefs.setInt("userId", user.id);
+        sharedPrefs.setString("profileStatus", user.profileStatus);
+        sharedPrefs.setBool(
+          "hasCompletedBasicDetails",
+          user.hasCompletedBasicDetails,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedImageUpload",
+          user.hasCompletedImageUpload,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedPartnerPreference",
+          user.hasCompletedPartnerPreference,
+        );
+        if (user.name != null) {
+          sharedPrefs.setString("name", user.name!);
+        } else {
+          sharedPrefs.remove("name");
+        }
+        sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
+
+        if (!mounted) return;
+
+        final onboardingStatus = OnboardingStatus(
+          id: user.id,
+          hasCompletedBasicDetails: user.hasCompletedBasicDetails,
+          hasCompletedPartnerPreference: user.hasCompletedPartnerPreference,
+          profileStatus: user.profileStatus,
+          hasCompletedImageUpload: user.hasCompletedImageUpload,
+          selfieStatus: user.selfieStatus,
+        );
+
+        context.read<AuthProvider>().loginSuccess(onboardingStatus);
+      }
+    } on AppleAuthCancelledException {
+      debugPrint("Apple Sign-In was cancelled by user.");
+    } catch (e) {
+      debugPrint("Apple Auth Error: $e");
+      String errorMessage = "Failed to sign in with Apple. Please try again.";
+      if (e is DioException) {
+        errorMessage = getDioErrorMessage(e);
+      } else if (e is AppleAuthException) {
+        errorMessage = e.message;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isAppleLoading = false;
         });
       }
     }

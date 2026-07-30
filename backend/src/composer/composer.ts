@@ -68,6 +68,7 @@ import { UserFeatureService } from "@/services/user/user.feature.service";
 import { ProfileService } from "@/services/user/user.profile.service";
 import { JobService } from "@/services/user/job.service";
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
+import { OAuthService } from "@/services/user/user.oauth.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Controllers
@@ -93,6 +94,7 @@ import { UserController } from "@/controllers/user/user.controller";
 import { JobController } from "@/controllers/user/job.controller";
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
 import { ZegoController } from "@/controllers/user/zego.controller";
+import { OAuthController } from "@/controllers/user/oauth.controller";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Repository Instances
@@ -147,6 +149,7 @@ export const imageProcessorService = new ImageProcessorService();
 export const profileService = new ProfileService(profileRepository, s3Service, imageProcessorService);
 export const jobService = new JobService(jobRepository);
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository, subscriptionWebhookRepository);
+export const oauthService = new OAuthService(userRepository, jwtService, subscriptionPlanRepository, userSubscriptionRepository);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);
@@ -184,3 +187,4 @@ export const matchController = new MatchController(matchService);
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService, userFeatureService);
 export const chatController = new ChatController(chatService);
 export const zegoController = new ZegoController(zegoService);
+export const oauthController = new OAuthController(oauthService);

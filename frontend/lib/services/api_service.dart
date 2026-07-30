@@ -64,7 +64,7 @@ class ApiService {
           final refreshToken = await TokenService.getRefreshToken();
 
           if (refreshToken == null || refreshToken.isEmpty) {
-            await _logoutAndRedirect();
+            await ApiService.logoutAndRedirect();
             return handler.next(e);
           }
 
@@ -107,17 +107,24 @@ class ApiService {
 
   static Dio get client => _instance.dio;
 
-  Future<void> _retryRequest(RequestOptions requestOptions, ErrorInterceptorHandler handler) async {
+  Future<void> _retryRequest(
+    RequestOptions requestOptions,
+    ErrorInterceptorHandler handler,
+  ) async {
     final newAccessToken = await TokenService.getAccessToken();
     final retryOptions = requestOptions;
     retryOptions.extra['retried'] = true;
     retryOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-    
+
     try {
       final retryResponse = await dio.fetch(retryOptions);
       return handler.resolve(retryResponse);
     } catch (err) {
-      return handler.next(err is DioException ? err : DioException(requestOptions: retryOptions, error: err));
+      return handler.next(
+        err is DioException
+            ? err
+            : DioException(requestOptions: retryOptions, error: err),
+      );
     }
   }
 
@@ -135,7 +142,7 @@ class ApiService {
           },
         ),
       );
-      
+
       refreshDio.httpClientAdapter = dio.httpClientAdapter;
 
       final refreshResponse = await refreshDio.post(
@@ -143,12 +150,12 @@ class ApiService {
         data: {'refreshToken': refreshToken},
       );
 
-      final responseData = refreshResponse.data is String 
-        ? jsonDecode(refreshResponse.data) 
-        : refreshResponse.data;
+      final responseData = refreshResponse.data is String
+          ? jsonDecode(refreshResponse.data)
+          : refreshResponse.data;
 
       if (responseData == null || responseData['data'] == null) {
-        await _logoutAndRedirect();
+        await ApiService.logoutAndRedirect();
         return false;
       }
 
@@ -160,7 +167,7 @@ class ApiService {
           newAccessToken.toString().isEmpty ||
           newRefreshToken == null ||
           newRefreshToken.toString().isEmpty) {
-        await _logoutAndRedirect();
+        await ApiService.logoutAndRedirect();
         return false;
       }
 
@@ -168,15 +175,15 @@ class ApiService {
         accessToken: newAccessToken,
         refreshToken: newRefreshToken,
       );
-      
+
       return true;
     } catch (_) {
-      await _logoutAndRedirect();
+      await ApiService.logoutAndRedirect();
       return false;
     }
   }
 
-  static Future<void> _logoutAndRedirect() async {
+  static Future<void> logoutAndRedirect() async {
     await TokenService.clearTokens();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();

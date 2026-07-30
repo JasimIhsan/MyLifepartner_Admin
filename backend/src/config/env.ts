@@ -35,6 +35,24 @@ const envSchema = z.object({
    // CORS — comma-separated allowed origins for production (e.g. https://app.example.com)
    // Leave empty in development to allow all origins
    ALLOWED_ORIGINS: z.string().default(""),
+
+   // Google Auth
+   GOOGLE_CLIENT_ID: z.string().default("default-google-client-id"),
+   GOOGLE_CLIENT_SECRET: z.string().default("default-google-client-secret"),
+   GOOGLE_WEB_CLIENT_ID: z.string().default(""),
+
+   // Apple Auth
+   APPLE_TEAM_ID: z.string().default(""),
+   APPLE_KEY_ID: z.string().default(""),
+   APPLE_PRIVATE_KEY: z.string().default(""),
+   APPLE_IOS_CLIENT_ID: z.string().default("com.premiumglobalcorp.lifepartneragain"),
+   APPLE_SERVICE_ID: z.string().default("com.premiumglobalcorp.lifepartneragain.web"),
+   // APPLE_REDIRECT_URI must be registered in Apple Developer Console → Services → Sign In with Apple
+   APPLE_REDIRECT_URI: z.string().default("https://api.lifepartneragain.ciltriq.com/api/user/oauth/apple/callback"),
+   // FRONTEND_URL: the Flutter web app origin (e.g. https://app.lifepartneragain.com).
+   // Used as postMessage targetOrigin in the Apple callback page to prevent token leakage.
+   // Defaults to "*" in development — MUST be set explicitly in production.
+   FRONTEND_URL: z.string().default("*"),
 });
 
 const _env = envSchema.safeParse(process.env);

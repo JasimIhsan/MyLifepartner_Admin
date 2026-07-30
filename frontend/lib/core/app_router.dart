@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_routes.dart';
-import 'package:life_partner_again/main.dart' show navigatorKey;
+import 'package:life_partner_again/main.dart' show navigatorKey, routeObserver;
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
@@ -31,6 +31,7 @@ GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
     navigatorKey: navigatorKey,
     initialLocation: AppRoutes.home,
+    observers: [routeObserver],
     refreshListenable: authProvider,
     redirect: (context, state) {
       final auth = authProvider;
