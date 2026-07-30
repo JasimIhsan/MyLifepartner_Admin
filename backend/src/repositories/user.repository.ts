@@ -133,6 +133,49 @@ export class UserRepository implements IUserRepository {
    }
 
    /**
+    * Finds a user by provider and providerUserId.
+    */
+   async findByProviderId(provider: string, providerUserId: string): Promise<UserWithProfile | null> {
+      const socialAccount = await prisma.socialAccount.findUnique({
+         where: {
+            provider_providerUserId: {
+               provider,
+               providerUserId,
+            },
+         },
+         select: {
+            userId: true,
+         },
+      });
+
+      if (!socialAccount) return null;
+
+      return this.findById(socialAccount.userId);
+   }
+
+   /**
+    * Upserts a social account record linking a user to a social auth provider.
+    */
+   async upsertSocialAccount(userId: number, provider: string, providerUserId: string): Promise<void> {
+      await prisma.socialAccount.upsert({
+         where: {
+            provider_providerUserId: {
+               provider,
+               providerUserId,
+            },
+         },
+         update: {
+            userId,
+         },
+         create: {
+            userId,
+            provider,
+            providerUserId,
+         },
+      });
+   }
+
+   /**
     * Finds a user by mobile number.
     *
     * @param mobileNumber - User mobile number.

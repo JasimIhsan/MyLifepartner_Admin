@@ -10,4 +10,19 @@ const router = Router();
  */
 router.post("/google", oauthController.googleSignIn);
 
+/**
+ * @route   POST /api/v1/user/oauth/apple
+ * @desc    Authenticate with Apple
+ * @access  Public
+ */
+router.post("/apple", oauthController.appleSignIn);
+
+/**
+ * @route   POST /api/v1/user/oauth/apple/callback
+ * @desc    Apple Sign In Web/Android Callback
+ * @access  Public
+ */
+router.post("/apple/callback", oauthController.appleCallback);
+router.get("/apple/callback", oauthController.appleCallback);
+
 export default router;

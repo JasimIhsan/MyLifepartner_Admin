@@ -238,11 +238,17 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
         ),
         const SizedBox(height: 16),
 
-        // Tertiary (Apple) - Disabled
+        // Tertiary (Apple) - Active
         _buildEditorialButton(
-          icon: const Icon(Icons.apple, color: AppColors.black, size: 26),
-          label: "Continue with Apple",
-          onPressed: () {},
+          icon: isAppleLoading
+              ? const SizedBox(
+                  width: 26,
+                  height: 26,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.apple, color: AppColors.black, size: 26),
+          label: isAppleLoading ? "Continuing with Apple..." : "Continue with Apple",
+          onPressed: isAppleLoading ? null : initiateAppleAuth,
           isPrimary: true,
         ),
 

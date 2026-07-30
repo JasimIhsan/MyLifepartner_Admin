@@ -9,6 +9,7 @@ import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/services/google_auth_service.dart';
+import 'package:life_partner_again/services/apple_auth_service.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
   final AuthRepository authRepository = AuthRepository();
   bool isLoading = false;
   bool isGoogleLoading = false;
+  bool isAppleLoading = false;
 
   @override
   void initState() {
@@ -189,6 +191,98 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
       if (mounted) {
         setState(() {
           isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> initiateAppleAuth() async {
+    if (isAppleLoading) return;
+
+    setState(() {
+      isAppleLoading = true;
+    });
+
+    try {
+      final result = await AppleAuthService.instance.authenticate();
+      if (result == null) {
+        return;
+      }
+
+      debugPrint("Starting backend Apple Sign-In");
+      final response = await authRepository.appleSignIn(
+        identityToken: result.identityToken,
+        authorizationCode: result.authorizationCode,
+        platform: result.platform,
+        email: result.email,
+        firstName: result.firstName,
+        lastName: result.lastName,
+        nonce: result.rawNonce,
+      );
+      
+      debugPrint("Backend Apple Sign-In Response: success=${response.success}");
+
+      if (response.success && response.user != null) {
+        final sharedPrefs = await SharedPreferences.getInstance();
+        sharedPrefs.setBool("isLoggedIn", true);
+
+        final user = response.user!;
+        sharedPrefs.setInt("userId", user.id);
+        sharedPrefs.setString("profileStatus", user.profileStatus);
+        sharedPrefs.setBool(
+          "hasCompletedBasicDetails",
+          user.hasCompletedBasicDetails,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedImageUpload",
+          user.hasCompletedImageUpload,
+        );
+        sharedPrefs.setBool(
+          "hasCompletedPartnerPreference",
+          user.hasCompletedPartnerPreference,
+        );
+        if (user.name != null) {
+          sharedPrefs.setString("name", user.name!);
+        } else {
+          sharedPrefs.remove("name");
+        }
+        sharedPrefs.setString("selfieStatus", user.selfieStatus ?? "NONE");
+
+        if (!mounted) return;
+
+        final onboardingStatus = OnboardingStatus(
+          id: user.id,
+          hasCompletedBasicDetails: user.hasCompletedBasicDetails,
+          hasCompletedPartnerPreference: user.hasCompletedPartnerPreference,
+          profileStatus: user.profileStatus,
+          hasCompletedImageUpload: user.hasCompletedImageUpload,
+          selfieStatus: user.selfieStatus,
+        );
+
+        context.read<AuthProvider>().loginSuccess(onboardingStatus);
+      }
+    } on AppleAuthCancelledException {
+      debugPrint("Apple Sign-In was cancelled by user.");
+    } catch (e) {
+      debugPrint("Apple Auth Error: $e");
+      String errorMessage = "Failed to sign in with Apple. Please try again.";
+      if (e is DioException) {
+        errorMessage = getDioErrorMessage(e);
+      } else if (e is AppleAuthException) {
+        errorMessage = e.message;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isAppleLoading = false;
         });
       }
     }

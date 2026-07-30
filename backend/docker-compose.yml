@@ -5,6 +5,8 @@ services:
          target: builder
       container_name: backend
       restart: always
+      environment:
+         NODE_OPTIONS: "--dns-result-order=ipv4first"
       volumes:
          - .:/app
          - /app/node_modules

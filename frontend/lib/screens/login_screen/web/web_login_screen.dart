@@ -251,11 +251,17 @@ class _WebLoginScreenState extends State<WebLoginScreen>
         const SizedBox(height: 16),
 
 
-        // Tertiary (Apple) - Disabled (Made primary-styled by user)
+        // Tertiary (Apple) - Active
         _buildEditorialButton(
-          icon: const Icon(Icons.apple, color: Colors.black87, size: 28),
-          label: "Continue with Apple",
-          onPressed: null,
+          icon: isAppleLoading
+              ? const SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.apple, color: Colors.black87, size: 28),
+          label: isAppleLoading ? "Continuing with Apple..." : "Continue with Apple",
+          onPressed: isAppleLoading ? null : initiateAppleAuth,
           isPrimary: true,
         ),
 

@@ -87,6 +87,41 @@ class AuthRepository {
     }
   }
 
+  Future<AuthResultResponse> appleSignIn({
+    required String identityToken,
+    required String authorizationCode,
+    required String platform,
+    String? email,
+    String? firstName,
+    String? lastName,
+    String? nonce,
+  }) async {
+    try {
+      final response = await _dio.post(
+        "/oauth/apple",
+        data: {
+          "identityToken": identityToken,
+          "authorizationCode": authorizationCode,
+          "platform": platform,
+          "email": email,
+          "firstName": firstName,
+          "lastName": lastName,
+          "nonce": nonce,
+        },
+      );
+      final verifyResponse = AuthResultResponse.fromJson(response.data);
+      if (verifyResponse.success) {
+        await TokenService.saveTokens(
+          accessToken: verifyResponse.accessToken,
+          refreshToken: verifyResponse.refreshToken,
+        );
+      }
+      return verifyResponse;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<AuthResultResponse> register({
     required String email,
     required String password,

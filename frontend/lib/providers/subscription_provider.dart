@@ -472,7 +472,7 @@ class SubscriptionProvider extends ChangeNotifier {
   Future<void> openGooglePlaySubscription() async {
     try {
       final info = await Purchases.getCustomerInfo();
-      
+
       // Use RevenueCat's native management URL if available (supports both iOS and Android dynamically)
       if (info.managementURL != null && info.managementURL!.isNotEmpty) {
         final Uri uri = Uri.parse(info.managementURL!);
@@ -515,11 +515,15 @@ class SubscriptionProvider extends ChangeNotifier {
     Duration delay = const Duration(seconds: 2),
   }) async {
     for (int i = 0; i < maxRetries; i++) {
-      debugPrint("🔄 Subscription refresh retry attempt ${i + 1}/$maxRetries...");
+      debugPrint(
+        "🔄 Subscription refresh retry attempt ${i + 1}/$maxRetries...",
+      );
       await fetchMySubscription();
       final sub = _mySubscription;
       if (sub != null && !sub.willRenew) {
-        debugPrint("✅ Refresh retry detected updated cancellation state (willRenew=false).");
+        debugPrint(
+          "✅ Refresh retry detected updated cancellation state (willRenew=false).",
+        );
         break;
       }
       if (i < maxRetries - 1) {
