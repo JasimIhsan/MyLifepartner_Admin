@@ -66,7 +66,14 @@ flutter {
 }
 
 dependencies {
-    // ...
+    // Material components
     implementation("com.google.android.material:material:1.14.0")
-    // ...
+
+    // ── Google Sign-In / Credential Manager (required by google_sign_in_android v7+) ──
+    // These are transitive deps of google_sign_in_android 7.2.x but must be declared
+    // explicitly to guarantee correct resolution in release builds with R8 enabled.
+    implementation("androidx.credentials:credentials:1.5.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 }
+

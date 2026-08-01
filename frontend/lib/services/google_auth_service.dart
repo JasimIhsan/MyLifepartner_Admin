@@ -37,15 +37,17 @@ class GoogleAuthService {
     try {
       if (kIsWeb) {
         final bool hasWebClientId = Env.googleWebClientId.isNotEmpty;
-        debugPrint("GoogleAuthService: Platform=Web, WebClientID Configured=$hasWebClientId");
-
-        await GoogleSignIn.instance.initialize(
-          clientId: Env.googleWebClientId,
+        debugPrint(
+          "GoogleAuthService: Platform=Web, WebClientID Configured=$hasWebClientId",
         );
+
+        await GoogleSignIn.instance.initialize(clientId: Env.googleWebClientId);
       } else if (defaultTargetPlatform == TargetPlatform.iOS) {
         final bool hasIosClientId = Env.googleIosClientId.isNotEmpty;
         final bool hasServerClientId = Env.googleWebClientId.isNotEmpty;
-        debugPrint("GoogleAuthService: Platform=iOS, iOSClientID Configured=$hasIosClientId, ServerClientID Configured=$hasServerClientId");
+        debugPrint(
+          "GoogleAuthService: Platform=iOS, iOSClientID Configured=$hasIosClientId, ServerClientID Configured=$hasServerClientId",
+        );
 
         await GoogleSignIn.instance.initialize(
           clientId: Env.googleIosClientId,
@@ -53,10 +55,11 @@ class GoogleAuthService {
         );
       } else if (defaultTargetPlatform == TargetPlatform.android) {
         final bool hasServerClientId = Env.googleServerClientId.isNotEmpty;
-        debugPrint("GoogleAuthService: Platform=Android, ServerClientID Configured=$hasServerClientId");
+        debugPrint(
+          "GoogleAuthService: Platform=Android, ServerClientID Configured=$hasServerClientId, ServerClientID=${Env.googleServerClientId}",
+        );
 
         await GoogleSignIn.instance.initialize(
-          clientId: Env.googleServerClientId,
           serverClientId: Env.googleServerClientId,
         );
       } else {
@@ -68,8 +71,17 @@ class GoogleAuthService {
 
       _isInitialized = true;
       debugPrint("GoogleAuthService: Initialization success.");
+    } on PlatformException catch (e, stackTrace) {
+      // Credential Manager errors on Android surface as PlatformException.
+      // Log the code so it appears in release crash logs / Play Console ANRs.
+      debugPrint(
+        "GoogleAuthService: Initialization PlatformException: code=${e.code}, message=${e.message}, details=${e.details}\n$stackTrace",
+      );
+      _isInitialized = false; // allow retry on next sign-in attempt
+      rethrow;
     } catch (e, stackTrace) {
       debugPrint("GoogleAuthService: Initialization failed: $e\n$stackTrace");
+      _isInitialized = false; // allow retry on next sign-in attempt
       rethrow;
     }
   }
@@ -91,13 +103,16 @@ class GoogleAuthService {
         );
       }
 
-      final GoogleSignInAccount account = await GoogleSignIn.instance.authenticate();
+      final GoogleSignInAccount account = await GoogleSignIn.instance
+          .authenticate();
 
       final GoogleSignInAuthentication authentication = account.authentication;
       final String? idToken = authentication.idToken;
       final bool hasIdToken = idToken != null && idToken.isNotEmpty;
 
-      debugPrint("GoogleAuthService: Authenticated successfully. Received idToken=$hasIdToken");
+      debugPrint(
+        "GoogleAuthService: Authenticated successfully. Received idToken=$hasIdToken",
+      );
 
       if (!hasIdToken) {
         throw GoogleAuthException("Could not retrieve ID token from Google.");
@@ -105,11 +120,16 @@ class GoogleAuthService {
 
       return idToken;
     } on PlatformException catch (e) {
-      debugPrint("GoogleAuthService Platform Exception: code=${e.code}, message=${e.message}");
+      debugPrint(
+        "GoogleAuthService Platform Exception: code=${e.code}, message=${e.message}",
+      );
       if (e.code == 'canceled' || e.code == 'popup_closed_by_user') {
         throw GoogleAuthCancelledException("Sign in cancelled by user.");
       }
-      throw GoogleAuthException("Google Sign-In failed: ${e.message ?? e.code}", e);
+      throw GoogleAuthException(
+        "Google Sign-In failed: ${e.message ?? e.code}",
+        e,
+      );
     } catch (e) {
       debugPrint("GoogleAuthService Exception: $e");
       final String errorStr = e.toString().toLowerCase();
@@ -119,7 +139,10 @@ class GoogleAuthService {
       if (e is GoogleAuthCancelledException || e is GoogleAuthException) {
         rethrow;
       }
-      throw GoogleAuthException("Failed to sign in with Google. Please try again.", e);
+      throw GoogleAuthException(
+        "Failed to sign in with Google. Please try again.",
+        e,
+      );
     } finally {
       _isSigningIn = false;
     }
