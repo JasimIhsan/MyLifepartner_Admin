@@ -9,7 +9,7 @@ class Env {
   // Environment flags
   // isProduction => Siraj
   // !isProduction => Jasim
-  static const bool isProduction = false;
+  static const bool isProduction = true;
 
   // ZEGOCLOUD — AppID only. AppSign is NEVER stored on the client.
   // Authentication uses backend-generated tokens from /api/user/zego/token.
@@ -20,8 +20,9 @@ class Env {
   static const String revenueCatApiKey = 'goog_iPFGEdyRedFAtyobbTVSFapcuRW';
 
   // Google Sign-In Server Client ID (Android / Backend Verification)
-  static const String googleServerClientId =
-      '856649629853-6ma089cfgf930e29mstdj9ga8g20jltj.apps.googleusercontent.com';
+  static const String googleServerClientId = isProduction
+      ? '856649629853-8q5tb42lfl93mr9vdl8n34mcuhh34ahb.apps.googleusercontent.com'
+      : '856649629853-6ma089cfgf930e29mstdj9ga8g20jltj.apps.googleusercontent.com';
 
   // Google Sign-In Web OAuth Client ID (Flutter Web GIS)
   static const String googleWebClientId =

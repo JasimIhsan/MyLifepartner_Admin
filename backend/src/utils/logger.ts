@@ -92,11 +92,10 @@ const productionFormat = winston.format.combine(
    winston.format.json()
 );
 
-
 const logger = winston.createLogger({
    levels: LOG_LEVELS,
    level: getLogLevel(),
-   format: isDevelopment ? developmentFormat : productionFormat,
+   format: developmentFormat,
    // defaultMeta: {
    //    service: env.APP_NAME,
    //    environment: env.NODE_ENV,
@@ -110,4 +109,3 @@ const logger = winston.createLogger({
    exitOnError: false,
 });
 export default logger;
-
