@@ -8,8 +8,8 @@ import { FeatureFullPayload, FeatureLimitsOnlyPayload, ISubscriptionWebhookRepos
 import { ISyncTransactionContext, IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
 import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
-import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
+import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
@@ -101,7 +101,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       const plan = await this.getRequiredActivePlan(planId);
       const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
-      // C-2 — Reject any attempt to activate a paid plan from the client
       if (!freePlan || plan.id !== freePlan.id) {
          throw new ApiError(403, "Direct plan subscription is not allowed. Paid plans must be purchased through the app store.");
       }
@@ -141,6 +140,8 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       logger.info(`[SYNC_SUBSCRIPTION] Identity check passed inherently by RevenueCat API. Fetched data for userId ${userId}. (original_app_user_id: '${originalUserIdStr}')`);
 
       const activeProduct = this.findActiveRevenueCatProduct(revenueCatData);
+
+      let emailPlan: SubscriptionPlan | null = null;
 
       await this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
          const currentSubscription = await ctx.findActiveSubscriptionByUserId(userId);
@@ -193,6 +194,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                reason: "Subscription activated via /sync — verified active product in RevenueCat",
                source: "SYNC",
             });
+            emailPlan = targetPlan;
             return;
          }
 
@@ -241,6 +243,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                reason: "Immediate upgrade via /sync",
                source: "SYNC",
             });
+            emailPlan = targetPlan;
          } else {
             logger.info(`[SYNC_SUBSCRIPTION] Deferring downgrade for userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name} until ${endDate.toISOString()}`);
             await ctx.updateUserSubscription(currentSubscription.id, {
@@ -260,20 +263,25 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          }
       });
 
+      const finalEmailPlan = emailPlan as SubscriptionPlan | null;
+      if (finalEmailPlan) {
+         try {
+            const user = await this.userRepository.findById(userId);
+            if (user && user.email) {
+               await this.emailService.sendPaymentReceiptEmail(user.email, finalEmailPlan.name, finalEmailPlan.price, user.profile?.name || undefined);
+            }
+         } catch (error) {
+            logger.error(`[SYNC_SUBSCRIPTION] Failed to send subscription email to userId ${userId}`, { error });
+         }
+      }
+
       return this.getMySubscription(userId);
    }
 
    /**
     * Handles a RevenueCat webhook event.
-    *
-    * Security fixes applied here:
-    *   C-1  — Validates REVENUECAT_WEBHOOK_SECRET against the Authorization header.
-    *   C-4  — Idempotency is now atomic: the ProcessedRevenueCatEvent row is inserted
-    *           inside the same database transaction as the subscription update.
-    *           A unique-constraint violation is caught and treated as "already processed".
     */
    async handleWebhook(payload: Record<string, unknown>, signatureHeader?: string): Promise<void> {
-      // ── C-1: Validate webhook signature ─────────────────────────────────────
       const webhookSecret = env.REVENUECAT_WEBHOOK_SECRET;
       if (!signatureHeader || signatureHeader !== webhookSecret) {
          logger.warn("Webhook: rejected — invalid or missing Authorization header");

@@ -11,6 +11,7 @@ import path from "path";
 const EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/otp/otp.html");
 const WELCOME_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/welcome/welcome.html");
 const SUBSCRIPTION_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/subscription/subscription.html");
+const RECEIPT_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/subscription/receipt.html");
 
 const APP_NAME = "Life Partner Again";
 const OTP_EMAIL_SUBJECT = "Your OTP - Life Partner Again";
@@ -99,6 +100,37 @@ export class EmailService implements IEmailService {
       } catch (error) {
          logger.error("Error in sendSubscriptionSuccessEmail", { error, to, planName });
          throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Subscription Success email");
+      }
+   }
+
+   /**
+    * Sends Payment Receipt email.
+    */
+   async sendPaymentReceiptEmail(to: string, planName: string, price: number, userName: string = "there"): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Payment Receipt email to: ${to} for plan: ${planName}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Payment Receipt";
+
+         const formattedPrice = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0 }).format(price);
+         const date = new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
+
+         const textMessage = `Thank you for your purchase! Your payment has been successfully processed.\n\nOrder Summary:\n- Plan: ${planName}\n- Date: ${date}\n- Total Amount: ${formattedPrice}\n\nYou now have full access to all the premium features associated with your plan.`;
+
+         const htmlMessage = this.getPaymentReceiptEmailHtml(title, planName, date, formattedPrice, userName, headerImageUrl);
+
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Your Payment Receipt",
+            html: htmlMessage,
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Payment Receipt email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendPaymentReceiptEmail", { error, to, planName });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Payment Receipt email");
       }
    }
 
@@ -196,6 +228,23 @@ export class EmailService implements IEmailService {
       return template
          .replace(/{{TITLE}}/g, title)
          .replace(/{{MESSAGE}}/g, message)
+         .replace(/{{USER_NAME}}/g, userName)
+         .replace(/{{YEAR}}/g, currentYear)
+         .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);
+   }
+
+   /**
+    * Builds Payment Receipt email HTML.
+    */
+   private getPaymentReceiptEmailHtml(title: string, planName: string, date: string, formattedPrice: string, userName: string, headerImageUrl: string): string {
+      const template = fs.readFileSync(RECEIPT_EMAIL_TEMPLATE_PATH, "utf-8");
+      const currentYear = new Date().getFullYear().toString();
+
+      return template
+         .replace(/{{TITLE}}/g, title)
+         .replace(/{{PLAN_NAME}}/g, planName)
+         .replace(/{{DATE}}/g, date)
+         .replace(/{{FORMATTED_PRICE}}/g, formattedPrice)
          .replace(/{{USER_NAME}}/g, userName)
          .replace(/{{YEAR}}/g, currentYear)
          .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);
