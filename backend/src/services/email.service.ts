@@ -106,13 +106,13 @@ export class EmailService implements IEmailService {
    /**
     * Sends Payment Receipt email.
     */
-   async sendPaymentReceiptEmail(to: string, planName: string, price: number, userName: string = "there"): Promise<SentMessageInfo> {
+   async sendPaymentReceiptEmail(to: string, planName: string, price: number, currency: string, userName: string = "there"): Promise<SentMessageInfo> {
       try {
-         logger.info(`[EmailService] Preparing to send Payment Receipt email to: ${to} for plan: ${planName}`);
+         logger.info(`[EmailService] Preparing to send Payment Receipt email to: ${to} for plan: ${planName}, price: ${price} ${currency}`);
          const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
          const title = "Payment Receipt";
 
-         const formattedPrice = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0 }).format(price);
+         const formattedPrice = new Intl.NumberFormat("en-IN", { style: "currency", currency: currency || "INR", minimumFractionDigits: 0 }).format(price);
          const date = new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
 
          const textMessage = `Thank you for your purchase! Your payment has been successfully processed.\n\nOrder Summary:\n- Plan: ${planName}\n- Date: ${date}\n- Total Amount: ${formattedPrice}\n\nYou now have full access to all the premium features associated with your plan.`;

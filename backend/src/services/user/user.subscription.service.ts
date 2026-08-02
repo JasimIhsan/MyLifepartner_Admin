@@ -141,8 +141,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       const activeProduct = this.findActiveRevenueCatProduct(revenueCatData);
 
-      let emailPlan: SubscriptionPlan | null = null;
-
       await this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
          const currentSubscription = await ctx.findActiveSubscriptionByUserId(userId);
          const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
@@ -194,7 +192,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                reason: "Subscription activated via /sync — verified active product in RevenueCat",
                source: "SYNC",
             });
-            emailPlan = targetPlan;
             return;
          }
 
@@ -243,7 +240,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                reason: "Immediate upgrade via /sync",
                source: "SYNC",
             });
-            emailPlan = targetPlan;
          } else {
             logger.info(`[SYNC_SUBSCRIPTION] Deferring downgrade for userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name} until ${endDate.toISOString()}`);
             await ctx.updateUserSubscription(currentSubscription.id, {
@@ -262,18 +258,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             });
          }
       });
-
-      const finalEmailPlan = emailPlan as SubscriptionPlan | null;
-      if (finalEmailPlan) {
-         try {
-            const user = await this.userRepository.findById(userId);
-            if (user && user.email) {
-               await this.emailService.sendPaymentReceiptEmail(user.email, finalEmailPlan.name, finalEmailPlan.price, user.profile?.name || undefined);
-            }
-         } catch (error) {
-            logger.error(`[SYNC_SUBSCRIPTION] Failed to send subscription email to userId ${userId}`, { error });
-         }
-      }
 
       return this.getMySubscription(userId);
    }
@@ -359,11 +343,10 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                   if (plan) planName = plan.name;
                }
 
-               if (event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE) {
-                  await this.emailService.sendSubscriptionSuccessEmail(user.email, planName, user.profile?.name || undefined);
-               } else if (event.type === RevenueCatWebhookEvent.RENEWAL) {
-                  const expirationDate = new Date(event.expiration_at_ms || Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
-                  await this.emailService.sendSubscriptionRenewalEmail(user.email, planName, expirationDate, user.profile?.name || undefined);
+               if (event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE || event.type === RevenueCatWebhookEvent.RENEWAL) {
+                  const price = event.price ?? 0;
+                  const currency = event.currency ?? "INR";
+                  await this.emailService.sendPaymentReceiptEmail(user.email, planName, price, currency, user.profile?.name || undefined);
                } else if (event.type === RevenueCatWebhookEvent.BILLING_ISSUE) {
                   await this.emailService.sendSubscriptionFailureEmail(user.email, planName, user.profile?.name || undefined);
                }
