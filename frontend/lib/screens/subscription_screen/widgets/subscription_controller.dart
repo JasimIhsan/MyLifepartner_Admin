@@ -170,10 +170,10 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'To cancel your subscription, you will be directed to your Google Play subscription settings. Your premium features will remain active until the end of your current billing period.',
+          Text(
+            'To cancel your subscription, you will be directed to your ${(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) ? "Apple App Store" : "Google Play"} subscription settings. Your premium features will remain active until the end of your current billing period.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 32),
           Row(

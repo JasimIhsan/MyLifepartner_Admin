@@ -185,6 +185,88 @@ export class EmailService implements IEmailService {
    }
 
    /**
+    * Sends Subscription Cancelled email.
+    * Informs the user that their subscription is cancelled but premium access
+    * remains active until the end of the current billing period.
+    */
+   async sendSubscriptionCancelledEmail(to: string, planName: string, expiresAt: string, userName: string = "there"): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Subscription Cancelled email to: ${to} for plan: ${planName}, expiresAt: ${expiresAt}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Subscription Cancelled";
+         const message = `<p>Your <strong>${planName}</strong> subscription has been cancelled.</p><p>Don't worry — you'll continue to have full premium access until <strong>${expiresAt}</strong>. After that date, your account will be downgraded to the free plan.</p><p>You can resubscribe at any time from the app to continue enjoying premium features.</p>`;
+         const textMessage = `Your ${planName} subscription has been cancelled.\n\nYou'll continue to have full premium access until ${expiresAt}. After that, your account will be downgraded to the free plan.\n\nYou can resubscribe at any time from the app.`;
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Your Subscription Has Been Cancelled",
+            html: this.getSubscriptionEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Subscription Cancelled email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendSubscriptionCancelledEmail", { error, to, planName });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Subscription Cancelled email");
+      }
+   }
+
+   /**
+    * Sends Subscription Expired email.
+    * Sent when the subscription has fully expired and the user has been
+    * downgraded to the free plan.
+    */
+   async sendSubscriptionExpiredEmail(to: string, planName: string, userName: string = "there"): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Subscription Expired email to: ${to} for plan: ${planName}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Your Subscription Has Expired";
+         const message = `<p>Your <strong>${planName}</strong> subscription has expired and your account has been moved to the free plan.</p><p>You can resubscribe at any time from the app to regain access to all premium features.</p>`;
+         const textMessage = `Your ${planName} subscription has expired. Your account has been moved to the free plan.\n\nYou can resubscribe at any time from the app to regain premium access.`;
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Your Subscription Has Expired",
+            html: this.getSubscriptionEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Subscription Expired email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendSubscriptionExpiredEmail", { error, to, planName });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Subscription Expired email");
+      }
+   }
+
+   /**
+    * Sends Subscription Restored email.
+    * Sent when a previously cancelled subscription is un-cancelled (user
+    * reactivated auto-renewal before expiry).
+    */
+   async sendSubscriptionRestoredEmail(to: string, planName: string, userName: string = "there"): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Subscription Restored email to: ${to} for plan: ${planName}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Subscription Reactivated";
+         const message = `<p>Welcome back! Your <strong>${planName}</strong> subscription has been successfully reactivated.</p><p>Your auto-renewal is now turned back on and your premium access continues uninterrupted. Thank you for staying with us!</p>`;
+         const textMessage = `Welcome back! Your ${planName} subscription has been successfully reactivated.\n\nAuto-renewal is on and your premium access continues. Thank you for staying with us!`;
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Your Subscription Has Been Reactivated",
+            html: this.getSubscriptionEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Subscription Restored email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendSubscriptionRestoredEmail", { error, to, planName });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Subscription Restored email");
+      }
+   }
+
+
+   /**
     * Builds OTP email HTML.
     *
     * @param otp - OTP code.

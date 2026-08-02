@@ -459,6 +459,9 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                           ?.willRenew ??
                                                       true,
                                                   visuals: visuals,
+                                                  hasBillingIssue: isCurrentPlan ? provider.hasBillingIssue : false,
+                                                  isInGracePeriod: isCurrentPlan ? provider.isInGracePeriod : false,
+                                                  isCancelledButActive: isCurrentPlan ? provider.isCancelledButActive : false,
                                                   onSubscribe: () {
                                                     if (isCurrentPlan &&
                                                         plan.price > 0) {

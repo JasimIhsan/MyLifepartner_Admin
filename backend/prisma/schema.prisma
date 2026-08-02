@@ -249,10 +249,16 @@ model UserSubscription {
   planChangesAt          DateTime?
   refundedAt             DateTime?
   expiredAt              DateTime?
+  /// Populated when status transitions to GRACE_PERIOD; after this date the
+  /// reconciliation job will downgrade the user to FREE.
+  gracePeriodEndsAt      DateTime?
+  /// Updated every time /sync runs for this user.
+  lastSyncedAt           DateTime?
   plan                   SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
   user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
+  @@index([status, gracePeriodEndsAt]) // for reconciliation queries
   @@map("user_subscriptions")
 }
 
@@ -282,6 +288,9 @@ model UserSubscriptionLog {
   eventId               String?
   productId             String?
   originalTransactionId String?
+  transactionId         String?
+  store                 String?
+  environment           String?
   eventTimestampMs      BigInt?
   createdAt             DateTime @default(now())
 
@@ -493,6 +502,12 @@ enum SubscriptionStatus {
   INACTIVE
   CANCELLED
   CANCELLED_PENDING_EXPIRY
+  /// Payment has failed; store is retrying. User retains access during store
+  /// grace period. Transitions to GRACE_PERIOD or ACTIVE on recovery.
+  BILLING_ISSUE
+  /// Store grace period ended but RevenueCat not yet confirmed final expiry.
+  /// Backend grants temporary access while reconciling against RC API.
+  GRACE_PERIOD
   EXPIRED
 }
 

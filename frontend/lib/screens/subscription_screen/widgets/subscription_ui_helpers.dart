@@ -9,6 +9,9 @@ class PlanCardWidget extends StatelessWidget {
   final bool isLoading;
   final bool isSelectedPage;
   final bool willRenew;
+  final bool hasBillingIssue;
+  final bool isInGracePeriod;
+  final bool isCancelledButActive;
   final PlanVisuals visuals;
   final VoidCallback onSubscribe;
   final VoidCallback onInfoTap;
@@ -20,6 +23,9 @@ class PlanCardWidget extends StatelessWidget {
     required this.isLoading,
     required this.isSelectedPage,
     required this.willRenew,
+    this.hasBillingIssue = false,
+    this.isInGracePeriod = false,
+    this.isCancelledButActive = false,
     required this.visuals,
     required this.onSubscribe,
     required this.onInfoTap,
@@ -183,21 +189,65 @@ class PlanCardWidget extends StatelessWidget {
                       ),
                     ),
                   )
-                else if (!willRenew)
+                else if (hasBillingIssue)
                   Container(
                     height: 48,
-                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF2F2),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFCA5A5)),
+                    ),
+                    child: TextButton(
+                      onPressed: () => onSubscribe(),
+                      child: const Text(
+                        'Fix Payment Issue',
+                        style: TextStyle(
+                          color: Color(0xFFDC2626),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  )
+                else if (isInGracePeriod)
+                  Container(
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFFCD34D)),
+                    ),
+                    child: TextButton(
+                      onPressed: () => onSubscribe(),
+                      child: const Text(
+                        'Renew Now (Grace Period)',
+                        style: TextStyle(
+                          color: Color(0xFFD97706),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  )
+                else if (!willRenew || isCancelledButActive)
+                  Container(
+                    height: 48,
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                      ),
                     ),
-                    child: const Text(
-                      'Downgrading on expiration',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
+                    child: TextButton(
+                      onPressed: () => onSubscribe(),
+                      child: const Text(
+                        'Manage Subscription',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   )

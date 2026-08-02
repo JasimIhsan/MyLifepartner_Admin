@@ -1,5 +1,6 @@
 import env from "@/config/env";
 import { IOAuthService } from "@/interfaces/services/user.oauth.service.interface";
+import { IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
@@ -7,7 +8,10 @@ import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
 
 export class OAuthController {
-   constructor(private readonly oauthService: IOAuthService) {}
+   constructor(
+      private readonly oauthService: IOAuthService,
+      private readonly userSubscriptionService: IUserSubscriptionService
+   ) {}
 
    /**
     * @route POST /api/v1/user/oauth/google
@@ -17,6 +21,9 @@ export class OAuthController {
       const idToken = this.getRequiredString(req.body.idToken, "ID token is required");
 
       const result = await this.oauthService.googleSignIn(idToken);
+
+      // Lazily reconcile subscription state with RevenueCat upon login
+      await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Google sign-in successful"));
    });
@@ -37,6 +44,9 @@ export class OAuthController {
       const { email, firstName, lastName, nonce } = req.body;
 
       const result = await this.oauthService.appleSignIn(identityToken, authorizationCode, platform, email, firstName, lastName, nonce);
+
+      // Lazily reconcile subscription state with RevenueCat upon login
+      await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Apple sign-in successful"));
    });

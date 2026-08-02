@@ -181,7 +181,7 @@ export const adminUsersController = new AdminUsersController(userService);
 export const guideController = new GuideController(guideService);
 
 // User controllers
-export const authController = new AuthController(authService, userService);
+export const authController = new AuthController(authService, userService, userSubscriptionService);
 export const profileController = new ProfileController(profileService);
 export const profileImageController = new ProfileImageController(profileService);
 export const privacyController = new PrivacyController(profileService);
@@ -193,4 +193,6 @@ export const matchController = new MatchController(matchService);
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService, userFeatureService);
 export const chatController = new ChatController(chatService);
 export const zegoController = new ZegoController(zegoService);
-export const oauthController = new OAuthController(oauthService);
+export const oauthController = new OAuthController(oauthService, userSubscriptionService);
+
+// End of composer.ts

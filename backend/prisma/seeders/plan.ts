@@ -32,7 +32,7 @@ export async function seedSubscriptionPlans(prisma: PrismaClient) {
          isActive: true,
          isMostPopular: true,
          description: "Unlock all premium features, unlimited interest requests, video calls, and priority matching.",
-         storeProductId: "premium:monthly",
+         storeProductId: "premium_monthly",
       },
       create: {
          name: "PREMIUM",
@@ -41,7 +41,7 @@ export async function seedSubscriptionPlans(prisma: PrismaClient) {
          isActive: true,
          isMostPopular: true,
          description: "Unlock all premium features, unlimited interest requests, video calls, and priority matching.",
-         storeProductId: "premium:monthly",
+         storeProductId: "premium_monthly",
       },
    });
 

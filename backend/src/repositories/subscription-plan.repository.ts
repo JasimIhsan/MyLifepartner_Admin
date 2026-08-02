@@ -77,9 +77,14 @@ export class SubscriptionPlanRepository implements ISubscriptionPlanRepository {
     * @returns Subscription plan with features, or null if not found.
     */
    async findPlanByStoreProductId(storeProductId: string): Promise<PlanWithFeatures | null> {
+      // Clean up base plan suffixes for Android (e.g., premium_monthly:monthly -> premium_monthly)
+      const cleanStoreProductId = storeProductId.includes(':')
+         ? storeProductId.split(':')[0]
+         : storeProductId;
+
       return prisma.subscriptionPlan.findUnique({
          where: {
-            storeProductId,
+            storeProductId: cleanStoreProductId,
          },
          include: planIncludeFeatures,
       });

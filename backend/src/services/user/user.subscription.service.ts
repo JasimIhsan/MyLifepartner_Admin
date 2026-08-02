@@ -40,7 +40,13 @@ const DEFAULT_SUBSCRIPTION_DURATION_DAYS = 30;
  */
 const FREE_PLAN_DURATION_DAYS = 365 * 100;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
-const PURCHASE_SYNC_GRACE_PERIOD_MS = 2 * 60 * 1000; // 2 minutes
+/**
+ * Minimum buffer applied to /sync before it can downgrade an active subscription
+ * when RC shows no active product.  The check uses endDate (not createdAt) so a
+ * user with a valid future endDate is never incorrectly downgraded due to stale
+ * RC API cache.  5 minutes allows for immediate post-purchase RC propagation lag.
+ */
+const PURCHASE_SYNC_GRACE_PERIOD_MIN_MS = 5 * 60 * 1000; // 5 minutes
 const REVENUECAT_API_TIMEOUT_MS = 10_000; // 10 seconds
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -130,6 +136,127 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       return this.enrichUserSubscription(subscription);
    }
+   /**
+    * Performs a lazy reconciliation of the user's subscription state with RevenueCat.
+    * Checks if the subscription is in GRACE_PERIOD, BILLING_ISSUE, or expired,
+    * and hits RevenueCat to sync the state without requiring a background cron job.
+    */
+   async reconcileUserSubscription(userId: number): Promise<void> {
+      try {
+         const subscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
+         if (!subscription) return;
+
+         const now = new Date();
+         const isGracePeriod = subscription.status === SubscriptionStatus.GRACE_PERIOD;
+         const isBillingIssue = subscription.status === SubscriptionStatus.BILLING_ISSUE;
+         const isEndDatePassed = subscription.endDate && new Date(subscription.endDate) < now;
+         const isCancelled = subscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
+
+         // We only hit RevenueCat if state is uncertain. If they have a valid end date
+         // and are not in a failed billing state, we trust the DB and skip API calls.
+         const needsReconciliation = isGracePeriod || isBillingIssue || (isEndDatePassed && !isCancelled);
+
+         if (!needsReconciliation) {
+            return;
+         }
+
+         logger.info(`[RECONCILIATION] Triggering lazy reconciliation for userId ${userId}. Status: ${subscription.status}`);
+
+         // Fetch data from RevenueCat
+         const revenueCatData = await this.getRevenueCatSubscriberData(userId);
+         const activeProduct = this.findActiveRevenueCatProduct(revenueCatData);
+         const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
+
+         await this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
+            const currentSub = await ctx.findActiveSubscriptionByUserId(userId);
+            if (!currentSub || currentSub.id !== subscription.id) return;
+
+            if (isGracePeriod) {
+               if (activeProduct) {
+                  const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
+                  if (targetPlan) {
+                     logger.info(`[RECONCILIATION] RC confirms active product. Restoring GRACE_PERIOD -> ACTIVE for userId ${userId}.`);
+                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, SubscriptionStatus.ACTIVE);
+                     await this.writeSyncAuditLog(ctx, {
+                        userId,
+                        previousPlanId: currentSub.planId,
+                        newPlanId: targetPlan.id,
+                        previousStatus: currentSub.status,
+                        newStatus: SubscriptionStatus.ACTIVE as any,
+                        reason: "Lazy reconciliation recovered GRACE_PERIOD to ACTIVE",
+                        source: "RECONCILIATION",
+                     });
+                  }
+               } else if (currentSub.gracePeriodEndsAt && new Date(currentSub.gracePeriodEndsAt) < now) {
+                  logger.info(`[RECONCILIATION] Grace period expired. Downgrading userId ${userId} to FREE.`);
+                  await this.syncDowngradeToFree(ctx, userId, freePlan?.id);
+               }
+               return;
+            }
+
+            if (isBillingIssue) {
+               if (activeProduct) {
+                  const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
+                  if (targetPlan) {
+                     logger.info(`[RECONCILIATION] RC confirms active product. Restoring BILLING_ISSUE -> ACTIVE for userId ${userId}.`);
+                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, SubscriptionStatus.ACTIVE);
+                     await this.writeSyncAuditLog(ctx, {
+                        userId,
+                        previousPlanId: currentSub.planId,
+                        newPlanId: targetPlan.id,
+                        previousStatus: currentSub.status,
+                        newStatus: SubscriptionStatus.ACTIVE as any,
+                        reason: "Lazy reconciliation recovered BILLING_ISSUE to ACTIVE",
+                        source: "RECONCILIATION",
+                     });
+                  }
+               } else if (isEndDatePassed) {
+                  const gracePeriodEndsAt = this.addDays(new Date(currentSub.endDate), 7);
+                  logger.info(`[RECONCILIATION] BILLING_ISSUE endDate passed. Moving userId ${userId} to GRACE_PERIOD.`);
+                  await ctx.updateUserSubscription(currentSub.id, {
+                     status: SubscriptionStatus.GRACE_PERIOD as any,
+                     gracePeriodEndsAt,
+                  });
+                  await this.writeSyncAuditLog(ctx, {
+                     userId,
+                     previousPlanId: currentSub.planId,
+                     newPlanId: currentSub.planId,
+                     previousStatus: currentSub.status,
+                     newStatus: SubscriptionStatus.GRACE_PERIOD as any,
+                     reason: "Lazy reconciliation moved expired BILLING_ISSUE to GRACE_PERIOD",
+                     source: "RECONCILIATION",
+                  });
+               }
+               return;
+            }
+
+            if (isEndDatePassed && !isCancelled) {
+               if (activeProduct) {
+                  const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
+                  if (targetPlan) {
+                     logger.info(`[RECONCILIATION] RC confirms active product. Renewing userId ${userId} to ACTIVE.`);
+                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, SubscriptionStatus.ACTIVE);
+                     await this.writeSyncAuditLog(ctx, {
+                        userId,
+                        previousPlanId: currentSub.planId,
+                        newPlanId: targetPlan.id,
+                        previousStatus: currentSub.status,
+                        newStatus: SubscriptionStatus.ACTIVE as any,
+                        reason: "Lazy reconciliation renewed expired subscription to ACTIVE",
+                        source: "RECONCILIATION",
+                     });
+                  }
+               } else {
+                  logger.info(`[RECONCILIATION] endDate passed and no RC product. Moving userId ${userId} to FREE.`);
+                  await this.syncDowngradeToFree(ctx, userId, freePlan?.id);
+               }
+            }
+         });
+      } catch (err: unknown) {
+         logger.error(`[RECONCILIATION] Failed to reconcile subscription for userId ${userId}:`, err);
+         // Swallow the error and allow the user to proceed with DB state.
+      }
+   }
 
    async syncSubscription(userId: number): Promise<EnrichedUserSubscription | null> {
       logger.info(`[SYNC_SUBSCRIPTION] Starting sync for userId: ${userId}`);
@@ -148,13 +275,31 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          logger.info(`[SYNC_SUBSCRIPTION] activeProduct: ${JSON.stringify(activeProduct)}, currentSubscription planId: ${currentSubscription?.planId}, freePlan id: ${freePlan?.id}`);
 
          if (!activeProduct) {
-            // RC-3 fix: grace period applies to ALL users
+            // CRITICAL-1 fix: grace period logic is now based on the subscription's
+            // endDate (RC-verified) rather than createdAt.  A user whose endDate is
+            // still in the future is NEVER downgraded by /sync alone — expiration
+            // must come from an EXPIRATION webhook or the reconciliation job.
             if (currentSubscription) {
-               const timeSinceCreated = new Date().getTime() - currentSubscription.createdAt.getTime();
-               logger.warn(`[SYNC_SUBSCRIPTION] No active product in RevenueCat for userId ${userId}. currentSubscription planId=${currentSubscription.planId}, timeSinceCreatedMs=${timeSinceCreated}, gracePeriodMs=${PURCHASE_SYNC_GRACE_PERIOD_MS}`);
+               const now = new Date();
+               const endDate = new Date(currentSubscription.endDate);
+               const isEndDateInFuture = endDate > now;
+               const timeSinceCreated = now.getTime() - currentSubscription.createdAt.getTime();
+               const isWithinMinimumGrace = timeSinceCreated < PURCHASE_SYNC_GRACE_PERIOD_MIN_MS;
 
-               if (timeSinceCreated < PURCHASE_SYNC_GRACE_PERIOD_MS) {
-                  logger.info(`[SYNC_SUBSCRIPTION] Within purchase sync grace period (${timeSinceCreated}ms < ${PURCHASE_SYNC_GRACE_PERIOD_MS}ms). Retaining current subscription.`);
+               logger.warn(`[SYNC_SUBSCRIPTION] No active product in RevenueCat for userId ${userId}. planId=${currentSubscription.planId}, endDate=${endDate.toISOString()}, isEndDateInFuture=${isEndDateInFuture}, isWithinMinimumGrace=${isWithinMinimumGrace}`);
+
+               // Case 1: Subscription endDate is still in the future — trust the store
+               if (isEndDateInFuture) {
+                  logger.info(`[SYNC_SUBSCRIPTION] Subscription endDate is in the future (${endDate.toISOString()}). RC may be stale. Retaining current subscription — webhook or reconciliation job will handle expiration.`);
+                  // Still update lastSyncedAt so reconciliation knows when we last checked
+                  await ctx.updateUserSubscription(currentSubscription.id, { lastSyncedAt: now } as any);
+                  return;
+               }
+
+               // Case 2: endDate has passed but we're within the 5-min minimum grace
+               // (protects against race conditions right after purchase creation)
+               if (isWithinMinimumGrace) {
+                  logger.info(`[SYNC_SUBSCRIPTION] Within minimum sync grace period (${timeSinceCreated}ms < ${PURCHASE_SYNC_GRACE_PERIOD_MIN_MS}ms). Retaining current subscription.`);
                   return;
                }
 
@@ -163,7 +308,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                   return;
                }
             }
-            logger.warn(`[SYNC_SUBSCRIPTION] Triggering downgradeToFreePlan for userId ${userId} because activeProduct is null.`);
+            logger.warn(`[SYNC_SUBSCRIPTION] Triggering downgradeToFreePlan for userId ${userId} because activeProduct is null and subscription endDate has passed.`);
             await this.syncDowngradeToFree(ctx, userId, freePlan?.id);
             return;
          }
@@ -199,11 +344,41 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             let finalStatus = targetStatus;
             let finalWillRenew = activeProduct.willRenew;
 
-            // C-9 fix: Prevent stale RevenueCat REST API from overwriting a webhook cancellation
-            if (currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY && targetStatus === SubscriptionStatus.ACTIVE) {
-               logger.warn(`[SYNC_SUBSCRIPTION] DB shows CANCELLED_PENDING_EXPIRY but RevenueCat API shows ACTIVE. Trusting DB/Webhook to prevent stale cache overwrite.`);
+            // CRITICAL-5 fix (C-9 improvement): Only trust DB/Webhook cancellation if
+            // RC genuinely still shows the subscription as cancelled (unsubscribe_detected_at
+            // is present). If RC shows willRenew=true with no unsubscribe_detected_at, the
+            // user has re-enabled auto-renewal (UNCANCELLATION) and we must restore ACTIVE.
+            if (
+               currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY &&
+               targetStatus === SubscriptionStatus.ACTIVE &&
+               activeProduct.willRenew === true
+            ) {
+               // Check if the UNCANCELLATION was confirmed by RC (willRenew=true means unsubscribe_detected_at is null in the RC response)
+               // RC's findActiveRevenueCatProduct already strips products with unsubscribe_detected_at, so willRenew=true here
+               // means the user has genuinely re-enabled auto-renewal.
+               logger.info(`[SYNC_SUBSCRIPTION] DB shows CANCELLED_PENDING_EXPIRY but RevenueCat confirms willRenew=true (genuine UNCANCELLATION). Restoring to ACTIVE.`);
+               finalStatus = SubscriptionStatus.ACTIVE;
+               finalWillRenew = true;
+            } else if (
+               currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY &&
+               targetStatus === SubscriptionStatus.ACTIVE &&
+               !activeProduct.willRenew
+            ) {
+               // RC still shows willRenew=false (unsubscribe_detected_at present) — trust DB cancellation
+               logger.warn(`[SYNC_SUBSCRIPTION] DB shows CANCELLED_PENDING_EXPIRY and RevenueCat also shows willRenew=false. Trusting DB cancellation.`);
                finalStatus = SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
                finalWillRenew = false;
+            }
+
+            // Also restore BILLING_ISSUE → ACTIVE when RC shows active product
+            if (
+               (currentSubscription.status === SubscriptionStatus.BILLING_ISSUE ||
+                currentSubscription.status === SubscriptionStatus.GRACE_PERIOD) &&
+               targetStatus === SubscriptionStatus.ACTIVE
+            ) {
+               logger.info(`[SYNC_SUBSCRIPTION] RC confirms active product. Restoring ${currentSubscription.status} → ACTIVE.`);
+               finalStatus = SubscriptionStatus.ACTIVE;
+               finalWillRenew = activeProduct.willRenew;
             }
 
             logger.info(`[SYNC_SUBSCRIPTION] Updating existing plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${finalWillRenew}, status=${finalStatus}`);
@@ -212,6 +387,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                willRenew: finalWillRenew,
                status: finalStatus as unknown as any,
                nextPlanId: null,
+               lastSyncedAt: new Date(),
             });
             await this.writeSyncAuditLog(ctx, {
                userId,
@@ -332,23 +508,64 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan)),
       });
 
-      // Email notification logic
+      // Email notification logic — all lifecycle events covered
       if (processed) {
          try {
             const user = await this.userRepository.findById(userId);
-            if (user && user.email) {
+            if (user?.email) {
+               const userName = user.profile?.name || undefined;
                let planName = "your plan";
                if (targetPlanId) {
                   const plan = await this.subscriptionPlanRepository.getPlanById(targetPlanId);
                   if (plan) planName = plan.name;
+               } else if (!targetPlanId) {
+                  // For events without a target plan (e.g. cancellation of current plan), get current plan name
+                  const sub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
+                  if (sub?.plan) planName = sub.plan.name;
                }
 
-               if (event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE || event.type === RevenueCatWebhookEvent.RENEWAL) {
-                  const price = event.price ?? 0;
-                  const currency = event.currency ?? "INR";
-                  await this.emailService.sendPaymentReceiptEmail(user.email, planName, price, currency, user.profile?.name || undefined);
-               } else if (event.type === RevenueCatWebhookEvent.BILLING_ISSUE) {
-                  await this.emailService.sendSubscriptionFailureEmail(user.email, planName, user.profile?.name || undefined);
+               switch (event.type) {
+                  case RevenueCatWebhookEvent.INITIAL_PURCHASE:
+                     // Activation email + receipt
+                     await this.emailService.sendSubscriptionSuccessEmail(user.email, planName, userName);
+                     if ((event.price ?? 0) > 0) {
+                        await this.emailService.sendPaymentReceiptEmail(user.email, planName, event.price!, event.currency ?? "INR", userName);
+                     }
+                     break;
+
+                  case RevenueCatWebhookEvent.RENEWAL:
+                     // Renewal confirmation + receipt
+                     if (event.expiration_at_ms) {
+                        const renewedUntil = new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
+                        await this.emailService.sendSubscriptionRenewalEmail(user.email, planName, renewedUntil, userName);
+                     }
+                     if ((event.price ?? 0) > 0) {
+                        await this.emailService.sendPaymentReceiptEmail(user.email, planName, event.price!, event.currency ?? "INR", userName);
+                     }
+                     break;
+
+                  case RevenueCatWebhookEvent.CANCELLATION: {
+                     const expiresAt = event.expiration_at_ms
+                        ? new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })
+                        : "end of billing period";
+                     await this.emailService.sendSubscriptionCancelledEmail(user.email, planName, expiresAt, userName);
+                     break;
+                  }
+
+                  case RevenueCatWebhookEvent.UNCANCELLATION:
+                     await this.emailService.sendSubscriptionRestoredEmail(user.email, planName, userName);
+                     break;
+
+                  case RevenueCatWebhookEvent.EXPIRATION:
+                     await this.emailService.sendSubscriptionExpiredEmail(user.email, planName, userName);
+                     break;
+
+                  case RevenueCatWebhookEvent.BILLING_ISSUE:
+                     await this.emailService.sendSubscriptionFailureEmail(user.email, planName, userName);
+                     break;
+
+                  default:
+                     break;
                }
             }
          } catch (error) {
@@ -650,6 +867,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       if (subscription.status === SubscriptionStatus.EXPIRED || subscription.status === SubscriptionStatus.INACTIVE) {
          return "Your subscription is currently inactive.";
+      }
+
+      if (subscription.status === SubscriptionStatus.BILLING_ISSUE) {
+         return `Payment failed for your ${subscription.plan?.name ?? "premium"} plan. Please update your payment method to avoid losing access.`;
+      }
+
+      if (subscription.status === SubscriptionStatus.GRACE_PERIOD) {
+         return `Your subscription has expired. Premium access is temporarily extended — please resubscribe to maintain full access.`;
       }
 
       if (subscription.nextPlanId) {

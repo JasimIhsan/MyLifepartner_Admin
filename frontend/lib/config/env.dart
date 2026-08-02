@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
+
 class Env {
   // Root API origin (no path suffix) — used to build specific endpoint URLs.
   static const String _apiRoot = isProduction
@@ -20,14 +24,27 @@ class Env {
   static const String revenueCatPlayStoreApiKey =
       'goog_iPFGEdyRedFAtyobbTVSFapcuRW';
 
-  // RevenueCat - Payment Gateway (Test Store - Debug)
+  // RevenueCat - Payment Gateway (Apple App Store - Production)
+  static const String revenueCatAppStoreApiKey =
+      'appl_lSUFYvcqQcvaIhDHErkrniSjYPy';
+
+  // RevenueCat - Payment Gateway (Test Store - Debug, both platforms)
   static const String revenueCatTestStoreApiKey =
       'test_RCZPoYstTvwYBoqsEIBHfUVYZOH';
 
-  // RevenueCat API Key based on build environment
-  static const String revenueCatApiKey = isProduction
-      ? revenueCatPlayStoreApiKey
-      : revenueCatTestStoreApiKey;
+  /// RevenueCat API key resolved at runtime based on platform + build mode.
+  ///
+  /// - Debug / non-production: always uses the test store key (works on both
+  ///   Android and iOS simulators / TestFlight sandbox).
+  /// - Production Android: Google Play Store key.
+  /// - Production iOS / macOS: Apple App Store key.
+  static String get revenueCatApiKey {
+    if (!isProduction) return revenueCatTestStoreApiKey;
+    // kIsWeb has no RevenueCat SDK; guard to avoid dart:io Platform check on web.
+    if (kIsWeb) return revenueCatPlayStoreApiKey;
+    if (Platform.isIOS || Platform.isMacOS) return revenueCatAppStoreApiKey;
+    return revenueCatPlayStoreApiKey;
+  }
 
   // Google Sign-In Server Client ID (Android / Backend Verification)
   // MUST be a Web Application Client ID (Life Partner Again Backend), NOT an Android Client ID
