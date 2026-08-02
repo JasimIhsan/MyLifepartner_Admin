@@ -177,6 +177,12 @@ class _HomePageState extends State<HomePage> {
       showLeading: false,
       actions: [
         IconButton(
+          icon: const Icon(Icons.search, color: AppColors.textPrimary),
+          onPressed: () {
+            context.push(AppRoutes.browseProfiles);
+          },
+        ),
+        IconButton(
           icon: const Icon(
             Icons.notifications_active_outlined,
             color: AppColors.textPrimary,

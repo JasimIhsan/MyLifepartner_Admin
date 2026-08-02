@@ -25,6 +25,7 @@ import 'package:life_partner_again/screens/profile_image_upload/profile_image_up
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
+import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
 import 'package:life_partner_again/widgets/web_main_layout.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
@@ -238,6 +239,10 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.imageAccessRequests,
             builder: (context, state) => const ImageAccessRequestsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.browseProfiles,
+            builder: (context, state) => const BrowseProfilesScreen(),
           ),
         ],
       ),

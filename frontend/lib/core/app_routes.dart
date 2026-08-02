@@ -17,6 +17,7 @@ import 'package:life_partner_again/screens/manage_profile_images_screens/manage_
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
+import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -35,6 +36,7 @@ class AppRoutes {
   static const String chat = '/chat';
   static const String profile = '/profile';
   static const String profileDetail = '/profile/:profileId';
+  static String profileDetailPath(Object profileId) => '/profile/$profileId';
   static const String lpaGuide = '/lpa-guide';
   static const String chatDetail = '/chat-detail/:profileId';
   static const String editProfile = '/edit-profile';
@@ -44,6 +46,7 @@ class AppRoutes {
   static const String mediaPreview = '/media-preview';
   static const String call = '/call/:callId';
   static const String outgoingCall = '/outgoing-call/:userId';
+  static const String browseProfiles = '/browse-profiles';
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -149,6 +152,11 @@ class AppRoutes {
       case subscription:
         return MaterialPageRoute(
           builder: (_) => const SubscriptionScreen(),
+          settings: settings,
+        );
+      case browseProfiles:
+        return MaterialPageRoute(
+          builder: (_) => const BrowseProfilesScreen(),
           settings: settings,
         );
       default:

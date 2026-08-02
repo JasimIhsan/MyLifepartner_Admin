@@ -11,6 +11,7 @@ import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/providers/location_provider.dart';
+import 'package:life_partner_again/providers/discovery_provider.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
 import 'package:flutter/services.dart';
@@ -134,6 +135,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => CallProvider()),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(create: (_) => DiscoveryProvider()),
       ],
       child: MaterialApp.router(
         title: 'Life Partner Again',
