@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/config/env.dart';
@@ -372,10 +374,13 @@ class SubscriptionProvider extends ChangeNotifier {
       final storeProductId = backendPlan.identifier;
 
       final package = _rcPackages.firstWhere(
-        (p) =>
-            p.storeProduct.identifier == id ||
-            (storeProductId != null &&
-                p.storeProduct.identifier == storeProductId),
+        (p) {
+          final rcIdentifier = p.storeProduct.identifier;
+          return rcIdentifier == id ||
+              (storeProductId != null &&
+                  (rcIdentifier == storeProductId ||
+                      rcIdentifier.startsWith('$storeProductId:')));
+        },
         orElse: () {
           if (kDebugMode) {
             debugPrint(
@@ -469,6 +474,22 @@ class SubscriptionProvider extends ChangeNotifier {
   /// UTILS
   /// =========================
 
+  Future<void> cancelSubscriptionDebug() async {
+    if (!kDebugMode) return;
+    try {
+      final freePlan = plans.firstWhere((p) => p.price == 0);
+      final sub = await _subscriptionService.subscribe(freePlan.id);
+      _mySubscription = sub;
+
+      // Invalidate RevenueCat cache to force local refresh
+      await Purchases.invalidateCustomerInfoCache();
+
+      await fetchMySubscription();
+    } catch (e) {
+      debugPrint("Error cancelling subscription in debug mode: $e");
+    }
+  }
+
   Future<void> openGooglePlaySubscription() async {
     try {
       final info = await Purchases.getCustomerInfo();
@@ -483,23 +504,28 @@ class SubscriptionProvider extends ChangeNotifier {
         }
       }
 
-      // Fallback for Android (currently the primary platform)
-      // TODO: Implement iOS specific fallback link (itms-apps://apps.apple.com/account/subscriptions) for future iOS support
-      String? sku;
-      if (info.entitlements.active.isNotEmpty) {
-        sku = info.entitlements.active.values.first.productIdentifier;
-      }
-
       final Uri uri;
-      if (sku != null && sku.isNotEmpty) {
-        uri = Uri.parse(
-          'https://play.google.com/store/account/subscriptions?sku=$sku&package=com.ciltriq.lifepartneragain',
-        );
+      if (Platform.isIOS) {
+        uri = Uri.parse('https://apps.apple.com/account/subscriptions');
       } else {
-        uri = Uri.parse('https://play.google.com/store/account/subscriptions');
+        // Fallback for Android (currently the primary platform)
+        String? sku;
+        if (info.entitlements.active.isNotEmpty) {
+          sku = info.entitlements.active.values.first.productIdentifier;
+        }
+
+        if (sku != null && sku.isNotEmpty) {
+          uri = Uri.parse(
+            'https://play.google.com/store/account/subscriptions?sku=$sku&package=com.ciltriq.lifepartneragain',
+          );
+        } else {
+          uri = Uri.parse(
+            'https://play.google.com/store/account/subscriptions',
+          );
+        }
       }
 
-      debugPrint("🚀 Launching Play Store subscription URL fallback: $uri");
+      debugPrint("🚀 Launching subscription URL fallback: $uri");
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
@@ -565,6 +591,11 @@ class SubscriptionProvider extends ChangeNotifier {
 
   String? get currentSubscriptionMessage => _mySubscription?.message;
   UserSubscription? get mySubscription => _mySubscription;
+
+  bool get hasBillingIssue => _mySubscription?.hasBillingIssue ?? false;
+  bool get isInGracePeriod => _mySubscription?.isInGracePeriod ?? false;
+  bool get isCancelledButActive => _mySubscription?.isCancelledButActive ?? false;
+
 
   String _getReadableError(dynamic e) {
     if (e is PlatformException) {

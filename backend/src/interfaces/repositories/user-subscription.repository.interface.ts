@@ -5,6 +5,17 @@ export enum SubscriptionStatus {
    INACTIVE = "INACTIVE",
    CANCELLED = "CANCELLED",
    CANCELLED_PENDING_EXPIRY = "CANCELLED_PENDING_EXPIRY",
+   /**
+    * Payment has failed; store is retrying. User retains premium access
+    * during the store grace period. Resolves to ACTIVE on recovery or
+    * GRACE_PERIOD if the store grace period ends without recovery.
+    */
+   BILLING_ISSUE = "BILLING_ISSUE",
+   /**
+    * Store grace period ended but backend is still reconciling against RC API.
+    * User retains premium access for GRACE_PERIOD_DAYS before FREE downgrade.
+    */
+   GRACE_PERIOD = "GRACE_PERIOD",
    EXPIRED = "EXPIRED",
 }
 export type UserSubscriptionWithPlan = UserSubscription & {
@@ -31,6 +42,9 @@ export interface ISyncTransactionContext {
       eventId?: string;
       productId?: string;
       originalTransactionId?: string;
+      transactionId?: string;
+      store?: string;
+      environment?: string;
       eventTimestampMs?: bigint | number;
    }): Promise<void>;
 }

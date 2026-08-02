@@ -151,6 +151,13 @@ class UserSubscription {
   final String status;
   final String? message;
   final bool willRenew;
+  // Additional lifecycle fields
+  final DateTime? cancelledAt;
+  final DateTime? billingIssueDetectedAt;
+  final DateTime? gracePeriodEndsAt;
+  final String? store;
+  final String? environment;
+  final String? originalTransactionId;
 
   UserSubscription({
     required this.id,
@@ -161,6 +168,12 @@ class UserSubscription {
     required this.status,
     this.message,
     this.willRenew = true,
+    this.cancelledAt,
+    this.billingIssueDetectedAt,
+    this.gracePeriodEndsAt,
+    this.store,
+    this.environment,
+    this.originalTransactionId,
   });
 
   factory UserSubscription.fromJson(Map<String, dynamic> json) {
@@ -175,10 +188,39 @@ class UserSubscription {
       status: json['status'],
       message: json['message'],
       willRenew: json['willRenew'] ?? true,
+      cancelledAt: json['cancelledAt'] != null
+          ? DateTime.tryParse(json['cancelledAt'])
+          : null,
+      billingIssueDetectedAt: json['billingIssueDetectedAt'] != null
+          ? DateTime.tryParse(json['billingIssueDetectedAt'])
+          : null,
+      gracePeriodEndsAt: json['gracePeriodEndsAt'] != null
+          ? DateTime.tryParse(json['gracePeriodEndsAt'])
+          : null,
+      store: json['store'],
+      environment: json['environment'],
+      originalTransactionId: json['originalTransactionId'],
     );
   }
 
+  /// Whether the subscription currently grants premium access.
+  ///
+  /// Trusts the [status] field from the backend rather than comparing
+  /// [endDate] with the local device clock (which may be skewed).
+  /// The backend is the source of truth for subscription state.
   bool get isActive =>
-      (status == 'ACTIVE' || status == 'CANCELLED_PENDING_EXPIRY') &&
-      endDate.isAfter(DateTime.now());
+      status == 'ACTIVE' ||
+      status == 'CANCELLED_PENDING_EXPIRY' ||
+      status == 'BILLING_ISSUE' ||
+      status == 'GRACE_PERIOD';
+
+  /// Whether the subscription is in a billing problem state.
+  bool get hasBillingIssue => status == 'BILLING_ISSUE';
+
+  /// Whether the subscription is in the post-expiry reconciliation grace period.
+  bool get isInGracePeriod => status == 'GRACE_PERIOD';
+
+  /// Whether the subscription is cancelled but still active until [endDate].
+  bool get isCancelledButActive =>
+      status == 'CANCELLED_PENDING_EXPIRY' && endDate.isAfter(DateTime.now());
 }

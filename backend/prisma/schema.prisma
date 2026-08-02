@@ -28,6 +28,7 @@ model User {
   profile               Profile?
   userFeature           UserFeature?
   subscriptions         UserSubscription[]
+  transactionHistory    TransactionHistory[]
   socialAccounts        SocialAccount[]
 
   @@map("users")
@@ -196,18 +197,19 @@ model Admins {
 }
 
 model SubscriptionPlan {
-  id                Int                @id @default(autoincrement())
-  name              String             @unique
-  price             Int
-  durationDays      Int
-  isActive          Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  isMostPopular     Boolean            @default(false)
-  description       String?
-  storeProductId    String?            @unique
-  features          PlanFeature[]
-  userSubscriptions UserSubscription[]
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique
+  price              Int
+  durationDays       Int
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  isMostPopular      Boolean              @default(false)
+  description        String?
+  storeProductId     String?              @unique
+  features           PlanFeature[]
+  userSubscriptions  UserSubscription[]
+  transactionHistory TransactionHistory[]
 
   @@map("subscription_plans")
 }
@@ -247,10 +249,16 @@ model UserSubscription {
   planChangesAt          DateTime?
   refundedAt             DateTime?
   expiredAt              DateTime?
+  /// Populated when status transitions to GRACE_PERIOD; after this date the
+  /// reconciliation job will downgrade the user to FREE.
+  gracePeriodEndsAt      DateTime?
+  /// Updated every time /sync runs for this user.
+  lastSyncedAt           DateTime?
   plan                   SubscriptionPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
   user                   User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
+  @@index([status, gracePeriodEndsAt]) // for reconciliation queries
   @@map("user_subscriptions")
 }
 
@@ -280,11 +288,34 @@ model UserSubscriptionLog {
   eventId               String?
   productId             String?
   originalTransactionId String?
+  transactionId         String?
+  store                 String?
+  environment           String?
   eventTimestampMs      BigInt?
   createdAt             DateTime @default(now())
 
   @@index([userId, createdAt])
   @@map("user_subscription_logs")
+}
+
+model TransactionHistory {
+  id                    Int               @id @default(autoincrement())
+  userId                Int
+  planId                Int?
+  status                TransactionStatus
+  amount                Float?
+  currency              String?
+  revenueCatEventId     String?
+  originalTransactionId String?
+  store                 String?
+  environment           String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                  SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("transaction_history")
 }
 
 model UserFeature {
@@ -471,7 +502,20 @@ enum SubscriptionStatus {
   INACTIVE
   CANCELLED
   CANCELLED_PENDING_EXPIRY
+  /// Payment has failed; store is retrying. User retains access during store
+  /// grace period. Transitions to GRACE_PERIOD or ACTIVE on recovery.
+  BILLING_ISSUE
+  /// Store grace period ended but RevenueCat not yet confirmed final expiry.
+  /// Backend grants temporary access while reconciling against RC API.
+  GRACE_PERIOD
   EXPIRED
+}
+
+enum TransactionStatus {
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
 }
 
 enum InteractionState {

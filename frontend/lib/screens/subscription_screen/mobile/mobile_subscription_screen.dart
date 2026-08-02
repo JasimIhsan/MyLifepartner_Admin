@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_background_painter.dart';
@@ -58,7 +59,14 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
               letterSpacing: 0.2,
             ),
           ),
-          const SizedBox(width: 48),
+          IconButton(
+            icon: const Icon(
+              Icons.receipt_long_rounded,
+              color: AppColors.textPrimary,
+              size: 24,
+            ),
+            onPressed: () => context.push(AppRoutes.transactionHistory),
+          ),
         ],
       ),
     );
@@ -451,6 +459,9 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                           ?.willRenew ??
                                                       true,
                                                   visuals: visuals,
+                                                  hasBillingIssue: isCurrentPlan ? provider.hasBillingIssue : false,
+                                                  isInGracePeriod: isCurrentPlan ? provider.isInGracePeriod : false,
+                                                  isCancelledButActive: isCurrentPlan ? provider.isCancelledButActive : false,
                                                   onSubscribe: () {
                                                     if (isCurrentPlan &&
                                                         plan.price > 0) {
@@ -539,28 +550,28 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
-                              onPressed: () async {
-                                final provider = context.read<SubscriptionProvider>();
-                                await provider.fetchMySubscription();
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Subscription status restored & synced.'),
-                                      backgroundColor: Colors.black,
-                                    ),
-                                  );
-                                }
-                              },
-                              child: const Text(
-                                'Restore Subscription',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
+                            // TextButton(
+                            //   onPressed: () async {
+                            //     final provider = context.read<SubscriptionProvider>();
+                            //     await provider.fetchMySubscription();
+                            //     if (context.mounted) {
+                            //       ScaffoldMessenger.of(context).showSnackBar(
+                            //         const SnackBar(
+                            //           content: Text('Subscription status restored & synced.'),
+                            //           backgroundColor: Colors.black,
+                            //         ),
+                            //       );
+                            //     }
+                            //   },
+                            //   child: const Text(
+                            //     'Restore Subscription',
+                            //     style: TextStyle(
+                            //       color: AppColors.primary,
+                            //       fontSize: 13,
+                            //       fontWeight: FontWeight.w600,
+                            //     ),
+                            //   ),
+                            // ),
                             TextButton(
                               onPressed: () {
                                 showModalBottomSheet(

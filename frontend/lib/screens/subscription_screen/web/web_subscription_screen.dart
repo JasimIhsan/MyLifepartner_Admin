@@ -1,12 +1,13 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_background_painter.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_error_widget.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_controller.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_ui_helpers.dart';
-import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:provider/provider.dart';
 
 class WebSubscriptionScreen extends StatefulWidget {
@@ -224,6 +225,16 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 fontSize: 24,
                               ),
                             ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.receipt_long_rounded,
+                                color: AppColors.textPrimary,
+                                size: 28,
+                              ),
+                              onPressed: () =>
+                                  context.push(AppRoutes.transactionHistory),
+                            ),
                           ],
                         ),
                       ),
@@ -282,6 +293,9 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                                   ?.willRenew ??
                                               true,
                                           visuals: visuals,
+                                          hasBillingIssue: isCurrentPlan ? provider.hasBillingIssue : false,
+                                          isInGracePeriod: isCurrentPlan ? provider.isInGracePeriod : false,
+                                          isCancelledButActive: isCurrentPlan ? provider.isCancelledButActive : false,
                                           onSubscribe: () {
                                             if (isCurrentPlan &&
                                                 plan.price > 0) {
@@ -325,66 +339,66 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
-                              onPressed: () async {
-                                final provider = context
-                                    .read<SubscriptionProvider>();
-                                if (provider.mySubscription != null &&
-                                    !provider.mySubscription!.willRenew) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Your plan is already cancelled and will downgrade on expiration.',
-                                      ),
-                                      backgroundColor: Colors.black,
-                                    ),
-                                  );
-                                  return;
-                                }
+                            // TextButton(
+                            //   onPressed: () async {
+                            //     final provider = context
+                            //         .read<SubscriptionProvider>();
+                            //     if (provider.mySubscription != null &&
+                            //         !provider.mySubscription!.willRenew) {
+                            //       ScaffoldMessenger.of(context).showSnackBar(
+                            //         const SnackBar(
+                            //           content: Text(
+                            //             'Your plan is already cancelled and will downgrade on expiration.',
+                            //           ),
+                            //           backgroundColor: Colors.black,
+                            //         ),
+                            //       );
+                            //       return;
+                            //     }
 
-                                if (provider.currentSubscription == null ||
-                                    provider.currentSubscription!.price == 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'You are already on the Free plan.',
-                                      ),
-                                      backgroundColor: Colors.black,
-                                    ),
-                                  );
-                                  return;
-                                }
+                            //     if (provider.currentSubscription == null ||
+                            //         provider.currentSubscription!.price == 0) {
+                            //       ScaffoldMessenger.of(context).showSnackBar(
+                            //         const SnackBar(
+                            //           content: Text(
+                            //             'You are already on the Free plan.',
+                            //           ),
+                            //           backgroundColor: Colors.black,
+                            //         ),
+                            //       );
+                            //       return;
+                            //     }
 
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => Dialog(
-                                    backgroundColor: AppColors.surface,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(24),
-                                    ),
-                                    child: SizedBox(
-                                      width: 400,
-                                      child: buildCancelConfirmationSheet(),
-                                    ),
-                                  ),
-                                );
+                            //     final confirm = await showDialog<bool>(
+                            //       context: context,
+                            //       builder: (context) => Dialog(
+                            //         backgroundColor: AppColors.surface,
+                            //         shape: RoundedRectangleBorder(
+                            //           borderRadius: BorderRadius.circular(24),
+                            //         ),
+                            //         child: SizedBox(
+                            //           width: 400,
+                            //           child: buildCancelConfirmationSheet(),
+                            //         ),
+                            //       ),
+                            //     );
 
-                                if (confirm == true) {
-                                  final freePlan = provider.plans.firstWhere(
-                                    (p) => p.price == 0,
-                                  );
-                                  handleSubscribe(freePlan);
-                                }
-                              },
-                              child: const Text(
-                                'Restore Subscription',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
+                            //     if (confirm == true) {
+                            //       final freePlan = provider.plans.firstWhere(
+                            //         (p) => p.price == 0,
+                            //       );
+                            //       handleSubscribe(freePlan);
+                            //     }
+                            //   },
+                            //   child: const Text(
+                            //     'Restore Subscription',
+                            //     style: TextStyle(
+                            //       color: AppColors.primary,
+                            //       fontSize: 14,
+                            //       fontWeight: FontWeight.bold,
+                            //     ),
+                            //   ),
+                            // ),
                             TextButton(
                               onPressed: () {
                                 showDialog(

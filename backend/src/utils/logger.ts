@@ -61,10 +61,29 @@ const serializeErrors = winston.format((info) => {
 
 const colorizer = winston.format.colorize();
 
+const getIstTimestamp = () => {
+   const options = {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+   } as const;
+
+   const formatter = new Intl.DateTimeFormat("en-US", options);
+   const parts = formatter.formatToParts(new Date());
+   const p = Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+
+   return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}:${p.second} ${p.dayPeriod}`;
+};
+
 const developmentFormat = winston.format.combine(
    serializeErrors(),
    winston.format.timestamp({
-      format: "YYYY-MM-DD HH:mm:ss",
+      format: getIstTimestamp,
    }),
    winston.format.errors({
       stack: true,
@@ -82,7 +101,9 @@ const developmentFormat = winston.format.combine(
 
 const productionFormat = winston.format.combine(
    serializeErrors(),
-   winston.format.timestamp(),
+   winston.format.timestamp({
+      format: getIstTimestamp,
+   }),
    winston.format.errors({
       stack: true,
    }),

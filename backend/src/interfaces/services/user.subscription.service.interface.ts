@@ -37,6 +37,7 @@ export interface IUserSubscriptionService {
    getMySubscription(userId: number): Promise<EnrichedUserSubscription | null>;
    subscribe(userId: number, planId: number): Promise<EnrichedUserSubscription>;
    getUserFeatures(userId: number): Promise<UserFeature | null>;
+   reconcileUserSubscription(userId: number): Promise<void>;
    syncSubscription(userId: number): Promise<EnrichedUserSubscription | null>;
    handleWebhook(payload: Record<string, unknown>, signatureHeader?: string): Promise<void>;
 }

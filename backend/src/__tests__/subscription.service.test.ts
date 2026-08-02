@@ -51,6 +51,7 @@ const mockTx = {
    subscriptionPlan: { findUnique: jest.fn() },
    userFeature: { findUnique: jest.fn(), update: jest.fn(), create: jest.fn() },
    userSubscriptionLog: { create: jest.fn() },
+   transactionHistory: { create: jest.fn() },
    $executeRaw: jest.fn(),
 };
 
@@ -77,6 +78,8 @@ import { IProcessedRevenueCatEventRepository } from "@/interfaces/repositories/p
 import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
 import { IUserSubscriptionRepository } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
+import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
+import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { SubscriptionWebhookRepository } from "@/repositories/subscription-webhook.repository";
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 import { ApiError } from "@/utils/ApiError";
@@ -222,6 +225,21 @@ const mockFeatureRepo = {
    create: jest.fn(),
 };
 
+const mockUserRepo = {
+   findById: jest.fn(),
+   findByEmail: jest.fn(),
+   create: jest.fn(),
+   update: jest.fn(),
+};
+
+const mockEmailService = {
+   sendSubscriptionSuccessEmail: jest.fn(),
+   sendSubscriptionRenewalEmail: jest.fn(),
+   sendSubscriptionFailureEmail: jest.fn(),
+   sendOtpEmail: jest.fn(),
+   sendWelcomeEmail: jest.fn(),
+};
+
 // ─── Service factory ──────────────────────────────────────────────────────────
 
 function makeService() {
@@ -230,7 +248,9 @@ function makeService() {
       mockSubRepo as unknown as IUserSubscriptionRepository,
       mockEventRepo as unknown as IProcessedRevenueCatEventRepository,
       mockFeatureRepo as unknown as IUserFeatureRepository,
-      new SubscriptionWebhookRepository()
+      new SubscriptionWebhookRepository(),
+      mockUserRepo as unknown as IUserRepository,
+      mockEmailService as unknown as IEmailService
    );
 }
 

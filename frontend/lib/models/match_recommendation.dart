@@ -43,6 +43,7 @@ class MatchRecommendation {
   final bool isVerified;
   final int? heightCm;
   final String? city;
+  final String? state;
   final String? country;
   final String? occupation;
   final String? maritalStatus;
@@ -64,6 +65,7 @@ class MatchRecommendation {
     required this.isVerified,
     this.heightCm,
     this.city,
+    this.state,
     this.country,
     this.occupation,
     this.maritalStatus,
@@ -80,20 +82,21 @@ class MatchRecommendation {
 
   factory MatchRecommendation.fromJson(Map<String, dynamic> json) {
     return MatchRecommendation(
-      id: json['id'] as int,
-      userId: json['userId'] as int,
-      name: json['name'] as String,
-      isVerified: json['isVerified'] as bool,
-      age: json['age'] as int,
+      id: json['id'] as int? ?? 0,
+      userId: json['userId'] as int? ?? 0,
+      name: json['name'] as String? ?? 'User',
+      isVerified: json['isVerified'] as bool? ?? false,
+      age: json['age'] as int? ?? 0,
       heightCm: json['heightCm'] as int?,
       city: json['city'] as String?,
+      state: json['state'] as String?,
       country: json['country'] as String?,
       occupation: json['occupation'] as String?,
       maritalStatus: json['maritalStatus'] as String?,
-      matchPercentage: json['matchPercentage'] as int,
+      matchPercentage: (json['matchPercentage'] as num?)?.toInt() ?? 0,
       compatibilityHighlights:
           (json['compatibilityHighlights'] as List<dynamic>? ?? [])
-              .map((e) => e as String)
+              .map((e) => e.toString())
               .toList(),
       images: (json['images'] as List<dynamic>? ?? [])
           .map((e) => MatchImage.fromJson(e as Map<String, dynamic>))

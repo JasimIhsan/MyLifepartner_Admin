@@ -1,13 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
-import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/bottomsheet/subscription/dynamic_loading_ui.dart';
 import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_failure_ui.dart';
 import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_success_ui.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,7 +42,9 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
       onResumed: () {
         if (_awaitingStoreReturn) {
           _awaitingStoreReturn = false;
-          debugPrint("📱 App resumed after store redirect. Triggering subscription refresh retry...");
+          debugPrint(
+            "📱 App resumed after store redirect. Triggering subscription refresh retry...",
+          );
           if (mounted) {
             context.read<SubscriptionProvider>().refreshWithRetry();
           }
@@ -82,9 +85,25 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
     );
 
     if (confirm == true) {
-      _awaitingStoreReturn = true;
-      if (mounted) {
-        await context.read<SubscriptionProvider>().openGooglePlaySubscription();
+      if (kDebugMode) {
+        if (mounted) {
+          final isCompleted = ValueNotifier(false);
+          final dialogFuture = showDynamicLoadingUI(context, isCompleted);
+          
+          await context.read<SubscriptionProvider>().cancelSubscriptionDebug();
+          
+          isCompleted.value = true;
+          await dialogFuture;
+          
+          if (mounted) {
+            initSubscriptions();
+          }
+        }
+      } else {
+        _awaitingStoreReturn = true;
+        if (mounted) {
+          await context.read<SubscriptionProvider>().openGooglePlaySubscription();
+        }
       }
     }
   }
@@ -151,10 +170,10 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'To cancel your subscription, you will be directed to your Google Play subscription settings. Your premium features will remain active until the end of your current billing period.',
+          Text(
+            'To cancel your subscription, you will be directed to your ${(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) ? "Apple App Store" : "Google Play"} subscription settings. Your premium features will remain active until the end of your current billing period.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 32),
           Row(

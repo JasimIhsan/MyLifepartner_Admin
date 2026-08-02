@@ -13,6 +13,8 @@ import userSubscriptionRoutes from "@routes/user/user.subscription.routes";
 import zegoRoutes from "@routes/user/zego.routes";
 import locationRoutes from "@routes/user/location.routes";
 import userOauthRoutes from "@routes/user/user.oauth.routes";
+import discoveryRoutes from "@routes/user/discovery.routes";
+import transactionRoutes from "@routes/user/transaction.routes";
 
 const router = Router();
 
@@ -39,6 +41,8 @@ router.use("/image-assets", imageAssetRoutes);
 router.use("/image-access", imageAccessRequestRoutes);
 router.use("/locations", locationRoutes);
 router.use("/oauth", userOauthRoutes);
+router.use("/discovery", discoveryRoutes);
+router.use("/transactions", transactionRoutes);
 router.use("/", userRoutes);
 
 export default router;

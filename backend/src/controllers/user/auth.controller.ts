@@ -1,5 +1,6 @@
 import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
+import { IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
@@ -10,7 +11,8 @@ import { Request, Response } from "express";
 export class AuthController {
    constructor(
       private readonly authService: IUserAuthService,
-      private readonly userService: IUserService
+      private readonly userService: IUserService,
+      private readonly userSubscriptionService: IUserSubscriptionService
    ) {}
 
    /**
@@ -50,6 +52,9 @@ export class AuthController {
       const password = this.getRequiredString(req.body.password, "Password is required");
 
       const result = await this.authService.login(email, password);
+
+      // Lazily reconcile subscription state with RevenueCat upon login
+      await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User login success"));
    });
@@ -126,6 +131,9 @@ export class AuthController {
     */
    public me = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = this.getAuthenticatedUserId(req);
+
+      // Lazily reconcile subscription state with RevenueCat before responding
+      await this.userSubscriptionService.reconcileUserSubscription(userId);
 
       const status = await this.userService.getOnboardingStatus(userId);
 

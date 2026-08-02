@@ -1,4 +1,4 @@
-import { ChildrenStatus, EmotionalReadiness, Gender, LookingFor, MaritalStatus, PrismaClient, ProfileStatus, RelationshipTimeline, Role, SelfieStatus, SwipeAction, SubscriptionStatus } from "@prisma/client";
+import { ChildrenStatus, EmotionalReadiness, Gender, LookingFor, MaritalStatus, PrismaClient, ProfileStatus, RelationshipTimeline, Role, SelfieStatus, SubscriptionStatus, SwipeAction } from "@prisma/client";
 
 interface ImageItem {
    imageUrl: string;
@@ -293,7 +293,7 @@ export async function seedJasimAndPriya(prisma: PrismaClient) {
             isActive: true,
             isMostPopular: true,
             description: "Unlock all premium features, unlimited interest requests, video calls, and priority matching.",
-            storeProductId: "premium:monthly",
+            storeProductId: "premium_monthly",
          },
       });
    }
@@ -315,7 +315,7 @@ export async function seedJasimAndPriya(prisma: PrismaClient) {
                startDate: new Date(),
                endDate: oneMonthFromNow,
                status: SubscriptionStatus.ACTIVE,
-            }
+            },
          });
 
          await prisma.userFeature.upsert({
