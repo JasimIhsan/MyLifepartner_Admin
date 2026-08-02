@@ -16,8 +16,18 @@ class Env {
   // Token renewal uses POST /api/user/zego/renew-token.
   static const int zegoAppId = 1331651742;
 
-  // RevenueCat - Payment Gatway
-  static const String revenueCatApiKey = 'goog_iPFGEdyRedFAtyobbTVSFapcuRW';
+  // RevenueCat - Payment Gateway (Google Play Store - Production)
+  static const String revenueCatPlayStoreApiKey =
+      'goog_iPFGEdyRedFAtyobbTVSFapcuRW';
+
+  // RevenueCat - Payment Gateway (Test Store - Debug)
+  static const String revenueCatTestStoreApiKey =
+      'test_RCZPoYstTvwYBoqsEIBHfUVYZOH';
+
+  // RevenueCat API Key based on build environment
+  static const String revenueCatApiKey = isProduction
+      ? revenueCatPlayStoreApiKey
+      : revenueCatTestStoreApiKey;
 
   // Google Sign-In Server Client ID (Android / Backend Verification)
   // MUST be a Web Application Client ID (Life Partner Again Backend), NOT an Android Client ID

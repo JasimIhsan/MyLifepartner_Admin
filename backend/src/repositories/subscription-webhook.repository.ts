@@ -269,6 +269,20 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   },
                });
 
+               await tx.transactionHistory.create({
+                  data: {
+                     userId,
+                     planId: targetPlanId,
+                     status: "PAID",
+                     amount: event.price,
+                     currency: event.currency,
+                     revenueCatEventId: event.id,
+                     originalTransactionId: originalTransactionId ?? null,
+                     store: event.store,
+                     environment: event.environment,
+                  },
+               });
+
                const featurePayload = isInitialPurchase ? buildFeatureFullPayload(subscription.plan) : buildFeatureLimitsOnlyPayload(subscription.plan);
                const existingFeatures = await tx.userFeature.findUnique({ where: { userId } });
                
@@ -329,6 +343,20 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
                      },
                   });
+
+                  await tx.transactionHistory.create({
+                     data: {
+                        userId,
+                        planId: subToCancel.planId,
+                        status: "CANCELLED",
+                        amount: event.price,
+                        currency: event.currency,
+                        revenueCatEventId: event.id,
+                        originalTransactionId: event.original_transaction_id ?? null,
+                        store: event.store,
+                        environment: event.environment,
+                     },
+                  });
                   logger.info("Webhook: cancellation recorded — access preserved until expiry", {
                      userId,
                      eventId: event.id,
@@ -365,6 +393,20 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         productId: event.product_id ?? null,
                         originalTransactionId: event.original_transaction_id ?? null,
                         eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                     },
+                  });
+
+                  await tx.transactionHistory.create({
+                     data: {
+                        userId,
+                        planId: currentSubscription.planId,
+                        status: "FAILED",
+                        amount: event.price,
+                        currency: event.currency,
+                        revenueCatEventId: event.id,
+                        originalTransactionId: event.original_transaction_id ?? null,
+                        store: event.store,
+                        environment: event.environment,
                      },
                   });
                   logger.warn("Webhook: billing issue detected — access preserved during grace period", {
@@ -501,6 +543,20 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                      productId: event.product_id ?? null,
                      originalTransactionId: event.original_transaction_id ?? null,
                      eventTimestampMs: event.event_timestamp_ms ? BigInt(event.event_timestamp_ms) : null,
+                  },
+               });
+
+               await tx.transactionHistory.create({
+                  data: {
+                     userId,
+                     planId: targetPlanId ?? currentSubscription?.planId ?? null,
+                     status: "REFUNDED",
+                     amount: event.price,
+                     currency: event.currency,
+                     revenueCatEventId: event.id,
+                     originalTransactionId: event.original_transaction_id ?? null,
+                     store: event.store,
+                     environment: event.environment,
                   },
                });
 

@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_background_painter.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_error_widget.dart';
@@ -223,6 +224,15 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 fontWeight: FontWeight.bold,
                                 fontSize: 24,
                               ),
+                            ),
+                            const Spacer(),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.receipt_long_rounded,
+                                color: AppColors.textPrimary,
+                                size: 28,
+                              ),
+                              onPressed: () => context.push(AppRoutes.transactionHistory),
                             ),
                           ],
                         ),

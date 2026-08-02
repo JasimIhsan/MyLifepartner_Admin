@@ -26,6 +26,7 @@ import 'package:life_partner_again/screens/selfie_verification/selfie_verificati
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/transaction_history_screen.dart';
 import 'package:life_partner_again/widgets/web_main_layout.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
@@ -243,6 +244,10 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.browseProfiles,
             builder: (context, state) => const BrowseProfilesScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.transactionHistory,
+            builder: (context, state) => const TransactionHistoryScreen(),
           ),
         ],
       ),

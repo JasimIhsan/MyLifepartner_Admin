@@ -28,6 +28,7 @@ model User {
   profile               Profile?
   userFeature           UserFeature?
   subscriptions         UserSubscription[]
+  transactionHistory    TransactionHistory[]
   socialAccounts        SocialAccount[]
 
   @@map("users")
@@ -196,18 +197,19 @@ model Admins {
 }
 
 model SubscriptionPlan {
-  id                Int                @id @default(autoincrement())
-  name              String             @unique
-  price             Int
-  durationDays      Int
-  isActive          Boolean            @default(true)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  isMostPopular     Boolean            @default(false)
-  description       String?
-  storeProductId    String?            @unique
-  features          PlanFeature[]
-  userSubscriptions UserSubscription[]
+  id                 Int                  @id @default(autoincrement())
+  name               String               @unique
+  price              Int
+  durationDays       Int
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  isMostPopular      Boolean              @default(false)
+  description        String?
+  storeProductId     String?              @unique
+  features           PlanFeature[]
+  userSubscriptions  UserSubscription[]
+  transactionHistory TransactionHistory[]
 
   @@map("subscription_plans")
 }
@@ -285,6 +287,26 @@ model UserSubscriptionLog {
 
   @@index([userId, createdAt])
   @@map("user_subscription_logs")
+}
+
+model TransactionHistory {
+  id                    Int               @id @default(autoincrement())
+  userId                Int
+  planId                Int?
+  status                TransactionStatus
+  amount                Float?
+  currency              String?
+  revenueCatEventId     String?
+  originalTransactionId String?
+  store                 String?
+  environment           String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                  SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@map("transaction_history")
 }
 
 model UserFeature {
@@ -472,6 +494,13 @@ enum SubscriptionStatus {
   CANCELLED
   CANCELLED_PENDING_EXPIRY
   EXPIRED
+}
+
+enum TransactionStatus {
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
 }
 
 enum InteractionState {

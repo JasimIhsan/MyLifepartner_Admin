@@ -469,6 +469,22 @@ class SubscriptionProvider extends ChangeNotifier {
   /// UTILS
   /// =========================
 
+  Future<void> cancelSubscriptionDebug() async {
+    if (!kDebugMode) return;
+    try {
+      final freePlan = plans.firstWhere((p) => p.price == 0);
+      final sub = await _subscriptionService.subscribe(freePlan.id);
+      _mySubscription = sub;
+
+      // Invalidate RevenueCat cache to force local refresh
+      await Purchases.invalidateCustomerInfoCache();
+
+      await fetchMySubscription();
+    } catch (e) {
+      debugPrint("Error cancelling subscription in debug mode: $e");
+    }
+  }
+
   Future<void> openGooglePlaySubscription() async {
     try {
       final info = await Purchases.getCustomerInfo();

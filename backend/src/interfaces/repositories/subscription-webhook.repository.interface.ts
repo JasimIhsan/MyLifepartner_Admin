@@ -15,6 +15,8 @@ export type RevenueCatWebhookEventData = {
    entitlement_ids?: string[];
    product_id: string;
    expiration_at_ms?: number;
+   price?: number;
+   currency?: string;
 };
 
 export type FeatureFullPayload = {
@@ -51,10 +53,10 @@ export interface ProcessWebhookParams {
 export interface ISubscriptionWebhookRepository {
    /**
     * Processes a RevenueCat webhook event inside a database transaction.
-    * 
+    *
     * Handles idempotency, advisory locking, and updates the user's subscription
     * and features based on the event type.
-    * 
+    *
     * @param params - Parameters required to process the webhook event.
     * @returns A boolean indicating whether the event was processed (true) or skipped as a duplicate/invalid (false).
     */

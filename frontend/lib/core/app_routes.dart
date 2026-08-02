@@ -18,6 +18,7 @@ import 'package:life_partner_again/screens/selfie_verification/selfie_verificati
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/transaction_history_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -47,6 +48,7 @@ class AppRoutes {
   static const String call = '/call/:callId';
   static const String outgoingCall = '/outgoing-call/:userId';
   static const String browseProfiles = '/browse-profiles';
+  static const String transactionHistory = '/transaction-history';
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -157,6 +159,11 @@ class AppRoutes {
       case browseProfiles:
         return MaterialPageRoute(
           builder: (_) => const BrowseProfilesScreen(),
+          settings: settings,
+        );
+      case transactionHistory:
+        return MaterialPageRoute(
+          builder: (_) => const TransactionHistoryScreen(),
           settings: settings,
         );
       default:
