@@ -547,28 +547,28 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            TextButton(
-                              onPressed: () async {
-                                final provider = context.read<SubscriptionProvider>();
-                                await provider.fetchMySubscription();
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Subscription status restored & synced.'),
-                                      backgroundColor: Colors.black,
-                                    ),
-                                  );
-                                }
-                              },
-                              child: const Text(
-                                'Restore Subscription',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
+                            // TextButton(
+                            //   onPressed: () async {
+                            //     final provider = context.read<SubscriptionProvider>();
+                            //     await provider.fetchMySubscription();
+                            //     if (context.mounted) {
+                            //       ScaffoldMessenger.of(context).showSnackBar(
+                            //         const SnackBar(
+                            //           content: Text('Subscription status restored & synced.'),
+                            //           backgroundColor: Colors.black,
+                            //         ),
+                            //       );
+                            //     }
+                            //   },
+                            //   child: const Text(
+                            //     'Restore Subscription',
+                            //     style: TextStyle(
+                            //       color: AppColors.primary,
+                            //       fontSize: 13,
+                            //       fontWeight: FontWeight.w600,
+                            //     ),
+                            //   ),
+                            // ),
                             TextButton(
                               onPressed: () {
                                 showModalBottomSheet(

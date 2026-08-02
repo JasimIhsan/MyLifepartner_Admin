@@ -7,7 +7,9 @@ import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscript
 import { FeatureFullPayload, FeatureLimitsOnlyPayload, ISubscriptionWebhookRepository, RevenueCatWebhookEventData } from "@/interfaces/repositories/subscription-webhook.repository.interface";
 import { ISyncTransactionContext, IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
+import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
+import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
@@ -49,7 +51,9 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       private readonly userSubscriptionRepository: IUserSubscriptionRepository,
       private readonly processedRevenueCatEventRepository: IProcessedRevenueCatEventRepository,
       private readonly userFeatureRepository: IUserFeatureRepository,
-      private readonly subscriptionWebhookRepository: ISubscriptionWebhookRepository
+      private readonly subscriptionWebhookRepository: ISubscriptionWebhookRepository,
+      private readonly userRepository: IUserRepository,
+      private readonly emailService: IEmailService
    ) {}
 
    // ── Public API ────────────────────────────────────────────────────────────
@@ -335,6 +339,31 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          buildFeatureFullPayload: (plan) => this.buildFeatureFullPayload(this.enrichPlan(plan)),
          buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan)),
       });
+
+      // Email notification logic
+      if (processed) {
+         try {
+            const user = await this.userRepository.findById(userId);
+            if (user && user.email) {
+               let planName = "your plan";
+               if (targetPlanId) {
+                  const plan = await this.subscriptionPlanRepository.getPlanById(targetPlanId);
+                  if (plan) planName = plan.name;
+               }
+
+               if (event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE) {
+                  await this.emailService.sendSubscriptionSuccessEmail(user.email, planName, user.profile?.name || undefined);
+               } else if (event.type === RevenueCatWebhookEvent.RENEWAL) {
+                  const expirationDate = new Date(event.expiration_at_ms || Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString();
+                  await this.emailService.sendSubscriptionRenewalEmail(user.email, planName, expirationDate, user.profile?.name || undefined);
+               } else if (event.type === RevenueCatWebhookEvent.BILLING_ISSUE) {
+                  await this.emailService.sendSubscriptionFailureEmail(user.email, planName, user.profile?.name || undefined);
+               }
+            }
+         } catch (error) {
+            logger.error(`Failed to send subscription email for event ${event.type} to user ${userId}`, { error });
+         }
+      }
 
       // If the event wasn't processed due to a missing targetPlanId, fallback to sync
       if (!processed && !targetPlanId && [RevenueCatWebhookEvent.INITIAL_PURCHASE, RevenueCatWebhookEvent.RENEWAL, RevenueCatWebhookEvent.UNCANCELLATION, RevenueCatWebhookEvent.PRODUCT_CHANGE].includes(event.type)) {

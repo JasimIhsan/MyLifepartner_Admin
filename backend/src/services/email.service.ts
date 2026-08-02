@@ -10,6 +10,7 @@ import path from "path";
 
 const EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/otp/otp.html");
 const WELCOME_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/welcome/welcome.html");
+const SUBSCRIPTION_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/subscription/subscription.html");
 
 const APP_NAME = "Life Partner Again";
 const OTP_EMAIL_SUBJECT = "Your OTP - Life Partner Again";
@@ -77,6 +78,81 @@ export class EmailService implements IEmailService {
    }
 
    /**
+    * Sends Subscription Success email.
+    */
+   async sendSubscriptionSuccessEmail(to: string, planName: string, userName: string = "there"): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Subscription Success email to: ${to} for plan: ${planName}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Subscription Activated";
+         const message = `<p>Great news! Your subscription to the <strong>${planName}</strong> plan is now active.</p><p>You now have full access to all the premium features. Start exploring and make the most out of your experience!</p>`;
+         const textMessage = `Great news! Your subscription to the ${planName} plan is now active.\n\nYou now have full access to all the premium features. Start exploring and make the most out of your experience!`;
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Your Subscription is Active!",
+            html: this.getSubscriptionEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Subscription Success email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendSubscriptionSuccessEmail", { error, to, planName });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Subscription Success email");
+      }
+   }
+
+   /**
+    * Sends Subscription Renewal email.
+    */
+   async sendSubscriptionRenewalEmail(to: string, planName: string, endDate: string, userName: string = "there"): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Subscription Renewal email to: ${to} for plan: ${planName}, endDate: ${endDate}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Subscription Renewed";
+         const message = `<p>Your subscription to the <strong>${planName}</strong> plan has been successfully renewed.</p><p>Your new billing cycle has started, and your plan is active until ${endDate}. Enjoy your continued access to premium features!</p>`;
+         const textMessage = `Your subscription to the ${planName} plan has been successfully renewed.\n\nYour new billing cycle has started, and your plan is active until ${endDate}. Enjoy your continued access to premium features!`;
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Your Subscription has been Renewed",
+            html: this.getSubscriptionEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Subscription Renewal email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendSubscriptionRenewalEmail", { error, to, planName });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Subscription Renewal email");
+      }
+   }
+
+   /**
+    * Sends Subscription Failure email.
+    */
+   async sendSubscriptionFailureEmail(to: string, planName: string, userName: string = "there"): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Subscription Failure email to: ${to} for plan: ${planName}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Action Required: Payment Failed";
+         const message = `<p>We were unable to process the payment for your <strong>${planName}</strong> plan.</p><p>To avoid any interruption in your premium access, please update your payment method through the app store as soon as possible.</p>`;
+         const textMessage = `We were unable to process the payment for your ${planName} plan.\n\nTo avoid any interruption in your premium access, please update your payment method through the app store as soon as possible.`;
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Payment Failed - Update your payment method",
+            html: this.getSubscriptionEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Subscription Failure email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendSubscriptionFailureEmail", { error, to, planName });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Subscription Failure email");
+      }
+   }
+
+   /**
     * Builds OTP email HTML.
     *
     * @param otp - OTP code.
@@ -105,6 +181,21 @@ export class EmailService implements IEmailService {
       const currentYear = new Date().getFullYear().toString();
 
       return template
+         .replace(/{{USER_NAME}}/g, userName)
+         .replace(/{{YEAR}}/g, currentYear)
+         .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);
+   }
+
+   /**
+    * Builds Subscription email HTML.
+    */
+   private getSubscriptionEmailHtml(title: string, message: string, userName: string, headerImageUrl: string): string {
+      const template = fs.readFileSync(SUBSCRIPTION_EMAIL_TEMPLATE_PATH, "utf-8");
+      const currentYear = new Date().getFullYear().toString();
+
+      return template
+         .replace(/{{TITLE}}/g, title)
+         .replace(/{{MESSAGE}}/g, message)
          .replace(/{{USER_NAME}}/g, userName)
          .replace(/{{YEAR}}/g, currentYear)
          .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);

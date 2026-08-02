@@ -153,7 +153,7 @@ export const imageProcessorService = new ImageProcessorService();
 export const profileService = new ProfileService(profileRepository, s3Service, imageProcessorService);
 export const jobService = new JobService(jobRepository);
 export const transactionHistoryService = new TransactionHistoryService(transactionHistoryRepository);
-export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository, subscriptionWebhookRepository);
+export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository, subscriptionWebhookRepository, userRepository, emailService);
 export const oauthService = new OAuthService(userRepository, jwtService, subscriptionPlanRepository, userSubscriptionRepository);
 
 // Shared services

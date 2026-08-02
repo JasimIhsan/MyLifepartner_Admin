@@ -235,22 +235,53 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
 
                const isInitialPurchase = event.type === RevenueCatWebhookEvent.INITIAL_PURCHASE;
 
-               const subscription = await tx.userSubscription.create({
-                  data: {
-                     userId,
-                     planId: targetPlanId,
-                     status: "ACTIVE",
-                     startDate: new Date(),
-                     endDate,
-                     willRenew: true,
-                     revenueCatEventId: event.id,
-                     lastEventTimestampMs: event.event_timestamp_ms,
-                     originalTransactionId: originalTransactionId ?? null,
-                     store: event.store,
-                     environment: event.environment,
-                  },
-                  include: { plan: { include: { features: true } } },
-               });
+               let subscription;
+               if (originalTransactionId) {
+                  subscription = await tx.userSubscription.upsert({
+                     where: { originalTransactionId },
+                     create: {
+                        userId,
+                        planId: targetPlanId,
+                        status: "ACTIVE",
+                        startDate: new Date(),
+                        endDate,
+                        willRenew: true,
+                        revenueCatEventId: event.id,
+                        lastEventTimestampMs: event.event_timestamp_ms,
+                        originalTransactionId,
+                        store: event.store,
+                        environment: event.environment,
+                     },
+                     update: {
+                        planId: targetPlanId,
+                        status: "ACTIVE",
+                        endDate,
+                        willRenew: true,
+                        revenueCatEventId: event.id,
+                        lastEventTimestampMs: event.event_timestamp_ms,
+                        store: event.store,
+                        environment: event.environment,
+                     },
+                     include: { plan: { include: { features: true } } },
+                  });
+               } else {
+                  subscription = await tx.userSubscription.create({
+                     data: {
+                        userId,
+                        planId: targetPlanId,
+                        status: "ACTIVE",
+                        startDate: new Date(),
+                        endDate,
+                        willRenew: true,
+                        revenueCatEventId: event.id,
+                        lastEventTimestampMs: event.event_timestamp_ms,
+                        originalTransactionId: null,
+                        store: event.store,
+                        environment: event.environment,
+                     },
+                     include: { plan: { include: { features: true } } },
+                  });
+               }
 
                await tx.userSubscriptionLog.create({
                   data: {
