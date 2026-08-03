@@ -12,6 +12,8 @@ class PlanCardWidget extends StatelessWidget {
   final bool hasBillingIssue;
   final bool isInGracePeriod;
   final bool isCancelledButActive;
+  final bool isDowngradeScheduled;
+  final bool isCancelled;
   final PlanVisuals visuals;
   final VoidCallback onSubscribe;
   final VoidCallback onInfoTap;
@@ -26,6 +28,8 @@ class PlanCardWidget extends StatelessWidget {
     this.hasBillingIssue = false,
     this.isInGracePeriod = false,
     this.isCancelledButActive = false,
+    this.isDowngradeScheduled = false,
+    this.isCancelled = false,
     required this.visuals,
     required this.onSubscribe,
     required this.onInfoTap,
@@ -75,7 +79,13 @@ class PlanCardWidget extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isCurrentPlan
-                  ? AppColors.primary
+                  ? (hasBillingIssue
+                        ? Colors.red
+                        : (isInGracePeriod
+                              ? Colors.orange
+                              : (isDowngradeScheduled || isCancelled
+                                    ? Colors.grey
+                                    : AppColors.primary)))
                   : (isSelectedPage
                         ? visuals.borderColor
                         : AppColors.borderColor),
@@ -132,6 +142,73 @@ class PlanCardWidget extends StatelessWidget {
                   color: AppColors.primary,
                 ),
               ),
+              if (isCurrentPlan &&
+                  (hasBillingIssue ||
+                      isInGracePeriod ||
+                      isDowngradeScheduled ||
+                      isCancelled)) ...[
+                const SizedBox(height: 12),
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: hasBillingIssue
+                          ? const Color(0xFFFEF2F2)
+                          : (isInGracePeriod
+                                ? const Color(0xFFFFFBEB)
+                                : const Color(0xFFF1F5F9)),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: hasBillingIssue
+                            ? const Color(0xFFFCA5A5)
+                            : (isInGracePeriod
+                                  ? const Color(0xFFFCD34D)
+                                  : const Color(0xFFCBD5E1)),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          hasBillingIssue
+                              ? Icons.error_outline
+                              : (isInGracePeriod
+                                    ? Icons.warning_amber_rounded
+                                    : Icons.info_outline_rounded),
+                          size: 14,
+                          color: hasBillingIssue
+                              ? const Color(0xFFDC2626)
+                              : (isInGracePeriod
+                                    ? const Color(0xFFD97706)
+                                    : const Color(0xFF475569)),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          hasBillingIssue
+                              ? 'Payment Failed'
+                              : (isInGracePeriod
+                                    ? 'Grace Period'
+                                    : (isDowngradeScheduled
+                                          ? 'Downgrades soon'
+                                          : 'Plan Cancelled')),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: hasBillingIssue
+                                ? const Color(0xFFDC2626)
+                                : (isInGracePeriod
+                                      ? const Color(0xFFD97706)
+                                      : const Color(0xFF475569)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
 
               // Features List
@@ -229,28 +306,11 @@ class PlanCardWidget extends StatelessWidget {
                       ),
                     ),
                   )
-                else if (!willRenew || isCancelledButActive)
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: TextButton(
-                      onPressed: () => onSubscribe(),
-                      child: const Text(
-                        'Manage Subscription',
-                        style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  )
+                else if (isDowngradeScheduled ||
+                    isCancelledButActive ||
+                    isCancelled ||
+                    !willRenew)
+                  const SizedBox.shrink()
                 else
                   Container(
                     height: 48,

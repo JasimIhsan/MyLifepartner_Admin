@@ -66,9 +66,7 @@ class AuthRepository {
     }
   }
 
-  Future<AuthResultResponse> googleSignIn({
-    required String idToken,
-  }) async {
+  Future<AuthResultResponse> googleSignIn({required String idToken}) async {
     try {
       final response = await _dio.post(
         "/oauth/google",

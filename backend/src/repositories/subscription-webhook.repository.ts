@@ -1,5 +1,5 @@
 import prisma from "@/config/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma, SubscriptionStatus as PrismaSubscriptionStatus } from "@prisma/client";
 import { RevenueCatWebhookEvent } from "@/enums/revenuecat-event.enum";
 import { 
    ISubscriptionWebhookRepository, 
@@ -126,14 +126,20 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
          processed = true; // Event is new and will be processed
 
          // ─── Load current subscription ──────────────────────────────────────────
-         // Considers ACTIVE, CANCELLED_PENDING_EXPIRY, BILLING_ISSUE, GRACE_PERIOD
-         // as "currently active" for stale-event comparison and event routing.
+         // All four statuses represent users with an active/access-granting subscription.
+         const ACTIVE_STATUSES: PrismaSubscriptionStatus[] = [
+            PrismaSubscriptionStatus.ACTIVE,
+            PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY,
+            PrismaSubscriptionStatus.BILLING_ISSUE,
+            PrismaSubscriptionStatus.GRACE_PERIOD,
+         ];
+
          const currentSubscription = await tx.userSubscription.findFirst({
             where: {
                userId,
-               status: { in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"] },
+               status: { in: ACTIVE_STATUSES },
             },
-            include: { plan: true },
+            include: { plan: { include: { features: true } } },
             orderBy: { createdAt: "desc" },
          });
 
@@ -231,8 +237,9 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                }
 
                // Expire previous subscriptions before creating the new one
+               // (covers all active-access statuses)
                await tx.userSubscription.updateMany({
-                  where: { userId, status: { in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"] } },
+                  where: { userId, status: { in: ACTIVE_STATUSES } },
                   data: { status: "EXPIRED" },
                });
 
@@ -355,10 +362,13 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                let subToRestore = currentSubscription;
 
                if (txnId && currentSubscription?.originalTransactionId !== txnId) {
+                  // Search across all active statuses — the UNCANCELLATION may arrive after an
+                  // intermediate state transition (e.g., BILLING_ISSUE). Also accept ACTIVE in
+                  // case an out-of-order event arrives after a prior RENEWAL already restored it.
                   subToRestore = await tx.userSubscription.findFirst({
-                     where: { userId, status: "CANCELLED_PENDING_EXPIRY", originalTransactionId: txnId },
+                     where: { userId, status: { in: ACTIVE_STATUSES }, originalTransactionId: txnId },
                      orderBy: { createdAt: "desc" },
-                     include: { plan: true },
+                     include: { plan: { include: { features: true } } },
                   }) || currentSubscription;
                }
 
@@ -411,10 +421,11 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                let subToCancel = currentSubscription;
 
                if (txnId && currentSubscription?.originalTransactionId !== txnId) {
+                  // CANCELLATION may arrive for a subscription that's now in BILLING_ISSUE state
                   subToCancel = await tx.userSubscription.findFirst({
-                     where: { userId, status: "ACTIVE", originalTransactionId: txnId },
+                     where: { userId, status: { in: ACTIVE_STATUSES }, originalTransactionId: txnId },
                      orderBy: { createdAt: "desc" },
-                     include: { plan: true },
+                     include: { plan: { include: { features: true } } },
                   }) || currentSubscription;
                }
 
@@ -602,7 +613,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                const txnId = event.original_transaction_id;
                let whereClause: any = {
                   userId,
-                  status: { in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"] },
+                  status: { in: ACTIVE_STATUSES },
                };
 
                if (txnId) {

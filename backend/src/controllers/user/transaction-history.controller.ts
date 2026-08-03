@@ -6,9 +6,7 @@ import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
 
 export class TransactionHistoryController {
-   constructor(
-      private readonly transactionHistoryService: ITransactionHistoryService
-   ) {}
+   constructor(private readonly transactionHistoryService: ITransactionHistoryService) {}
 
    /**
     * @route GET /api/v1/user/transactions

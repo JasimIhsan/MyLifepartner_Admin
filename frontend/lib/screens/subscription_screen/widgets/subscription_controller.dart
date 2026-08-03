@@ -89,12 +89,12 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         if (mounted) {
           final isCompleted = ValueNotifier(false);
           final dialogFuture = showDynamicLoadingUI(context, isCompleted);
-          
+
           await context.read<SubscriptionProvider>().cancelSubscriptionDebug();
-          
+
           isCompleted.value = true;
           await dialogFuture;
-          
+
           if (mounted) {
             initSubscriptions();
           }
@@ -102,7 +102,9 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
       } else {
         _awaitingStoreReturn = true;
         if (mounted) {
-          await context.read<SubscriptionProvider>().openGooglePlaySubscription();
+          await context
+              .read<SubscriptionProvider>()
+              .openGooglePlaySubscription();
         }
       }
     }
@@ -114,6 +116,14 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
     if (plan.price == 0 &&
         provider.currentSubscription != null &&
         provider.currentSubscription!.price > 0) {
+      final mySub = provider.mySubscription;
+      if (mySub != null && (!mySub.willRenew || mySub.isCancelledButActive || mySub.isDowngradeScheduled || mySub.isCancelled || mySub.isInGracePeriod || mySub.isPaymentFailed)) {
+        _awaitingStoreReturn = true;
+        if (mounted) {
+          await provider.openGooglePlaySubscription();
+        }
+        return;
+      }
       await handleCancelSubscription();
       return;
     }
@@ -173,7 +183,10 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
           Text(
             'To cancel your subscription, you will be directed to your ${(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) ? "Apple App Store" : "Google Play"} subscription settings. Your premium features will remain active until the end of your current billing period.',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 32),
           Row(

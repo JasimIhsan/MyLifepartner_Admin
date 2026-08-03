@@ -10,6 +10,19 @@ const userSubscriptionIncludePlanAndFeatures = {
    },
 } satisfies Prisma.UserSubscriptionInclude;
 
+/**
+ * All statuses that represent a user with an "active" subscription.
+ * BILLING_ISSUE and GRACE_PERIOD users still have access — they must be
+ * included so /my-subscription returns their subscription and so that a new
+ * purchase correctly expires/replaces the old record.
+ */
+const ACTIVE_STATUSES: PrismaSubscriptionStatus[] = [
+   PrismaSubscriptionStatus.ACTIVE,
+   PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY,
+   PrismaSubscriptionStatus.BILLING_ISSUE,
+   PrismaSubscriptionStatus.GRACE_PERIOD,
+];
+
 export class UserSubscriptionRepository implements IUserSubscriptionRepository {
    /**
     * Creates a user subscription.
@@ -27,6 +40,9 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
    /**
     * Finds the active subscription of a user.
     *
+    * Considers ACTIVE, CANCELLED_PENDING_EXPIRY, BILLING_ISSUE, and
+    * GRACE_PERIOD as "active" — all of these states grant the user access.
+    *
     * @param userId - User ID.
     * @returns Active user subscription with plan and features, or null if not found.
     */
@@ -34,7 +50,7 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
       return prisma.userSubscription.findFirst({
          where: {
             userId,
-            status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] },
+            status: { in: ACTIVE_STATUSES },
          },
          include: userSubscriptionIncludePlanAndFeatures,
          orderBy: {
@@ -44,7 +60,9 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
    }
 
    /**
-    * Deactivates active subscriptions of a user.
+    * Deactivates ALL active subscriptions of a user (marks them as EXPIRED).
+    * Covers ACTIVE, CANCELLED_PENDING_EXPIRY, BILLING_ISSUE, and GRACE_PERIOD
+    * so that a new purchase always starts from a clean state.
     *
     * @param userId - User ID.
     * @returns Prisma batch update result.
@@ -53,7 +71,7 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
       return prisma.userSubscription.updateMany({
          where: {
             userId,
-            status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] },
+            status: { in: ACTIVE_STATUSES },
          },
          data: {
             status: SubscriptionStatus.EXPIRED as unknown as PrismaSubscriptionStatus,
@@ -94,14 +112,14 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
             const ctx: ISyncTransactionContext = {
                findActiveSubscriptionByUserId: async (uid: number) => {
                   return tx.userSubscription.findFirst({
-                     where: { userId: uid, status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] } },
+                     where: { userId: uid, status: { in: ACTIVE_STATUSES } },
                      include: userSubscriptionIncludePlanAndFeatures,
                      orderBy: { createdAt: "desc" },
                   }) as Promise<UserSubscriptionWithPlan | null>;
                },
                deactivateUserSubscriptions: async (uid: number) => {
                   await tx.userSubscription.updateMany({
-                     where: { userId: uid, status: { in: [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY] } },
+                     where: { userId: uid, status: { in: ACTIVE_STATUSES } },
                      data: { status: PrismaSubscriptionStatus.EXPIRED },
                   });
                },

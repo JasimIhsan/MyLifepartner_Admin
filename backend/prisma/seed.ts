@@ -23,8 +23,8 @@ async function main() {
       // Execute each seeder in sequence
       // await seedAdmins(prisma);
       // await seedJobs(prisma);
-      // await seedSubscriptionPlans(prisma);
-      await seedJasimAndPriya(prisma);
+      await seedSubscriptionPlans(prisma);
+      // await seedJasimAndPriya(prisma);
       // await seedProfileData(prisma);
       // await seedUsers(prisma);
       // await seedMutualConnections(prisma);

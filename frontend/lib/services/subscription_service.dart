@@ -63,6 +63,11 @@ class SubscriptionService {
     }
   }
 
+  /// Calls the backend /sync endpoint which fetches fresh state from
+  /// RevenueCat's REST API and updates the database.
+  ///
+  /// Use this for: restore purchases, returning from subscription management
+  /// (after cancel / resubscribe / payment fix), and app-foreground refresh.
   Future<UserSubscription?> syncSubscription() async {
     try {
       final response = await _apiService.dio.post('/subscription/sync');
@@ -78,6 +83,38 @@ class SubscriptionService {
       );
     } catch (e) {
       throw Exception('Failed to sync subscription: $e');
+    }
+  }
+
+  /// Verifies a completed RevenueCat purchase with the backend and immediately
+  /// activates the subscription in the database — no webhook latency.
+  ///
+  /// Call this right after [Purchases.purchasePackage] succeeds, passing the
+  /// [originalTransactionId] and [productIdentifier] from CustomerInfo.
+  Future<UserSubscription> verifyPurchase({
+    required String originalTransactionId,
+    required String productId,
+    required String store,
+    String environment = 'PRODUCTION',
+  }) async {
+    try {
+      final response = await _apiService.dio.post(
+        '/subscription/verify-purchase',
+        data: {
+          'originalTransactionId': originalTransactionId,
+          'productId': productId,
+          'store': store,
+          'environment': environment,
+        },
+      );
+      if (response.statusCode == 200 && response.data['success'] == true) {
+        return UserSubscription.fromJson(response.data['data']);
+      }
+      throw Exception(
+        response.data['message'] ?? 'Failed to verify purchase',
+      );
+    } catch (e) {
+      throw Exception('Failed to verify purchase: $e');
     }
   }
 }

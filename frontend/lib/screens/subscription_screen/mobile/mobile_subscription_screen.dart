@@ -130,10 +130,18 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.05),
+                  color: provider.hasBillingIssue
+                      ? const Color(0xFFFEF2F2)
+                      : (provider.isInGracePeriod
+                            ? const Color(0xFFFFFBEB)
+                            : AppColors.primary.withValues(alpha: 0.05)),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: provider.hasBillingIssue
+                        ? const Color(0xFFFCA5A5)
+                        : (provider.isInGracePeriod
+                              ? const Color(0xFFFCD34D)
+                              : AppColors.primary.withValues(alpha: 0.1)),
                   ),
                 ),
                 child: Column(
@@ -142,10 +150,14 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                     Text(
                       provider.currentSubscriptionMessage ??
                           'Your subscription is active.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: provider.hasBillingIssue
+                            ? const Color(0xFFDC2626)
+                            : (provider.isInGracePeriod
+                                  ? const Color(0xFFD97706)
+                                  : AppColors.primary),
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -459,9 +471,25 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                           ?.willRenew ??
                                                       true,
                                                   visuals: visuals,
-                                                  hasBillingIssue: isCurrentPlan ? provider.hasBillingIssue : false,
-                                                  isInGracePeriod: isCurrentPlan ? provider.isInGracePeriod : false,
-                                                  isCancelledButActive: isCurrentPlan ? provider.isCancelledButActive : false,
+                                                  hasBillingIssue: isCurrentPlan
+                                                      ? provider.hasBillingIssue
+                                                      : false,
+                                                  isInGracePeriod: isCurrentPlan
+                                                      ? provider.isInGracePeriod
+                                                      : false,
+                                                  isCancelledButActive:
+                                                      isCurrentPlan
+                                                      ? provider
+                                                            .isCancelledButActive
+                                                      : false,
+                                                  isDowngradeScheduled:
+                                                      isCurrentPlan
+                                                      ? provider
+                                                            .isDowngradeScheduled
+                                                      : false,
+                                                  isCancelled: isCurrentPlan
+                                                      ? provider.isCancelled
+                                                      : false,
                                                   onSubscribe: () {
                                                     if (isCurrentPlan &&
                                                         plan.price > 0) {

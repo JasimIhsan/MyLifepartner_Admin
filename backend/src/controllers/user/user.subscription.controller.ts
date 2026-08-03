@@ -5,6 +5,7 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
+import logger from "@/utils/logger";
 import { Request, Response } from "express";
 
 type CallType = "audio" | "video";
@@ -34,6 +35,7 @@ export class UserSubscriptionController {
       const userId = this.getAuthenticatedUserId(req);
 
       const subscription = await this.userSubscriptionService.getMySubscription(userId);
+      logger.debug(`Subscription: `, subscription);
       const subscriptionDto = subscription ? toUserSubscriptionDto(subscription) : null;
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscriptionDto, "Current subscription retrieved successfully"));
@@ -70,6 +72,43 @@ export class UserSubscriptionController {
    });
 
    /**
+    * @route POST /api/v1/user/subscriptions/verify-purchase
+    * @purpose Verifies a RevenueCat purchase and immediately activates the plan.
+    *
+    * Called by the Flutter app right after Purchases.purchasePackage() succeeds.
+    * The backend verifies the transaction with the RC REST API and activates the
+    * subscription instantly — without waiting for a webhook.
+    */
+   public verifyPurchase = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+
+      const { originalTransactionId, productId, store, environment } = req.body;
+
+      if (!originalTransactionId || typeof originalTransactionId !== "string" || originalTransactionId.trim() === "") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "originalTransactionId is required");
+      }
+
+      if (!productId || typeof productId !== "string" || productId.trim() === "") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "productId is required");
+      }
+
+      if (!store || typeof store !== "string") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "store is required");
+      }
+
+      const subscription = await this.userSubscriptionService.verifyAndActivatePurchase(userId, {
+         originalTransactionId: originalTransactionId.trim(),
+         productId: productId.trim(),
+         store: store.trim(),
+         environment: (environment ?? "PRODUCTION").trim(),
+      });
+
+      const subscriptionDto = toUserSubscriptionDto(subscription);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscriptionDto, "Purchase verified and plan activated successfully"));
+   });
+
+   /**
     * @route POST /api/v1/user/subscriptions/check-call
     * @purpose Checks whether authenticated user can start or continue a call.
     */
@@ -93,7 +132,6 @@ export class UserSubscriptionController {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid target user ID");
       }
 
-
       await this.userFeatureService.checkCallAccess(userId, type as CallType, consumeSeconds, targetUserId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Call allowed"));
@@ -112,7 +150,7 @@ export class UserSubscriptionController {
       const responseData = {
          subscription: subscription ? toUserSubscriptionDto(subscription) : null,
          features,
-         syncStatus: subscription?.plan?.name === "FREE" ? "DOWNGRADED" : "SYNCED"
+         syncStatus: subscription?.plan?.name === "FREE" ? "DOWNGRADED" : "SYNCED",
       };
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, responseData, "Subscription synced successfully"));

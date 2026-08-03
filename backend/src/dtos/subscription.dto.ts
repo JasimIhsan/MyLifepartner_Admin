@@ -32,6 +32,8 @@ export interface UserSubscriptionDto {
    startDate: Date;
    endDate: Date;
    status: string;
+   /** Computed server-side — true for ACTIVE, CANCELLED_PENDING_EXPIRY, BILLING_ISSUE, GRACE_PERIOD */
+   isActive: boolean;
    willRenew: boolean;
    nextPlanId: number | null;
    createdAt: Date;
@@ -41,8 +43,17 @@ export interface UserSubscriptionDto {
    originalTransactionId: string | null;
    store: string | null;
    environment: string | null;
+   // Lifecycle timestamps — clients use these for accurate UI display
+   cancelledAt: Date | null;
+   billingIssueDetectedAt: Date | null;
+   gracePeriodEndsAt: Date | null;
    plan: SubscriptionPlanDto;
    message?: string;
+   isExpired?: boolean;
+   isGracePeriod?: boolean;
+   isPaymentFailed?: boolean;
+   isDowngradeScheduled?: boolean;
+   isCancelled?: boolean;
 }
 
 export const toPlanFeatureDto = (feature: EnrichedPlanFeature): PlanFeatureDto => ({
@@ -70,6 +81,9 @@ export const toSubscriptionPlanDto = (plan: EnrichedSubscriptionPlan): Subscript
    features: plan.features.map(toPlanFeatureDto),
 });
 
+/** Statuses that grant the user premium access in the backend. */
+const ACTIVE_ACCESS_STATUSES = new Set(["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"]);
+
 export const toUserSubscriptionDto = (sub: EnrichedUserSubscription): UserSubscriptionDto => ({
    id: sub.id,
    userId: sub.userId,
@@ -77,6 +91,7 @@ export const toUserSubscriptionDto = (sub: EnrichedUserSubscription): UserSubscr
    startDate: sub.startDate,
    endDate: sub.endDate,
    status: sub.status,
+   isActive: ACTIVE_ACCESS_STATUSES.has(sub.status as string),
    willRenew: sub.willRenew,
    nextPlanId: sub.nextPlanId,
    createdAt: sub.createdAt,
@@ -86,6 +101,14 @@ export const toUserSubscriptionDto = (sub: EnrichedUserSubscription): UserSubscr
    originalTransactionId: sub.originalTransactionId,
    store: sub.store,
    environment: sub.environment,
+   cancelledAt: sub.cancelledAt ?? null,
+   billingIssueDetectedAt: sub.billingIssueDetectedAt ?? null,
+   gracePeriodEndsAt: sub.gracePeriodEndsAt ?? null,
    plan: toSubscriptionPlanDto(sub.plan),
    message: sub.message,
+   isExpired: sub.isExpired,
+   isGracePeriod: sub.isGracePeriod,
+   isPaymentFailed: sub.isPaymentFailed,
+   isDowngradeScheduled: sub.isDowngradeScheduled,
+   isCancelled: sub.isCancelled,
 });
