@@ -15,6 +15,7 @@ import locationRoutes from "@routes/user/location.routes";
 import userOauthRoutes from "@routes/user/user.oauth.routes";
 import discoveryRoutes from "@routes/user/discovery.routes";
 import transactionRoutes from "@routes/user/transaction.routes";
+import userReportRoutes from "@routes/user/user.report.routes";
 
 const router = Router();
 
@@ -43,6 +44,7 @@ router.use("/locations", locationRoutes);
 router.use("/oauth", userOauthRoutes);
 router.use("/discovery", discoveryRoutes);
 router.use("/transactions", transactionRoutes);
+router.use("/reports", userReportRoutes);
 router.use("/", userRoutes);
 
 export default router;

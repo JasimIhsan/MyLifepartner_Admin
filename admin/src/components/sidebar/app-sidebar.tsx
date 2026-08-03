@@ -22,6 +22,11 @@ const data = {
          icon: UsersIcon,
       },
       {
+         title: "Reports",
+         url: "/reports",
+         icon: Send, // Reusing an icon or we could import ShieldAlert
+      },
+      {
          title: "Questionnaire",
          url: "/questionnaire",
          icon: ListChecks,

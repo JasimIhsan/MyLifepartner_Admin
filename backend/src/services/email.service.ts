@@ -12,6 +12,7 @@ const EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/otp/otp.html
 const WELCOME_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/welcome/welcome.html");
 const SUBSCRIPTION_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/subscription/subscription.html");
 const RECEIPT_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/subscription/receipt.html");
+const REPORT_STATUS_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/report/report-status.html");
 
 const APP_NAME = "Life Partner Again";
 const OTP_EMAIL_SUBJECT = "Your OTP - Life Partner Again";
@@ -265,6 +266,40 @@ export class EmailService implements IEmailService {
       }
    }
 
+   /**
+    * Sends Report Status Update email.
+    */
+   async sendReportStatusUpdateEmail(to: string, userName: string, reportedUserName: string, reportId: number, status: string, notes?: string): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Report Status Update email to: ${to} for report: ${reportId}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Update on Your Report";
+         let message = `<p>We wanted to let you know that the status of your report against <strong>${reportedUserName}</strong> has been updated to: <strong>${status.replace(/_/g, " ")}</strong>.</p>`;
+         if (notes) {
+            message += `<p><strong>Admin Note:</strong> ${notes}</p>`;
+         }
+         message += `<p>Thank you for helping us keep our community safe.</p>`;
+         
+         let textMessage = `We wanted to let you know that the status of your report against ${reportedUserName} has been updated to: ${status.replace(/_/g, " ")}.\n\n`;
+         if (notes) {
+            textMessage += `Admin Note: ${notes}\n\n`;
+         }
+         textMessage += `Thank you for helping us keep our community safe.`;
+
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Update on Your Report",
+            html: this.getReportStatusEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Report Status Update email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendReportStatusUpdateEmail", { error, to, reportId });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Report Status Update email");
+      }
+   }
 
    /**
     * Builds OTP email HTML.
@@ -305,6 +340,21 @@ export class EmailService implements IEmailService {
     */
    private getSubscriptionEmailHtml(title: string, message: string, userName: string, headerImageUrl: string): string {
       const template = fs.readFileSync(SUBSCRIPTION_EMAIL_TEMPLATE_PATH, "utf-8");
+      const currentYear = new Date().getFullYear().toString();
+
+      return template
+         .replace(/{{TITLE}}/g, title)
+         .replace(/{{MESSAGE}}/g, message)
+         .replace(/{{USER_NAME}}/g, userName)
+         .replace(/{{YEAR}}/g, currentYear)
+         .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);
+   }
+
+   /**
+    * Builds Report Status Update email HTML.
+    */
+   private getReportStatusEmailHtml(title: string, message: string, userName: string, headerImageUrl: string): string {
+      const template = fs.readFileSync(REPORT_STATUS_EMAIL_TEMPLATE_PATH, "utf-8");
       const currentYear = new Date().getFullYear().toString();
 
       return template

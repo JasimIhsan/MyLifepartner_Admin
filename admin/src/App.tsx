@@ -17,6 +17,8 @@ import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 import { FeaturesPage } from "./pages/features-page/FeaturesPage"; // New
 import ImageAssetsPage from "./pages/image-assets-page/ImageAssetsPage";
 import LpaGuidePage from "./pages/lpa-guide-page/LpaGuidePage";
+import ReportsPage from "./pages/reports-page/ReportsPage";
+import ReportDetailPage from "./pages/reports-page/ReportDetailPage";
 
 function App() {
    const dispatch = useDispatch();
@@ -58,6 +60,8 @@ function App() {
                   <Route path="/lpa-guide" element={<LpaGuidePage />} />
                   <Route path="/subscriptions/plans" element={<SubscriptionPage />} />
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="/reports/:id" element={<ReportDetailPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                </Route>
             </Route>
