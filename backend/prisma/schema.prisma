@@ -514,6 +514,7 @@ enum SubscriptionStatus {
 enum TransactionStatus {
   PAID
   FAILED
+  RENEWAL
   CANCELLED
   REFUNDED
 }

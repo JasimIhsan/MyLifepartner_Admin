@@ -4,14 +4,14 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
 
-class TransactionHistoryScreen extends StatefulWidget {
-  const TransactionHistoryScreen({super.key});
+class BillingHistoryScreen extends StatefulWidget {
+  const BillingHistoryScreen({super.key});
 
   @override
-  State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  State<BillingHistoryScreen> createState() => _BillingHistoryScreenState();
 }
 
-class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
+class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
   @override
   void initState() {
     super.initState();
@@ -25,7 +25,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Transaction History'),
+        title: const Text('Billing History'),
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
@@ -73,7 +73,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   Icon(Icons.receipt_long, size: 80, color: Colors.grey[400]),
                   const SizedBox(height: 16),
                   Text(
-                    'No transactions yet',
+                    'No billing history yet',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
@@ -140,6 +140,15 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                               ),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Subscription Payment',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(height: 12),
                         Row(

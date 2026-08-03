@@ -65,7 +65,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
               color: AppColors.textPrimary,
               size: 24,
             ),
-            onPressed: () => context.push(AppRoutes.transactionHistory),
+            onPressed: () => context.push(AppRoutes.billingHistory),
           ),
         ],
       ),

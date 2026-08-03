@@ -245,7 +245,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 size: 28,
                               ),
                               onPressed: () =>
-                                  context.push(AppRoutes.transactionHistory),
+                                  context.push(AppRoutes.billingHistory),
                             ),
                           ],
                         ),

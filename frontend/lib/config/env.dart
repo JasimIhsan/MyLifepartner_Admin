@@ -13,7 +13,7 @@ class Env {
   // Environment flags
   // isProduction => Siraj
   // !isProduction => Jasim
-  static const bool isProduction = true;
+  static const bool isProduction = false;
 
   // ZEGOCLOUD — AppID only. AppSign is NEVER stored on the client.
   // Authentication uses backend-generated tokens from /api/user/zego/token.
