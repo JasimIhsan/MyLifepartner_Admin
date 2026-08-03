@@ -1,9 +1,8 @@
-import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/core/country_helper.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/body_photo_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_action_bar.dart';
@@ -11,7 +10,7 @@ import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_details_grid.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
-import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/report_user_dialog.dart';
 
 class MobileProfileDetailScreen extends StatefulWidget {
   const MobileProfileDetailScreen({super.key});
@@ -27,11 +26,11 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
   Widget build(BuildContext context) {
     if (!hasApiData) {
       return const Scaffold(
-        backgroundColor: AppColors.textWhite,
+        backgroundColor: AppColors.white,
         body: ProfileSkeleton(),
       );
     }
-    return Scaffold(backgroundColor: AppColors.textWhite, body: _buildBody());
+    return Scaffold(backgroundColor: AppColors.white, body: _buildBody());
   }
 
   Widget _buildBody() {
@@ -55,7 +54,7 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                     Positioned.fill(
                       child: images.isEmpty
                           ? Container(
-                              color: AppColors.primaryLight,
+                              color: AppColors.black,
                               child: const Center(
                                 child: Icon(
                                   Icons.person_rounded,
@@ -163,7 +162,7 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.inputBackground,
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
@@ -234,30 +233,83 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
             ),
           ),
         ),
-        if (p['country'] != null && CountryHelper.getCode(p['country']) != null)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: CountryFlag.fromCountryCode(
-                  CountryHelper.getCode(p['country'])!,
-                  width: 38,
-                  height: 38,
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8,
+          right: 12,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.95),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                  spreadRadius: 1,
                 ),
+              ],
+            ),
+            child: PopupMenuButton<String>(
+              icon: const Icon(
+                Icons.more_vert_rounded,
+                size: 20,
+                color: AppColors.textPrimary,
               ),
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onSelected: (value) {
+                if (value == 'report') {
+                  ReportUserDialog.show(context, p);
+                } else if (value == 'block') {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '${p['name'] ?? 'User'} blocked successfully',
+                      ),
+                    ),
+                  );
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                const PopupMenuItem<String>(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.flag_outlined,
+                        size: 20,
+                        color: AppColors.textPrimary,
+                      ),
+                      SizedBox(width: 12),
+                      Text('Report user'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'block',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.block_outlined,
+                        size: 20,
+                        color: Colors.redAccent,
+                      ),
+                      SizedBox(width: 12),
+                      Text(
+                        'Block user',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
         Positioned(
           bottom: 0,
           left: 0,

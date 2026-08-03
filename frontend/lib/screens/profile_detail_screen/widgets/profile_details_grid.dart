@@ -1,13 +1,21 @@
+import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/country_helper.dart';
 
 class DetailItem {
-  final IconData icon;
+  final IconData? icon;
+  final Widget? customLeading;
   final String label;
   final String value;
 
-  const DetailItem(this.icon, this.label, this.value);
+  const DetailItem({
+    this.icon,
+    this.customLeading,
+    required this.label,
+    required this.value,
+  });
 }
 
 /// Displays a card-style grid of profile detail rows.
@@ -54,7 +62,10 @@ class ProfileDetailsGrid extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(item.icon, size: 16, color: AppColors.primary),
+                  if (item.customLeading != null)
+                    item.customLeading!
+                  else if (item.icon != null)
+                    Icon(item.icon, size: 16, color: AppColors.primary),
                   const SizedBox(width: 8),
                   Text(
                     item.value,
@@ -79,49 +90,79 @@ class ProfileDetailsGrid extends StatelessWidget {
 
     if (p['motherTongue'] != null) {
       items.add(
-        DetailItem(Icons.translate_rounded, 'Language', p['motherTongue']),
+        DetailItem(
+          icon: Icons.translate_rounded,
+          label: 'Language',
+          value: p['motherTongue'],
+        ),
       );
     }
     if (p['heightCm'] != null) {
       items.add(
         DetailItem(
-          Icons.straighten_rounded,
-          'Height',
-          _formatHeight(p['heightCm']),
+          icon: Icons.straighten_rounded,
+          label: 'Height',
+          value: _formatHeight(p['heightCm']),
         ),
       );
     }
     if (p['maritalStatus'] != null) {
       items.add(
         DetailItem(
-          Icons.favorite_border,
-          'Marital Status',
-          _formatEnum(p['maritalStatus']),
+          icon: Icons.favorite_border,
+          label: 'Marital Status',
+          value: _formatEnum(p['maritalStatus']),
         ),
       );
     }
     if (p['highestEducation'] != null) {
       items.add(
-        DetailItem(Icons.school_outlined, 'Education', p['highestEducation']),
+        DetailItem(
+          icon: Icons.school_outlined,
+          label: 'Education',
+          value: p['highestEducation'],
+        ),
       );
     }
     if (p['occupation'] != null) {
       items.add(
-        DetailItem(Icons.work_outline_rounded, 'Occupation', p['occupation']),
+        DetailItem(
+          icon: Icons.work_outline_rounded,
+          label: 'Occupation',
+          value: p['occupation'],
+        ),
       );
     }
 
     if (p['gender'] != null) {
       items.add(
         DetailItem(
-          Icons.person_outline_rounded,
-          'Gender',
-          _formatEnum(p['gender']),
+          icon: Icons.person_outline_rounded,
+          label: 'Gender',
+          value: _formatEnum(p['gender']),
         ),
       );
     }
     if (p['country'] != null) {
-      items.add(DetailItem(Icons.public_rounded, 'Country', p['country']));
+      final countryCode = CountryHelper.getCode(p['country']);
+      Widget? flagWidget;
+      if (countryCode != null) {
+        flagWidget = ClipOval(
+          child: CountryFlag.fromCountryCode(
+            countryCode,
+            width: 18,
+            height: 18,
+          ),
+        );
+      }
+      items.add(
+        DetailItem(
+          icon: flagWidget == null ? Icons.public_rounded : null,
+          customLeading: flagWidget,
+          label: 'Country',
+          value: p['country'],
+        ),
+      );
     }
 
     return items;
