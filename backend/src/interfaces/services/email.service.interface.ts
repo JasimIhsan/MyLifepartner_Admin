@@ -1,3 +1,5 @@
+import { SentMessageInfo } from "nodemailer";
+
 export interface IEmailService {
    sendOtpEmail(to: string, otp: string): Promise<unknown>;
    sendWelcomeEmail(to: string, userName?: string): Promise<unknown>;
@@ -8,5 +10,6 @@ export interface IEmailService {
    sendSubscriptionCancelledEmail(to: string, planName: string, expiresAt: string, userName?: string): Promise<unknown>;
    sendSubscriptionExpiredEmail(to: string, planName: string, userName?: string): Promise<unknown>;
    sendSubscriptionRestoredEmail(to: string, planName: string, userName?: string): Promise<unknown>;
-   sendReportStatusUpdateEmail(to: string, userName: string, reportedUserName: string, reportId: number, status: string, notes?: string): Promise<unknown>;
+   sendReportStatusUpdateEmail(to: string, reporterName: string, reportedUserName: string, reportId: number, status: string, notes?: string): Promise<SentMessageInfo>;
+   sendModerationEmail(to: string, userName: string, title: string, message: string): Promise<SentMessageInfo>;
 }

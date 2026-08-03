@@ -48,6 +48,16 @@ export class AuthService implements IUserAuthService {
       const normalizedEmail = this.normalizeEmail(email);
 
       const user = await this.userRepository.findByEmail(normalizedEmail);
+
+      if (user) {
+         if (user.isBanned) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+         }
+         if (user.isSuspended) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
+         }
+      }
+
       const otp = await this.otpService.sendOtp(normalizedEmail, ip, purpose);
 
       return {
@@ -104,6 +114,14 @@ export class AuthService implements IUserAuthService {
 
       if (!user.password) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Password not set for this account");
+      }
+
+      if (user.isBanned) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+      }
+
+      if (user.isSuspended) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
       }
 
       const isPasswordValid = await bcrypt.compare(passwordPlain, user.password);
@@ -218,6 +236,14 @@ export class AuthService implements IUserAuthService {
             throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not found");
          }
 
+         if (user.isBanned) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+         }
+
+         if (user.isSuspended) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
+         }
+
          return this.generateAuthTokens(user.id, user.email, user.role);
       } catch {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
@@ -234,6 +260,17 @@ export class AuthService implements IUserAuthService {
     */
    async sendOtp(email: string, ip: string, purpose: string = DEFAULT_AUTH_PURPOSE) {
       const normalizedEmail = this.normalizeEmail(email);
+
+      const existingUser = await this.userRepository.findByEmail(normalizedEmail);
+      if (existingUser) {
+         if (existingUser.isBanned) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+         }
+         if (existingUser.isSuspended) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
+         }
+      }
+
       const otp = await this.otpService.sendOtp(normalizedEmail, ip, purpose);
 
       return {
@@ -251,6 +288,17 @@ export class AuthService implements IUserAuthService {
     */
    async resendOtp(email: string, ip: string, purpose: string = DEFAULT_AUTH_PURPOSE) {
       const normalizedEmail = this.normalizeEmail(email);
+
+      const existingUser = await this.userRepository.findByEmail(normalizedEmail);
+      if (existingUser) {
+         if (existingUser.isBanned) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+         }
+         if (existingUser.isSuspended) {
+            throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
+         }
+      }
+
       const otp = await this.otpService.resendOtp(normalizedEmail, ip, purpose);
 
       return {

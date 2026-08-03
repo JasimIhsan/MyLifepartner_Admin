@@ -1,10 +1,10 @@
 import axiosInstance from "@/api/api.config";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { UserReport } from "@/interface/report.interface";
 import { Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { ReportsTable } from "./(components)/ReportsTable";
 
@@ -88,7 +88,7 @@ const ReportsPage = () => {
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                      placeholder="Search by ID, name, email..."
-                     className="pl-8 w-full sm:w-[300px]"
+                     className="pl-8 w-full sm:w-75"
                      value={searchTerm}
                      onChange={(e) => {
                         setSearchTerm(e.target.value);
@@ -103,7 +103,7 @@ const ReportsPage = () => {
                      setPageIndex(0);
                   }}
                >
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-50">
                      <SelectValue placeholder="Filter by reason" />
                   </SelectTrigger>
                   <SelectContent>

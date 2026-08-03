@@ -3,5 +3,6 @@ export interface UpdateAdminDto {
    name?: string;
    password?: string;
    role?: "ADMIN" | "SUPER_ADMIN";
-   isBlocked?: boolean;
+   isBanned?: boolean;
+   isSuspended?: boolean;
 }

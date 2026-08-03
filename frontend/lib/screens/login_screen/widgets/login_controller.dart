@@ -2,14 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
+import 'package:life_partner_again/services/apple_auth_service.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/services/google_auth_service.dart';
-import 'package:life_partner_again/services/apple_auth_service.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +21,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
   bool isLoading = false;
   bool isGoogleLoading = false;
   bool isAppleLoading = false;
+  String? authErrorMessage;
 
   @override
   void initState() {
@@ -42,6 +42,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
 
     setState(() {
       isLoading = true;
+      authErrorMessage = null;
     });
 
     try {
@@ -62,12 +63,9 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
         errorMessage = getDioErrorMessage(e);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        setState(() {
+          authErrorMessage = errorMessage;
+        });
       }
     } finally {
       if (mounted) {
@@ -78,19 +76,27 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
     }
   }
 
-  Future<void> processGoogleIdToken(String idToken, {bool skipLoadingCheck = false}) async {
+  Future<void> processGoogleIdToken(
+    String idToken, {
+    bool skipLoadingCheck = false,
+  }) async {
     if (!skipLoadingCheck && isGoogleLoading) return;
 
     if (!isGoogleLoading) {
       setState(() {
         isGoogleLoading = true;
+        authErrorMessage = null;
       });
     }
 
     try {
-      debugPrint("Starting backend Google Sign-In with idToken length: ${idToken.length}");
+      debugPrint(
+        "Starting backend Google Sign-In with idToken length: ${idToken.length}",
+      );
       final response = await authRepository.googleSignIn(idToken: idToken);
-      debugPrint("Backend Google Sign-In Response: success=${response.success}");
+      debugPrint(
+        "Backend Google Sign-In Response: success=${response.success}",
+      );
 
       if (response.success && response.user != null) {
         final sharedPrefs = await SharedPreferences.getInstance();
@@ -135,16 +141,15 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
       debugPrint("Google Auth Backend Error: $e");
       String errorMessage = "Failed to sign in with Google. Please try again.";
       if (e is DioException) {
-        debugPrint("DioException Status Code: ${e.response?.statusCode}, Error: ${e.response?.data}");
+        debugPrint(
+          "DioException Status Code: ${e.response?.statusCode}, Error: ${e.response?.data}",
+        );
         errorMessage = getDioErrorMessage(e);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        setState(() {
+          authErrorMessage = errorMessage;
+        });
       }
     } finally {
       if (mounted) {
@@ -160,6 +165,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
 
     setState(() {
       isGoogleLoading = true;
+      authErrorMessage = null;
     });
 
     try {
@@ -180,12 +186,9 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
         errorMessage = e.message;
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        setState(() {
+          authErrorMessage = errorMessage;
+        });
       }
     } finally {
       if (mounted) {
@@ -201,6 +204,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
 
     setState(() {
       isAppleLoading = true;
+      authErrorMessage = null;
     });
 
     try {
@@ -219,7 +223,7 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
         lastName: result.lastName,
         nonce: result.rawNonce,
       );
-      
+
       debugPrint("Backend Apple Sign-In Response: success=${response.success}");
 
       if (response.success && response.user != null) {
@@ -272,12 +276,9 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
         errorMessage = e.message;
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: AppColors.error,
-          ),
-        );
+        setState(() {
+          authErrorMessage = errorMessage;
+        });
       }
     } finally {
       if (mounted) {

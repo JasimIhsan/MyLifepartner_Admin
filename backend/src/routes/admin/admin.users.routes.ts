@@ -11,6 +11,13 @@ const adminUsersRoute = Router();
 adminUsersRoute.get("/", adminUsersController.getAllUsers);
 
 /**
+ * @route   GET /api/v1/admin/users/suspended
+ * @desc    Get all suspended users
+ * @access  Admin
+ */
+adminUsersRoute.get("/suspended", adminUsersController.getSuspendedUsers);
+
+/**
  * @route   POST /api/v1/admin/users
  * @desc    Create a new user
  * @access  Admin
@@ -46,11 +53,18 @@ adminUsersRoute.get("/:id/images", adminUsersController.getUserImages);
 adminUsersRoute.patch("/:id/verify-profile", adminUsersController.verifyProfile);
 
 /**
- * @route   PATCH /api/v1/admin/users/:id/block-status
- * @desc    Block or unblock a user
+ * @route   PATCH /api/v1/admin/users/:id/ban
+ * @desc    Ban or unban a user
  * @access  Admin
  */
-adminUsersRoute.patch("/:id/block-status", adminUsersController.toggleBlockUser);
+adminUsersRoute.patch("/:id/ban", adminUsersController.toggleBanUser);
+
+/**
+ * @route   PATCH /api/v1/admin/users/:id/lift-suspension
+ * @desc    Lift temporary suspension of a user
+ * @access  Admin
+ */
+adminUsersRoute.patch("/:id/lift-suspension", adminUsersController.liftSuspension);
 
 /**
  * @route   DELETE /api/v1/admin/users/:id

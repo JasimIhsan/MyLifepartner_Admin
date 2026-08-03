@@ -302,6 +302,31 @@ export class EmailService implements IEmailService {
    }
 
    /**
+    * Sends Moderation Action email.
+    */
+   async sendModerationEmail(to: string, userName: string, title: string, message: string): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Moderation email to: ${to}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         
+         const textMessage = `${title}\n\nHi ${userName},\n\n${message}\n\nIf you need any help, our support team is always here for you.`;
+
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: title,
+            html: this.getReportStatusEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Moderation email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendModerationEmail", { error, to });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send moderation email");
+      }
+   }
+
+   /**
     * Builds OTP email HTML.
     *
     * @param otp - OTP code.

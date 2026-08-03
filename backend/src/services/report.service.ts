@@ -1,7 +1,7 @@
+import { IModerationRepository } from "@/interfaces/repositories/moderation.repository.interface";
+import { IReportRepository } from "@/interfaces/repositories/report.repository.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IS3Service } from "@/interfaces/services/s3.service.interface";
-import { IReportRepository } from "@/interfaces/repositories/report.repository.interface";
-import { IModerationRepository } from "@/interfaces/repositories/moderation.repository.interface";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
 import { ModerationActionLog, ModerationActionType, ReportPriority, ReportReason, ReportSource, ReportStatus, UserReport } from "@prisma/client";
@@ -120,29 +120,31 @@ export class ReportService {
 
    public async takeModerationAction(reportId: number, adminId: number, action: ModerationActionType, reason: string, notes?: string): Promise<ModerationActionLog> {
       const report = await this.reportRepository.findByIdWithUsersProfile(reportId);
-      
+
       if (!report) throw new ApiError(404, "Report not found");
 
-      const result = await this.moderationRepository.executeModerationActionTransaction(
-         reportId,
-         adminId,
-         action,
-         reason,
-         report.reportedUserId,
-         notes
-      );
+      const result = await this.moderationRepository.executeModerationActionTransaction(reportId, adminId, action, reason, report.reportedUserId, notes);
 
       // Send email notification to reporter asynchronously
-      this.emailService
-         .sendReportStatusUpdateEmail(
-            report.reporterUser.email,
-            report.reporterUser.profile?.name || "User",
-            report.reportedUser.profile?.name || "User",
-            report.id,
-            ReportStatus.RESOLVED,
-            reason // Passing reason as note here
-         )
-         .catch((err) => logger.error("Failed to send report resolution email", err));
+      this.emailService.sendReportStatusUpdateEmail(report.reporterUser.email, report.reporterUser.profile?.name || "User", report.reportedUser.profile?.name || "User", report.id, ReportStatus.RESOLVED, notes).catch((err) => logger.error("Failed to send report status update email to reporter", err));
+
+      // Send email notification to reported user
+      let title = "";
+      let message = "";
+      if (action === ModerationActionType.WARNING) {
+         title = "Official Warning";
+         message = `We have received reports regarding your account. Reason: ${reason}. Please ensure you follow our community guidelines.`;
+      } else if (action === ModerationActionType.TEMPORARY_SUSPENSION) {
+         title = "Account Suspended";
+         message = `Your account has been temporarily suspended for 14 days due to a violation of our community guidelines. Reason: ${reason}. You will not be able to log in during this period.`;
+      } else if (action === ModerationActionType.PERMANENT_BAN) {
+         title = "Account Permanently Banned";
+         message = `Your account has been permanently banned due to a severe violation of our community guidelines. Reason: ${reason}.`;
+      }
+
+      if (title && message) {
+         this.emailService.sendModerationEmail(report.reportedUser.email, report.reportedUser.profile?.name || "User", title, message).catch((err) => logger.error("Failed to send moderation email to reported user", err));
+      }
 
       return result;
    }

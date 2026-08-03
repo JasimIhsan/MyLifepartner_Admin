@@ -4,7 +4,7 @@ import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { RootState } from "@/store";
-import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
+import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, Send, UserCheck2Icon, UserX, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { NavMain } from "./nav-main";
@@ -22,15 +22,20 @@ const data = {
          icon: UsersIcon,
       },
       {
+         title: "Suspended Users",
+         url: "/suspended-users",
+         icon: UserX,
+      },
+      {
          title: "Reports",
          url: "/reports",
          icon: Send, // Reusing an icon or we could import ShieldAlert
       },
-      {
-         title: "Questionnaire",
-         url: "/questionnaire",
-         icon: ListChecks,
-      },
+      // {
+      //    title: "Questionnaire",
+      //    url: "/questionnaire",
+      //    icon: ListChecks,
+      // },
       {
          title: "Profile Verification",
          url: "/profile-verification",

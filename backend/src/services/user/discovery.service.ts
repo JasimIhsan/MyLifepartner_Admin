@@ -63,7 +63,8 @@ export class DiscoveryService {
       const whereClause: Prisma.ProfileWhereInput = {
          user: {
             id: { not: currentUserId },
-            isBlocked: false,
+            isBanned: false,
+            isSuspended: false,
             isDeleted: false,
          },
       };

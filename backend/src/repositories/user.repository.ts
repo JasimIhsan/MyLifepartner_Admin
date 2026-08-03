@@ -76,6 +76,21 @@ export class UserRepository implements IUserRepository {
    }
 
    /**
+    * Finds all suspended users.
+    */
+   async findSuspendedUsers(): Promise<UserWithProfile[]> {
+      return prisma.user.findMany({
+         where: {
+            isSuspended: true,
+         },
+         include: UserRepository.STANDARD_INCLUDE,
+         orderBy: {
+            suspendedAt: "desc",
+         },
+      });
+   }
+
+   /**
     * Finds a user by ID.
     *
     * @param id - User ID.

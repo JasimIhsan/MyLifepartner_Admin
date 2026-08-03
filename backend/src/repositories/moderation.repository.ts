@@ -31,10 +31,15 @@ export class ModerationRepository implements IModerationRepository {
          });
 
          // Execute action
-         if (action === ModerationActionType.PERMANENT_BAN || action === ModerationActionType.TEMPORARY_SUSPENSION) {
+         if (action === ModerationActionType.PERMANENT_BAN) {
             await tx.user.update({
                where: { id: reportedUserId },
-               data: { isBlocked: true },
+               data: { isBanned: true, bannedAt: new Date() },
+            });
+         } else if (action === ModerationActionType.TEMPORARY_SUSPENSION) {
+            await tx.user.update({
+               where: { id: reportedUserId },
+               data: { isSuspended: true, suspendedAt: new Date() },
             });
          }
 

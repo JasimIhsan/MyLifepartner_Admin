@@ -102,6 +102,13 @@ export class OAuthService implements IOAuthService {
          }
       }
 
+      if (user.isBanned) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+      }
+      if (user.isSuspended) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
+      }
+
       // Upsert the Google social account record (create or update updatedAt)
       await this.userRepository.upsertSocialAccount(user.id, "GOOGLE", googleUserId);
 
@@ -213,6 +220,13 @@ export class OAuthService implements IOAuthService {
 
             await this.assignFreePlanIfAvailable(user.id);
          }
+      }
+
+      if (user.isBanned) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+      }
+      if (user.isSuspended) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
       }
 
       // Upsert the Apple social account record (create or update updatedAt)

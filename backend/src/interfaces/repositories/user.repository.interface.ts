@@ -44,6 +44,7 @@ export type UserOnboardingStatus = {
 export interface IUserRepository {
    create(data: CreateUserDto): Promise<UserWithProfile>;
    findAll(filters?: UserListFilters, skip?: number, take?: number): Promise<PaginatedUsersResult>;
+   findSuspendedUsers(): Promise<User[]>;
    findById(id: number): Promise<UserWithProfile | null>;
    findOnboardingStatusById(id: number): Promise<UserOnboardingStatus | null>;
    findByEmail(email: string): Promise<UserWithProfile | null>;

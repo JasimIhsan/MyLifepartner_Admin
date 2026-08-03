@@ -11,8 +11,11 @@ export interface IUserService {
    getUserById(userId: number): Promise<UserDto>;
    getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto>;
    updateUser(userId: number, updateData: UpdateUserDto): Promise<UserDto>;
-   toggleBlockUser(userId: number): Promise<UserDto>;
+   toggleBanStatus(userId: number): Promise<UserDto>;
+   getSuspendedUsers(): Promise<UserDto[]>;
+   liftSuspension(userId: number): Promise<UserDto>;
    deleteUser(userId: number): Promise<void>;
    getUserSelfieData(userId: number): Promise<UserSelfieDataDto>;
    getUserImagesData(userId: number): Promise<UserImageDataDto[]>;
+   validateUserAccountStatus(userId: number): Promise<void>;
 }

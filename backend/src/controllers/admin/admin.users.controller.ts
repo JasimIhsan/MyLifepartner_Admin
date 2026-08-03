@@ -35,6 +35,47 @@ export class AdminUsersController {
    });
 
    /**
+    * Toggles user ban status.
+    *
+    * @route PATCH /api/v1/admin/users/:id/ban
+    */
+   public toggleBanUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const result = await this.userService.toggleBanStatus(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User ban status updated successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/admin/users/suspended
+    * @purpose Fetches all suspended users.
+    */
+   public getSuspendedUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const users = await this.userService.getSuspendedUsers();
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, users, "Suspended users fetched successfully"));
+   });
+
+   /**
+    * @route PATCH /api/v1/admin/users/:id/lift-suspension
+    * @purpose Lifts a user's temporary suspension.
+    */
+   public liftSuspension = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const result = await this.userService.liftSuspension(userId);
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User suspension lifted successfully"));
+   });
+
+   /**
     * @route POST /api/v1/admin/users
     * @purpose Creates a new user.
     */
@@ -63,21 +104,7 @@ export class AdminUsersController {
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User updated successfully"));
    });
 
-   /**
-    * @route PATCH /api/v1/admin/users/:id/block-status
-    * @purpose Blocks or unblocks a user.
-    */
-   public toggleBlockUser = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const userId = Number(req.params.id);
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      const result = await this.userService.toggleBlockUser(userId);
-
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User block status toggled successfully"));
-   });
 
    /**
     * @route DELETE /api/v1/admin/users/:id

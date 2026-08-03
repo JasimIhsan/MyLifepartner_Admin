@@ -3,7 +3,8 @@ export interface UserInterface {
    mobileNumber: string;
    name: string | null;
    email: string | null;
-   isBlocked: boolean;
+   isBanned: boolean;
+   isSuspended: boolean;
    isDeleted: boolean;
    profileStatus: "INCOMPLETE" | "ONBOARDING_COMPLETED" | "COMPLETED";
    hasCompletedImageUpload: boolean;

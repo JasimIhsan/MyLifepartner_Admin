@@ -152,20 +152,45 @@ export class UserService implements IUserService {
       return toUserDto(updatedUser);
    }
 
-   /**
-    * Toggles user block status.
-    *
-    * @param userId - User ID.
-    * @returns Updated user.
-    */
-   async toggleBlockUser(userId: number): Promise<UserDto> {
-      const user = await this.findActiveUserById(userId);
+   async toggleBanStatus(id: number): Promise<UserDto> {
+      const user = await this.userRepository.findById(id);
 
-      const updatedUser = await this.userRepository.update(userId, {
-         isBlocked: !user.isBlocked,
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      const updatedUser = await this.userRepository.update(id, {
+         isBanned: !user.isBanned,
+         bannedAt: !user.isBanned ? new Date() : null,
       });
 
       return toUserDto(updatedUser);
+   }
+
+   /**
+    * Lifts user suspension.
+    */
+   async liftSuspension(id: number): Promise<UserDto> {
+      const user = await this.userRepository.findById(id);
+
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      const updatedUser = await this.userRepository.update(id, {
+         isSuspended: false,
+         suspendedAt: null,
+      });
+
+      return toUserDto(updatedUser);
+   }
+
+   /**
+    * Gets all suspended users.
+    */
+   async getSuspendedUsers(): Promise<UserDto[]> {
+      const users = await this.userRepository.findSuspendedUsers();
+      return users.map(toUserDto);
    }
 
    /**
@@ -227,6 +252,27 @@ export class UserService implements IUserService {
             url: await this.s3Service.getPresignedUrl(image.imageUrl, PRESIGNED_URL_EXPIRY_SECONDS),
          }))
       );
+   }
+
+   /**
+    * Validates user account status (checking if banned or suspended).
+    *
+    * @param userId - User ID.
+    */
+   async validateUserAccountStatus(userId: number): Promise<void> {
+      const user = await this.userRepository.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "User not found");
+      }
+
+      if (user.isBanned) {
+         throw new ApiError(403, "Your account has been permanently banned.");
+      }
+
+      if (user.isSuspended) {
+         throw new ApiError(403, "Your account is temporarily suspended.");
+      }
    }
 
    /**

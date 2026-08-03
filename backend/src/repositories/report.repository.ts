@@ -45,7 +45,7 @@ export class ReportRepository implements IReportRepository {
          where: { id: reportId },
          include: {
             reporterUser: { select: { id: true, email: true, profile: { select: { name: true, profileStatus: true } } } },
-            reportedUser: { select: { id: true, email: true, isBlocked: true, profile: { select: { name: true, profileStatus: true } } } },
+            reportedUser: { select: { id: true, email: true, isBanned: true, isSuspended: true, profile: { select: { name: true, profileStatus: true } } } },
             moderationLogs: true,
          },
       });

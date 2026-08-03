@@ -19,6 +19,7 @@ import ImageAssetsPage from "./pages/image-assets-page/ImageAssetsPage";
 import LpaGuidePage from "./pages/lpa-guide-page/LpaGuidePage";
 import ReportsPage from "./pages/reports-page/ReportsPage";
 import ReportDetailPage from "./pages/reports-page/ReportDetailPage";
+import SuspendedUsersPage from "./pages/suspended-users-page/SuspendedUsersPage";
 
 function App() {
    const dispatch = useDispatch();
@@ -54,6 +55,7 @@ function App() {
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/admins" element={<AdminsPage />} />
                   <Route path="/users" element={<UsersPage />} />
+                  <Route path="/suspended-users" element={<SuspendedUsersPage />} />
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
                   <Route path="/image-assets" element={<ImageAssetsPage />} />

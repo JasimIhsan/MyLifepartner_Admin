@@ -12,7 +12,10 @@ model User {
   email                 String               @unique
   password              String?
   isVerified            Boolean              @default(false)
-  isBlocked             Boolean              @default(false)
+  isBanned              Boolean              @default(false)
+  isSuspended           Boolean              @default(false)
+  bannedAt              DateTime?
+  suspendedAt           DateTime?
   isDeleted             Boolean              @default(false)
   role                  Role                 @default(USER)
   createdAt             DateTime             @default(now())
@@ -31,9 +34,9 @@ model User {
   transactionHistory    TransactionHistory[]
   socialAccounts        SocialAccount[]
 
-  reportsSubmitted      UserReport[]          @relation("ReportedBy")
-  reportsReceived       UserReport[]          @relation("ReportTarget")
-  moderationLogs        ModerationActionLog[] @relation("UserModerationLogs")
+  reportsSubmitted UserReport[]          @relation("ReportedBy")
+  reportsReceived  UserReport[]          @relation("ReportTarget")
+  moderationLogs   ModerationActionLog[] @relation("UserModerationLogs")
 
   @@map("users")
 }
@@ -197,8 +200,8 @@ model Admins {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  assignedReports       UserReport[]          @relation("ReportAssignedAdmin")
-  moderationLogs        ModerationActionLog[] @relation("AdminModerationLogs")
+  assignedReports UserReport[]          @relation("ReportAssignedAdmin")
+  moderationLogs  ModerationActionLog[] @relation("AdminModerationLogs")
 
   @@map("admins")
 }
@@ -564,30 +567,30 @@ model SocialAccount {
 }
 
 model UserReport {
-  id                    Int             @id @default(autoincrement())
+  id                    Int                   @id @default(autoincrement())
   reporterUserId        Int
   reportedUserId        Int
   reason                ReportReason
   description           String?
-  evidenceScreenshots   String[]        @default([])
-  source                ReportSource    @default(OTHER)
+  evidenceScreenshots   String[]              @default([])
+  source                ReportSource          @default(OTHER)
   relatedMessageId      Int?
   relatedConversationId Int?
-  status                ReportStatus    @default(PENDING)
-  priority              ReportPriority  @default(MEDIUM)
+  status                ReportStatus          @default(PENDING)
+  priority              ReportPriority        @default(MEDIUM)
   assignedAdminId       Int?
   adminNotes            String?
   resolution            String?
   actionTaken           ModerationActionType?
   actionTakenAt         DateTime?
   actionTakenBy         Int?
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 
-  reporterUser          User            @relation("ReportedBy", fields: [reporterUserId], references: [id])
-  reportedUser          User            @relation("ReportTarget", fields: [reportedUserId], references: [id])
-  assignedAdmin         Admins?         @relation("ReportAssignedAdmin", fields: [assignedAdminId], references: [id])
-  moderationLogs        ModerationActionLog[]
+  reporterUser   User                  @relation("ReportedBy", fields: [reporterUserId], references: [id])
+  reportedUser   User                  @relation("ReportTarget", fields: [reportedUserId], references: [id])
+  assignedAdmin  Admins?               @relation("ReportAssignedAdmin", fields: [assignedAdminId], references: [id])
+  moderationLogs ModerationActionLog[]
 
   @@index([status])
   @@index([reportedUserId])
@@ -595,19 +598,19 @@ model UserReport {
 }
 
 model ModerationActionLog {
-  id          Int                  @id @default(autoincrement())
-  userId      Int
-  reportId    Int?
-  adminId     Int
-  action      ModerationActionType
-  reason      String?
-  notes       String?
-  expiresAt   DateTime?
-  createdAt   DateTime             @default(now())
+  id        Int                  @id @default(autoincrement())
+  userId    Int
+  reportId  Int?
+  adminId   Int
+  action    ModerationActionType
+  reason    String?
+  notes     String?
+  expiresAt DateTime?
+  createdAt DateTime             @default(now())
 
-  user        User                 @relation("UserModerationLogs", fields: [userId], references: [id])
-  admin       Admins               @relation("AdminModerationLogs", fields: [adminId], references: [id])
-  report      UserReport?          @relation(fields: [reportId], references: [id])
+  user   User        @relation("UserModerationLogs", fields: [userId], references: [id])
+  admin  Admins      @relation("AdminModerationLogs", fields: [adminId], references: [id])
+  report UserReport? @relation(fields: [reportId], references: [id])
 
   @@index([userId])
   @@map("moderation_action_logs")

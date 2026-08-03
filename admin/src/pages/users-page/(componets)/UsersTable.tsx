@@ -23,7 +23,7 @@ export function UsersTable({
    isFetching = false,
    onAdd,
    onEdit,
-   onToggleBlock,
+   onToggleBan,
    onDelete,
 }: {
    data?: UserInterface[];
@@ -37,7 +37,7 @@ export function UsersTable({
    isFetching?: boolean;
    onAdd?: () => void;
    onEdit?: (user: UserInterface) => void;
-   onToggleBlock?: (id: number, currentStatus: boolean) => void;
+   onToggleBan?: (id: number, currentStatus: boolean) => void;
    onDelete?: (id: number) => void;
 }) {
    const [data, setData] = React.useState<UserInterface[]>(initialData);
@@ -45,7 +45,7 @@ export function UsersTable({
 
    // Modal state
    const [actionModalOpen, setActionModalOpen] = React.useState(false);
-   const [actionType, setActionType] = React.useState<"delete" | "block" | "unblock" | null>(null);
+   const [actionType, setActionType] = React.useState<"delete" | "ban" | "unban" | null>(null);
    const [selectedUser, setSelectedUser] = React.useState<UserInterface | null>(null);
 
    React.useEffect(() => {
@@ -80,7 +80,7 @@ export function UsersTable({
       });
    };
 
-   const handleActionClick = (user: UserInterface, type: "delete" | "block" | "unblock") => {
+   const handleActionClick = (user: UserInterface, type: "delete" | "ban" | "unban") => {
       setSelectedUser(user);
       setActionType(type);
       setActionModalOpen(true);
@@ -91,8 +91,8 @@ export function UsersTable({
 
       if (actionType === "delete" && onDelete) {
          onDelete(selectedUser.id);
-      } else if ((actionType === "block" || actionType === "unblock") && onToggleBlock) {
-         onToggleBlock(selectedUser.id, selectedUser.isBlocked);
+      } else if ((actionType === "ban" || actionType === "unban") && onToggleBan) {
+         onToggleBan(selectedUser.id, selectedUser.isBanned);
       }
       setActionModalOpen(false);
    };
@@ -155,7 +155,8 @@ export function UsersTable({
                               <TableCell>
                                  <div className="flex flex-col">
                                     <span className="font-medium">{user.name || "Unknown"}</span>
-                                    {user.isBlocked && <span className="text-xs text-destructive font-semibold">Blocked</span>}
+                                    {user.isBanned && <span className="text-xs text-destructive font-semibold">Banned</span>}
+                                    {user.isSuspended && <span className="text-xs text-orange-500 font-semibold">Suspended</span>}
                                     <span className="text-xs text-muted-foreground">ID: {user.id}</span>
                                  </div>
                               </TableCell>
@@ -169,10 +170,6 @@ export function UsersTable({
                               </TableCell>
                               <TableCell>
                                  <div className="flex flex-col gap-1.5">
-                                    {/* <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                       {user.isEmailVerified ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : <XCircle className="h-3.5 w-3.5" />}
-                                       <span>Email Verified</span>
-                                    </div> */}
                                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                                        {user.profileStatus === "COMPLETED" ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : user.profileStatus === "ONBOARDING_COMPLETED" ? <CheckCircle2 className="h-3.5 w-3.5 text-yellow-500" /> : <XCircle className="h-3.5 w-3.5" />}
                                        <span className="capitalize">{user.profileStatus?.replace("_", " ").toLowerCase() || "Incomplete"}</span>
@@ -191,7 +188,7 @@ export function UsersTable({
                                     <DropdownMenuContent align="end" className="w-40">
                                        <DropdownMenuItem>View Details</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => onEdit?.(user)}>Edit User</DropdownMenuItem>
-                                       <DropdownMenuItem onClick={() => handleActionClick(user, user.isBlocked ? "unblock" : "block")}>{user.isBlocked ? "Unblock User" : "Block User"}</DropdownMenuItem>
+                                       <DropdownMenuItem onClick={() => handleActionClick(user, user.isBanned ? "unban" : "ban")}>{user.isBanned ? "Unban User" : "Ban User"}</DropdownMenuItem>
                                        <DropdownMenuSeparator />
                                        <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>
                                           Delete User
@@ -268,16 +265,16 @@ export function UsersTable({
             isOpen={actionModalOpen}
             onClose={() => setActionModalOpen(false)}
             onConfirm={handleConfirmAction}
-            title={actionType === "delete" ? "Delete User" : actionType === "block" ? "Block User" : "Unblock User"}
+            title={actionType === "delete" ? "Delete User" : actionType === "ban" ? "Ban User" : "Unban User"}
             description={
                actionType === "delete"
                   ? `Are you sure you want to delete ${selectedUser?.name || "this user"}? This action cannot be undone and will permanently remove all their data.`
-                  : actionType === "block"
-                    ? `Are you sure you want to block ${selectedUser?.name || "this user"}? They will no longer be able to log in or access the application.`
-                    : `Are you sure you want to unblock ${selectedUser?.name || "this user"}? They will regain access to the application.`
+                  : actionType === "ban"
+                    ? `Are you sure you want to ban ${selectedUser?.name || "this user"}? They will no longer be able to log in or access the application.`
+                    : `Are you sure you want to unban ${selectedUser?.name || "this user"}? They will regain access to the application.`
             }
-            confirmText={actionType === "delete" ? "Delete" : actionType === "block" ? "Block User" : "Unblock User"}
-            variant={actionType === "delete" ? "destructive" : actionType === "block" ? "destructive" : "default"}
+            confirmText={actionType === "delete" ? "Delete" : actionType === "ban" ? "Ban User" : "Unban User"}
+            variant={actionType === "delete" ? "destructive" : actionType === "ban" ? "destructive" : "default"}
          />
       </div>
    );

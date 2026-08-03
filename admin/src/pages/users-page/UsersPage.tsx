@@ -96,13 +96,13 @@ const UsersPage = () => {
       }
    };
 
-   const handleToggleBlock = async (id: number, currentStatus: boolean) => {
+   const handleToggleBan = async (id: number, currentStatus: boolean) => {
       try {
-         await axiosInstance.patch(`/admin/users/${id}/block-status`);
-         toast.success(`User ${currentStatus ? "unblocked" : "blocked"} successfully`);
-         fetchUsers();
+         await axiosInstance.patch(`/admin/users/${id}/ban`);
+         setUsers(users.map((user) => (user.id === id ? { ...user, isBanned: !currentStatus } : user)));
+         toast.success(`User ${currentStatus ? "unbanned" : "banned"} successfully`);
       } catch (error) {
-         console.error("Error toggling block status:", error);
+         console.error("Error toggling ban status:", error);
          toast.error("Failed to update user status");
       }
    };
@@ -145,7 +145,7 @@ const UsersPage = () => {
                onAdd={handleAddUser}
                onEdit={handleEditUser}
                onDelete={handleDeleteUser}
-               onToggleBlock={handleToggleBlock}
+               onToggleBan={handleToggleBan}
             />
             <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={selectedUser} />
          </>

@@ -159,7 +159,8 @@ export class MatchRepository implements IMatchRepository {
       const profiles = await prisma.profile.findMany({
          where: {
             user: {
-               isBlocked: false,
+               isBanned: false,
+               isSuspended: false,
                isDeleted: false,
                isVerified: true,
                id: {

@@ -3,7 +3,7 @@ import { ReportPriority, ReportReason, ReportSource, ReportStatus, UserReport, P
 export type ReportWithDetails = Prisma.UserReportGetPayload<{
    include: {
       reporterUser: { select: { id: true; email: true; profile: { select: { name: true; profileStatus: true } } } };
-      reportedUser: { select: { id: true; email: true; isBlocked: true; profile: { select: { name: true; profileStatus: true } } } };
+      reportedUser: { select: { id: true; email: true; isBanned: true; isSuspended: true; profile: { select: { name: true; profileStatus: true } } } };
       moderationLogs: true;
    };
 }>;
