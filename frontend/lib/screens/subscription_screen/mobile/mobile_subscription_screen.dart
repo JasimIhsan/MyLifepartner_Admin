@@ -576,7 +576,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                           vertical: 12.0,
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             // TextButton(
                             //   onPressed: () async {
