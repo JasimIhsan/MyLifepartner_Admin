@@ -10,9 +10,9 @@ import 'package:life_partner_again/services/notification_api_service.dart';
 /// Top-level function to handle background messages
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  await Firebase.initializeApp();
+  if (Firebase.apps.isEmpty) {
+    await Firebase.initializeApp();
+  }
   debugPrint("Handling a background message: ${message.messageId}");
 }
 
@@ -31,22 +31,51 @@ class FirebaseNotificationService {
   final NotificationApiService _apiService = NotificationApiService();
 
   Future<void> initialize() async {
-    // 1. Initialize local notifications
-    await _localNotificationService.initialize();
+    debugPrint(
+      '  👉 [FCM] Step 4a: Initializing Local Notification Service...',
+    );
+    try {
+      await _localNotificationService.initialize();
+      debugPrint('  ✅ [FCM] Step 4a: Local Notifications initialized.');
+    } catch (e) {
+      debugPrint('  ❌ [FCM] Step 4a: Local Notifications failed: $e');
+    }
 
-    // 2. Register background handler
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    debugPrint(
+      '  👉 [FCM] Step 4b: Registering background handler & listeners...',
+    );
+    try {
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+      debugPrint('  ✅ [FCM] Step 4b: FCM Listeners registered.');
+    } catch (e) {
+      debugPrint('  ❌ [FCM] Step 4b: Registering FCM Listeners failed: $e');
+    }
 
-    // 3. Handle foreground messages
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-
-    // 4. Handle notification tap when app is in background but opened
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
-
-    // 5. Handle initial message if app was terminated and opened via notification
-    final initialMessage = await FirebaseMessaging.instance.getInitialMessage();
-    if (initialMessage != null) {
-      _handleMessageOpenedApp(initialMessage);
+    debugPrint(
+      '  👉 [FCM] Step 4c: Fetching getInitialMessage (can hang on iOS Simulator)...',
+    );
+    try {
+      final initialMessage = await FirebaseMessaging.instance
+          .getInitialMessage()
+          .timeout(
+            const Duration(seconds: 3),
+            onTimeout: () {
+              debugPrint(
+                '  ⚠️ [FCM] Step 4c: getInitialMessage timed out (expected on iOS Simulator). Skipping.',
+              );
+              return null;
+            },
+          );
+      if (initialMessage != null) {
+        _handleMessageOpenedApp(initialMessage);
+      }
+      debugPrint('  ✅ [FCM] Step 4c: Initial message check finished.');
+    } catch (e) {
+      debugPrint('  ❌ [FCM] Step 4c: Error getting initial FCM message: $e');
     }
   }
 
