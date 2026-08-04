@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
@@ -12,6 +14,7 @@ import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/providers/location_provider.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
+import 'package:life_partner_again/providers/notification_provider.dart';
 import 'package:life_partner_again/providers/transaction_provider.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
@@ -40,6 +43,9 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
   ZegoService.instance.init();
+
+  await Firebase.initializeApp();
+  await FirebaseNotificationService().initialize();
 
   // Bootstrap auth BEFORE the app renders so GoRouter's first redirect
   // already has the correct isLoggedIn state, preventing the login screen
@@ -138,6 +144,7 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => DiscoveryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()..initialize()),
       ],
       child: MaterialApp.router(
         title: 'Life Partner Again',

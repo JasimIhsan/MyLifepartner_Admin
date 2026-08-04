@@ -658,4 +658,44 @@ export class MatchRepository implements IMatchRepository {
 
       return deleteResult.count > 0;
    }
+
+   /**
+    * Gets notification context for a swipe action.
+    *
+    * @param userId - Swiper user ID.
+    * @param targetProfileId - Target profile ID.
+    * @returns Swipe notification context, or null if profiles not found.
+    */
+   async getSwipeNotificationContext(userId: number, targetProfileId: number): Promise<import("../interfaces/repositories/match.repository.interface").SwipeNotificationContext | null> {
+      const swiperProfile = await prisma.profile.findFirst({
+         where: { userId },
+         select: { id: true, userId: true, name: true },
+      });
+
+      const targetProfile = await prisma.profile.findUnique({
+         where: { id: targetProfileId },
+         select: { id: true, userId: true, name: true },
+      });
+
+      if (!swiperProfile || !targetProfile) {
+         return null;
+      }
+
+      const mutualSwipe = await prisma.profileSwipe.findFirst({
+         where: {
+            userId: targetProfile.userId,
+            targetProfileId: swiperProfile.id,
+            action: SwipeAction.RIGHT,
+         },
+      });
+
+      return {
+         swiperUserId: swiperProfile.userId,
+         swiperName: swiperProfile.name || "Someone",
+         targetUserId: targetProfile.userId,
+         targetName: targetProfile.name || "Someone",
+         isMutualMatch: Boolean(mutualSwipe),
+      };
+   }
 }
+

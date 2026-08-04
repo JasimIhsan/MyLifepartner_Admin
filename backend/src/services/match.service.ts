@@ -4,7 +4,10 @@ import { IMatchService, InteractionState, MatchRecommendationItem, ProfileDetail
 import { IPrivacyImageMapperService } from "../interfaces/services/privacy-image-mapper.service.interface";
 import { IS3Service } from "../interfaces/services/s3.service.interface";
 import { IUserFeatureService } from "../interfaces/services/user.feature.service.interface";
+import { notificationService } from "./notification.service";
+import { NotificationType } from "../constants/notificationTypes";
 import { ApiError } from "../utils/ApiError";
+import logger from "../utils/logger";
 
 type CompatibilityScore = {
    totalScore: number;
@@ -76,6 +79,62 @@ export class MatchService implements IMatchService {
       await this.matchRepository.recordSwipe(input.userId, input.targetProfileId, input.action);
 
       await this.userFeatureService.consumeSwipe(input.userId, input.action);
+
+      if (action === SwipeAction.RIGHT) {
+         this.handleSwipeNotification(userId, targetProfileId).catch((error) => {
+            logger.error(`Failed to dispatch swipe notification for user ${userId}:`, error);
+         });
+      }
+   }
+
+   /**
+    * Handles sending push notifications for swipe right (interest sent / interest accepted).
+    */
+   private async handleSwipeNotification(userId: number, targetProfileId: number): Promise<void> {
+      const context = await this.matchRepository.getSwipeNotificationContext(userId, targetProfileId);
+      if (!context) {
+         return;
+      }
+
+      const { swiperUserId, swiperName, targetUserId, targetName, isMutualMatch } = context;
+
+      if (isMutualMatch) {
+         // Notify target user (who swiped right earlier) that a match is created
+         await notificationService.sendToUser({
+            userId: targetUserId,
+            type: NotificationType.NEW_MATCH,
+            title: "It's a Match! 🎉",
+            body: `You and ${swiperName} liked each other! Start chatting now.`,
+            data: {
+               type: NotificationType.NEW_MATCH,
+               profileId: String(swiperUserId),
+            },
+         });
+
+         // Notify swiper user that their interest was accepted / mutual match formed
+         await notificationService.sendToUser({
+            userId: swiperUserId,
+            type: NotificationType.INTEREST_ACCEPTED,
+            title: "Interest Accepted! 🎉",
+            body: `${targetName} accepted your interest! You can now start chatting.`,
+            data: {
+               type: NotificationType.INTEREST_ACCEPTED,
+               profileId: String(targetProfileId),
+            },
+         });
+      } else {
+         // Notify target user that someone showed interest in their profile
+         await notificationService.sendToUser({
+            userId: targetUserId,
+            type: NotificationType.NEW_LIKE,
+            title: "New Interest Received!",
+            body: `${swiperName} showed interest in your profile!`,
+            data: {
+               type: NotificationType.NEW_LIKE,
+               profileId: String(swiperUserId),
+            },
+         });
+      }
    }
 
    /**

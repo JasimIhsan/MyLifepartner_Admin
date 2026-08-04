@@ -39,6 +39,7 @@ model User {
   moderationLogs   ModerationActionLog[] @relation("UserModerationLogs")
   blockedUsers     UserBlock[]           @relation("BlockerUser")
   blockedBy        UserBlock[]           @relation("BlockedUser")
+  deviceTokens     DeviceToken[]
 
   @@map("users")
 }
@@ -680,4 +681,26 @@ enum ModerationActionType {
   CHAT_RESTRICTED
   TEMPORARY_SUSPENSION
   PERMANENT_BAN
+}
+
+model DeviceToken {
+  id         String         @id @default(uuid())
+  userId     Int
+  token      String         @unique
+  platform   DevicePlatform
+  deviceId   String?
+  isActive   Boolean        @default(true)
+  lastSeenAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
 }

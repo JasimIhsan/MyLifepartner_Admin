@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:life_partner_again/services/auth_service.dart';
 import 'package:life_partner_again/services/token_service.dart';
@@ -24,6 +25,7 @@ class AuthProvider extends ChangeNotifier {
         final status = await _authService.fetchMeOrThrow();
         _isLoggedIn = true;
         _onboardingStatus = status;
+        await FirebaseNotificationService().setupAfterLogin();
       }
     } catch (e) {
       debugPrint("Auth bootstrap failed: $e");
@@ -41,6 +43,7 @@ class AuthProvider extends ChangeNotifier {
     _onboardingStatus = status;
     _isInitialized = true;
     notifyListeners();
+    FirebaseNotificationService().setupAfterLogin();
   }
 
   void updateOnboardingStatus(OnboardingStatus status) {
@@ -55,6 +58,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    await FirebaseNotificationService().tearDownOnLogout();
     await _authService.logoutLocal();
     _isLoggedIn = false;
     _onboardingStatus = null;

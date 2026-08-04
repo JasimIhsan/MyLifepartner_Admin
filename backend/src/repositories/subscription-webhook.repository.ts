@@ -331,17 +331,21 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   },
                });
 
-               const featurePayload = isInitialPurchase
-                  ? buildFeatureFullPayload(subscription.plan)
-                  : buildFeatureLimitsOnlyPayload(subscription.plan);
-               const existingFeatures = await tx.userFeature.findUnique({ where: { userId } });
+               const targetPlan = subscription?.plan || (targetPlanId ? await tx.subscriptionPlan.findUnique({ where: { id: targetPlanId }, include: { features: true } }) : null);
 
-               if (existingFeatures) {
-                  await tx.userFeature.update({ where: { userId }, data: featurePayload });
-               } else {
-                  await tx.userFeature.create({
-                     data: { userId, ...buildFeatureFullPayload(subscription.plan) },
-                  });
+               if (targetPlan) {
+                  const featurePayload = isInitialPurchase
+                     ? buildFeatureFullPayload(targetPlan)
+                     : buildFeatureLimitsOnlyPayload(targetPlan);
+                  const existingFeatures = await tx.userFeature.findUnique({ where: { userId } });
+
+                  if (existingFeatures) {
+                     await tx.userFeature.update({ where: { userId }, data: featurePayload });
+                  } else {
+                     await tx.userFeature.create({
+                        data: { userId, ...buildFeatureFullPayload(targetPlan) },
+                     });
+                  }
                }
 
                logger.info("Webhook: subscription activated/renewed", {

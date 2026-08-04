@@ -1,5 +1,13 @@
 import { InteractionState, SwipeAction } from "../services/match.service.interface";
 
+export interface SwipeNotificationContext {
+   swiperUserId: number;
+   swiperName: string;
+   targetUserId: number;
+   targetName: string;
+   isMutualMatch: boolean;
+}
+
 export interface IMatchRepository {
    getCandidateProfiles(currentUserId: number, excludedProfileIds: number[]): Promise<CandidateProfile[]>;
    getUserPreference(userId: number): Promise<UserPreferenceData | null>;
@@ -13,6 +21,7 @@ export interface IMatchRepository {
    getProfileById(currentUserId: number, profileId: number): Promise<CandidateProfile | null>;
    getViewerPrivacyStatus(userId: number): Promise<boolean>;
    deleteSwipe(userId: number, targetProfileId: number): Promise<boolean>;
+   getSwipeNotificationContext(userId: number, targetProfileId: number): Promise<SwipeNotificationContext | null>;
 }
 
 export interface CandidateProfile {

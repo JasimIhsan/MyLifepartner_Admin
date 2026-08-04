@@ -11,6 +11,8 @@ import { IUserRepository } from "@/interfaces/repositories/user.repository.inter
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan, VerifyPurchaseParams } from "@/interfaces/services/user.subscription.service.interface";
+import { NotificationType } from "@/constants/notificationTypes";
+import { notificationService } from "../notification.service";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
 
@@ -627,25 +629,24 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan)),
       });
 
-      // Email notification logic — all lifecycle events covered
+      // Email & Push notification logic — all lifecycle events covered
       if (processed) {
          try {
             const user = await this.userRepository.findById(userId);
-            if (user?.email) {
-               const userName = user.profile?.name || undefined;
-               let planName = "your plan";
-               if (targetPlanId) {
-                  const plan = await this.subscriptionPlanRepository.getPlanById(targetPlanId);
-                  if (plan) planName = plan.name;
-               } else if (!targetPlanId) {
-                  // For events without a target plan (e.g. cancellation of current plan), get current plan name
-                  const sub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
-                  if (sub?.plan) planName = sub.plan.name;
-               }
+            const userName = user?.profile?.name || undefined;
+            let planName = "your plan";
+            if (targetPlanId) {
+               const plan = await this.subscriptionPlanRepository.getPlanById(targetPlanId);
+               if (plan) planName = plan.name;
+            } else if (!targetPlanId) {
+               // For events without a target plan (e.g. cancellation of current plan), get current plan name
+               const sub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
+               if (sub?.plan) planName = sub.plan.name;
+            }
 
+            if (user?.email) {
                switch (event.type) {
                   case RevenueCatWebhookEvent.INITIAL_PURCHASE:
-                     // Activation email + receipt
                      await this.emailService.sendSubscriptionSuccessEmail(user.email, planName, userName);
                      if ((event.price ?? 0) > 0) {
                         await this.emailService.sendPaymentReceiptEmail(user.email, planName, event.price!, event.currency ?? "INR", userName);
@@ -653,7 +654,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                      break;
 
                   case RevenueCatWebhookEvent.RENEWAL:
-                     // Renewal confirmation + receipt
                      if (event.expiration_at_ms) {
                         const renewedUntil = new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
                         await this.emailService.sendSubscriptionRenewalEmail(user.email, planName, renewedUntil, userName);
@@ -687,8 +687,78 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                      break;
                }
             }
+
+            // Dispatch Push Notifications
+            switch (event.type) {
+               case RevenueCatWebhookEvent.INITIAL_PURCHASE:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_SUCCESS,
+                     title: "Subscription Activated! ⭐",
+                     body: `Welcome to ${planName}! Enjoy your premium privileges.`,
+                     data: { type: NotificationType.SUBSCRIPTION_SUCCESS, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.RENEWAL:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_SUCCESS,
+                     title: "Subscription Renewed",
+                     body: `Your ${planName} subscription has been renewed successfully.`,
+                     data: { type: NotificationType.SUBSCRIPTION_SUCCESS, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.CANCELLATION: {
+                  const expiresAt = event.expiration_at_ms
+                     ? new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })
+                     : "end of billing period";
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_EXPIRING,
+                     title: "Subscription Cancelled",
+                     body: `Your ${planName} subscription will end on ${expiresAt}.`,
+                     data: { type: NotificationType.SUBSCRIPTION_EXPIRING, planName },
+                  });
+                  break;
+               }
+
+               case RevenueCatWebhookEvent.UNCANCELLATION:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_SUCCESS,
+                     title: "Subscription Restored",
+                     body: `Your ${planName} subscription auto-renewal has been restored.`,
+                     data: { type: NotificationType.SUBSCRIPTION_SUCCESS, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.EXPIRATION:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_EXPIRING,
+                     title: "Subscription Expired",
+                     body: `Your ${planName} subscription has expired. Renew now to unlock premium features!`,
+                     data: { type: NotificationType.SUBSCRIPTION_EXPIRING, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.BILLING_ISSUE:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.PAYMENT_FAILED,
+                     title: "Payment Issue ⚠️",
+                     body: `There was an issue processing your subscription payment for ${planName}. Please update your payment method.`,
+                     data: { type: NotificationType.PAYMENT_FAILED, planName },
+                  });
+                  break;
+
+               default:
+                  break;
+            }
          } catch (error) {
-            logger.error(`Failed to send subscription email for event ${event.type} to user ${userId}`, { error });
+            logger.error(`Failed to dispatch notifications for event ${event.type} to user ${userId}`, { error });
          }
       }
 

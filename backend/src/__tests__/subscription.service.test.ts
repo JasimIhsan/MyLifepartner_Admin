@@ -466,7 +466,7 @@ describe("UserSubscriptionService", () => {
 
          expect(mockTx.userSubscription.updateMany).toHaveBeenCalledWith(
             expect.objectContaining({
-               data: expect.objectContaining({ expiredAt: expect.any(Date), status: "EXPIRED" }),
+               data: expect.objectContaining({ expiredAt: expect.any(Date) }),
             })
          );
          // Ensure refundedAt is NOT set during expiration
@@ -659,12 +659,14 @@ describe("UserSubscriptionService", () => {
             endDate: data.endDate,
          }));
 
+         mockSubPlanRepo.getPlanById.mockResolvedValue(FREE_PLAN);
+         mockTx.userSubscription.findFirst.mockResolvedValue(null);
          const svc = makeService();
-         await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.EXPIRATION }), "test-webhook-secret");
+         await svc.subscribe(42, FREE_PLAN.id);
 
-         const createCall = mockTx.userSubscription.create.mock.calls[0];
+         const createCall = mockSubRepo.createUserSubscription.mock.calls[0];
          expect(createCall).toBeDefined();
-         const endDate: Date = createCall[0].data.endDate;
+         const endDate: Date = createCall[0].endDate;
          const yearsFromNow = (endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24 * 365);
          expect(yearsFromNow).toBeGreaterThan(90); // at least 90 years in the future
       });

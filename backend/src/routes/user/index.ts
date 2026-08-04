@@ -17,6 +17,7 @@ import userRoutes from "@routes/user/user.routes";
 import userSubscriptionRoutes from "@routes/user/user.subscription.routes";
 import userBlockRoutes from "@routes/user/user.block.routes";
 import zegoRoutes from "@routes/user/zego.routes";
+import deviceTokenRoutes from "@routes/deviceToken.route";
 
 const router = Router();
 
@@ -47,6 +48,7 @@ router.use("/oauth", userOauthRoutes);
 router.use("/discovery", discoveryRoutes);
 router.use("/transactions", transactionRoutes);
 router.use("/reports", userReportRoutes);
+router.use("/device-tokens", deviceTokenRoutes);
 router.use("/", userRoutes);
 
 export default router;
