@@ -137,6 +137,31 @@ export class MatchRepository implements IMatchRepository {
       return swipes as unknown as SwipedProfile[];
    }
 
+   private async getExcludedUserIds(userId: number): Promise<number[]> {
+      const blocks = await prisma.userBlock.findMany({
+         where: {
+            OR: [
+               { blockerUserId: userId },
+               { blockedUserId: userId },
+            ],
+         },
+         select: {
+            blockerUserId: true,
+            blockedUserId: true,
+         },
+      });
+
+      const excludedUserIdsSet = new Set<number>();
+      for (const block of blocks) {
+         if (block.blockerUserId === userId) {
+            excludedUserIdsSet.add(block.blockedUserId);
+         } else {
+            excludedUserIdsSet.add(block.blockerUserId);
+         }
+      }
+      return Array.from(excludedUserIdsSet);
+   }
+
    /**
     * Gets candidate profiles for matching.
     *
@@ -145,6 +170,7 @@ export class MatchRepository implements IMatchRepository {
     * @returns Candidate profiles.
     */
    async getCandidateProfiles(currentUserId: number, excludedProfileIds: number[]): Promise<CandidateProfile[]> {
+      const excludedBlockUserIds = await this.getExcludedUserIds(currentUserId);
       const currentUser = await prisma.user.findUnique({
          where: {
             id: currentUserId,
@@ -164,7 +190,7 @@ export class MatchRepository implements IMatchRepository {
                isDeleted: false,
                isVerified: true,
                id: {
-                  not: currentUserId,
+                  notIn: [currentUserId, ...excludedBlockUserIds],
                },
             },
             ...(targetGenderFilter && {
@@ -263,10 +289,16 @@ export class MatchRepository implements IMatchRepository {
     * @returns Liked candidate profiles.
     */
    async getLikedProfiles(userId: number): Promise<CandidateProfile[]> {
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
       const swipes = await prisma.profileSwipe.findMany({
          where: {
             userId,
             action: SwipeAction.RIGHT,
+            targetProfile: {
+               userId: {
+                  notIn: excludedBlockUserIds,
+               }
+            }
          },
          include: {
             targetProfile: {
@@ -286,6 +318,7 @@ export class MatchRepository implements IMatchRepository {
     */
    async getSentInterests(userId: number): Promise<CandidateProfile[]> {
       const currentProfile = await this.getUserProfile(userId);
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
 
       if (!currentProfile) {
          return [];
@@ -295,6 +328,9 @@ export class MatchRepository implements IMatchRepository {
          where: {
             userId,
             action: SwipeAction.RIGHT,
+            targetProfile: {
+               userId: { notIn: excludedBlockUserIds },
+            },
          },
          include: {
             targetProfile: {
@@ -325,6 +361,7 @@ export class MatchRepository implements IMatchRepository {
     */
    async getReceivedInterests(userId: number): Promise<CandidateProfile[]> {
       const currentProfile = await this.getUserProfile(userId);
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
 
       if (!currentProfile) {
          return [];
@@ -334,6 +371,9 @@ export class MatchRepository implements IMatchRepository {
          where: {
             targetProfileId: currentProfile.id,
             action: SwipeAction.RIGHT,
+            userId: {
+               notIn: excludedBlockUserIds,
+            }
          },
          include: {
             user: {
@@ -370,6 +410,7 @@ export class MatchRepository implements IMatchRepository {
     */
    async getMutualMatches(userId: number): Promise<CandidateProfile[]> {
       const currentProfile = await this.getUserProfile(userId);
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
 
       if (!currentProfile) {
          return [];
@@ -391,6 +432,7 @@ export class MatchRepository implements IMatchRepository {
          where: {
             targetProfileId: currentProfile.id,
             action: SwipeAction.RIGHT,
+            userId: { notIn: excludedBlockUserIds },
          },
          include: {
             user: {
@@ -454,6 +496,11 @@ export class MatchRepository implements IMatchRepository {
                   createdAt: true,
                   updatedAt: true,
                   privacySettings: true,
+                  blockedBy: {
+                     where: {
+                        blockerUserId: currentUserId,
+                     }
+                  }
                },
             },
          },
@@ -465,7 +512,10 @@ export class MatchRepository implements IMatchRepository {
 
       const interactionState = this.determineInteractionState(profile.swipesOnMe as unknown as { action: SwipeAction }[], profile.user.profileSwipes as unknown as { action: SwipeAction }[]);
 
-      return this.mapToCandidateProfile(profile, interactionState);
+      const candidateProfile = this.mapToCandidateProfile(profile, interactionState);
+      candidateProfile.isBlocked = profile.user.blockedBy.length > 0;
+
+      return candidateProfile;
    }
 
    /**

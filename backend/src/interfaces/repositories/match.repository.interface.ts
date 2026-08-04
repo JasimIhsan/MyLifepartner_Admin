@@ -18,6 +18,7 @@ export interface IMatchRepository {
 export interface CandidateProfile {
    id: number;
    interactionState?: InteractionState;
+   isBlocked?: boolean;
    userId: number;
    name: string | null;
    isVerified: boolean;

@@ -405,8 +405,6 @@ export class MatchService implements IMatchService {
       return Boolean(candidate.motherTongue && preference.motherTongue.length > 0 && preference.motherTongue.includes(candidate.motherTongue));
    }
 
-
-
    /**
     * Calculates personality score.
     *

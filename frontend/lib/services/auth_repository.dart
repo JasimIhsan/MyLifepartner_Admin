@@ -1,15 +1,14 @@
-import 'package:dio/dio.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/services/token_service.dart';
 
 class AuthRepository {
-  final Dio _dio = ApiService.client;
+  static final _client = ApiService.client;
 
   Future<OnboardingStatusResponse> getMe() async {
     try {
-      final response = await _dio.get("/auth/me");
+      final response = await _client.get("/auth/me");
       return OnboardingStatusResponse.fromJson(response.data);
     } catch (e) {
       rethrow;
@@ -18,7 +17,7 @@ class AuthRepository {
 
   Future<InitiateAuthResponse> initiateAuth({required String email}) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/auth/initiate",
         data: {"email": email},
       );
@@ -34,7 +33,7 @@ class AuthRepository {
     String purpose = "auth",
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/auth/verify-otp",
         data: {"email": email, "otp": otp, "purpose": purpose},
       );
@@ -49,7 +48,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/auth/login",
         data: {"email": email, "password": password},
       );
@@ -68,7 +67,7 @@ class AuthRepository {
 
   Future<AuthResultResponse> googleSignIn({required String idToken}) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/oauth/google",
         data: {"idToken": idToken},
       );
@@ -95,7 +94,7 @@ class AuthRepository {
     String? nonce,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/oauth/apple",
         data: {
           "identityToken": identityToken,
@@ -125,7 +124,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/auth/register",
         data: {"email": email, "password": password},
       );
@@ -147,7 +146,7 @@ class AuthRepository {
     required String password,
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/auth/forgot-password",
         data: {"email": email, "password": password},
       );
@@ -162,7 +161,7 @@ class AuthRepository {
     String purpose = "auth",
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/auth/send-otp",
         data: {"email": email, "purpose": purpose},
       );
@@ -177,7 +176,7 @@ class AuthRepository {
     String purpose = "auth",
   }) async {
     try {
-      final response = await _dio.post(
+      final response = await _client.post(
         "/auth/resend-otp",
         data: {"email": email, "purpose": purpose},
       );

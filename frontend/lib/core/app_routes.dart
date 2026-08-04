@@ -18,6 +18,7 @@ import 'package:life_partner_again/screens/selfie_verification/selfie_verificati
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/billing_history_screen.dart';
 
 class AppRoutes {
@@ -39,6 +40,7 @@ class AppRoutes {
   static const String profileDetail = '/profile/:profileId';
   static String profileDetailPath(Object profileId) => '/profile/$profileId';
   static const String lpaGuide = '/lpa-guide';
+  static const String blockedUsers = '/blocked-users';
   static const String chatDetail = '/chat-detail/:profileId';
   static const String editProfile = '/edit-profile';
   static const String manageProfilePictures = '/manage-profile-pictures';
@@ -164,6 +166,11 @@ class AppRoutes {
       case billingHistory:
         return MaterialPageRoute(
           builder: (_) => const BillingHistoryScreen(),
+          settings: settings,
+        );
+      case blockedUsers:
+        return MaterialPageRoute(
+          builder: (_) => const BlockedUsersScreen(),
           settings: settings,
         );
       default:

@@ -320,9 +320,17 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
               _buildActionItem(
                 icon: Icons.lock_open_outlined,
                 title: "Image Access Requests",
-                showDivider: false,
+                showDivider: true,
                 onTap: () {
                   context.push(AppRoutes.imageAccessRequests);
+                },
+              ),
+              _buildActionItem(
+                icon: Icons.block,
+                title: "Blocked Users",
+                showDivider: false,
+                onTap: () {
+                  context.push(AppRoutes.blockedUsers);
                 },
               ),
             ]),

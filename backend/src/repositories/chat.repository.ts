@@ -1,6 +1,6 @@
 import prisma from "@/config/prisma";
-import { Conversation, Prisma, MessageType as PrismaMessageType } from "@prisma/client";
 import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
+import { Conversation, Prisma, MessageType as PrismaMessageType } from "@prisma/client";
 
 type PaginatedMessages = {
    messages: ChatMessage[];
@@ -131,16 +131,45 @@ export class ChatRepository {
     * @returns User conversations.
     */
    async getConversations(userId: number) {
-      return prisma.conversation.findMany({
+      const blocks = await prisma.userBlock.findMany({
          where: {
             OR: [
-               {
-                  userOneId: userId,
-               },
-               {
-                  userTwoId: userId,
-               },
+               { blockerUserId: userId },
+               { blockedUserId: userId },
             ],
+         },
+         select: {
+            blockerUserId: true,
+            blockedUserId: true,
+         },
+      });
+
+      const excludedUserIdsSet = new Set<number>();
+      for (const block of blocks) {
+         if (block.blockerUserId === userId) {
+            excludedUserIdsSet.add(block.blockedUserId);
+         } else {
+            excludedUserIdsSet.add(block.blockerUserId);
+         }
+      }
+      const excludedUserIds = Array.from(excludedUserIdsSet);
+
+      return prisma.conversation.findMany({
+         where: {
+            AND: [
+               {
+                  OR: [
+                     { userOneId: userId },
+                     { userTwoId: userId },
+                  ],
+               },
+               {
+                  userOneId: { notIn: excludedUserIds },
+               },
+               {
+                  userTwoId: { notIn: excludedUserIds },
+               },
+            ]
          },
          include: {
             userOne: {

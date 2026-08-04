@@ -1,5 +1,5 @@
 import { multerConfig } from "@/config/multer.config";
-import { getUserReports, submitReport } from "@/controllers/user/user.report.controller";
+import { userReportController } from "@/composer/composer";
 import { verifyJWT } from "@/middlewares/auth.middleware";
 import { Router } from "express";
 
@@ -9,9 +9,9 @@ const router = Router();
 router.use(verifyJWT);
 
 // Submit a new report with optional screenshots (up to 5)
-router.post("/", multerConfig.array("screenshots", 5), submitReport);
+router.post("/", multerConfig.array("screenshots", 5), userReportController.submitReport);
 
 // Get user's submitted reports
-router.get("/", getUserReports);
+router.get("/", userReportController.getUserReports);
 
 export default router;

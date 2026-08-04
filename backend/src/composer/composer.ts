@@ -32,6 +32,9 @@ import { TransactionHistoryRepository } from "@/repositories/transaction-history
 import { UserSubscriptionRepository } from "@/repositories/user-subscription.repository";
 import { UserFeatureRepository } from "@/repositories/user.feature.repository";
 import { UserRepository } from "@/repositories/user.repository";
+import { BlockRepository } from "@/repositories/block.repository";
+import { ReportRepository } from "@/repositories/report.repository";
+import { ModerationRepository } from "@/repositories/moderation.repository";
 import { JobRepository } from "@/repositories/job.repository";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,6 +47,7 @@ import { JwtService } from "@/services/jwt.service";
 import { OtpService } from "@/services/otp.service";
 import { S3Service } from "@/services/s3.service";
 import { ZegoService } from "@/services/zego.service";
+import { BlockService } from "@/services/block.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Domain Services
@@ -63,6 +67,7 @@ import { ImageProcessorService } from "@/services/image-processor.service";
 import { MatchService } from "@/services/match.service";
 import { PrivacyImageMapperService } from "@/services/privacy-image-mapper.service";
 import { PrivacyPolicyService } from "@/services/privacy-policy.service";
+import { ReportService } from "@/services/report.service";
 import { UserService } from "@/services/user.service";
 import { AuthService } from "@/services/user/user.auth.service";
 import { UserFeatureService } from "@/services/user/user.feature.service";
@@ -80,6 +85,7 @@ import { AdminAuthController } from "@/controllers/admin/admin.auth.controller";
 import { AdminFeatureController } from "@/controllers/admin/admin.feature.controller";
 import { AdminManagementController } from "@/controllers/admin/admin.management.controller";
 import { AdminQuestionnaireController } from "@/controllers/admin/admin.questionnaire.controller";
+import { AdminReportController } from "@/controllers/admin/admin.report.controller";
 import { AdminSubscriptionController } from "@/controllers/admin/admin.subscription.controller";
 import { AdminUsersController } from "@/controllers/admin/admin.users.controller";
 import { ImageAssetController } from "@/controllers/image-asset.controller";
@@ -97,7 +103,9 @@ import { JobController } from "@/controllers/user/job.controller";
 import { TransactionHistoryController } from "@/controllers/user/transaction-history.controller";
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
 import { ZegoController } from "@/controllers/user/zego.controller";
+import { UserBlockController } from "@/controllers/user/user.block.controller";
 import { OAuthController } from "@/controllers/user/oauth.controller";
+import { UserReportController } from "@/controllers/user/user.report.controller";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Repository Instances
@@ -119,6 +127,9 @@ export const transactionHistoryRepository = new TransactionHistoryRepository();
 export const userFeatureRepository = new UserFeatureRepository();
 export const userRepository = new UserRepository();
 export const jobRepository = new JobRepository();
+export const reportRepository = new ReportRepository();
+export const moderationRepository = new ModerationRepository();
+export const blockRepository = new BlockRepository();
 export const userSubscriptionRepository = new UserSubscriptionRepository();
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -132,6 +143,7 @@ export const jwtService = new JwtService();
 export const zegoService = new ZegoService();
 
 export const otpService = new OtpService(cacheService, emailService);
+export const reportService = new ReportService(s3Service, emailService, reportRepository, moderationRepository);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. Domain Service Instances
@@ -145,6 +157,7 @@ export const adminSubscriptionService = new AdminSubscriptionService(subscriptio
 export const adminFeatureService = new AdminFeatureService();
 export const imageAssetService = new ImageAssetService(imageAssetRepository, s3Service);
 
+
 // User services
 export const userService = new UserService(userRepository, s3Service);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
@@ -155,10 +168,11 @@ export const jobService = new JobService(jobRepository);
 export const transactionHistoryService = new TransactionHistoryService(transactionHistoryRepository);
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository, subscriptionWebhookRepository, userRepository, emailService);
 export const oauthService = new OAuthService(userRepository, jwtService, subscriptionPlanRepository, userSubscriptionRepository);
+export const blockService = new BlockService(blockRepository);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);
-export const chatService = new ChatService(chatRepository, userFeatureService);
+export const chatService = new ChatService(chatRepository, userFeatureService, blockService);
 export const privacyPolicyService = new PrivacyPolicyService();
 export const privacyImageMapperService = new PrivacyImageMapperService(privacyPolicyService, s3Service);
 export const imageAccessRequestService = new ImageAccessRequestService(imageAccessRequestRepository, s3Service);
@@ -176,9 +190,11 @@ export const adminSubscriptionController = new AdminSubscriptionController(admin
 export const adminFeatureController = new AdminFeatureController(adminFeatureService);
 export const imageAssetController = new ImageAssetController(imageAssetService);
 export const adminUsersController = new AdminUsersController(userService);
+export const adminReportController = new AdminReportController(reportService);
 
 // Shared controllers
 export const guideController = new GuideController(guideService);
+export const userBlockController = new UserBlockController(blockService);
 
 // User controllers
 export const authController = new AuthController(authService, userService, userSubscriptionService);
@@ -194,5 +210,6 @@ export const userSubscriptionController = new UserSubscriptionController(userSub
 export const chatController = new ChatController(chatService);
 export const zegoController = new ZegoController(zegoService);
 export const oauthController = new OAuthController(oauthService, userSubscriptionService);
+export const userReportController = new UserReportController(reportService);
 
 // End of composer.ts

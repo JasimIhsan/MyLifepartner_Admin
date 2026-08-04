@@ -1,7 +1,7 @@
+import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ChatRepository } from "@/repositories/chat.repository";
 import { ApiError } from "@/utils/ApiError";
-import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
 
 const DEFAULT_MESSAGES_PAGE = 1;
 const DEFAULT_MESSAGES_LIMIT = 50;
@@ -9,7 +9,8 @@ const DEFAULT_MESSAGES_LIMIT = 50;
 export class ChatService {
    constructor(
       private readonly chatRepository: ChatRepository,
-      private readonly userFeatureService: IUserFeatureService
+      private readonly userFeatureService: IUserFeatureService,
+      private readonly blockService: import("./block.service").BlockService
    ) {}
 
    /**
@@ -25,6 +26,11 @@ export class ChatService {
    async sendMessage(senderId: number, receiverId: number, content: string, messageType: MessageType = MessageType.TEXT, zegoMessageId?: string): Promise<ChatMessage> {
       if (senderId === receiverId) {
          throw new ApiError(400, "You cannot send message to yourself");
+      }
+
+      const excludedUserIds = await this.blockService.getExcludedUserIds(senderId);
+      if (excludedUserIds.includes(receiverId)) {
+         throw new ApiError(403, "You cannot send messages to this user");
       }
 
       const messageContent = content.trim();

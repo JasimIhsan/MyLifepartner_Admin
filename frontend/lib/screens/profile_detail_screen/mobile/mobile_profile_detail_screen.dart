@@ -11,6 +11,8 @@ import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/report_user_dialog.dart';
+import 'package:life_partner_again/services/block_service.dart';
+import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom_sheet.dart';
 
 class MobileProfileDetailScreen extends StatefulWidget {
   const MobileProfileDetailScreen({super.key});
@@ -22,6 +24,8 @@ class MobileProfileDetailScreen extends StatefulWidget {
 
 class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
     with ProfileDetailControllerState<MobileProfileDetailScreen> {
+  final BlockService _blockService = BlockService();
+
   @override
   Widget build(BuildContext context) {
     if (!hasApiData) {
@@ -265,12 +269,18 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                 if (value == 'report') {
                   ReportUserDialog.show(context, p);
                 } else if (value == 'block') {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${p['name'] ?? 'User'} blocked successfully',
-                      ),
-                    ),
+                  BlockConfirmationBottomSheet.show(
+                    context: context,
+                    isBlocking: true,
+                    userName: p['name'] ?? 'this user',
+                    onConfirm: () async {
+                      await _blockService.blockUser(p['userId']);
+                    },
+                    onSuccess: () {
+                      setState(() {
+                        resolvedProfile['isBlocked'] = true;
+                      });
+                    },
                   );
                 }
               },

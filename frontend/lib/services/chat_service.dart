@@ -1,7 +1,7 @@
 import 'package:life_partner_again/services/api_service.dart';
 
 class ChatApiService {
-  static final _dio = ApiService.client;
+  static final _client = ApiService.client;
 
   /// Send a message (persists to backend DB)
   static Future<Map<String, dynamic>?> sendMessage({
@@ -10,7 +10,7 @@ class ChatApiService {
     String messageType = 'TEXT',
     String? zegoMessageId,
   }) async {
-    final response = await _dio.post(
+    final response = await _client.post(
       '/chat/messages',
       data: {
         'receiverId': receiverId,
@@ -24,7 +24,7 @@ class ChatApiService {
 
   /// Get all conversations for the current user
   static Future<List<dynamic>> getConversations() async {
-    final response = await _dio.get('/chat/conversations');
+    final response = await _client.get('/chat/conversations');
     return response.data?['data'] as List<dynamic>? ?? [];
   }
 
@@ -34,7 +34,7 @@ class ChatApiService {
     int page = 1,
     int limit = 15,
   }) async {
-    final response = await _dio.get(
+    final response = await _client.get(
       '/chat/conversations/$conversationId/messages',
       queryParameters: {'page': page, 'limit': limit},
     );
@@ -43,14 +43,14 @@ class ChatApiService {
 
   /// Get ZEGOCLOUD access token (initial login / call start)
   static Future<Map<String, dynamic>?> getZegoToken() async {
-    final response = await _dio.get('/zego/token');
+    final response = await _client.get('/zego/token');
     return response.data?['data'] as Map<String, dynamic>?;
   }
 
   /// Renew an existing ZEGOCLOUD token mid-session (call before expiry).
   /// The caller should pass the returned token to [ZegoService.instance.renewToken].
   static Future<Map<String, dynamic>?> renewZegoToken() async {
-    final response = await _dio.post('/zego/renew-token');
+    final response = await _client.post('/zego/renew-token');
     return response.data?['data'] as Map<String, dynamic>?;
   }
 
@@ -60,7 +60,7 @@ class ChatApiService {
     int? consumeSeconds,
     String? targetUserId,
   }) async {
-    await _dio.post(
+    await _client.post(
       '/subscription/check-call',
       data: {
         'type': type,

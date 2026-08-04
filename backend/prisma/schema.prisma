@@ -37,8 +37,22 @@ model User {
   reportsSubmitted UserReport[]          @relation("ReportedBy")
   reportsReceived  UserReport[]          @relation("ReportTarget")
   moderationLogs   ModerationActionLog[] @relation("UserModerationLogs")
+  blockedUsers     UserBlock[]           @relation("BlockerUser")
+  blockedBy        UserBlock[]           @relation("BlockedUser")
 
   @@map("users")
+}
+
+model UserBlock {
+  id            Int      @id @default(autoincrement())
+  blockerUserId Int
+  blockedUserId Int
+  createdAt     DateTime @default(now())
+  blocker       User     @relation("BlockerUser", fields: [blockerUserId], references: [id])
+  blocked       User     @relation("BlockedUser", fields: [blockedUserId], references: [id])
+
+  @@unique([blockerUserId, blockedUserId])
+  @@map("user_blocks")
 }
 
 model Profile {

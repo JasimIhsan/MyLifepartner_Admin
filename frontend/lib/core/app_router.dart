@@ -4,10 +4,12 @@ import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/main.dart' show navigatorKey, routeObserver;
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
+import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
@@ -24,9 +26,8 @@ import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
-import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
-import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/billing_history_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/widgets/web_main_layout.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
@@ -248,6 +249,10 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.billingHistory,
             builder: (context, state) => const BillingHistoryScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.blockedUsers,
+            builder: (context, state) => const BlockedUsersScreen(),
           ),
         ],
       ),

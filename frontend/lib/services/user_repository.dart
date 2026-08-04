@@ -2,8 +2,8 @@ import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class UserRepository {
+  static final _client = ApiService.client;
   Future<User> getUser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -14,7 +14,7 @@ class UserRepository {
         throw Exception('User not logged in');
       }
 
-      final response = await ApiService.client.get('/$userId');
+      final response = await _client.get('/$userId');
 
       return User.fromJson(response.data['data']);
     } catch (e) {
@@ -36,10 +36,7 @@ class UserRepository {
       if (name != null) data['name'] = name;
       if (email != null) data['email'] = email;
 
-      final response = await ApiService.client.patch(
-        '/user/$userId',
-        data: data,
-      );
+      final response = await _client.patch('/user/$userId', data: data);
 
       return User.fromJson(response.data['data']);
     } catch (e) {

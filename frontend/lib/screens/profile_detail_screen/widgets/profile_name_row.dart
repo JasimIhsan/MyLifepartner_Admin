@@ -92,6 +92,25 @@ class ProfileNameRow extends StatelessWidget {
                       ),
                     ),
                   ],
+                  if (profile['isBlocked'] == true) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        border: Border.all(color: Colors.red, width: 1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Blocked',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
 
