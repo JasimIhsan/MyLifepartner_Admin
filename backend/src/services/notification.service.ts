@@ -1,6 +1,7 @@
 import { firebaseMessagingService } from './firebaseMessaging.service';
 import { deviceTokenService } from './deviceToken.service';
 import { NotificationType } from '../constants/notificationTypes';
+import prisma from '../config/prisma';
 import logger from '../utils/logger';
 
 export interface SendNotificationParams {
@@ -13,13 +14,28 @@ export interface SendNotificationParams {
 
 export class NotificationService {
   /**
-   * Send a push notification to a user.
+   * Send a push notification to a user and store it in DB.
    * This handles fetching active tokens and sending via Firebase.
    * It never throws an error to the caller (business logic should not fail).
    */
   public async sendToUser(params: SendNotificationParams): Promise<void> {
     try {
       const { userId, type, title, body, data } = params;
+
+      // Always save notification to DB first for in-app notification history
+      try {
+        await prisma.notification.create({
+          data: {
+            userId,
+            type,
+            title,
+            body,
+            data: data ? (data as any) : null,
+          },
+        });
+      } catch (dbError) {
+        logger.error(`Failed to save notification in DB for user ${userId}:`, dbError);
+      }
 
       // Ensure data values are strictly strings
       const stringifiedData: Record<string, string> = { type };
@@ -34,7 +50,7 @@ export class NotificationService {
       // Fetch active tokens
       const activeTokens = await deviceTokenService.getActiveTokensForUser(userId);
       if (!activeTokens || activeTokens.length === 0) {
-        logger.info(`Notification requested for user ${userId}, but no active tokens found.`);
+        logger.info(`Notification requested for user ${userId}, saved to DB, but no active device tokens found.`);
         return;
       }
 

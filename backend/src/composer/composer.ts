@@ -36,6 +36,7 @@ import { BlockRepository } from "@/repositories/block.repository";
 import { ReportRepository } from "@/repositories/report.repository";
 import { ModerationRepository } from "@/repositories/moderation.repository";
 import { JobRepository } from "@/repositories/job.repository";
+import { NotificationRepository } from "@/repositories/notification.repository";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Infrastructure Services
@@ -105,6 +106,7 @@ import { UserSubscriptionController } from "@/controllers/user/user.subscription
 import { ZegoController } from "@/controllers/user/zego.controller";
 import { UserBlockController } from "@/controllers/user/user.block.controller";
 import { OAuthController } from "@/controllers/user/oauth.controller";
+import { NotificationController } from "@/controllers/notification.controller";
 import { UserReportController } from "@/controllers/user/user.report.controller";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -131,6 +133,7 @@ export const reportRepository = new ReportRepository();
 export const moderationRepository = new ModerationRepository();
 export const blockRepository = new BlockRepository();
 export const userSubscriptionRepository = new UserSubscriptionRepository();
+export const notificationRepository = new NotificationRepository();
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. Infrastructure Service Instances
@@ -210,6 +213,7 @@ export const userSubscriptionController = new UserSubscriptionController(userSub
 export const chatController = new ChatController(chatService);
 export const zegoController = new ZegoController(zegoService);
 export const oauthController = new OAuthController(oauthService, userSubscriptionService);
+export const notificationController = new NotificationController(notificationRepository);
 export const userReportController = new UserReportController(reportService);
 
 // End of composer.ts

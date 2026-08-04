@@ -64,7 +64,48 @@ class NotificationApiService {
       debugPrint('Error sending token to backend API: $e');
     }
   }
+
+  /// Fetches paginated in-app notifications from backend API (/user/notifications).
+  Future<Map<String, dynamic>?> getNotifications({int page = 1, int limit = 20}) async {
+    try {
+      final response = await _client.get(
+        '/user/notifications',
+        queryParameters: {'page': page, 'limit': limit},
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        return response.data['data'] as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      debugPrint('Error fetching notifications from backend API: $e');
+    }
+    return null;
+  }
+
+  /// Marks all notifications for current user as read (/user/notifications/read-all).
+  Future<bool> markAllAsRead() async {
+    try {
+      final response = await _client.patch('/user/notifications/read-all');
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error marking all notifications as read: $e');
+      return false;
+    }
+  }
+
+  /// Marks a specific notification as read (/user/notifications/:id/read).
+  Future<bool> markAsRead(int notificationId) async {
+    try {
+      final response =
+          await _client.patch('/user/notifications/$notificationId/read');
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Error marking notification $notificationId as read: $e');
+      return false;
+    }
+  }
 }
 
 /// Backwards compatibility alias for NotificationApiService
 typedef NotificationTokenService = NotificationApiService;
+
