@@ -20,7 +20,6 @@ import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/providers/notification_provider.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/providers/transaction_provider.dart';
-import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
@@ -81,35 +80,11 @@ Future<void> main() async {
     debugPrint("❌ [INIT STEP 3 ERROR] Unexpected Firebase error: $e\n$stack");
   }
 
-  debugPrint("🚀 [INIT STEP 4] Initializing Firebase Notification Service...");
-  try {
-    await FirebaseNotificationService().initialize();
-    debugPrint(
-      "✅ [INIT STEP 4 DONE] Firebase Notification Service initialized.",
-    );
-  } catch (e, stack) {
-    debugPrint(
-      "❌ [INIT STEP 4 ERROR] Firebase Notification Service failed: $e\n$stack",
-    );
-  }
+  // Removed: FirebaseNotificationService initialization
+  // Removed: authProvider.bootstrap() - This will now happen in SplashScreen
 
-  // Bootstrap auth BEFORE the app renders so GoRouter's first redirect
-  // already has the correct isLoggedIn state, preventing the login screen
-  // from flashing on web when the user manually changes the URL.
-  debugPrint("🚀 [INIT STEP 5] Bootstrapping AuthProvider...");
-  final authProvider = AuthProvider();
-  try {
-    await authProvider.bootstrap();
-    debugPrint(
-      "✅ [INIT STEP 5 DONE] AuthProvider bootstrap finished. LoggedIn=${authProvider.isLoggedIn}",
-    );
-  } catch (e, stack) {
-    debugPrint(
-      "❌ [INIT STEP 5 ERROR] AuthProvider bootstrap failed: $e\n$stack",
-    );
-  }
-
-  debugPrint("🚀 [INIT STEP 6] Launching Flutter App UI (runApp)...");
+  debugPrint("🚀 [INIT STEP 4] Launching Flutter App UI (runApp)...");
+  final authProvider = AuthProvider(); // Uninitialized, triggers splash
   runApp(MyApp(authProvider: authProvider));
 }
 

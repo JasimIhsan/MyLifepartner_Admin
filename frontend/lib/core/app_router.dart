@@ -38,6 +38,15 @@ GoRouter createRouter(AuthProvider authProvider) {
     refreshListenable: authProvider,
     redirect: (context, state) {
       final auth = authProvider;
+
+      // 1. Initialization Guard
+      if (!auth.isInitialized) {
+        if (state.matchedLocation != AppRoutes.splash) {
+          return AppRoutes.splash;
+        }
+        return null;
+      }
+
       final isLoggedIn = auth.isLoggedIn;
       final onboarding = auth.onboardingStatus;
 
@@ -52,20 +61,22 @@ GoRouter createRouter(AuthProvider authProvider) {
 
       final isPublicRoute = publicRoutes.contains(state.matchedLocation);
 
-      // 1. Unauthenticated User Guard — redirect to landing for private routes
+      // 2. Unauthenticated User Guard
       if (!isLoggedIn) {
-        if (!isPublicRoute) {
+        // Redirect to landing if trying to access private route, OR if staying on splash after init
+        if (!isPublicRoute || state.matchedLocation == AppRoutes.splash) {
           return AppRoutes.landing;
         }
         return null;
       }
 
-      // 2. Authenticated User Guard — redirect away from public routes to home
+      // 3. Authenticated User Guard — redirect away from public routes to home
+      // (If onboarding is pending, the next evaluation will redirect from home to onboarding)
       if (isPublicRoute) {
         return AppRoutes.home;
       }
 
-      // 3. Onboarding Guard — redirect to pending onboarding step
+      // 4. Onboarding Guard — redirect to pending onboarding step
       if (onboarding != null) {
         if (!onboarding.hasCompletedBasicDetails) {
           if (state.matchedLocation != AppRoutes.onboarding) {

@@ -39,10 +39,13 @@ class AuthProvider extends ChangeNotifier {
       await TokenService.clearTokens();
       _isLoggedIn = false;
       _onboardingStatus = null;
-    } finally {
-      _isInitialized = true;
-      notifyListeners();
     }
+  }
+
+  /// Called by SplashScreen when BOTH the minimum duration and bootstrap are complete.
+  void finishInitialization() {
+    _isInitialized = true;
+    notifyListeners();
   }
 
   void loginSuccess(OnboardingStatus status) {
