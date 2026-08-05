@@ -18,6 +18,14 @@ class ZegoService {
   Stream<List<ZIMUserStatus>> get onUserStatusUpdated =>
       _userStatusController.stream;
 
+  final _connectionStateController =
+      StreamController<ZIMConnectionState>.broadcast();
+  Stream<ZIMConnectionState> get onConnectionStateChanged =>
+      _connectionStateController.stream;
+
+  final _tokenWillExpireController = StreamController<int>.broadcast();
+  Stream<int> get onTokenWillExpire => _tokenWillExpireController.stream;
+
   bool _isInitialized = false;
   bool _isLoggedIn = false;
 
@@ -100,6 +108,17 @@ class ZegoService {
         (ZIM zim, List<ZIMUserStatus> userStatusList) {
           _userStatusController.add(userStatusList);
         };
+
+    ZIMEventHandler.onConnectionStateChanged =
+        (ZIM zim, ZIMConnectionState state, ZIMConnectionEvent event, Map extendedData) {
+          debugPrint('[ZegoService] Connection state changed: $state, event: $event');
+          _connectionStateController.add(state);
+        };
+
+    ZIMEventHandler.onTokenWillExpire = (ZIM zim, int second) {
+      debugPrint('[ZegoService] Token will expire in $second seconds');
+      _tokenWillExpireController.add(second);
+    };
   }
 
   /// Log in to ZIM. userId must be a string representation of the app user ID.
@@ -165,8 +184,10 @@ class ZegoService {
   /// Send a media message via ZIM (uploads file automatically).
   Future<ZIMMessageSentResult?> sendMediaMessage(
     String toUserId,
-    ZIMMediaMessage mediaMessage,
-  ) async {
+    ZIMMediaMessage mediaMessage, {
+    Function(ZIMMessage)? onMessageAttached,
+    Function(ZIMMessage, int, int)? onMediaUploadingProgress,
+  }) async {
     if (!_isLoggedIn) {
       debugPrint('[ZegoService] Not logged in, cannot send media message');
       return null;
@@ -183,9 +204,8 @@ class ZegoService {
         ZIMConversationType.peer,
         sendConfig,
         ZIMMediaMessageSendNotification(
-          onMessageAttached: (message) {},
-          onMediaUploadingProgress:
-              (message, currentFileSize, totalFileSize) {},
+          onMessageAttached: onMessageAttached,
+          onMediaUploadingProgress: onMediaUploadingProgress,
         ),
       );
       return result;

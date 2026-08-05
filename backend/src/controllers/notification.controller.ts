@@ -14,11 +14,13 @@ export class NotificationController {
 
     const pageParam = Array.isArray(req.query.page) ? req.query.page[0] : req.query.page;
     const limitParam = Array.isArray(req.query.limit) ? req.query.limit[0] : req.query.limit;
+    const categoryParam = Array.isArray(req.query.category) ? req.query.category[0] : req.query.category;
 
     const page = parseInt(pageParam as string, 10) || 1;
     const limit = parseInt(limitParam as string, 10) || 20;
+    const category = categoryParam as string | undefined;
 
-    const result = await this.notificationService.getNotificationsForUser(userId, page, limit);
+    const result = await this.notificationService.getNotificationsForUser(userId, page, limit, category);
 
     return res.status(200).json({
       status: true,

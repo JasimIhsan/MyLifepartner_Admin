@@ -9,6 +9,8 @@ class ChatMessage {
   final String? zegoMessageId;
   final DateTime createdAt;
   final String? senderName;
+  final String status; // 'sent', 'processing', 'uploading', 'failed'
+  final double uploadProgress; 
 
   ChatMessage({
     required this.id,
@@ -19,6 +21,8 @@ class ChatMessage {
     this.zegoMessageId,
     required this.createdAt,
     this.senderName,
+    this.status = 'sent',
+    this.uploadProgress = 0.0,
   });
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {

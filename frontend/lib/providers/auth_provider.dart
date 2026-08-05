@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:life_partner_again/services/auth_service.dart';
+import 'package:life_partner_again/services/chat_service.dart';
 import 'package:life_partner_again/services/token_service.dart';
+import 'package:life_partner_again/services/user_repository.dart';
+import 'package:life_partner_again/services/zego_service.dart';
+import 'package:life_partner_again/main.dart';
+import 'package:life_partner_again/providers/chat_provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -26,6 +32,7 @@ class AuthProvider extends ChangeNotifier {
         _isLoggedIn = true;
         _onboardingStatus = status;
         await FirebaseNotificationService().setupAfterLogin();
+        await _setupZego(status);
       }
     } catch (e) {
       debugPrint("Auth bootstrap failed: $e");
@@ -44,6 +51,7 @@ class AuthProvider extends ChangeNotifier {
     _isInitialized = true;
     notifyListeners();
     FirebaseNotificationService().setupAfterLogin();
+    _setupZego(status);
   }
 
   void updateOnboardingStatus(OnboardingStatus status) {
@@ -59,9 +67,49 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     await FirebaseNotificationService().tearDownOnLogout();
+    await ZegoService.instance.logout();
     await _authService.logoutLocal();
     _isLoggedIn = false;
     _onboardingStatus = null;
     notifyListeners();
+  }
+
+  Future<void> _setupZego(OnboardingStatus status) async {
+    try {
+      String userName = 'User ${status.id}';
+      try {
+        final profile = await UserRepository().getUser();
+        if (profile.name != null && profile.name!.trim().isNotEmpty) {
+          userName = profile.name!;
+        }
+      } catch (_) {}
+
+      final tokenData = await ChatApiService.getZegoToken();
+      String? token = tokenData != null ? tokenData['token'] : null;
+
+      await ZegoService.instance.login(
+        status.id.toString(),
+        userName,
+        token: token,
+      );
+    } catch (e) {
+      debugPrint('[AuthProvider] Zego setup failed: $e');
+    }
+  }
+
+  /// Safety net for hot reloads or dropped sessions
+  Future<void> ensureZegoLogin() async {
+    if (_isLoggedIn && _onboardingStatus != null && !ZegoService.instance.isLoggedIn) {
+      debugPrint('[AuthProvider] Safety net: Re-initializing Zego session...');
+      await _setupZego(_onboardingStatus!);
+      
+      // Also re-trigger subscriptions in ChatProvider if needed
+      if (ZegoService.instance.isLoggedIn) {
+        final context = navigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          context.read<ChatProvider>().startListening();
+        }
+      }
+    }
   }
 }

@@ -69,11 +69,17 @@ class NotificationApiService {
   Future<Map<String, dynamic>?> getNotifications({
     int page = 1,
     int limit = 20,
+    String category = 'All',
   }) async {
     try {
+      final queryParameters = <String, dynamic>{'page': page, 'limit': limit};
+      if (category != 'All') {
+        queryParameters['category'] = category;
+      }
+      
       final response = await _client.get(
         '/notifications',
-        queryParameters: {'page': page, 'limit': limit},
+        queryParameters: queryParameters,
       );
 
       if (response.statusCode == 200 && response.data != null) {

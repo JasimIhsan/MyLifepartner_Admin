@@ -18,8 +18,8 @@ export class NotificationService {
   /**
    * Get paginated notifications for a user.
    */
-  public async getNotificationsForUser(userId: number, page: number = 1, limit: number = 20) {
-    return this.notificationRepository.getNotificationsForUser(userId, page, limit);
+  public async getNotificationsForUser(userId: number, page: number = 1, limit: number = 20, category?: string) {
+    return this.notificationRepository.getNotificationsForUser(userId, page, limit, category);
   }
 
   /**

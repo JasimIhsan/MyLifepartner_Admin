@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/widgets/inline_audio_player.dart';
+import 'package:life_partner_again/screens/chat_screen/widgets/inline_audio_player.dart';
 
 class ChatInputArea extends StatelessWidget {
   final bool isRecording;
@@ -15,6 +15,7 @@ class ChatInputArea extends StatelessWidget {
   final VoidCallback onSendRecordedAudio;
   final VoidCallback onStartRecording;
   final VoidCallback onStopRecording;
+  final VoidCallback onStopAndSendRecording;
 
   const ChatInputArea({
     super.key,
@@ -29,6 +30,7 @@ class ChatInputArea extends StatelessWidget {
     required this.onSendRecordedAudio,
     required this.onStartRecording,
     required this.onStopRecording,
+    required this.onStopAndSendRecording,
   });
 
   String _formatDuration(Duration d) {
@@ -67,9 +69,16 @@ class ChatInputArea extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.background,
+                color: const Color(0xFFF5F6F8),
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: isRecording || isRecordingFinished
                   ? _buildRecordingMiddle()
@@ -85,15 +94,21 @@ class ChatInputArea extends StatelessWidget {
                 onTap: () {
                   if (isRecordingFinished) {
                     onSendRecordedAudio();
-                  } else if (!isTextEmpty && !isRecording) {
+                  } else if (isRecording) {
+                    onStopRecording();
+                  } else if (!isTextEmpty) {
                     onSendMessage();
+                  } else {
+                    onStartRecording();
                   }
                 },
                 onLongPressStart:
                     (isTextEmpty && !isRecording && !isRecordingFinished)
                     ? (_) => onStartRecording()
                     : null,
-                onLongPressEnd: isRecording ? (_) => onStopRecording() : null,
+                onLongPressEnd: isRecording
+                    ? (_) => onStopAndSendRecording()
+                    : null,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
                   height: isRecording ? 52 : 44,
@@ -114,9 +129,11 @@ class ChatInputArea extends StatelessWidget {
                   child: Icon(
                     isRecordingFinished
                         ? Icons.send_rounded
-                        : (isTextEmpty
-                              ? Icons.mic_rounded
-                              : Icons.arrow_upward_rounded),
+                        : (isRecording
+                              ? Icons.stop_rounded
+                              : (isTextEmpty
+                                    ? Icons.mic_rounded
+                                    : Icons.arrow_upward_rounded)),
                     color: Colors.white,
                     size: isRecording ? 28 : 24,
                   ),
@@ -159,7 +176,11 @@ class ChatInputArea extends StatelessWidget {
                 ),
               ],
             )
-          : InlineAudioPlayer(source: recordingPath!, isMe: true),
+          : InlineAudioPlayer(
+              source: recordingPath!,
+              isMe: false,
+              width: double.infinity,
+            ),
     );
   }
 

@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:life_partner_again/models/chat_message.dart';
 import 'package:life_partner_again/services/chat_service.dart';
 import 'package:life_partner_again/services/zego_service.dart';
-import 'package:life_partner_again/services/user_repository.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:zego_zim/zego_zim.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -19,6 +21,7 @@ class ChatProvider extends ChangeNotifier {
   int? _currentUserId;
   StreamSubscription? _zimSubscription;
   StreamSubscription? _userStatusSubscription;
+  StreamSubscription? _tokenSubscription;
 
   int? _activeUserId;
   final Set<int> _unreadUserIds = {};
@@ -79,42 +82,8 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  /// Ensure ZIM is logged in and listening to messages
-  Future<void> ensureZegoLogin(int userId) async {
-    if (ZegoService.instance.isLoggedIn) {
-      // Ensure we are listening even if already logged in
-      startListening();
-      return;
-    }
-    try {
-      String userName = 'User $userId';
-      try {
-        final profile = await UserRepository().getUser();
-        if (profile.name != null && profile.name!.trim().isNotEmpty) {
-          userName = profile.name!;
-        }
-      } catch (_) {}
-
-      String? token;
-      // Zegocloud requires token on Web
-      final tokenData = await ChatApiService.getZegoToken();
-      if (tokenData != null) {
-        token = tokenData['token'];
-      }
-
-      await ZegoService.instance.login(
-        userId.toString(),
-        userName,
-        token: token,
-      );
-      startListening();
-    } catch (e) {
-      debugPrint('[ChatProvider] ensureZegoLogin failed: $e');
-    }
-  }
-
-  /// Start listening for incoming ZIM messages
-  void startListening() {
+  /// Initialize global ZIM listeners on app start
+  void initListeners() {
     _zimSubscription?.cancel();
     _zimSubscription = ZegoService.instance.onMessageReceived.listen((msg) {
       _handleIncomingMessage(msg);
@@ -133,12 +102,29 @@ class ChatProvider extends ChangeNotifier {
       notifyListeners();
     });
 
+    _tokenSubscription?.cancel();
+    _tokenSubscription = ZegoService.instance.onTokenWillExpire.listen((
+      _,
+    ) async {
+      try {
+        final tokenData = await ChatApiService.getZegoToken();
+        if (tokenData != null && tokenData['token'] != null) {
+          await ZegoService.instance.renewToken(tokenData['token']);
+        }
+      } catch (e) {
+        debugPrint('[ChatProvider] Token auto-renew failed: $e');
+      }
+    });
+
+    _startPresenceSystem();
+  }
+
+  /// Kept for backward compatibility, but listeners are active by default now.
+  void startListening() {
     // Automatically trigger subscriptions for any queued IDs now that login is ready
     if (_subscribedUserIds.isNotEmpty && ZegoService.instance.isLoggedIn) {
       subscribeToUsersStatus(_subscribedUserIds.toList());
     }
-
-    _startPresenceSystem();
   }
 
   void _setTypingState(int userId, bool isTyping) {
@@ -335,6 +321,26 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> queryUserStatusNow(int userId) async {
+    try {
+      final result = await ZIM.getInstance()?.queryUsersStatus([
+        userId.toString(),
+      ]);
+      if (result != null && result.userStatusList.isNotEmpty) {
+        final status = result.userStatusList.first;
+        _onlineStatusByUser[userId] = status.onlineStatus;
+        notifyListeners();
+        return status.onlineStatus == ZIMUserOnlineStatus.online;
+      }
+    } catch (e) {
+      debugPrint('[ChatProvider] queryUserStatusNow error: $e');
+      // If "User Presence" is not enabled in the ZEGOCLOUD console, this throws an error.
+      // We return true to fail open, otherwise users can never call each other.
+      return true;
+    }
+    return true; // Fail open if unknown
+  }
+
   Future<void> _queryUserStatus(int userId) async {
     try {
       debugPrint('[ChatProvider] Querying user status: $userId');
@@ -467,19 +473,33 @@ class ChatProvider extends ChangeNotifier {
     }
 
     if (_activeUserId == senderId) {
-      // Append to local state if active
+      // Dedup by messageID
       if (conversation != null) {
+        final existingMessages = _messagesByConversation[conversation.id] ?? [];
+        if (existingMessages.any((m) => m.zegoMessageId == msg.messageID)) {
+          debugPrint(
+            '[ChatProvider] Dedup: ignored duplicate message ${msg.messageID}',
+          );
+          return;
+        }
+
         final message = ChatMessage(
           id: DateTime.now().microsecondsSinceEpoch,
           conversationId: conversation.id,
           senderId: senderId,
           content: msg.content,
           messageType: msg.messageType,
+          zegoMessageId: msg.messageID,
           createdAt: DateTime.now(),
         );
 
         _messagesByConversation[conversation.id] ??= [];
         _messagesByConversation[conversation.id]!.add(message);
+
+        if (message.messageType == 'AUDIO' &&
+            message.content.startsWith('http')) {
+          _preloadAudio(message.content);
+        }
       }
     } else {
       // They are not in this chat interface actively, show nudge
@@ -552,6 +572,12 @@ class ChatProvider extends ChangeNotifier {
       _currentPageByConversation[conversationId] = page;
       _hasMoreByConversation[conversationId] = (page * limit) < total;
 
+      for (final m in messages) {
+        if (m.messageType == 'AUDIO' && m.content.startsWith('http')) {
+          _preloadAudio(m.content);
+        }
+      }
+
       notifyListeners();
     } catch (e) {
       debugPrint('[ChatProvider] Failed to load messages: $e');
@@ -560,6 +586,22 @@ class ChatProvider extends ChangeNotifier {
         _isLoadingMoreByConversation[conversationId] = false;
         notifyListeners();
       }
+    }
+  }
+
+  Future<void> _preloadAudio(String url) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final safeHash = url.hashCode.abs().toString();
+      final file = File('${dir.path}/audio_cache_$safeHash.m4a');
+      if (!await file.exists() || (await file.length()) == 0) {
+        await Dio().download(url, file.path);
+        debugPrint(
+          '[ChatProvider] Successfully pre-downloaded audio to ${file.path}',
+        );
+      }
+    } catch (e) {
+      debugPrint('[ChatProvider] _preloadAudio failed for $url: $e');
     }
   }
 
@@ -615,8 +657,31 @@ class ChatProvider extends ChangeNotifier {
     required String messageType, // 'IMAGE', 'VIDEO', 'AUDIO'
     int? audioDuration,
   }) async {
+    int? convoId = _conversations
+        .where((c) => c.otherUserId == receiverId)
+        .firstOrNull
+        ?.id;
+    int tempId = DateTime.now().microsecondsSinceEpoch;
+
+    // 1. Optimistic insert
+    if (convoId != null && _currentUserId != null) {
+      final optimisticMessage = ChatMessage(
+        id: tempId,
+        conversationId: convoId,
+        senderId: _currentUserId!,
+        content: filePath,
+        messageType: messageType,
+        createdAt: DateTime.now(),
+        status: 'uploading',
+        uploadProgress: 0.0,
+      );
+      _messagesByConversation[convoId] ??= [];
+      _messagesByConversation[convoId]!.add(optimisticMessage);
+      notifyListeners();
+    }
+
     try {
-      // 1. Create ZIM media message based on type
+      // 2. Create ZIM media message based on type
       ZIMMediaMessage? zimMediaMsg;
       if (messageType == 'IMAGE') {
         zimMediaMsg = ZIMImageMessage(filePath);
@@ -630,17 +695,40 @@ class ChatProvider extends ChangeNotifier {
         zimMediaMsg = ZIMFileMessage(filePath);
       }
 
-      // 2. Upload and deliver via ZIM
+      // 3. Upload and deliver via ZIM
       final result = await ZegoService.instance.sendMediaMessage(
         receiverId.toString(),
         zimMediaMsg,
+        onMediaUploadingProgress: (message, currentFileSize, totalFileSize) {
+          if (convoId != null && totalFileSize > 0) {
+            final progress = currentFileSize / totalFileSize;
+            final msgs = _messagesByConversation[convoId];
+            if (msgs != null) {
+              final index = msgs.indexWhere((m) => m.id == tempId);
+              if (index != -1) {
+                final old = msgs[index];
+                msgs[index] = ChatMessage(
+                  id: old.id,
+                  conversationId: old.conversationId,
+                  senderId: old.senderId,
+                  content: old.content,
+                  messageType: old.messageType,
+                  createdAt: old.createdAt,
+                  status: 'uploading',
+                  uploadProgress: progress,
+                );
+                notifyListeners();
+              }
+            }
+          }
+        },
       );
 
       if (result != null && result.message is ZIMMediaMessage) {
         final uploadedMsg = result.message as ZIMMediaMessage;
         final downloadUrl = uploadedMsg.fileDownloadUrl;
 
-        // 3. Persist to backend
+        // 4. Persist to backend
         final saved = await ChatApiService.sendMessage(
           receiverId: receiverId,
           content: downloadUrl.isNotEmpty ? downloadUrl : filePath,
@@ -648,24 +736,57 @@ class ChatProvider extends ChangeNotifier {
           zegoMessageId: uploadedMsg.messageID.toString(),
         );
 
-        // 4. Update local state
+        // 5. Update local state with final message
         ChatMessage? returnMessage;
         if (saved != null) {
           final message = ChatMessage.fromJson(saved);
           returnMessage = message;
-          final convoId = message.conversationId;
-          _messagesByConversation[convoId] ??= [];
-          _messagesByConversation[convoId]!.add(message);
+          final finalConvoId = message.conversationId;
+
+          _messagesByConversation[finalConvoId] ??= [];
+          // Replace optimistic message
+          final msgs = _messagesByConversation[finalConvoId]!;
+          final index = msgs.indexWhere((m) => m.id == tempId);
+          if (index != -1) {
+            msgs[index] = message;
+          } else {
+            msgs.add(message);
+          }
           notifyListeners();
-          // Refresh conversations to pick up the new message silently in the listing
           loadConversations(showLoading: false);
         }
         return returnMessage;
+      } else {
+        // Failed ZIM send
+        _markMessageFailed(convoId, tempId);
       }
       return null;
     } catch (e) {
       debugPrint('[ChatProvider] Failed to send media message: $e');
+      _markMessageFailed(convoId, tempId);
       rethrow;
+    }
+  }
+
+  void _markMessageFailed(int? convoId, int tempId) {
+    if (convoId != null) {
+      final msgs = _messagesByConversation[convoId];
+      if (msgs != null) {
+        final index = msgs.indexWhere((m) => m.id == tempId);
+        if (index != -1) {
+          final old = msgs[index];
+          msgs[index] = ChatMessage(
+            id: old.id,
+            conversationId: old.conversationId,
+            senderId: old.senderId,
+            content: old.content,
+            messageType: old.messageType,
+            createdAt: old.createdAt,
+            status: 'failed',
+          );
+          notifyListeners();
+        }
+      }
     }
   }
 
@@ -673,6 +794,7 @@ class ChatProvider extends ChangeNotifier {
   void dispose() {
     _zimSubscription?.cancel();
     _userStatusSubscription?.cancel();
+    _tokenSubscription?.cancel();
     _statusTimer?.cancel();
     _stopPresenceSystem();
     for (final timer in _typingTimers.values) {

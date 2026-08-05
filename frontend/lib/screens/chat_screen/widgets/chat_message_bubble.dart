@@ -6,8 +6,8 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/chat_message.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/widgets/call_log_bubble.dart';
-import 'package:life_partner_again/widgets/inline_audio_player.dart';
-import 'package:life_partner_again/widgets/inline_video_player.dart';
+import 'package:life_partner_again/screens/chat_screen/widgets/inline_audio_player.dart';
+import 'package:life_partner_again/screens/chat_screen/widgets/inline_video_player.dart';
 import 'package:provider/provider.dart';
 
 class ChatMessageBubble extends StatelessWidget {
@@ -81,6 +81,26 @@ class ChatMessageBubble extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (msg.status == 'uploading') ...[
+                  SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      value: msg.uploadProgress > 0 ? msg.uploadProgress : null,
+                      color: isMe ? Colors.white70 : AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                if (msg.status == 'failed') ...[
+                  const Icon(
+                    Icons.error_outline,
+                    size: 14,
+                    color: Colors.redAccent,
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 Text(
                   timeStr,
                   style: TextStyle(
@@ -91,15 +111,6 @@ class ChatMessageBubble extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                // if (isMe) ...[
-                //   const SizedBox(width: 4),
-                //   Icon(
-                //     Icons
-                //         .done_all_rounded, // or any read receipt icon you prefer
-                //     size: 14,
-                //     color: Colors.white.withValues(alpha: 0.7),
-                //   ),
-                // ],
               ],
             ),
           ],
@@ -186,7 +197,7 @@ class ChatMessageBubble extends StatelessWidget {
       content = placeholder;
     } else {
       if (msg.messageType == 'IMAGE') {
-        content = msg.content.startsWith('http')
+        final imageWidget = msg.content.startsWith('http')
             ? Image.network(
                 msg.content,
                 key: ValueKey(msg.content),
@@ -207,6 +218,39 @@ class ChatMessageBubble extends StatelessWidget {
                 width: 240,
                 fit: BoxFit.cover,
               );
+
+        content = GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                opaque: false,
+                pageBuilder: (BuildContext context, _, __) {
+                  return Scaffold(
+                    backgroundColor: Colors.black,
+                    appBar: AppBar(
+                      backgroundColor: Colors.black,
+                      elevation: 0,
+                      iconTheme: const IconThemeData(color: Colors.white),
+                    ),
+                    body: SafeArea(
+                      child: Center(
+                        child: InteractiveViewer(
+                          panEnabled: true,
+                          minScale: 0.5,
+                          maxScale: 4.0,
+                          child: msg.content.startsWith('http')
+                              ? Image.network(msg.content)
+                              : Image.file(File(msg.content)),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+          child: imageWidget,
+        );
       } else {
         content = InlineVideoPlayer(
           source: msg.content,

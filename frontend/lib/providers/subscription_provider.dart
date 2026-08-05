@@ -191,7 +191,9 @@ class SubscriptionProvider extends ChangeNotifier {
     try {
       return await _subscriptionService.syncSubscription();
     } catch (e) {
-      debugPrint('⚠️ Backend sync failed, falling back to /my-subscription: $e');
+      debugPrint(
+        '⚠️ Backend sync failed, falling back to /my-subscription: $e',
+      );
       try {
         return await _subscriptionService.getMySubscription();
       } catch (e2) {
@@ -299,7 +301,9 @@ class SubscriptionProvider extends ChangeNotifier {
 
     // Map the backend subscription to the enriched plan (with RC pricing).
     final match = plans.where((p) => p.id == _mySubscription!.planId);
-    currentSubscription = match.isNotEmpty ? match.first : _mySubscription!.plan;
+    currentSubscription = match.isNotEmpty
+        ? match.first
+        : _mySubscription!.plan;
     debugPrint(
       '👉 currentSubscription [Backend]: ${currentSubscription?.name} '
       '(status=${_mySubscription!.status}, isActive=${_mySubscription!.isActive})',
@@ -373,8 +377,9 @@ class SubscriptionProvider extends ChangeNotifier {
                       rcId.startsWith('$storeProductId:')));
         },
         orElse: () {
-          final available =
-              _rcPackages.map((p) => p.storeProduct.identifier).join(', ');
+          final available = _rcPackages
+              .map((p) => p.storeProduct.identifier)
+              .join(', ');
           debugPrint(
             '⚠️ Product "$storeProductId" not in RC offerings. '
             'Available: $available',
@@ -495,7 +500,7 @@ class SubscriptionProvider extends ChangeNotifier {
   ///   - When the app resumes from background.
   ///   - After calling restorePurchases().
   Future<void> fetchMySubscription() async {
-    if (!_isInitialized || _authenticatedUserId == null) {
+    if (_authenticatedUserId == null) {
       debugPrint('⚠️ fetchMySubscription: not initialized yet.');
       return;
     }
@@ -621,7 +626,8 @@ class SubscriptionProvider extends ChangeNotifier {
   bool get hasBillingIssue => _mySubscription?.isPaymentFailed ?? false;
   bool get isInGracePeriod => _mySubscription?.isGracePeriod ?? false;
   bool get isCancelledButActive => _mySubscription?.isCancelled ?? false;
-  bool get isDowngradeScheduled => _mySubscription?.isDowngradeScheduled ?? false;
+  bool get isDowngradeScheduled =>
+      _mySubscription?.isDowngradeScheduled ?? false;
   bool get isExpired => _mySubscription?.isExpired ?? false;
   bool get isCancelled => _mySubscription?.isCancelled ?? false;
 
@@ -653,7 +659,8 @@ class SubscriptionProvider extends ChangeNotifier {
           case PurchasesErrorCode.insufficientPermissionsError:
             return 'Permission denied. Please check your store payment settings.';
           default:
-            return e.message ?? 'A payment service error occurred. Please try again.';
+            return e.message ??
+                'A payment service error occurred. Please try again.';
         }
       } catch (_) {}
       return e.message ?? 'A payment service error occurred. Please try again.';
