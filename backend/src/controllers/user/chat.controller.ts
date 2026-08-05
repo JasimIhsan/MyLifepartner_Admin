@@ -6,6 +6,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class ChatController {
    constructor(
@@ -24,6 +26,20 @@ export class ChatController {
       const zegoMessageId = this.getOptionalString(req.body.zegoMessageId);
 
       const message = await this.chatService.sendMessage(senderId, receiverId, content, messageType, zegoMessageId);
+
+      await auditService.log({
+         userId: senderId,
+         actorType: ActorType.USER,
+         module: AuditModule.CHAT,
+         action: "SEND_CHAT_MESSAGE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User sent a chat message to user ID: ${receiverId}`,
+         newValue: { messageType, receiverId, messageId: message.id },
+         entityType: "Message",
+         entityId: message.id.toString(),
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, message, "Message sent successfully"));
    });

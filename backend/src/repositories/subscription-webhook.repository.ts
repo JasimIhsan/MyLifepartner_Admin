@@ -6,6 +6,8 @@ import {
    ProcessWebhookParams 
 } from "@/interfaces/repositories/subscription-webhook.repository.interface";
 import logger from "@/utils/logger";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -65,6 +67,27 @@ function buildAuditLogData(params: {
       environment: params.environment ?? null,
       eventTimestampMs: params.eventTimestampMs ? BigInt(params.eventTimestampMs) : null,
    };
+}
+
+async function writeWebhookAuditLog(tx: Prisma.TransactionClient, params: any) {
+   await tx.userSubscriptionLog.create({
+      data: buildAuditLogData(params),
+   });
+   await auditService.log({
+      userId: params.userId,
+      actorType: ActorType.WEBHOOK,
+      module: AuditModule.SUBSCRIPTION,
+      action: `WEBHOOK_${params.eventType || 'UNKNOWN'}`,
+      status: AuditStatus.SUCCESS,
+      severity: AuditSeverity.INFO,
+      message: params.reason,
+      oldValue: { planId: params.previousPlanId, status: params.previousStatus },
+      newValue: { planId: params.newPlanId, status: params.newStatus },
+      metadata: { eventType: params.eventType, productId: params.productId },
+      transactionId: params.originalTransactionId ?? undefined,
+      revenueCatEventId: params.eventId ?? undefined,
+      source: AuditSource.WEBHOOK
+   }, tx as any);
 }
 
 // ─── Downgrade-class event types ────────────────────────────────────────────
@@ -207,8 +230,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                            revenueCatEventId: event.id,
                         },
                      });
-                     await tx.userSubscriptionLog.create({
-                        data: buildAuditLogData({
+                     await writeWebhookAuditLog(tx, {
                            userId,
                            previousPlanId: currentSubscription.planId,
                            newPlanId: targetPlanId,
@@ -223,8 +245,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                            store: event.store,
                            environment: event.environment,
                            eventTimestampMs: event.event_timestamp_ms,
-                        }),
-                     });
+                        });
                      logger.info("Webhook: deferred downgrade scheduled", {
                         userId,
                         eventId: event.id,
@@ -298,8 +319,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   });
                }
 
-               await tx.userSubscriptionLog.create({
-                  data: buildAuditLogData({
+               await writeWebhookAuditLog(tx, {
                      userId,
                      previousPlanId: currentSubscription?.planId,
                      newPlanId: targetPlanId,
@@ -314,8 +334,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                      store: event.store,
                      environment: event.environment,
                      eventTimestampMs: event.event_timestamp_ms,
-                  }),
-               });
+                  });
 
                await tx.transactionHistory.create({
                   data: {
@@ -387,8 +406,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         revenueCatEventId: event.id,
                      },
                   });
-                  await tx.userSubscriptionLog.create({
-                     data: buildAuditLogData({
+                  await writeWebhookAuditLog(tx, {
                         userId,
                         previousPlanId: subToRestore.planId,
                         newPlanId: subToRestore.planId,
@@ -403,8 +421,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         store: event.store,
                         environment: event.environment,
                         eventTimestampMs: event.event_timestamp_ms,
-                     }),
-                  });
+                     });
                   logger.info("Webhook: uncancellation processed — subscription restored to ACTIVE", {
                      userId,
                      eventId: event.id,
@@ -444,8 +461,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         revenueCatEventId: event.id,
                      },
                   });
-                  await tx.userSubscriptionLog.create({
-                     data: buildAuditLogData({
+                  await writeWebhookAuditLog(tx, {
                         userId,
                         previousPlanId: subToCancel.planId,
                         newPlanId: subToCancel.planId,
@@ -460,8 +476,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         store: event.store,
                         environment: event.environment,
                         eventTimestampMs: event.event_timestamp_ms,
-                     }),
-                  });
+                     });
 
                   await tx.transactionHistory.create({
                      data: {
@@ -502,8 +517,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         revenueCatEventId: event.id,
                      },
                   });
-                  await tx.userSubscriptionLog.create({
-                     data: buildAuditLogData({
+                  await writeWebhookAuditLog(tx, {
                         userId,
                         previousPlanId: currentSubscription.planId,
                         newPlanId: currentSubscription.planId,
@@ -518,8 +532,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         store: event.store,
                         environment: event.environment,
                         eventTimestampMs: event.event_timestamp_ms,
-                     }),
-                  });
+                     });
 
                   await tx.transactionHistory.create({
                      data: {
@@ -583,8 +596,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   },
                });
 
-               await tx.userSubscriptionLog.create({
-                  data: buildAuditLogData({
+               await writeWebhookAuditLog(tx, {
                      userId,
                      previousPlanId: currentSubscription?.planId,
                      newPlanId: currentSubscription?.planId,
@@ -599,8 +611,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                      store: event.store,
                      environment: event.environment,
                      eventTimestampMs: event.event_timestamp_ms,
-                  }),
-               });
+                  });
 
                logger.info("Webhook: subscription expired — entered GRACE_PERIOD (FREE downgrade deferred to reconciliation job)", {
                   userId,
@@ -636,8 +647,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   },
                });
 
-               await tx.userSubscriptionLog.create({
-                  data: buildAuditLogData({
+               await writeWebhookAuditLog(tx, {
                      userId,
                      previousPlanId: currentSubscription?.planId,
                      newPlanId: null,
@@ -652,8 +662,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                      store: event.store,
                      environment: event.environment,
                      eventTimestampMs: event.event_timestamp_ms,
-                  }),
-               });
+                  });
 
                await tx.transactionHistory.create({
                   data: {
@@ -690,8 +699,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                         include: { plan: { include: { features: true } } },
                      });
 
-                     await tx.userSubscriptionLog.create({
-                        data: buildAuditLogData({
+                     await writeWebhookAuditLog(tx, {
                            userId,
                            previousPlanId: currentSubscription?.planId,
                            newPlanId: freePlanId,
@@ -706,8 +714,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                            store: event.store,
                            environment: event.environment,
                            eventTimestampMs: event.event_timestamp_ms,
-                        }),
-                     });
+                        });
 
                      const featurePayload = buildFeatureFullPayload(freeSub.plan);
                      const existingFeatures = await tx.userFeature.findUnique({ where: { userId } });

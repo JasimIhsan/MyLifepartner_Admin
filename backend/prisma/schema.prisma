@@ -41,6 +41,7 @@ model User {
   blockedBy        UserBlock[]           @relation("BlockedUser")
   deviceTokens     DeviceToken[]
   notifications    Notification[]
+  auditLogs        AuditLog[]
 
   @@map("users")
 }
@@ -218,6 +219,7 @@ model Admins {
 
   assignedReports UserReport[]          @relation("ReportAssignedAdmin")
   moderationLogs  ModerationActionLog[] @relation("AdminModerationLogs")
+  auditLogs       AuditLog[]
 
   @@map("admins")
 }
@@ -707,20 +709,106 @@ enum DevicePlatform {
 }
 
 model Notification {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   userId    Int
   type      String
   title     String
   body      String
   data      Json?
-  isRead    Boolean  @default(false)
+  isRead    Boolean   @default(false)
   readAt    DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([userId, isRead])
   @@map("notifications")
+}
+
+enum ActorType {
+  USER
+  ADMIN
+  SYSTEM
+  WEBHOOK
+  SUPER_ADMIN
+}
+
+enum AuditModule {
+  AUTH
+  PROFILE
+  SUBSCRIPTION
+  PAYMENT
+  CHAT
+  CALL
+  MODERATION
+  NOTIFICATION
+  ACCOUNT
+  ADMIN
+  SYSTEM
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILED
+  PENDING
+  WARNING
+}
+
+enum AuditSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+enum AuditSource {
+  API
+  ADMIN
+  WEBHOOK
+  BACKGROUND_JOB
+  MOBILE
+  WEB
+  OTHER
+}
+
+model AuditLog {
+  id                Int           @id @default(autoincrement())
+  userId            Int?
+  adminId           Int?
+  actorType         ActorType
+  module            AuditModule
+  action            String
+  entityType        String?
+  entityId          String?
+  status            AuditStatus
+  severity          AuditSeverity
+  message           String
+  oldValue          Json?
+  newValue          Json?
+  metadata          Json?
+  requestId         String?
+  correlationId     String?
+  transactionId     String?
+  revenueCatEventId String?
+  source            AuditSource
+  route             String?
+  method            String?
+  statusCode        Int?
+  ipAddress         String?
+  userAgent         String?
+  device            String?
+  environment       String?
+  createdAt         DateTime      @default(now())
+
+  user  User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  admin Admins? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([correlationId])
+  @@index([entityType, entityId])
+  @@index([module, action])
+  @@map("audit_logs")
 }

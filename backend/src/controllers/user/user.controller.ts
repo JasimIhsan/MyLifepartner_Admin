@@ -7,6 +7,8 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import logger from "@/utils/logger";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class UserController {
    constructor(private readonly userService: IUserService) {}
@@ -69,6 +71,20 @@ export class UserController {
       this.ensureUserOwnsResource(userId, authUserId);
 
       const updatedUser = await this.userService.updateUser(userId, updatePayload);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.ACCOUNT,
+         action: "UPDATE_USER_ACCOUNT",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User updated account details`,
+         newValue: updatePayload,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedUser, "User updated successfully"));
    });

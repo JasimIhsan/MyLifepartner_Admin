@@ -1,9 +1,11 @@
 import { AdminLoginDto } from "@/dtos/admin.auth.dto";
 import { IAdminAuthService } from "@/interfaces/services/admin.auth.service.interface";
+import { auditService } from "@/services/audit.service";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
+import { ActorType, AuditModule, AuditSeverity, AuditSource, AuditStatus } from "@prisma/client";
 import { Request, Response } from "express";
 
 export class AdminAuthController {
@@ -20,11 +22,37 @@ export class AdminAuthController {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Username and password are required");
       }
 
-      const result = await this.adminAuthService.login(username, password);
+      try {
+         const result = await this.adminAuthService.login(username, password);
 
-      this.setAuthCookies(res, result.accessToken, result.refreshToken);
+         this.setAuthCookies(res, result.accessToken, result.refreshToken);
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user: result.user }, "Admin logged in successfully"));
+         // Log success
+         await auditService.log({
+            adminId: result.user.id,
+            actorType: ActorType.ADMIN,
+            module: AuditModule.AUTH,
+            action: "ADMIN_LOGIN",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `Admin ${username} logged in successfully`,
+            source: AuditSource.ADMIN,
+         });
+
+         return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { user: result.user }, "Admin logged in successfully"));
+      } catch (error: any) {
+         // Log failure
+         await auditService.log({
+            actorType: ActorType.SYSTEM,
+            module: AuditModule.AUTH,
+            action: "ADMIN_LOGIN_FAILED",
+            status: AuditStatus.FAILED,
+            severity: AuditSeverity.WARNING,
+            message: `Failed login attempt for username: ${username}. Reason: ${error.message || "Unknown"}`,
+            source: AuditSource.ADMIN,
+         });
+         throw error;
+      }
    });
 
    /**
@@ -54,6 +82,17 @@ export class AdminAuthController {
 
       if (adminId) {
          await this.adminAuthService.logout(adminId);
+
+         await auditService.log({
+            adminId,
+            actorType: ActorType.ADMIN,
+            module: AuditModule.AUTH,
+            action: "ADMIN_LOGOUT",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `Admin logged out`,
+            source: AuditSource.ADMIN,
+         });
       }
 
       this.clearAuthCookies(res);

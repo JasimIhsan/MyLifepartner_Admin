@@ -5,6 +5,8 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { addFeaturesSchema, createPlanSchema, updateFeatureSchema, updatePlanSchema } from "@/validators/subscription.validator";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class AdminSubscriptionController {
    constructor(private readonly adminSubscriptionService: IAdminSubscriptionService) {}
@@ -21,6 +23,17 @@ export class AdminSubscriptionController {
       }
 
       const plan = await this.adminSubscriptionService.createPlan(parsed.data);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "CREATE_PLAN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Created subscription plan: ${plan.name}`,
+         newValue: plan,
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, plan, "Subscription plan created successfully"));
    });
@@ -70,6 +83,19 @@ export class AdminSubscriptionController {
 
       const plan = await this.adminSubscriptionService.updatePlan(planId, parsed.data);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "UPDATE_PLAN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Updated subscription plan ID: ${planId}`,
+         newValue: parsed.data,
+         entityType: "SubscriptionPlan",
+         entityId: planId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, plan, "Subscription plan updated successfully"));
    });
 
@@ -85,6 +111,18 @@ export class AdminSubscriptionController {
       }
 
       await this.adminSubscriptionService.deletePlan(planId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "DELETE_PLAN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Deleted subscription plan ID: ${planId}`,
+         entityType: "SubscriptionPlan",
+         entityId: planId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Subscription plan deleted successfully"));
    });
@@ -107,6 +145,19 @@ export class AdminSubscriptionController {
       }
 
       const features = await this.adminSubscriptionService.addFeatures(planId, parsed.data);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "ADD_PLAN_FEATURES",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Added features to plan ID: ${planId}`,
+         newValue: parsed.data,
+         entityType: "SubscriptionPlan",
+         entityId: planId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, features, "Features added successfully"));
    });
@@ -135,6 +186,19 @@ export class AdminSubscriptionController {
 
       const feature = await this.adminSubscriptionService.updatePlanFeature(planFeatureId, parsed.data);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "UPDATE_PLAN_FEATURE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Updated plan feature ID: ${planFeatureId}`,
+         newValue: parsed.data,
+         entityType: "PlanFeature",
+         entityId: planFeatureId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, feature, "Plan feature updated successfully"));
    });
 
@@ -155,6 +219,18 @@ export class AdminSubscriptionController {
       }
 
       await this.adminSubscriptionService.deletePlanFeature(planFeatureId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "DELETE_PLAN_FEATURE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Deleted plan feature ID: ${planFeatureId}`,
+         entityType: "PlanFeature",
+         entityId: planFeatureId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Plan feature deleted successfully"));
    });

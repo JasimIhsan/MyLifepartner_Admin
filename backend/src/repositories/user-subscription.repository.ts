@@ -1,7 +1,7 @@
 import prisma from "@/config/prisma";
 import { ISyncTransactionContext, IUserSubscriptionRepository, SubscriptionStatus, UserSubscriptionWithPlan } from "@/interfaces/repositories/user-subscription.repository.interface";
-import { Prisma, SubscriptionStatus as PrismaSubscriptionStatus } from "@prisma/client";
-
+import { Prisma, SubscriptionStatus as PrismaSubscriptionStatus, ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
+import { auditService } from "@/services/audit.service";
 const userSubscriptionIncludePlanAndFeatures = {
    plan: {
       include: {
@@ -166,6 +166,22 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
                         eventTimestampMs: params.eventTimestampMs ? BigInt(params.eventTimestampMs) : null,
                      },
                   });
+
+                  await auditService.log({
+                     userId: params.userId,
+                     actorType: ActorType.SYSTEM,
+                     module: AuditModule.SUBSCRIPTION,
+                     action: 'SUBSCRIPTION_SYNC',
+                     status: AuditStatus.SUCCESS,
+                     severity: AuditSeverity.INFO,
+                     message: `Subscription sync: ${params.reason}`,
+                     oldValue: { planId: params.previousPlanId, status: params.previousStatus },
+                     newValue: { planId: params.newPlanId, status: params.newStatus },
+                     metadata: { eventType: params.eventType, productId: params.productId },
+                     transactionId: params.originalTransactionId ?? undefined,
+                     revenueCatEventId: params.eventId ?? undefined,
+                     source: AuditSource.API
+                  }, tx as any);
                },
             };
 

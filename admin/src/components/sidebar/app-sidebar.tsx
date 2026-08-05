@@ -67,6 +67,11 @@ const data = {
             },
          ],
       },
+      {
+         title: "Audit Logs",
+         url: "/audit-logs",
+         icon: Command,
+      },
    ],
    navSecondary: [
       {

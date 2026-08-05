@@ -7,6 +7,8 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import logger from "@/utils/logger";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 type CallType = "audio" | "video";
 
@@ -68,6 +70,20 @@ export class UserSubscriptionController {
       const subscription = await this.userSubscriptionService.subscribe(userId, planId);
       const subscriptionDto = toUserSubscriptionDto(subscription);
 
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.SUBSCRIPTION,
+         action: "SUBSCRIBE_TO_PLAN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User subscribed to plan ID: ${planId}`,
+         newValue: subscriptionDto as unknown as Record<string, any>,
+         entityType: "UserSubscription",
+         entityId: subscription.id.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, subscriptionDto, "Subscribed successfully"));
    });
 
@@ -105,6 +121,20 @@ export class UserSubscriptionController {
 
       const subscriptionDto = toUserSubscriptionDto(subscription);
 
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.SUBSCRIPTION,
+         action: "VERIFY_PURCHASE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User verified purchase for product: ${productId}`,
+         newValue: { productId, store, environment, originalTransactionId },
+         entityType: "UserSubscription",
+         entityId: subscription.id.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscriptionDto, "Purchase verified and plan activated successfully"));
    });
 
@@ -133,6 +163,22 @@ export class UserSubscriptionController {
       }
 
       await this.userFeatureService.checkCallAccess(userId, type as CallType, consumeSeconds, targetUserId);
+
+      if (consumeSeconds && consumeSeconds > 0) {
+         await auditService.log({
+            userId,
+            actorType: ActorType.USER,
+            module: AuditModule.CALL,
+            action: "CONSUME_CALL_MINUTES",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `User consumed ${consumeSeconds} seconds for ${type} call`,
+            newValue: { type, consumeSeconds, targetUserId },
+            entityType: "User",
+            entityId: userId.toString(),
+            source: AuditSource.API,
+         });
+      }
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Call allowed"));
    });

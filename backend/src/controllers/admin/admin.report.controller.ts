@@ -6,6 +6,8 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { ModerationActionType, ReportPriority, ReportReason, ReportStatus } from "@prisma/client";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class AdminReportController {
    constructor(private readonly reportService: ReportService) {}
@@ -20,7 +22,7 @@ export class AdminReportController {
          ...(status && { status: status as ReportStatus }),
          ...(priority && { priority: priority as ReportPriority }),
          ...(reason && { reason: reason as ReportReason }),
-         ...(search && { search: search as string }),
+         ...(search && { search: search as string | undefined }),
          page: page ? parseInt(page as string) : 1,
          limit: limit ? parseInt(limit as string) : 10,
       };
@@ -50,6 +52,19 @@ export class AdminReportController {
 
       const report = await this.reportService.updateReportStatus(parseInt(id as string), adminId, status as ReportStatus, priority as ReportPriority, notes);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.MODERATION,
+         action: "UPDATE_REPORT_STATUS",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Updated report ID: ${id} status to ${status}`,
+         newValue: { status, priority, notes },
+         entityType: "UserReport",
+         entityId: id as string,
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, report, "Report status updated successfully"));
    });
 
@@ -67,6 +82,19 @@ export class AdminReportController {
       }
 
       const result = await this.reportService.takeModerationAction(parseInt(id as string), adminId, action as ModerationActionType, reason, notes);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.MODERATION,
+         action: "TAKE_MODERATION_ACTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Took moderation action: ${action} on report ID: ${id}`,
+         newValue: { action, reason, notes },
+         entityType: "UserReport",
+         entityId: id as string,
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Moderation action taken successfully"));
    });

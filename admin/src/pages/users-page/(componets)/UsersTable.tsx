@@ -25,6 +25,7 @@ export function UsersTable({
    onEdit,
    onToggleBan,
    onDelete,
+   onViewAuditHistory,
 }: {
    data?: UserInterface[];
    searchQuery?: string;
@@ -39,6 +40,7 @@ export function UsersTable({
    onEdit?: (user: UserInterface) => void;
    onToggleBan?: (id: number, currentStatus: boolean) => void;
    onDelete?: (id: number) => void;
+   onViewAuditHistory?: (user: UserInterface) => void;
 }) {
    const [data, setData] = React.useState<UserInterface[]>(initialData);
    const [selectedIds, setSelectedIds] = React.useState<Set<number>>(new Set());
@@ -188,6 +190,7 @@ export function UsersTable({
                                     <DropdownMenuContent align="end" className="w-40">
                                        <DropdownMenuItem>View Details</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => onEdit?.(user)}>Edit User</DropdownMenuItem>
+                                       <DropdownMenuItem onClick={() => onViewAuditHistory?.(user)}>View Audit History</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => handleActionClick(user, user.isBanned ? "unban" : "ban")}>{user.isBanned ? "Unban User" : "Ban User"}</DropdownMenuItem>
                                        <DropdownMenuSeparator />
                                        <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>

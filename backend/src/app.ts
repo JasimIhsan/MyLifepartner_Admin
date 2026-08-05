@@ -27,9 +27,12 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Middlewares
+import { auditContextMiddleware } from "./middlewares/auditContext.middleware";
+app.use(auditContextMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
 
 // CORS: restrict to allowlist in production, open in development
 const allowedOrigins = env.ALLOWED_ORIGINS

@@ -3,6 +3,8 @@ import { deviceTokenService } from './deviceToken.service';
 import { NotificationType } from '../constants/notificationTypes';
 import { NotificationRepository } from '../repositories/notification.repository';
 import logger from '../utils/logger';
+import { auditService } from '@/services/audit.service';
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from '@prisma/client';
 
 export interface SendNotificationParams {
   userId: number;
@@ -56,8 +58,19 @@ export class NotificationService {
         body,
         data: data ? (data as any) : null,
       });
-    } catch (dbError) {
+    } catch (dbError: any) {
       logger.error(`Failed to save in-app notification in DB for user ${params.userId}:`, dbError);
+      
+      await auditService.log({
+         actorType: ActorType.SYSTEM,
+         module: AuditModule.NOTIFICATION,
+         action: "SAVE_IN_APP_NOTIFICATION_FAILED",
+         status: AuditStatus.FAILED,
+         severity: AuditSeverity.CRITICAL,
+         message: `Failed to save in-app notification in DB for user ${params.userId}. Reason: ${dbError.message || "Unknown"}`,
+         source: AuditSource.OTHER,
+      });
+      
       return null;
     }
   }
@@ -101,8 +114,18 @@ export class NotificationService {
       } else {
         await firebaseMessagingService.sendToTokens(tokens, { ...payload, tokens });
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.error(`Failed to send push notification to user ${params.userId}:`, error);
+
+      await auditService.log({
+         actorType: ActorType.SYSTEM,
+         module: AuditModule.NOTIFICATION,
+         action: "SEND_PUSH_NOTIFICATION_FAILED",
+         status: AuditStatus.FAILED,
+         severity: AuditSeverity.CRITICAL,
+         message: `Failed to send push notification to user ${params.userId}. Reason: ${error.message || "Unknown"}`,
+         source: AuditSource.OTHER,
+      });
     }
   }
 

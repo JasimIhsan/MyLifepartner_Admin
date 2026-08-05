@@ -4,6 +4,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class AdminQuestionnaireController {
    constructor(private readonly adminQuestionnaireService: IAdminQuestionnaireService) {}
@@ -20,6 +22,17 @@ export class AdminQuestionnaireController {
          title,
          orderNo,
          isPrimary,
+      });
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "CREATE_QUESTIONNAIRE_SECTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Created questionnaire section: ${title}`,
+         newValue: section,
+         source: AuditSource.ADMIN,
       });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, section, "Section created successfully"));
@@ -54,6 +67,19 @@ export class AdminQuestionnaireController {
          isPrimary,
       });
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "UPDATE_QUESTIONNAIRE_SECTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Updated questionnaire section ID: ${sectionId}`,
+         newValue: { key, title, isPrimary },
+         entityType: "QuestionnaireSection",
+         entityId: sectionId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, section, "Section updated successfully"));
    });
 
@@ -69,6 +95,18 @@ export class AdminQuestionnaireController {
       }
 
       await this.adminQuestionnaireService.deleteSection(sectionId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "DELETE_QUESTIONNAIRE_SECTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Deleted questionnaire section ID: ${sectionId}`,
+         entityType: "QuestionnaireSection",
+         entityId: sectionId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Section deleted successfully"));
    });
@@ -86,6 +124,17 @@ export class AdminQuestionnaireController {
 
       await this.adminQuestionnaireService.reorderSections(orderedIds);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "REORDER_QUESTIONNAIRE_SECTIONS",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `Reordered questionnaire sections`,
+         newValue: orderedIds,
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Sections reordered successfully"));
    });
 
@@ -101,6 +150,19 @@ export class AdminQuestionnaireController {
       }
 
       const question = await this.adminQuestionnaireService.createQuestion(sectionId, req.body);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "CREATE_QUESTIONNAIRE_QUESTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Created new question in section ID: ${sectionId}`,
+         newValue: question,
+         entityType: "QuestionnaireSection",
+         entityId: sectionId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, question, "Question created successfully"));
    });
@@ -118,6 +180,19 @@ export class AdminQuestionnaireController {
 
       const question = await this.adminQuestionnaireService.updateQuestion(questionId, req.body);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "UPDATE_QUESTIONNAIRE_QUESTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Updated question ID: ${questionId}`,
+         newValue: req.body,
+         entityType: "QuestionnaireQuestion",
+         entityId: questionId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, question, "Question updated successfully"));
    });
 
@@ -134,6 +209,19 @@ export class AdminQuestionnaireController {
 
       const question = await this.adminQuestionnaireService.toggleQuestionActive(questionId);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "TOGGLE_QUESTIONNAIRE_QUESTION_ACTIVE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Toggled active status for question ID: ${questionId} to ${question.isActive}`,
+         newValue: { isActive: question.isActive },
+         entityType: "QuestionnaireQuestion",
+         entityId: questionId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, question, "Question active status toggled successfully"));
    });
 
@@ -149,6 +237,18 @@ export class AdminQuestionnaireController {
       }
 
       await this.adminQuestionnaireService.deleteQuestion(questionId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "DELETE_QUESTIONNAIRE_QUESTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Deleted question ID: ${questionId}`,
+         entityType: "QuestionnaireQuestion",
+         entityId: questionId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Question deleted successfully"));
    });
@@ -170,6 +270,19 @@ export class AdminQuestionnaireController {
       }
 
       await this.adminQuestionnaireService.reorderQuestions(sectionId, orderedIds);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SYSTEM,
+         action: "REORDER_QUESTIONNAIRE_QUESTIONS",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `Reordered questions in section ID: ${sectionId}`,
+         newValue: orderedIds,
+         entityType: "QuestionnaireSection",
+         entityId: sectionId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Questions reordered successfully"));
    });

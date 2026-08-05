@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { UserModal } from "./(componets)/UserModal";
 import { UsersTable } from "./(componets)/UsersTable";
+import { UserAuditHistoryModal } from "./(componets)/UserAuditHistoryModal";
 
 const UsersPage = () => {
    const [searchParams, setSearchParams] = useSearchParams();
@@ -18,7 +19,9 @@ const UsersPage = () => {
    const [totalCount, setTotalCount] = useState(0);
    const [isFetching, setIsFetching] = useState(true);
    const [isModalOpen, setIsModalOpen] = useState(false);
+   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
    const [selectedUser, setSelectedUser] = useState<UserInterface | null>(null);
+   const [auditUser, setAuditUser] = useState<UserInterface | null>(null);
    const [searchQuery, setSearchQuery] = useState(initialSearch);
    const [pageIndex, setPageIndex] = useState(initialPage - 1);
    const [pageSize, setPageSize] = useState(initialLimit);
@@ -85,6 +88,11 @@ const UsersPage = () => {
       setIsModalOpen(true);
    };
 
+   const handleViewAuditHistory = (user: UserInterface) => {
+      setAuditUser(user);
+      setIsAuditModalOpen(true);
+   };
+
    const handleDeleteUser = async (id: number) => {
       try {
          await axiosInstance.delete(`/admin/users/${id}`);
@@ -146,8 +154,15 @@ const UsersPage = () => {
                onEdit={handleEditUser}
                onDelete={handleDeleteUser}
                onToggleBan={handleToggleBan}
+               onViewAuditHistory={handleViewAuditHistory}
             />
             <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={selectedUser} />
+            <UserAuditHistoryModal 
+               isOpen={isAuditModalOpen} 
+               onClose={() => setIsAuditModalOpen(false)} 
+               userId={auditUser?.id} 
+               userName={auditUser?.name} 
+            />
          </>
       </div>
    );

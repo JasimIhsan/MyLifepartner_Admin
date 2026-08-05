@@ -5,6 +5,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class ProfileController {
    constructor(private readonly profileService: IProfileService) {}
@@ -92,6 +94,20 @@ export class ProfileController {
 
       const result = await this.profileService.saveAnswer(userId, questionId, answer);
 
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "SAVE_PROFILE_ANSWER",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User saved answer for question ID: ${questionId}`,
+         newValue: { answer },
+         entityType: "UserAnswer",
+         entityId: questionId.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Answer saved successfully"));
    });
 
@@ -110,6 +126,17 @@ export class ProfileController {
       this.ensureUserOwnsResource(userId, authUserId);
 
       const result = await this.profileService.completeProfile(userId);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "COMPLETE_PROFILE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User completed profile setup`,
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Profile completed successfully"));
    });
@@ -149,6 +176,20 @@ export class ProfileController {
 
       const result = await this.profileService.updateBasicProfile(userId, req.body);
 
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "UPDATE_BASIC_PROFILE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User updated basic profile`,
+         newValue: req.body,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Basic profile updated successfully"));
    });
 
@@ -167,6 +208,20 @@ export class ProfileController {
       this.ensureUserOwnsResource(userId, authUserId);
 
       const result = await this.profileService.updatePartnerPreference(userId, req.body);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "UPDATE_PARTNER_PREFERENCE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User updated partner preferences`,
+         newValue: req.body,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Partner preference updated successfully"));
    });

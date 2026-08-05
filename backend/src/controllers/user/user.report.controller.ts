@@ -5,6 +5,8 @@ import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { ReportReason, ReportSource } from "@prisma/client";
 import { Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 import { ReportService } from "@/services/report.service";
 
@@ -37,6 +39,20 @@ export class UserReportController {
          },
          files
       );
+
+      await auditService.log({
+         userId: reporterUserId,
+         actorType: ActorType.USER,
+         module: AuditModule.MODERATION,
+         action: "SUBMIT_REPORT",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `User submitted a report against user ID: ${reportedUserId}`,
+         newValue: { reason, description, source, reportedUserId },
+         entityType: "UserReport",
+         entityId: report.id.toString(),
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, report, "Report submitted successfully"));
    });

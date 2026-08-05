@@ -21,6 +21,8 @@ import ReportsPage from "./pages/reports-page/ReportsPage";
 import ReportDetailPage from "./pages/reports-page/ReportDetailPage";
 import SuspendedUsersPage from "./pages/suspended-users-page/SuspendedUsersPage";
 
+import AuditLogsPage from "./pages/audit-logs-page/AuditLogsPage";
+
 function App() {
    const dispatch = useDispatch();
    const location = useLocation();
@@ -64,6 +66,7 @@ function App() {
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/reports/:id" element={<ReportDetailPage />} />
+                  <Route path="/audit-logs" element={<AuditLogsPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                </Route>
             </Route>
