@@ -7,6 +7,13 @@ const router = Router();
 router.use(verifyJWT);
 
 /**
+ * @route   GET /api/v1/user/notifications/unread-count
+ * @desc    Get total unread notification count
+ * @access  Private
+ */
+router.get("/unread-count", notificationController.getUnreadCount);
+
+/**
  * @route   GET /api/v1/user/notifications
  * @desc    Get user notifications (paginated)
  * @access  Private

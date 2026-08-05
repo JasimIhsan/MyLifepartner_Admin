@@ -1,7 +1,7 @@
 import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ChatRepository } from "@/repositories/chat.repository";
-import { notificationService } from "./notification.service";
+import { notificationService } from "@/composer/composer";
 import { NotificationType } from "@/constants/notificationTypes";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";

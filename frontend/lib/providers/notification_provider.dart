@@ -63,12 +63,22 @@ class NotificationProvider extends ChangeNotifier {
     try {
       await _firebaseService.setupAfterLogin();
       _isPermissionGranted = await _permissionService.isPermissionGranted();
+      await fetchUnreadCount();
       await fetchNotifications();
     } catch (e) {
       _error = e.toString();
       debugPrint('Error setting up notifications after login: $e');
     }
     notifyListeners();
+  }
+
+  /// Fetches unread notification count via separate endpoint.
+  Future<void> fetchUnreadCount() async {
+    final count = await _apiService.getUnreadCount();
+    if (count != null) {
+      _unreadCount = count;
+      notifyListeners();
+    }
   }
 
   /// Called on user logout to remove device FCM token from backend API.
@@ -100,7 +110,9 @@ class NotificationProvider extends ChangeNotifier {
     if (result != null) {
       final List rawItems = result['items'] ?? [];
       _notifications = rawItems
-          .map((item) => InAppNotification.fromJson(item as Map<String, dynamic>))
+          .map(
+            (item) => InAppNotification.fromJson(item as Map<String, dynamic>),
+          )
           .toList();
       _unreadCount = result['unreadCount'] is int
           ? result['unreadCount']
@@ -117,7 +129,9 @@ class NotificationProvider extends ChangeNotifier {
 
     // Optimistic UI update
     _unreadCount = 0;
-    _notifications = _notifications.map((n) => n.copyWith(isRead: true, readAt: DateTime.now())).toList();
+    _notifications = _notifications
+        .map((n) => n.copyWith(isRead: true, readAt: DateTime.now()))
+        .toList();
     notifyListeners();
 
     final success = await _apiService.markAllAsRead();

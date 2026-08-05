@@ -17,38 +17,38 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { AdminRepository } from "@/repositories/admin.repository";
+import { BlockRepository } from "@/repositories/block.repository";
 import { ChatRepository } from "@/repositories/chat.repository";
 import { GuideRepository } from "@/repositories/guide.repository";
 import { ImageAccessRequestRepository } from "@/repositories/image-access-request.repository";
 import { ImageAssetRepository } from "@/repositories/image-asset.repository";
+import { JobRepository } from "@/repositories/job.repository";
 import { MatchRepository } from "@/repositories/match.repository";
+import { ModerationRepository } from "@/repositories/moderation.repository";
+import { NotificationRepository } from "@/repositories/notification.repository";
 import { PlanFeatureRepository } from "@/repositories/plan-feature.repository";
 import { ProcessedRevenueCatEventRepository } from "@/repositories/processed-revenuecat-event.repository";
 import { ProfileRepository } from "@/repositories/profile.repository";
 import { QuestionnaireRepository } from "@/repositories/questionnaire.repository";
+import { ReportRepository } from "@/repositories/report.repository";
 import { SubscriptionPlanRepository } from "@/repositories/subscription-plan.repository";
 import { SubscriptionWebhookRepository } from "@/repositories/subscription-webhook.repository";
 import { TransactionHistoryRepository } from "@/repositories/transaction-history.repository";
 import { UserSubscriptionRepository } from "@/repositories/user-subscription.repository";
 import { UserFeatureRepository } from "@/repositories/user.feature.repository";
 import { UserRepository } from "@/repositories/user.repository";
-import { BlockRepository } from "@/repositories/block.repository";
-import { ReportRepository } from "@/repositories/report.repository";
-import { ModerationRepository } from "@/repositories/moderation.repository";
-import { JobRepository } from "@/repositories/job.repository";
-import { NotificationRepository } from "@/repositories/notification.repository";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Infrastructure Services
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { BlockService } from "@/services/block.service";
 import { CacheService } from "@/services/cache.service";
 import { EmailService } from "@/services/email.service";
 import { JwtService } from "@/services/jwt.service";
 import { OtpService } from "@/services/otp.service";
 import { S3Service } from "@/services/s3.service";
 import { ZegoService } from "@/services/zego.service";
-import { BlockService } from "@/services/block.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Domain Services
@@ -60,7 +60,6 @@ import { AdminManagementService } from "@/services/admin/admin.management.servic
 import { AdminQuestionnaireService } from "@/services/admin/admin.questionnaire.service";
 import { AdminSubscriptionService } from "@/services/admin/admin.subscription.service";
 import { ImageAssetService } from "@/services/admin/image-asset.service";
-
 import { ChatService } from "@/services/chat.service";
 import { GuideService } from "@/services/guide.service";
 import { ImageAccessRequestService } from "@/services/image-access-request.service";
@@ -70,13 +69,13 @@ import { PrivacyImageMapperService } from "@/services/privacy-image-mapper.servi
 import { PrivacyPolicyService } from "@/services/privacy-policy.service";
 import { ReportService } from "@/services/report.service";
 import { UserService } from "@/services/user.service";
-import { AuthService } from "@/services/user/user.auth.service";
-import { UserFeatureService } from "@/services/user/user.feature.service";
-import { ProfileService } from "@/services/user/user.profile.service";
 import { JobService } from "@/services/user/job.service";
 import { TransactionHistoryService } from "@/services/user/transaction-history.service";
-import { UserSubscriptionService } from "@/services/user/user.subscription.service";
+import { AuthService } from "@/services/user/user.auth.service";
+import { UserFeatureService } from "@/services/user/user.feature.service";
 import { OAuthService } from "@/services/user/user.oauth.service";
+import { ProfileService } from "@/services/user/user.profile.service";
+import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Controllers
@@ -89,25 +88,26 @@ import { AdminQuestionnaireController } from "@/controllers/admin/admin.question
 import { AdminReportController } from "@/controllers/admin/admin.report.controller";
 import { AdminSubscriptionController } from "@/controllers/admin/admin.subscription.controller";
 import { AdminUsersController } from "@/controllers/admin/admin.users.controller";
-import { ImageAssetController } from "@/controllers/image-asset.controller";
-
+import { DeviceTokenController } from "@/controllers/deviceToken.controller";
 import { GuideController } from "@/controllers/guide.controller";
+import { ImageAssetController } from "@/controllers/image-asset.controller";
+import { NotificationController } from "@/controllers/notification.controller";
 import { AuthController } from "@/controllers/user/auth.controller";
 import { ChatController } from "@/controllers/user/chat.controller";
+import { ImageAccessRequestController } from "@/controllers/user/image-access-request.controller";
+import { JobController } from "@/controllers/user/job.controller";
 import { MatchController } from "@/controllers/user/match.controller";
+import { OAuthController } from "@/controllers/user/oauth.controller";
+import { PrivacyController } from "@/controllers/user/privacy.controller";
 import { ProfileController } from "@/controllers/user/profile.controller";
 import { ProfileImageController } from "@/controllers/user/profile.image.controller";
-import { PrivacyController } from "@/controllers/user/privacy.controller";
-import { ImageAccessRequestController } from "@/controllers/user/image-access-request.controller";
-import { UserController } from "@/controllers/user/user.controller";
-import { JobController } from "@/controllers/user/job.controller";
 import { TransactionHistoryController } from "@/controllers/user/transaction-history.controller";
+import { UserBlockController } from "@/controllers/user/user.block.controller";
+import { UserController } from "@/controllers/user/user.controller";
+import { UserReportController } from "@/controllers/user/user.report.controller";
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
 import { ZegoController } from "@/controllers/user/zego.controller";
-import { UserBlockController } from "@/controllers/user/user.block.controller";
-import { OAuthController } from "@/controllers/user/oauth.controller";
-import { NotificationController } from "@/controllers/notification.controller";
-import { UserReportController } from "@/controllers/user/user.report.controller";
+import { NotificationService } from "@/services/notification.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 1. Repository Instances
@@ -160,7 +160,6 @@ export const adminSubscriptionService = new AdminSubscriptionService(subscriptio
 export const adminFeatureService = new AdminFeatureService();
 export const imageAssetService = new ImageAssetService(imageAssetRepository, s3Service);
 
-
 // User services
 export const userService = new UserService(userRepository, s3Service);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
@@ -180,6 +179,7 @@ export const privacyPolicyService = new PrivacyPolicyService();
 export const privacyImageMapperService = new PrivacyImageMapperService(privacyPolicyService, s3Service);
 export const imageAccessRequestService = new ImageAccessRequestService(imageAccessRequestRepository, s3Service);
 export const matchService = new MatchService(matchRepository, s3Service, userFeatureService, privacyImageMapperService, imageAccessRequestService);
+export const notificationService = new NotificationService(notificationRepository);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 4. Controller Instances
@@ -213,7 +213,8 @@ export const userSubscriptionController = new UserSubscriptionController(userSub
 export const chatController = new ChatController(chatService);
 export const zegoController = new ZegoController(zegoService);
 export const oauthController = new OAuthController(oauthService, userSubscriptionService);
-export const notificationController = new NotificationController(notificationRepository);
+export const notificationController = new NotificationController(notificationService);
 export const userReportController = new UserReportController(reportService);
+export const deviceTokenController = new DeviceTokenController();
 
 // End of composer.ts

@@ -1,7 +1,7 @@
 import { firebaseMessagingService } from './firebaseMessaging.service';
 import { deviceTokenService } from './deviceToken.service';
 import { NotificationType } from '../constants/notificationTypes';
-import prisma from '../config/prisma';
+import { NotificationRepository } from '../repositories/notification.repository';
 import logger from '../utils/logger';
 
 export interface SendNotificationParams {
@@ -13,31 +13,63 @@ export interface SendNotificationParams {
 }
 
 export class NotificationService {
+  constructor(private readonly notificationRepository: NotificationRepository) {}
+
   /**
-   * Send a push notification to a user and store it in DB.
-   * This handles fetching active tokens and sending via Firebase.
-   * It never throws an error to the caller (business logic should not fail).
+   * Get paginated notifications for a user.
    */
-  public async sendToUser(params: SendNotificationParams): Promise<void> {
+  public async getNotificationsForUser(userId: number, page: number = 1, limit: number = 20) {
+    return this.notificationRepository.getNotificationsForUser(userId, page, limit);
+  }
+
+  /**
+   * Get total unread notifications count for a user.
+   */
+  public async getUnreadCount(userId: number): Promise<number> {
+    return this.notificationRepository.getUnreadCount(userId);
+  }
+
+  /**
+   * Mark all notifications as read for a user.
+   */
+  public async markAllAsRead(userId: number) {
+    return this.notificationRepository.markAllAsRead(userId);
+  }
+
+  /**
+   * Mark a specific notification as read.
+   */
+  public async markAsRead(userId: number, notificationId: number) {
+    return this.notificationRepository.markAsRead(userId, notificationId);
+  }
+
+  /**
+   * Saves an in-app (local database) notification for a user via repository.
+   */
+  public async saveInAppNotification(params: SendNotificationParams): Promise<any> {
+    try {
+      const { userId, type, title, body, data } = params;
+      return await this.notificationRepository.createNotification({
+        userId,
+        type,
+        title,
+        body,
+        data: data ? (data as any) : null,
+      });
+    } catch (dbError) {
+      logger.error(`Failed to save in-app notification in DB for user ${params.userId}:`, dbError);
+      return null;
+    }
+  }
+
+  /**
+   * Sends a remote push notification (FCM) to user's registered devices.
+   */
+  public async sendPushNotification(params: SendNotificationParams): Promise<void> {
     try {
       const { userId, type, title, body, data } = params;
 
-      // Always save notification to DB first for in-app notification history
-      try {
-        await prisma.notification.create({
-          data: {
-            userId,
-            type,
-            title,
-            body,
-            data: data ? (data as any) : null,
-          },
-        });
-      } catch (dbError) {
-        logger.error(`Failed to save notification in DB for user ${userId}:`, dbError);
-      }
-
-      // Ensure data values are strictly strings
+      // Ensure data values are strictly strings for FCM payload
       const stringifiedData: Record<string, string> = { type };
       if (data) {
         for (const [key, value] of Object.entries(data)) {
@@ -47,15 +79,15 @@ export class NotificationService {
         }
       }
 
-      // Fetch active tokens
+      // Fetch active device tokens
       const activeTokens = await deviceTokenService.getActiveTokensForUser(userId);
       if (!activeTokens || activeTokens.length === 0) {
-        logger.info(`Notification requested for user ${userId}, saved to DB, but no active device tokens found.`);
+        logger.info(`Push notification requested for user ${userId}, but no active device tokens found.`);
         return;
       }
 
       const tokens = activeTokens.map((dt: { token: string }) => dt.token);
-      
+
       const payload = {
         notification: {
           title,
@@ -69,22 +101,28 @@ export class NotificationService {
       } else {
         await firebaseMessagingService.sendToTokens(tokens, { ...payload, tokens });
       }
-
     } catch (error) {
-      logger.error(`Failed to send notification to user ${params.userId}:`, error);
-      // Do not re-throw to prevent breaking business logic flow
+      logger.error(`Failed to send push notification to user ${params.userId}:`, error);
     }
   }
 
   /**
-   * Send a notification to multiple users.
+   * Send both in-app notification (DB) and push notification (FCM) to a user.
+   */
+  public async sendToUser(params: SendNotificationParams): Promise<void> {
+    // 1. Save in-app notification locally in DB
+    await this.saveInAppNotification(params);
+
+    // 2. Send remote push notification via FCM
+    await this.sendPushNotification(params);
+  }
+
+  /**
+   * Send both in-app notification and push notification to multiple users.
    */
   public async sendToUsers(userIds: number[], params: Omit<SendNotificationParams, 'userId'>): Promise<void> {
-    // Send to users concurrently but gracefully handle errors for each
     await Promise.allSettled(
       userIds.map((userId) => this.sendToUser({ ...params, userId }))
     );
   }
 }
-
-export const notificationService = new NotificationService();

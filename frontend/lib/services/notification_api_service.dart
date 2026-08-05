@@ -65,11 +65,14 @@ class NotificationApiService {
     }
   }
 
-  /// Fetches paginated in-app notifications from backend API (/user/notifications).
-  Future<Map<String, dynamic>?> getNotifications({int page = 1, int limit = 20}) async {
+  /// Fetches paginated in-app notifications from backend API (/notifications).
+  Future<Map<String, dynamic>?> getNotifications({
+    int page = 1,
+    int limit = 20,
+  }) async {
     try {
       final response = await _client.get(
-        '/user/notifications',
+        '/notifications',
         queryParameters: {'page': page, 'limit': limit},
       );
 
@@ -82,10 +85,29 @@ class NotificationApiService {
     return null;
   }
 
-  /// Marks all notifications for current user as read (/user/notifications/read-all).
+  /// Fetches only the unread notifications count (/notifications/unread-count).
+  Future<int?> getUnreadCount() async {
+    try {
+      final response = await _client.get('/notifications/unread-count');
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data['data'];
+        if (data != null && data['unreadCount'] != null) {
+          final count = data['unreadCount'];
+          return count is int
+              ? count
+              : int.tryParse(count.toString()) ?? 0;
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching unread notification count: $e');
+    }
+    return null;
+  }
+
+  /// Marks all notifications for current user as read (/notifications/read-all).
   Future<bool> markAllAsRead() async {
     try {
-      final response = await _client.patch('/user/notifications/read-all');
+      final response = await _client.patch('/notifications/read-all');
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error marking all notifications as read: $e');
@@ -93,11 +115,12 @@ class NotificationApiService {
     }
   }
 
-  /// Marks a specific notification as read (/user/notifications/:id/read).
+  /// Marks a specific notification as read (/notifications/:id/read).
   Future<bool> markAsRead(int notificationId) async {
     try {
-      final response =
-          await _client.patch('/user/notifications/$notificationId/read');
+      final response = await _client.patch(
+        '/notifications/$notificationId/read',
+      );
       return response.statusCode == 200;
     } catch (e) {
       debugPrint('Error marking notification $notificationId as read: $e');
@@ -108,4 +131,3 @@ class NotificationApiService {
 
 /// Backwards compatibility alias for NotificationApiService
 typedef NotificationTokenService = NotificationApiService;
-

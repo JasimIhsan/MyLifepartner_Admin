@@ -12,7 +12,7 @@ import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan, VerifyPurchaseParams } from "@/interfaces/services/user.subscription.service.interface";
 import { NotificationType } from "@/constants/notificationTypes";
-import { notificationService } from "../notification.service";
+import { notificationService } from "@/composer/composer";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
 

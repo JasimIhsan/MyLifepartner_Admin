@@ -4,7 +4,7 @@ import { IMatchService, InteractionState, MatchRecommendationItem, ProfileDetail
 import { IPrivacyImageMapperService } from "../interfaces/services/privacy-image-mapper.service.interface";
 import { IS3Service } from "../interfaces/services/s3.service.interface";
 import { IUserFeatureService } from "../interfaces/services/user.feature.service.interface";
-import { notificationService } from "./notification.service";
+import { notificationService } from "../composer/composer";
 import { NotificationType } from "../constants/notificationTypes";
 import { ApiError } from "../utils/ApiError";
 import logger from "../utils/logger";

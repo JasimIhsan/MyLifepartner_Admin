@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:life_partner_again/providers/notification_provider.dart';
+import 'package:provider/provider.dart';
 
 class NotificationScreen extends StatefulWidget {
   final VoidCallback onBack;
@@ -119,9 +119,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               builder: (context, provider, child) {
                 if (provider.isLoadingNotifications &&
                     provider.notifications.isEmpty) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
+                  return const Center(child: CircularProgressIndicator());
                 }
 
                 if (provider.notifications.isEmpty) {
@@ -164,7 +162,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: provider.notifications.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1, indent: 64),
+                    separatorBuilder: (_, __) =>
+                        const Divider(height: 1, indent: 64),
                     itemBuilder: (context, index) {
                       final notification = provider.notifications[index];
                       final iconData = _getNotificationIcon(notification.type);
@@ -173,7 +172,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       return Container(
                         color: notification.isRead
                             ? Colors.transparent
-                            : Theme.of(context).primaryColor.withValues(alpha: 0.06),
+                            : Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.06),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
@@ -183,7 +184,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             children: [
                               CircleAvatar(
                                 radius: 22,
-                                backgroundColor: iconColor.withValues(alpha: 0.12),
+                                backgroundColor: iconColor.withValues(
+                                  alpha: 0.12,
+                                ),
                                 child: Icon(
                                   iconData,
                                   color: iconColor,
@@ -201,7 +204,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       color: Theme.of(context).primaryColor,
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                        color: Theme.of(context).scaffoldBackgroundColor,
+                                        color: Theme.of(
+                                          context,
+                                        ).scaffoldBackgroundColor,
                                         width: 1.5,
                                       ),
                                     ),

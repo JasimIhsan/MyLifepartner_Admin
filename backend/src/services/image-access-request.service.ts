@@ -1,7 +1,7 @@
 import { IImageAccessRequestRepository } from "@/interfaces/repositories/image-access-request.repository.interface";
 import { IImageAccessRequestService } from "@/interfaces/services/image-access-request.service.interface";
 import { IS3Service } from "@/interfaces/services/s3.service.interface";
-import { notificationService } from "./notification.service";
+import { notificationService } from "@/composer/composer";
 import { NotificationType } from "@/constants/notificationTypes";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
