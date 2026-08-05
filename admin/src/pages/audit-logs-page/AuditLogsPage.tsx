@@ -14,6 +14,7 @@ export default function AuditLogsPage() {
    const [loading, setLoading] = useState(false);
    const [search, setSearch] = useState("");
    const [module, setModule] = useState("all");
+   const [actorType, setActorType] = useState("all");
    const [severity, setSeverity] = useState("all");
    const [status, setStatus] = useState("all");
    const [page, setPage] = useState(1);
@@ -32,6 +33,7 @@ export default function AuditLogsPage() {
                limit: pageSize,
                search,
                module: module === "all" ? "" : module,
+               actorType: actorType === "all" ? "" : actorType,
                severity: severity === "all" ? "" : severity,
                status: status === "all" ? "" : status,
             },
@@ -48,7 +50,7 @@ export default function AuditLogsPage() {
 
    useEffect(() => {
       fetchLogs();
-   }, [page, pageSize, module, severity, status]);
+   }, [page, pageSize, module, actorType, severity, status]);
 
    const getStatusBadge = (logStatus: string) => {
       switch (logStatus) {
@@ -111,8 +113,31 @@ export default function AuditLogsPage() {
                      <SelectItem value="PROFILE">Profile</SelectItem>
                      <SelectItem value="SUBSCRIPTION">Subscription</SelectItem>
                      <SelectItem value="PAYMENT">Payment</SelectItem>
-                     <SelectItem value="SYSTEM">System</SelectItem>
+                     <SelectItem value="CHAT">Chat</SelectItem>
+                     <SelectItem value="CALL">Call</SelectItem>
+                     <SelectItem value="MODERATION">Moderation</SelectItem>
+                     <SelectItem value="NOTIFICATION">Notification</SelectItem>
+                     <SelectItem value="ACCOUNT">Account</SelectItem>
                      <SelectItem value="ADMIN">Admin</SelectItem>
+                  </SelectContent>
+               </Select>
+
+               <Select
+                  value={actorType}
+                  onValueChange={(val) => {
+                     setActorType(val);
+                     setPage(1);
+                  }}
+               >
+                  <SelectTrigger className="w-35 bg-background">
+                     <SelectValue placeholder="Actor Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                     <SelectItem value="all">All Actors</SelectItem>
+                     <SelectItem value="USER">User</SelectItem>
+                     <SelectItem value="ADMIN">Admin</SelectItem>
+                     <SelectItem value="SYSTEM">System</SelectItem>
+                     <SelectItem value="WEBHOOK">Webhook</SelectItem>
                   </SelectContent>
                </Select>
 

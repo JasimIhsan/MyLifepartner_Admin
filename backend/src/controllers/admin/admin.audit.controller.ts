@@ -22,12 +22,25 @@ export class AdminAuditController {
          if (correlationId) where.correlationId = correlationId;
 
          if (search) {
+            const searchStr = search as string;
+            const searchInt = parseInt(searchStr, 10);
             where.OR = [
-               { message: { contains: search as string, mode: "insensitive" } },
-               { correlationId: { contains: search as string, mode: "insensitive" } },
-               { transactionId: { contains: search as string, mode: "insensitive" } },
-               { revenueCatEventId: { contains: search as string, mode: "insensitive" } },
+               { message: { contains: searchStr, mode: "insensitive" } },
+               { action: { contains: searchStr, mode: "insensitive" } },
+               { entityId: { contains: searchStr, mode: "insensitive" } },
+               { correlationId: { contains: searchStr, mode: "insensitive" } },
+               { transactionId: { contains: searchStr, mode: "insensitive" } },
+               { revenueCatEventId: { contains: searchStr, mode: "insensitive" } },
+               { user: { email: { contains: searchStr, mode: "insensitive" } } },
+               { user: { profile: { name: { contains: searchStr, mode: "insensitive" } } } },
+               { admin: { username: { contains: searchStr, mode: "insensitive" } } },
             ];
+
+            if (!isNaN(searchInt)) {
+               where.OR.push({ id: searchInt });
+               where.OR.push({ userId: searchInt });
+               where.OR.push({ adminId: searchInt });
+            }
          }
 
          const [total, logs] = await Promise.all([
