@@ -15,7 +15,7 @@ export function initializeScheduler() {
    cron.schedule(cronSchedule, async () => {
       logger.info("⏰ Executing scheduled push notification broadcast job...");
       try {
-         const result = await runBroadcastNotificationJob("New Profiles Available!", "Hey, Checkout the application to find new profiles.");
+         const result = await runBroadcastNotificationJob("Someone New Might Be Waiting 👀", "New profiles are ready to explore. Take a look and find your next connection.");
          logger.info(`⏰ Scheduled job result: ${result.message}`);
       } catch (error) {
          logger.error("⏰ Scheduled job failed:", error);
