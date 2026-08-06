@@ -242,6 +242,15 @@ export class UserRepository implements IUserRepository {
    }
 
    /**
+    * Clears all device tokens for a user.
+    */
+   async clearDeviceTokens(userId: number): Promise<void> {
+      await prisma.deviceToken.deleteMany({
+         where: { userId }
+      });
+   }
+
+   /**
     * Builds user filter query.
     *
     * @param filters - User listing filters.

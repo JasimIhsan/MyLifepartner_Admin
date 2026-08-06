@@ -406,4 +406,31 @@ export class EmailService implements IEmailService {
          .replace(/{{YEAR}}/g, currentYear)
          .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);
    }
+
+   /**
+    * Sends Account Deletion Verification email.
+    */
+   async sendAccountDeletionEmail(to: string, token: string): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Account Deletion email to: ${to}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         
+         const verificationLink = `${env.BASE_URL}/api/user/account-deletion/verify?token=${token}`;
+         const textMessage = `You have requested to delete your account.\n\nPlease click the link below to verify your request:\n${verificationLink}\n\nIf you did not request this, please ignore this email.`;
+         const message = `<p>You have requested to delete your account.</p><p>Please click the button below to verify your request.</p><p><a href="${verificationLink}" style="padding: 10px 20px; background-color: #ff4b4b; color: white; text-decoration: none; border-radius: 5px;">Verify Deletion</a></p><p>If you did not request this, please ignore this email.</p>`;
+
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Verify Account Deletion Request",
+            html: this.getSubscriptionEmailHtml("Verify Account Deletion", message, "User", headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Account Deletion email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendAccountDeletionEmail", { error, to });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send account deletion email");
+      }
+   }
 }

@@ -20,6 +20,8 @@ import LpaGuidePage from "./pages/lpa-guide-page/LpaGuidePage";
 import ReportsPage from "./pages/reports-page/ReportsPage";
 import ReportDetailPage from "./pages/reports-page/ReportDetailPage";
 import SuspendedUsersPage from "./pages/suspended-users-page/SuspendedUsersPage";
+import DeletionRequestsPage from "./pages/deletion-requests-page/DeletionRequestsPage";
+import DeletedUsersPage from "./pages/deleted-users-page/DeletedUsersPage";
 
 import AuditLogsPage from "./pages/audit-logs-page/AuditLogsPage";
 
@@ -58,6 +60,8 @@ function App() {
                   <Route path="/admins" element={<AdminsPage />} />
                   <Route path="/users" element={<UsersPage />} />
                   <Route path="/suspended-users" element={<SuspendedUsersPage />} />
+                  <Route path="/deletion-requests" element={<DeletionRequestsPage />} />
+                  <Route path="/deleted-users" element={<DeletedUsersPage />} />
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
                   <Route path="/image-assets" element={<ImageAssetsPage />} />

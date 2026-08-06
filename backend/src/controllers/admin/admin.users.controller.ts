@@ -249,4 +249,96 @@ export class AdminUsersController {
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User profile verified successfully"));
    });
+
+   /**
+    * @route GET /api/v1/admin/users/deletion-requests
+    * @purpose Fetches all pending deletion requests.
+    */
+   public getPendingDeletionRequests = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const pageNumber = req.query.page ? Number(req.query.page) : undefined;
+      const limitNumber = req.query.limit ? Number(req.query.limit) : undefined;
+
+      const { data, total } = await this.userService.getPendingDeletionRequests(pageNumber, limitNumber);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "Pending deletion requests fetched"));
+   });
+
+   /**
+    * @route POST /api/v1/admin/users/:id/approve-deletion
+    * @purpose Approves a deletion request.
+    */
+   public approveDeletionRequest = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+      const adminId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      await this.userService.approveDeletionRequest(userId, adminId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action: "APPROVE_ACCOUNT_DELETION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Admin approved account deletion for user ID: ${userId}`,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Deletion request approved and data anonymized"));
+   });
+
+   /**
+    * @route POST /api/v1/admin/users/:id/reject-deletion
+    * @purpose Rejects a deletion request.
+    */
+   public rejectDeletionRequest = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+      const adminId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      await this.userService.rejectDeletionRequest(userId, adminId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action: "REJECT_ACCOUNT_DELETION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Admin rejected account deletion for user ID: ${userId}`,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Deletion request rejected"));
+   });
+
+   /**
+    * @route GET /api/v1/admin/users/archived
+    * @purpose Fetches all archived (deleted) users
+    */
+   public getArchivedUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const pageNumber = req.query.page ? Number(req.query.page) : 1;
+      const limitNumber = req.query.limit ? Number(req.query.limit) : 10;
+
+      if (!Number.isInteger(pageNumber) || pageNumber <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid page number");
+      }
+
+      if (!Number.isInteger(limitNumber) || limitNumber <= 0 || limitNumber > 100) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid limit number");
+      }
+
+      const { data, total } = await this.userService.getArchivedUsers(pageNumber, limitNumber);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "Archived users fetched successfully"));
+   });
 }

@@ -36,3 +36,13 @@ export interface UserInterface {
 }
 
 export type SelfieStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface ArchivedUserInterface {
+   id: number;
+   userId: number;
+   originalEmail: string;
+   originalPhone: string | null;
+   originalName: string | null;
+   reasonForArchive: string | null;
+   archivedAt: string | Date;
+}

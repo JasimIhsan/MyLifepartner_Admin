@@ -43,4 +43,20 @@ class UserRepository {
       rethrow;
     }
   }
+
+  Future<void> requestAccountDeletion() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+
+      if (userId == null) {
+        await ApiService.logoutAndRedirect();
+        throw Exception('User not logged in');
+      }
+
+      await _client.post('/account-deletion/request');
+    } catch (e) {
+      rethrow;
+    }
+  }
 }

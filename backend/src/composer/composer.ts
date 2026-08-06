@@ -161,7 +161,7 @@ export const adminFeatureService = new AdminFeatureService();
 export const imageAssetService = new ImageAssetService(imageAssetRepository, s3Service);
 
 // User services
-export const userService = new UserService(userRepository, s3Service);
+export const userService = new UserService(userRepository, s3Service, emailService, cacheService);
 export const userFeatureService = new UserFeatureService(userFeatureRepository);
 export const authService = new AuthService(userRepository, otpService, jwtService, cacheService, subscriptionPlanRepository, userSubscriptionRepository, emailService);
 export const imageProcessorService = new ImageProcessorService();

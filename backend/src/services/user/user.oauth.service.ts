@@ -105,6 +105,9 @@ export class OAuthService implements IOAuthService {
       if (user.isBanned) {
          throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
       }
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account deletion is pending approval.");
+      }
       if (user.isSuspended) {
          throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
       }
@@ -224,6 +227,9 @@ export class OAuthService implements IOAuthService {
 
       if (user.isBanned) {
          throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+      }
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account deletion is pending approval.");
       }
       if (user.isSuspended) {
          throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");

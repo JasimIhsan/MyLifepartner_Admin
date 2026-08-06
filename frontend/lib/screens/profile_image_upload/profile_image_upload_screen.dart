@@ -159,6 +159,9 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       if (mounted) {
         await context.read<AuthProvider>().bootstrap();
       }
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {

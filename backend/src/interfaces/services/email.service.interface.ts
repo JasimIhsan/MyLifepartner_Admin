@@ -12,4 +12,5 @@ export interface IEmailService {
    sendSubscriptionRestoredEmail(to: string, planName: string, userName?: string): Promise<unknown>;
    sendReportStatusUpdateEmail(to: string, reporterName: string, reportedUserName: string, reportId: number, status: string, notes?: string): Promise<SentMessageInfo>;
    sendModerationEmail(to: string, userName: string, title: string, message: string): Promise<SentMessageInfo>;
+   sendAccountDeletionEmail(to: string, token: string): Promise<SentMessageInfo>;
 }

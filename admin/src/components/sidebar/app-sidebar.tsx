@@ -4,7 +4,7 @@ import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { RootState } from "@/store";
-import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, Send, UserCheck2Icon, UserX, UsersIcon } from "lucide-react";
+import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, Send, Trash2, UserCheck2Icon, UserX, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
 import { NavMain } from "./nav-main";
@@ -16,10 +16,17 @@ const data = {
          url: "/",
          icon: LayoutDashboard,
       },
+
+      // User Management
       {
          title: "Users",
          url: "/users",
          icon: UsersIcon,
+      },
+      {
+         title: "Profile Verification",
+         url: "/profile-verification",
+         icon: UserCheck2Icon,
       },
       {
          title: "Suspended Users",
@@ -27,35 +34,28 @@ const data = {
          icon: UserX,
       },
       {
-         title: "Reports",
-         url: "/reports",
-         icon: Send, // Reusing an icon or we could import ShieldAlert
+         title: "Deletion Requests",
+         url: "/deletion-requests",
+         icon: Trash2,
       },
       // {
-      //    title: "Questionnaire",
-      //    url: "/questionnaire",
-      //    icon: ListChecks,
+      //    title: "Deleted Users Archive",
+      //    url: "/deleted-users",
+      //    icon: ArchiveX,
       // },
+
+      // Trust & Safety
       {
-         title: "Profile Verification",
-         url: "/profile-verification",
-         icon: UserCheck2Icon,
+         title: "Reports",
+         url: "/reports",
+         icon: Send,
       },
-      {
-         title: "Image Assets",
-         url: "/image-assets",
-         icon: Command,
-      },
-      {
-         title: "LPA Guide",
-         url: "/lpa-guide",
-         icon: BookOpen,
-      },
+
+      // Payments & Subscriptions
       {
          title: "Subscriptions",
          url: "#",
          icon: CreditCard,
-         isActive: true,
          items: [
             {
                title: "Plans",
@@ -67,12 +67,27 @@ const data = {
             },
          ],
       },
+
+      // Content
+      {
+         title: "Image Assets",
+         url: "/image-assets",
+         icon: Command,
+      },
+      {
+         title: "LPA Guide",
+         url: "/lpa-guide",
+         icon: BookOpen,
+      },
+
+      // System
       {
          title: "Audit Logs",
          url: "/audit-logs",
          icon: Command,
       },
    ],
+
    navSecondary: [
       {
          title: "Admins",

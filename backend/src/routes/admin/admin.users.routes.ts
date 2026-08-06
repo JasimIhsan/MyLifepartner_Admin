@@ -18,6 +18,20 @@ adminUsersRoute.get("/", adminUsersController.getAllUsers);
 adminUsersRoute.get("/suspended", adminUsersController.getSuspendedUsers);
 
 /**
+ * @route   GET /api/v1/admin/users/deletion-requests
+ * @desc    Get all pending deletion requests
+ * @access  Admin
+ */
+adminUsersRoute.get("/deletion-requests", adminUsersController.getPendingDeletionRequests);
+
+/**
+ * @route   GET /api/v1/admin/users/archived
+ * @desc    Get all archived (deleted) users
+ * @access  Admin
+ */
+adminUsersRoute.get("/archived", adminUsersController.getArchivedUsers);
+
+/**
  * @route   POST /api/v1/admin/users
  * @desc    Create a new user
  * @access  Admin
@@ -72,5 +86,19 @@ adminUsersRoute.patch("/:id/lift-suspension", adminUsersController.liftSuspensio
  * @access  Admin
  */
 adminUsersRoute.delete("/:id", adminUsersController.deleteUser);
+
+/**
+ * @route   POST /api/v1/admin/users/:id/approve-deletion
+ * @desc    Approve account deletion
+ * @access  Admin
+ */
+adminUsersRoute.post("/:id/approve-deletion", adminUsersController.approveDeletionRequest);
+
+/**
+ * @route   POST /api/v1/admin/users/:id/reject-deletion
+ * @desc    Reject account deletion
+ * @access  Admin
+ */
+adminUsersRoute.post("/:id/reject-deletion", adminUsersController.rejectDeletionRequest);
 
 export default adminUsersRoute;

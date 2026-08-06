@@ -16,8 +16,11 @@ model User {
   isSuspended           Boolean              @default(false)
   bannedAt              DateTime?
   suspendedAt           DateTime?
-  isDeleted             Boolean              @default(false)
-  role                  Role                 @default(USER)
+  isDeleted             Boolean                @default(false)
+  isDeleteRequested     Boolean                @default(false)
+  deleteRequestedAt     DateTime?
+  deleteRequestStatus   DeletionRequestStatus?
+  role                  Role                   @default(USER)
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
   chatMessages          ChatMessage[]
@@ -42,6 +45,7 @@ model User {
   deviceTokens     DeviceToken[]
   notifications    Notification[]
   auditLogs        AuditLog[]
+  archivedData     ArchivedUserData?
 
   @@map("users")
 }
@@ -811,4 +815,24 @@ model AuditLog {
   @@index([entityType, entityId])
   @@index([module, action])
   @@map("audit_logs")
+}
+
+enum DeletionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ArchivedUserData {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  originalEmail    String
+  originalPhone    String?
+  originalName     String?
+  archivedAt       DateTime @default(now())
+  reasonForArchive String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("archived_user_data")
 }

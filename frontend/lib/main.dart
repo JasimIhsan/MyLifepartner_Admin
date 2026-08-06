@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_router.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
@@ -133,7 +134,23 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _processUri(Uri uri) async {
-    if (uri.scheme != 'mylifepartner' || uri.host != 'verify-email') {
+    final validSchemes = ['mylifepartner', 'lifepartneragain'];
+    if (!validSchemes.contains(uri.scheme)) {
+      return;
+    }
+
+    if (uri.host == 'account-deleted') {
+      scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text('Account deletion verified. Logging out...'),
+          backgroundColor: Colors.black,
+        ),
+      );
+      await ApiService.logoutAndRedirect();
+      return;
+    }
+
+    if (uri.host != 'verify-email') {
       return;
     }
 

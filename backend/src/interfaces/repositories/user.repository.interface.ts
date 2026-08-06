@@ -53,4 +53,5 @@ export interface IUserRepository {
    upsertSocialAccount(userId: number, provider: string, providerUserId: string): Promise<void>;
    update(id: number, data: UpdateUserDto): Promise<UserWithProfile>;
    delete(id: number): Promise<User>;
+   clearDeviceTokens(userId: number): Promise<void>;
 }

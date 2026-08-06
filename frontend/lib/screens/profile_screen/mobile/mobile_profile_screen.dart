@@ -1,13 +1,14 @@
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-
-import 'package:life_partner_again/main.dart';
-import 'package:life_partner_again/providers/auth_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/main.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/services/user_repository.dart';
+import 'package:life_partner_again/services/api_service.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../../widgets/custom_button.dart';
@@ -370,6 +371,20 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 fontWeight: FontWeight.w600,
               ),
             ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: CustomButton(
+                onPressed: () => _showDeleteAccountBottomSheet(context),
+                text: "Delete Account",
+                type: CustomButtonType.outline,
+                textColor: Colors.red,
+                height: 56,
+                borderRadius: 16,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 100),
           ],
         ),
@@ -518,6 +533,129 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
             color: AppColors.divider,
           ),
       ],
+    );
+  }
+
+  void _showDeleteAccountBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext sheetContext) {
+        bool isLoading = false;
+        bool isSent = false;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    isSent ? 'Check Your Email' : 'Delete Account',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isSent ? Colors.green : Colors.red,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    isSent
+                        ? 'We have sent a confirmation link to your email. Please click the link to verify your request.'
+                        : 'Are you sure you want to delete your account?\n\nThis action cannot be undone. We will send a verification email to confirm this request.',
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  if (isSent)
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () async {
+                        Navigator.of(sheetContext).pop();
+                        await ApiService.logoutAndRedirect();
+                      },
+                      child: const Text('OK', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    )
+                  else
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: isLoading
+                                ? null
+                                : () => Navigator.of(sheetContext).pop(),
+                            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    setState(() => isLoading = true);
+                                    try {
+                                      await UserRepository().requestAccountDeletion();
+                                      if (context.mounted) {
+                                        setState(() {
+                                          isLoading = false;
+                                          isSent = true;
+                                        });
+                                      }
+                                    } catch (e) {
+                                      setState(() => isLoading = false);
+                                      if (sheetContext.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Error: $e')),
+                                        );
+                                      }
+                                    }
+                                  },
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                    ),
+                                  )
+                                : const Text('Confirm', style: TextStyle(color: Colors.white, fontSize: 16)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

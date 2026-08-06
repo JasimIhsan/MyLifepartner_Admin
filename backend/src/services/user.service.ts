@@ -5,6 +5,11 @@ import { IUserRepository, ProfileImageDto, UserWithProfile } from "@/interfaces/
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { S3Service } from "@/services/s3.service";
 import { ApiError } from "@/utils/ApiError";
+import { ICacheService } from "@/interfaces/services/cache.service.interface";
+import { IEmailService } from "@/interfaces/services/email.service.interface";
+import { CACHE_KEYS } from "@/utils/constants";
+import crypto from "crypto";
+import prisma from "@/config/prisma";
 
 type PaginatedUsersDto = {
    data: UserDto[];
@@ -16,7 +21,9 @@ const PRESIGNED_URL_EXPIRY_SECONDS = 60 * 60;
 export class UserService implements IUserService {
    constructor(
       private readonly userRepository: IUserRepository,
-      private readonly s3Service: S3Service
+      private readonly s3Service: S3Service,
+      private readonly emailService: IEmailService,
+      private readonly cacheService: ICacheService
    ) {}
 
    /**
@@ -357,5 +364,227 @@ export class UserService implements IUserService {
       }
 
       return this.s3Service.getPresignedUrl(imageKey, PRESIGNED_URL_EXPIRY_SECONDS);
+   }
+
+   /**
+    * Requests account deletion by sending a verification email.
+    */
+   async requestAccountDeletion(userId: number): Promise<void> {
+      const user = await this.findActiveUserById(userId);
+      if (!user.email) {
+         throw new ApiError(400, "User email not found");
+      }
+
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(400, "Account deletion is already requested and pending approval");
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const cacheKey = CACHE_KEYS.ACCOUNT_DELETION_TOKEN(token);
+
+      // Token valid for 1 hour (3600 seconds)
+      await this.cacheService.setCache(cacheKey, userId.toString(), 3600);
+      await this.emailService.sendAccountDeletionEmail(user.email, token);
+   }
+
+   /**
+    * Verifies account deletion token, marks request as pending, and clears session.
+    */
+   async verifyAccountDeletion(token: string): Promise<number> {
+      const cacheKey = CACHE_KEYS.ACCOUNT_DELETION_TOKEN(token);
+      const userIdStr = await this.cacheService.getCache(cacheKey);
+
+      if (!userIdStr) {
+         throw new ApiError(400, "Invalid or expired verification token");
+      }
+
+      const userId = parseInt(userIdStr, 10);
+      const user = await this.userRepository.findById(userId);
+
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      await prisma.user.update({
+         where: { id: userId },
+         data: {
+            isDeleteRequested: true,
+            deleteRequestedAt: new Date(),
+            deleteRequestStatus: "PENDING",
+         },
+      });
+
+      // Token used, remove from cache
+      await this.cacheService.deleteCache(cacheKey);
+
+      // Clear sessions from all devices
+      await this.userRepository.clearDeviceTokens(userId);
+
+      return userId;
+   }
+
+   /**
+    * Gets all pending deletion requests.
+    */
+   async getPendingDeletionRequests(page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }> {
+      const skip = page && limit ? (page - 1) * limit : undefined;
+      const take = limit;
+
+      const [users, total] = await prisma.$transaction([
+         prisma.user.findMany({
+            where: { deleteRequestStatus: "PENDING" },
+            include: {
+               profile: { include: { images: true } },
+               partnerPreference: true,
+               userFeature: true,
+               privacySettings: true,
+            },
+            orderBy: { deleteRequestedAt: "desc" },
+            skip,
+            take,
+         }),
+         prisma.user.count({ where: { deleteRequestStatus: "PENDING" } }),
+      ]);
+
+      return {
+         data: users.map(toUserDto),
+         total,
+      };
+   }
+
+   /**
+    * Rejects a deletion request.
+    */
+   async rejectDeletionRequest(userId: number, adminId: number): Promise<void> {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user || user.deleteRequestStatus !== "PENDING") {
+         throw new ApiError(400, "Invalid or already processed deletion request");
+      }
+
+      await prisma.user.update({
+         where: { id: userId },
+         data: {
+            deleteRequestStatus: "REJECTED",
+            isSuspended: false,
+         },
+      });
+   }
+
+   /**
+    * Fetches paginated archived (deleted) users.
+    */
+   async getArchivedUsers(page: number = 1, limit: number = 10): Promise<{ data: any[]; total: number }> {
+      const skip = (page - 1) * limit;
+
+      const [data, total] = await Promise.all([
+         prisma.archivedUserData.findMany({
+            skip,
+            take: limit,
+            orderBy: { archivedAt: "desc" },
+         }),
+         prisma.archivedUserData.count(),
+      ]);
+
+      return { data, total };
+   }
+
+   /**
+    * Approves a deletion request, archives data, and scrubs PII.
+    */
+   async approveDeletionRequest(userId: number, adminId: number): Promise<void> {
+      const user = await prisma.user.findUnique({
+         where: { id: userId },
+         include: { profile: { include: { images: true } }, privacySettings: true },
+      });
+
+      if (!user || user.deleteRequestStatus !== "PENDING") {
+         throw new ApiError(400, "Invalid or already processed deletion request");
+      }
+
+      // We are retaining original data instead of hashing it for Admin viewing.
+
+      // Anonymize user
+      const anonymizedEmail = `deleted_${userId}_${crypto.randomUUID()}@premiumglobalcorp.com`;
+
+      await prisma.$transaction(async (tx) => {
+         // 1. Create archive
+         await tx.archivedUserData.create({
+            data: {
+               userId,
+               originalEmail: user.email,
+               originalPhone: user.mobileNumber,
+               originalName: user.profile?.name,
+               reasonForArchive: `Admin ${adminId} approved account deletion`,
+            },
+         });
+
+         // 2. Anonymize user
+         await tx.user.update({
+            where: { id: userId },
+            data: {
+               email: anonymizedEmail,
+               mobileNumber: null,
+               password: null,
+               isDeleted: true,
+               deleteRequestStatus: "APPROVED",
+            },
+         });
+
+         // 3. Anonymize profile
+         if (user.profile) {
+            await tx.profile.update({
+               where: { userId },
+               data: {
+                  name: "Deleted User",
+                  dateOfBirth: null,
+                  city: null,
+                  state: null,
+                  country: null,
+                  highestEducation: null,
+                  bio: null,
+                  selfieUrl: null,
+                  leftSelfieUrl: null,
+                  rightSelfieUrl: null,
+                  lastLocationLat: null,
+                  lastLocationLng: null,
+               },
+            });
+
+            // Delete User Images
+            if (user.profile.images.length > 0) {
+               await tx.userImage.deleteMany({
+                  where: { profileId: user.profile.id },
+               });
+            }
+         }
+
+         // 4. Clear privacy image
+         if (user.privacySettings?.blurredImageUrl) {
+            await tx.privacySettings.update({
+               where: { userId },
+               data: { blurredImageUrl: null },
+            });
+         }
+
+         // 5. Delete device tokens and social accounts
+         await tx.deviceToken.deleteMany({ where: { userId } });
+         await tx.socialAccount.deleteMany({ where: { userId } });
+      });
+
+      // Cleanup files from S3 asynchronously
+      const filesToDelete = [];
+      if (user.profile?.selfieUrl) filesToDelete.push(user.profile.selfieUrl);
+      if (user.profile?.leftSelfieUrl) filesToDelete.push(user.profile.leftSelfieUrl);
+      if (user.profile?.rightSelfieUrl) filesToDelete.push(user.profile.rightSelfieUrl);
+      if (user.privacySettings?.blurredImageUrl) filesToDelete.push(user.privacySettings.blurredImageUrl);
+      user.profile?.images.forEach((img) => filesToDelete.push(img.imageUrl));
+
+      if (filesToDelete.length > 0) {
+         filesToDelete.forEach((file) => {
+            this.s3Service.deleteFromS3(file).catch((err: unknown) => {
+               console.error(`Failed to delete file ${file} from S3 during account deletion`, err);
+            });
+         });
+      }
    }
 }

@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
+import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/services/auth_service.dart';
 import 'package:life_partner_again/services/chat_service.dart';
+import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
 import 'package:life_partner_again/services/token_service.dart';
 import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/services/zego_service.dart';
-import 'package:life_partner_again/main.dart';
-import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:provider/provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
 
   bool _isInitialized = false;
   bool _isLoggedIn = false;
+  bool _isLoggingOut = false;
   OnboardingStatus? _onboardingStatus;
 
   bool get isInitialized => _isInitialized;
@@ -27,18 +28,21 @@ class AuthProvider extends ChangeNotifier {
       if (accessToken == null || accessToken.isEmpty) {
         _isLoggedIn = false;
         _onboardingStatus = null;
+        notifyListeners();
       } else {
         final status = await _authService.fetchMeOrThrow();
         _isLoggedIn = true;
         _onboardingStatus = status;
         await FirebaseNotificationService().setupAfterLogin();
         await _setupZego(status);
+        notifyListeners();
       }
     } catch (e) {
       debugPrint("Auth bootstrap failed: $e");
       await TokenService.clearTokens();
       _isLoggedIn = false;
       _onboardingStatus = null;
+      notifyListeners();
     }
   }
 
@@ -69,12 +73,27 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await FirebaseNotificationService().tearDownOnLogout();
-    await ZegoService.instance.logout();
+    if (_isLoggingOut) return;
+    _isLoggingOut = true;
+
+    try {
+      await FirebaseNotificationService().tearDownOnLogout();
+    } catch (e) {
+      debugPrint('FCM tearDownOnLogout failed: $e');
+    }
+
+    try {
+      await ZegoService.instance.logout();
+    } catch (e) {
+      debugPrint('Zego logout failed: $e');
+    }
+
     await _authService.logoutLocal();
     _isLoggedIn = false;
     _onboardingStatus = null;
     notifyListeners();
+
+    _isLoggingOut = false;
   }
 
   Future<void> _setupZego(OnboardingStatus status) async {
@@ -102,10 +121,12 @@ class AuthProvider extends ChangeNotifier {
 
   /// Safety net for hot reloads or dropped sessions
   Future<void> ensureZegoLogin() async {
-    if (_isLoggedIn && _onboardingStatus != null && !ZegoService.instance.isLoggedIn) {
+    if (_isLoggedIn &&
+        _onboardingStatus != null &&
+        !ZegoService.instance.isLoggedIn) {
       debugPrint('[AuthProvider] Safety net: Re-initializing Zego session...');
       await _setupZego(_onboardingStatus!);
-      
+
       // Also re-trigger subscriptions in ChatProvider if needed
       if (ZegoService.instance.isLoggedIn) {
         final context = navigatorKey.currentContext;
