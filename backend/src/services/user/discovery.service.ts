@@ -3,6 +3,9 @@ import { Prisma } from "@prisma/client";
 import { DiscoveryQueryOptions } from "../../types/discovery.types";
 import { ApiError } from "../../utils/ApiError";
 
+import { IS3Service } from "@/interfaces/services/s3.service.interface";
+import { S3Service } from "../s3.service";
+
 const candidateProfileInclude = {
    job: true,
    images: {
@@ -26,6 +29,7 @@ const candidateProfileInclude = {
 } satisfies Prisma.ProfileInclude;
 
 export class DiscoveryService {
+   constructor(private readonly s3Service: IS3Service) {}
    /**
     * Discovers profiles based on filter criteria.
     *
@@ -33,19 +37,7 @@ export class DiscoveryService {
     * @param options - Filtering and pagination options
     */
    async discoverProfiles(currentUserId: number, options: DiscoveryQueryOptions) {
-      const {
-         page = 1,
-         limit = 20,
-         ageFrom,
-         ageTo,
-         languages,
-         maritalStatus,
-         childrenStatus,
-         verifiedOnly,
-         smoking,
-         drinking,
-         search,
-      } = options;
+      const { page = 1, limit = 20, ageFrom, ageTo, languages, maritalStatus, childrenStatus, verifiedOnly, smoking, drinking, search } = options;
 
       const skip = (page - 1) * limit;
 
@@ -87,13 +79,13 @@ export class DiscoveryService {
       if (ageFrom !== undefined || ageTo !== undefined) {
          const today = new Date();
          const dateFilters: Prisma.DateTimeFilter = {};
-         
+
          if (ageTo !== undefined) {
             // Min date of birth (oldest)
             const minDate = new Date(today.getFullYear() - ageTo - 1, today.getMonth(), today.getDate() + 1);
             dateFilters.gte = minDate;
          }
-         
+
          if (ageFrom !== undefined) {
             // Max date of birth (youngest)
             const maxDate = new Date(today.getFullYear() - ageFrom, today.getMonth(), today.getDate());
@@ -153,7 +145,7 @@ export class DiscoveryService {
             skip,
             take: limit,
             orderBy: {
-               id: 'desc', // Simple default sorting
+               id: "desc", // Simple default sorting
             },
          }),
       ]);
@@ -162,49 +154,55 @@ export class DiscoveryService {
       const hasNextPage = page < totalPages;
 
       // Transform raw profiles to standard output format
-      const mappedProfiles = profiles.map(profile => {
-         // Age calculation
-         let age = 0;
-         if (profile.dateOfBirth) {
-            const today = new Date();
-            age = today.getFullYear() - profile.dateOfBirth.getFullYear();
-            const m = today.getMonth() - profile.dateOfBirth.getMonth();
-            if (m < 0 || (m === 0 && today.getDate() < profile.dateOfBirth.getDate())) {
-               age--;
+      const mappedProfiles = await Promise.all(
+         profiles.map(async (profile) => {
+            // Age calculation
+            let age = 0;
+            if (profile.dateOfBirth) {
+               const today = new Date();
+               age = today.getFullYear() - profile.dateOfBirth.getFullYear();
+               const m = today.getMonth() - profile.dateOfBirth.getMonth();
+               if (m < 0 || (m === 0 && today.getDate() < profile.dateOfBirth.getDate())) {
+                  age--;
+               }
             }
-         }
 
-         return {
-            id: profile.id,
-            userId: profile.userId,
-            name: profile.name,
-            age,
-            gender: profile.gender,
-            city: profile.city,
-            state: profile.state,
-            country: profile.country,
-            isVerified: profile.user.isVerified,
-            maritalStatus: profile.maritalStatus,
-            motherTongue: profile.motherTongue,
-            highestEducation: profile.highestEducation,
-            occupation: profile.job?.name || null,
-            bio: profile.bio,
-            images: profile.images.map((img) => ({
-               id: img.id,
-               imageUrl: img.imageUrl,
-               isPrimary: img.isPrimary,
-            })),
-            languages: profile.languages,
-            childrenStatus: profile.childrenStatus,
-            smokingHabit: profile.smokingHabit,
-            drinkingHabit: profile.drinkingHabit,
-            matchPercentage: 0,
-            compatibilityHighlights: [],
-            interactionState: "NONE",
-            createdAt: profile.user.createdAt.toISOString(),
-            lastLoginAt: profile.user.updatedAt.toISOString(),
-         };
-      });
+            const images = await Promise.all(
+               profile.images.map(async (img) => ({
+                  id: img.id,
+                  imageUrl: await this.s3Service.getPresignedUrl(img.imageUrl),
+                  isPrimary: img.isPrimary,
+               }))
+            );
+
+            return {
+               id: profile.id,
+               userId: profile.userId,
+               name: profile.name,
+               age,
+               gender: profile.gender,
+               city: profile.city,
+               state: profile.state,
+               country: profile.country,
+               isVerified: profile.user.isVerified,
+               maritalStatus: profile.maritalStatus,
+               motherTongue: profile.motherTongue,
+               highestEducation: profile.highestEducation,
+               occupation: profile.job?.name || null,
+               bio: profile.bio,
+               images,
+               languages: profile.languages,
+               childrenStatus: profile.childrenStatus,
+               smokingHabit: profile.smokingHabit,
+               drinkingHabit: profile.drinkingHabit,
+               matchPercentage: 0,
+               compatibilityHighlights: [],
+               interactionState: "NONE",
+               createdAt: profile.user.createdAt.toISOString(),
+               lastLoginAt: profile.user.updatedAt.toISOString(),
+            };
+         })
+      );
 
       return {
          profiles: mappedProfiles,
@@ -214,7 +212,7 @@ export class DiscoveryService {
             total: totalCount,
             totalPages,
             hasNextPage,
-         }
+         },
       };
    }
 }

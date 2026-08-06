@@ -241,7 +241,7 @@ export default function AuditLogsPage() {
                                     </div>
                                  </TableCell>
                                  <TableCell>{getStatusBadge(log.status)}</TableCell>
-                                 <TableCell className="text-muted-foreground max-w-xs truncate">{log.message}</TableCell>
+                                 <TableCell className="text-muted-foreground max-w-37.5 sm:max-w-50 md:max-w-75 lg:max-w-100 xl:max-w-125 truncate">{log.message}</TableCell>
                                  <TableCell className="text-right">
                                     <Button variant="ghost" size="sm" onClick={() => setSelectedLog(log)}>
                                        <Eye className="h-4 w-4 mr-2" />

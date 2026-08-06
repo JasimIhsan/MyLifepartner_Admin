@@ -1,9 +1,8 @@
 import { Router } from "express";
-import { DiscoveryController } from "../../controllers/user/discovery.controller";
+import { discoveryController } from "@/composer/composer";
 import { verifyJWT } from "../../middlewares/auth.middleware";
 
 const router = Router();
-const discoveryController = new DiscoveryController();
 
 router.use(verifyJWT);
 

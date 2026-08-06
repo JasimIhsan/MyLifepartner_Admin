@@ -76,6 +76,7 @@ import { UserFeatureService } from "@/services/user/user.feature.service";
 import { OAuthService } from "@/services/user/user.oauth.service";
 import { ProfileService } from "@/services/user/user.profile.service";
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
+import { DiscoveryService } from "@/services/user/discovery.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Controllers
@@ -98,6 +99,7 @@ import { ImageAccessRequestController } from "@/controllers/user/image-access-re
 import { JobController } from "@/controllers/user/job.controller";
 import { MatchController } from "@/controllers/user/match.controller";
 import { OAuthController } from "@/controllers/user/oauth.controller";
+import { DiscoveryController } from "@/controllers/user/discovery.controller";
 import { PrivacyController } from "@/controllers/user/privacy.controller";
 import { ProfileController } from "@/controllers/user/profile.controller";
 import { ProfileImageController } from "@/controllers/user/profile.image.controller";
@@ -171,6 +173,7 @@ export const transactionHistoryService = new TransactionHistoryService(transacti
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository, subscriptionWebhookRepository, userRepository, emailService);
 export const oauthService = new OAuthService(userRepository, jwtService, subscriptionPlanRepository, userSubscriptionRepository);
 export const blockService = new BlockService(blockRepository);
+export const discoveryService = new DiscoveryService(s3Service);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);
@@ -209,6 +212,7 @@ export const userController = new UserController(userService);
 export const jobController = new JobController(jobService);
 export const transactionHistoryController = new TransactionHistoryController(transactionHistoryService);
 export const matchController = new MatchController(matchService);
+export const discoveryController = new DiscoveryController(discoveryService);
 export const userSubscriptionController = new UserSubscriptionController(userSubscriptionService, userFeatureService);
 export const chatController = new ChatController(chatService);
 export const zegoController = new ZegoController(zegoService);

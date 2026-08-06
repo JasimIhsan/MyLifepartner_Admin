@@ -91,11 +91,11 @@ export const DeletedUsersPage = () => {
                <Table>
                   <TableHeader className="bg-muted/50">
                      <TableRow>
-                        <TableHead className="w-[100px]">User ID</TableHead>
+                        <TableHead className="w-25">User ID</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>Reason</TableHead>
-                        <TableHead className="w-[150px]">Archived At</TableHead>
-                        <TableHead className="w-[100px] text-center">Actions</TableHead>
+                        <TableHead className="w-37.5">Archived At</TableHead>
+                        <TableHead className="w-25 text-center">Actions</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody className={isFetching ? "opacity-50 pointer-events-none" : ""}>
@@ -113,7 +113,7 @@ export const DeletedUsersPage = () => {
                                  <span className="text-sm">{maskEmail(user.originalEmail)}</span>
                               </TableCell>
                               <TableCell>
-                                 <span className="text-sm truncate block max-w-[200px]" title={user.reasonForArchive || "N/A"}>
+                                 <span className="text-sm truncate block max-w-50" title={user.reasonForArchive || "N/A"}>
                                     {user.reasonForArchive || "N/A"}
                                  </span>
                               </TableCell>
@@ -135,7 +135,7 @@ export const DeletedUsersPage = () => {
                   <div className="flex items-center gap-2">
                      <p className="hidden sm:block">Rows per page</p>
                      <Select value={pageSize.toString()} onValueChange={(value) => handlePageSizeChange(Number(value))}>
-                        <SelectTrigger className="h-8 w-[70px]">
+                        <SelectTrigger className="h-8 w-17.5">
                            <SelectValue placeholder={pageSize} />
                         </SelectTrigger>
                         <SelectContent side="top">
@@ -180,7 +180,7 @@ export const DeletedUsersPage = () => {
 
          {/* View Details Modal */}
          <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
                <DialogHeader>
                   <DialogTitle>Deleted User Details</DialogTitle>
                   <DialogDescription>Retained information for User #{selectedUser?.userId}</DialogDescription>
