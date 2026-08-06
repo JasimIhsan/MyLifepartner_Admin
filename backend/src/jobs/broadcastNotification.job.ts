@@ -9,6 +9,13 @@ export async function runBroadcastNotificationJob(title: string = "Someone New M
       const activeDeviceTokens = await prisma.deviceToken.findMany({
          where: {
             isActive: true,
+            user: {
+               isBanned: false,
+               isSuspended: false,
+               isDeleted: false,
+               isDeleteRequested: false,
+               deleteRequestStatus: { not: "PENDING" },
+            },
          },
          select: {
             token: true,
