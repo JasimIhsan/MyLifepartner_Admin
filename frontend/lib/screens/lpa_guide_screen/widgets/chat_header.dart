@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 
 class ChatHeader extends StatelessWidget {
   final VoidCallback onRestartChat;
@@ -11,9 +10,9 @@ class ChatHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
+          colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColorDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -55,7 +54,7 @@ class ChatHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.greenAccent,
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.primary, width: 2),
+                    border: Border.all(color: Theme.of(context).primaryColor, width: 2),
                   ),
                 ),
               ),

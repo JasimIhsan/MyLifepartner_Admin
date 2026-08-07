@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 
 class HeaderCarousel extends StatefulWidget {
   final List<dynamic> images;
@@ -26,13 +25,13 @@ class _HeaderCarouselState extends State<HeaderCarousel> {
           itemBuilder: (_, i) {
             final img = images[i] as Map<String, dynamic>;
             final url = img['imageUrl'] as String?;
-            if (url == null) return Container(color: AppColors.primaryLight);
+            if (url == null) return Container(color: Theme.of(context).primaryColorLight);
 
             return Image.network(
               url,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) =>
-                  Container(color: AppColors.primaryLight),
+                  Container(color: Theme.of(context).primaryColorLight),
             );
           },
         ),

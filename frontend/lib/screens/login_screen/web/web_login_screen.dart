@@ -2,7 +2,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:google_sign_in_web/web_only.dart' as web;
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/google_auth_service.dart';
 import 'package:provider/provider.dart';
@@ -107,9 +106,9 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                           height: 32,
                           width: 32,
                           errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
+                              Icon(
                                 Icons.favorite,
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 size: 24,
                               ),
                         ),
@@ -352,7 +351,7 @@ class _WebLoginScreenState extends State<WebLoginScreen>
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: AppColors.error),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
             ),
           ),
           validator: (value) {

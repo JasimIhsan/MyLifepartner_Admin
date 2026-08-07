@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
 import 'package:provider/provider.dart';
@@ -74,11 +73,11 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
           return Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  color: Colors.grey[200],
+                  color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                 ),
               )
               .animate(onPlay: (controller) => controller.repeat())
-              .shimmer(duration: 1200.ms, color: Colors.white54);
+              .shimmer(duration: 1200.ms, color: Theme.of(context).disabledColor.withValues(alpha: 0.2));
         }, childCount: 6),
       ),
     );
@@ -87,7 +86,7 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text(
           'Browse Profiles',
@@ -99,16 +98,16 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
         ),
         centerTitle: false,
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
             decoration: BoxDecoration(
-              color: Colors.grey.withValues(alpha: 0.1),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: IconButton(
-              icon: const Icon(Icons.tune_rounded, color: Colors.black87),
+              icon: Icon(Icons.tune_rounded, color: Theme.of(context).iconTheme.color ?? Theme.of(context).textTheme.bodyLarge?.color),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -125,8 +124,8 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
         builder: (context, provider, child) {
           return RefreshIndicator(
             onRefresh: () => provider.refresh(clearProfiles: false),
-            color: AppColors.primary,
-            backgroundColor: Colors.white,
+            color: Theme.of(context).primaryColor,
+            backgroundColor: Theme.of(context).colorScheme.surface,
             child: CustomScrollView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(
@@ -142,19 +141,19 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                       decoration: InputDecoration(
                         hintText: 'Search by name...',
                         hintStyle: TextStyle(
-                          color: Colors.grey.shade500,
+                          color: Theme.of(context).hintColor,
                           fontSize: 15,
                         ),
                         prefixIcon: Icon(
                           Icons.search_rounded,
-                          color: Colors.grey.shade400,
+                          color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.5) ?? Colors.grey.shade400,
                           size: 22,
                         ),
                         suffixIcon: _searchController.text.isNotEmpty
                             ? IconButton(
                                 icon: Icon(
                                   Icons.cancel_rounded,
-                                  color: Colors.grey.shade400,
+                                  color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.5) ?? Colors.grey.shade400,
                                   size: 20,
                                 ),
                                 onPressed: () {
@@ -165,7 +164,7 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                               )
                             : null,
                         filled: true,
-                        fillColor: Colors.grey.withValues(alpha: 0.08),
+                        fillColor: Theme.of(context).dividerColor.withValues(alpha: 0.05),
                         contentPadding: const EdgeInsets.symmetric(
                           vertical: 14,
                         ),
@@ -202,14 +201,14 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                           Icon(
                             Icons.wifi_off_rounded,
                             size: 64,
-                            color: Colors.grey.shade300,
+                            color: Theme.of(context).disabledColor,
                           ),
                           const SizedBox(height: 16),
                           Text(
                             provider.error ?? 'Something went wrong',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.grey.shade600,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey.shade600,
                               fontSize: 16,
                             ),
                           ),
@@ -219,7 +218,7 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                             icon: const Icon(Icons.refresh_rounded),
                             label: const Text('Try Again'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
+                              backgroundColor: Theme.of(context).primaryColor,
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(
@@ -244,13 +243,13 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                           Icon(
                             Icons.search_off_rounded,
                             size: 64,
-                            color: Colors.grey.shade300,
+                            color: Theme.of(context).disabledColor,
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'No profiles found',
                             style: TextStyle(
-                              color: Colors.grey.shade800,
+                              color: Theme.of(context).textTheme.bodyLarge?.color ?? Colors.grey.shade800,
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
                             ),
@@ -259,7 +258,7 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                           Text(
                             'Try adjusting your search or filters',
                             style: TextStyle(
-                              color: Colors.grey.shade500,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey.shade500,
                               fontSize: 14,
                             ),
                           ),
@@ -296,10 +295,10 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                           child: Container(
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(20),
-                              color: Colors.grey.shade100,
+                              color: Theme.of(context).colorScheme.surface,
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.04),
+                                  color: Theme.of(context).shadowColor.withValues(alpha: 0.04),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -317,21 +316,32 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                                     errorBuilder:
                                         (context, error, stackTrace) =>
                                             Container(
-                                              color: Colors.grey.shade200,
+                                              color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                                               child: Icon(
                                                 Icons.person_rounded,
                                                 size: 48,
-                                                color: Colors.grey.shade400,
+                                                color: Theme.of(context).disabledColor,
                                               ),
                                             ),
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return Container(
+                                        color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
+                                        child: Icon(
+                                          Icons.person_rounded,
+                                          size: 48,
+                                          color: Theme.of(context).disabledColor,
+                                        ),
+                                      );
+                                    },
                                   )
                                 else
                                   Container(
-                                    color: Colors.grey.shade200,
+                                    color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                                     child: Icon(
                                       Icons.person_rounded,
                                       size: 48,
-                                      color: Colors.grey.shade400,
+                                      color: Theme.of(context).disabledColor,
                                     ),
                                   ),
 
@@ -455,12 +465,12 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                     ),
                   ),
                 if (provider.isLoadingMore)
-                  const SliverToBoxAdapter(
+                  SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 24.0),
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     ),

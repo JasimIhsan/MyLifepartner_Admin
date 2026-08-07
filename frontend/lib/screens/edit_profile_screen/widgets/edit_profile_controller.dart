@@ -156,24 +156,24 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.borderColor,
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'Discard Changes?',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'You have unsaved changes. Are you sure you want to discard them?',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
               Row(
@@ -183,15 +183,15 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
                       onPressed: () => context.pop(),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: AppColors.borderColor),
+                        side: BorderSide(color: Theme.of(context).dividerColor),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Keep Editing',
                         style: TextStyle(
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -205,7 +205,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
                         context.pop(); // Pop screen
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -317,10 +317,10 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: AppColors.primary,
+            colorScheme: ColorScheme.light(
+              primary: Theme.of(context).primaryColor,
               onPrimary: Colors.white,
-              onSurface: AppColors.textPrimary,
+              onSurface: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             ),
           ),
           child: child!,

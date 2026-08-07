@@ -150,7 +150,7 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
           onTap: _showDatePickerDialog,
           suffixIcon: Icon(
             Icons.calendar_today_rounded,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.5),
             size: 20,
           ),
         ),

@@ -61,23 +61,23 @@ class FollowUpSelector extends StatelessWidget {
                   children: [
                     Icon(
                       opt['icon'] as IconData,
-                      color: AppColors.primary,
+                      color: Theme.of(context).primaryColor,
                       size: 18,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         opt['text'] as String,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         ),
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right_rounded,
-                      color: AppColors.textLight,
+                      color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                       size: 20,
                     ),
                   ],

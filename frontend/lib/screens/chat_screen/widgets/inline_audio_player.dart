@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:path_provider/path_provider.dart';
 
 class InlineAudioPlayer extends StatefulWidget {
@@ -219,10 +218,10 @@ class _InlineAudioPlayerState extends State<InlineAudioPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    final fgColor = widget.isMe ? Colors.white : AppColors.primary;
+    final fgColor = widget.isMe ? Colors.white : Theme.of(context).primaryColor;
     final bgColor = widget.isMe
         ? Colors.white.withValues(alpha: 0.2)
-        : AppColors.primary.withValues(alpha: 0.1);
+        : Theme.of(context).primaryColor.withValues(alpha: 0.1);
 
     final maxVal = _duration.inMilliseconds > 0
         ? _duration.inMilliseconds.toDouble()

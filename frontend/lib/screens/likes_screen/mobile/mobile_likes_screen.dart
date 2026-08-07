@@ -34,7 +34,7 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -51,7 +51,7 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         letterSpacing: -0.5,
                       ),
                     ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
@@ -83,15 +83,15 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
       height: 52,
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.white,
-        border: Border.all(color: AppColors.borderColor, width: 2),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).dividerColor, width: 2),
         borderRadius: BorderRadius.circular(26),
       ),
       child: TabBar(
         controller: tabController,
         indicatorSize: TabBarIndicatorSize.tab,
         indicator: BoxDecoration(
-          color: AppColors.primary,
+          color: Theme.of(context).primaryColor,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
@@ -102,7 +102,7 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
           ],
         ),
         labelColor: AppColors.textWhite,
-        unselectedLabelColor: AppColors.textSecondary,
+        unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
         splashBorderRadius: BorderRadius.circular(24),
         overlayColor: WidgetStateProperty.all(Colors.transparent),
         dividerColor: Colors.transparent,

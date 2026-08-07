@@ -4,23 +4,23 @@ import 'package:flutter_animate/flutter_animate.dart';
 class ProfileSkeleton extends StatelessWidget {
   const ProfileSkeleton({super.key});
 
-  Widget _skeletonCircle(double size) {
+  Widget _skeletonCircle(BuildContext context, double size) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
     );
   }
 
-  Widget _skeletonBox({double width = double.infinity, double height = 16}) {
+  Widget _skeletonBox(BuildContext context, {double width = double.infinity, double height = 16}) {
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
     ).animate().fadeIn(duration: 400.ms);
@@ -46,7 +46,7 @@ class ProfileSkeleton extends StatelessWidget {
                   children: [
                     // Image placeholder
                     Positioned.fill(
-                      child: Container(color: Colors.grey.shade300),
+                      child: Container(color: Theme.of(context).disabledColor.withValues(alpha: 0.1)),
                     ),
 
                     // Gradient overlay (same as real)
@@ -80,14 +80,14 @@ class ProfileSkeleton extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _skeletonBox(width: 180, height: 28),
+                                _skeletonBox(context, width: 180, height: 28),
                                 const SizedBox(height: 8),
-                                _skeletonBox(width: 120, height: 16),
+                                _skeletonBox(context, width: 120, height: 16),
                               ],
                             ),
                           ),
                           const SizedBox(width: 10),
-                          _skeletonBox(width: 60, height: 40),
+                          _skeletonBox(context, width: 60, height: 40),
                         ],
                       ),
                     ),
@@ -104,7 +104,7 @@ class ProfileSkeleton extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Compatibility section
-                    _skeletonBox(width: 120, height: 18),
+                    _skeletonBox(context, width: 120, height: 18),
                     const SizedBox(height: 12),
 
                     Wrap(
@@ -112,28 +112,28 @@ class ProfileSkeleton extends StatelessWidget {
                       runSpacing: 8,
                       children: List.generate(
                         4,
-                        (_) => _skeletonBox(width: 80, height: 28),
+                        (_) => _skeletonBox(context, width: 80, height: 28),
                       ),
                     ),
 
                     const SizedBox(height: 24),
 
                     // About section
-                    _skeletonBox(width: 100, height: 18),
+                    _skeletonBox(context, width: 100, height: 18),
                     const SizedBox(height: 12),
-                    _skeletonBox(height: 80),
+                    _skeletonBox(context, height: 80),
 
                     const SizedBox(height: 24),
 
                     // Details grid placeholder
-                    _skeletonBox(height: 120),
+                    _skeletonBox(context, height: 120),
 
                     const SizedBox(height: 24),
 
                     // Photos section
-                    _skeletonBox(width: 140, height: 18),
+                    _skeletonBox(context, width: 140, height: 18),
                     const SizedBox(height: 12),
-                    _skeletonBox(height: 260),
+                    _skeletonBox(context, height: 260),
 
                     const SizedBox(height: 100),
                   ],
@@ -147,14 +147,14 @@ class ProfileSkeleton extends StatelessWidget {
         Positioned(
           top: MediaQuery.of(context).padding.top + 8,
           left: 12,
-          child: _skeletonCircle(44),
+          child: _skeletonCircle(context, 44),
         ),
 
         // 🌍 Flag placeholder
         Positioned(
           top: MediaQuery.of(context).padding.top + 10,
           right: 16,
-          child: _skeletonCircle(38),
+          child: _skeletonCircle(context, 38),
         ),
 
         // ⬇️ Bottom action bar skeleton
@@ -169,12 +169,12 @@ class ProfileSkeleton extends StatelessWidget {
               top: 16,
               bottom: MediaQuery.of(context).padding.bottom + 16,
             ),
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             child: Row(
               children: [
-                Expanded(child: _skeletonBox(height: 50)),
+                Expanded(child: _skeletonBox(context, height: 50)),
                 const SizedBox(width: 12),
-                Expanded(child: _skeletonBox(height: 50)),
+                Expanded(child: _skeletonBox(context, height: 50)),
               ],
             ),
           ),

@@ -349,12 +349,12 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                 height: 32,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderColor, width: 1.5),
+                  border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.question_mark_rounded,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
               onPressed: _showTips,
@@ -374,7 +374,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -384,7 +384,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                   'the community safe and authentic.',
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -398,14 +398,14 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                   decoration: BoxDecoration(
                     color: AppColors.textWhite,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.borderColor),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.shield_outlined,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         size: 20,
                       ),
                       const SizedBox(width: 12),
@@ -440,8 +440,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                               color:
                                   (_currentImage != null ||
                                       _isCameraInitialized)
-                                  ? AppColors.textPrimary.withValues(alpha: 0.2)
-                                  : AppColors.borderColor,
+                                  ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary.withValues(alpha: 0.2)
+                                  : Theme.of(context).dividerColor,
                               width: 5,
                             ),
                           ),
@@ -456,8 +456,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                               color:
                                   (_currentImage != null ||
                                       _isCameraInitialized)
-                                  ? AppColors.textPrimary
-                                  : AppColors.borderColor,
+                                  ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
+                                  : Theme.of(context).dividerColor,
                               width: 2,
                             ),
                             color: AppColors.textWhite,
@@ -491,7 +491,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                                             _isPermissionDenied
                                                 ? Icons.videocam_off_outlined
                                                 : Icons.error_outline,
-                                            color: AppColors.textSecondary,
+                                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                             size: 32,
                                           ),
                                           const SizedBox(height: 12),
@@ -499,7 +499,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                                             _errorMessage!,
                                             style: TextStyle(
                                               fontSize: 13,
-                                              color: AppColors.textSecondary,
+                                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
@@ -511,7 +511,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                                               },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor:
-                                                    AppColors.primary,
+                                                    Theme.of(context).primaryColor,
                                                 foregroundColor: Colors.white,
                                                 padding:
                                                     const EdgeInsets.symmetric(
@@ -537,10 +537,10 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                                       ),
                                     ),
                                   )
-                                : const Center(
+                                : Center(
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      color: AppColors.textPrimary,
+                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                     ),
                                   ),
                           ),
@@ -585,7 +585,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -613,8 +613,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
             shape: BoxShape.circle,
             border: Border.all(
               color: isEnabled
-                  ? AppColors.primary
-                  : AppColors.primary.withValues(alpha: 0.3),
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).primaryColor.withValues(alpha: 0.3),
               width: 4,
             ),
           ),
@@ -624,8 +624,8 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: isEnabled
-                  ? AppColors.primary
-                  : AppColors.primary.withValues(alpha: 0.3),
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).primaryColor.withValues(alpha: 0.3),
             ),
             child: _isCapturing
                 ? const Padding(
@@ -672,7 +672,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.borderColor,
+                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
                 width: isSelected ? 3 : 1,
               ),
               image: DecorationImage(
@@ -687,7 +687,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
             style: TextStyle(
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
             ),
           ),
         ],
@@ -751,7 +751,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.borderColor,
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -762,13 +762,13 @@ class _SelfieTipsSheet extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Follow these tips for a quick approval.',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
               Expanded(
@@ -776,7 +776,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                   controller: ctrl,
                   itemCount: tips.length,
                   separatorBuilder: (_, __) =>
-                      const Divider(height: 28, color: AppColors.borderColor),
+                      Divider(height: 28, color: Theme.of(context).dividerColor),
                   itemBuilder: (_, i) {
                     final (icon, title, desc) = tips[i];
                     return Row(
@@ -786,10 +786,10 @@ class _SelfieTipsSheet extends StatelessWidget {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: AppColors.background,
+                            color: Theme.of(context).scaffoldBackgroundColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, size: 20, color: AppColors.primary),
+                          child: Icon(icon, size: 20, color: Theme.of(context).primaryColor),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -801,7 +801,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 3),
@@ -809,7 +809,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                                 desc,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                   height: 1.5,
                                 ),
                               ),
@@ -828,7 +828,7 @@ class _SelfieTipsSheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => context.pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -869,9 +869,9 @@ class _PrimaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.borderColor,
+          disabledBackgroundColor: Theme.of(context).dividerColor,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),

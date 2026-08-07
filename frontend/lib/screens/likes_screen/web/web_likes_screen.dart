@@ -48,22 +48,22 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Connections',
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         letterSpacing: -1.0,
                         height: 1.2,
                       ),
                     ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'Manage your likes, mutual matches, and connection requests.',
                       style: TextStyle(
                         fontSize: 15,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         height: 1.5,
                       ),
                     ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
@@ -93,7 +93,7 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
@@ -103,7 +103,7 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                       ),
                     ],
                     border: Border.all(
-                      color: AppColors.borderColor.withValues(alpha: 0.5),
+                      color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                       width: 1,
                     ),
                   ),
@@ -139,15 +139,15 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                 : index == 1
                 ? "Received Interests"
                 : "Sent Interests",
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ),
         ),
-        const Divider(height: 1, thickness: 1, color: AppColors.borderColor),
+        Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
         Expanded(
           child: MatchesList(
             tabIndex: index,
@@ -180,12 +180,12 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.08)
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.08)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected
-                    ? AppColors.primary.withValues(alpha: 0.5)
+                    ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
                     : Colors.transparent,
                 width: 1,
               ),
@@ -195,8 +195,8 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                 Icon(
                   icon,
                   color: isSelected
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                   size: 22,
                 ),
                 const SizedBox(width: 16),
@@ -206,8 +206,8 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                     fontSize: 16,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                     color: isSelected
-                        ? AppColors.primary
-                        : AppColors.textSecondary,
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                   ),
                 ),
               ],

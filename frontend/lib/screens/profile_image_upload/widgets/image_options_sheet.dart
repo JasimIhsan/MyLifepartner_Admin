@@ -49,16 +49,16 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                       borderRadius: BorderRadius.circular(2.5),
                     ),
                   ),
-                  const Text(
+                  Text(
                     'Photo Options',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Divider(color: AppColors.borderColor, height: 1),
+                  Divider(color: Theme.of(context).dividerColor, height: 1),
                   const SizedBox(height: 12),
                   if (!isPrimary) ...[
                     ListTile(
@@ -70,28 +70,28 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                         width: 44,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.1),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.star_rounded,
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                           size: 22,
                         ),
                       ),
-                      title: const Text(
+                      title: Text(
                         'Set as Main Photo',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         ),
                       ),
-                      subtitle: const Text(
+                      subtitle: Text(
                         'This will be the first photo people see',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         ),
                       ),
                       onTap: () {
@@ -99,9 +99,9 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                         onSetPrimary(image.id);
                       },
                     ),
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Divider(color: AppColors.borderColor, height: 1),
+                      child: Divider(color: Theme.of(context).dividerColor, height: 1),
                     ),
                   ],
                   ListTile(
@@ -113,28 +113,28 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.sync_rounded,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                         size: 22,
                       ),
                     ),
-                    title: const Text(
+                    title: Text(
                       'Replace Photo',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                       ),
                     ),
-                    subtitle: const Text(
+                    subtitle: Text(
                       'Select a new photo to replace this one',
                       style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       ),
                     ),
                     onTap: () {
@@ -156,10 +156,10 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),

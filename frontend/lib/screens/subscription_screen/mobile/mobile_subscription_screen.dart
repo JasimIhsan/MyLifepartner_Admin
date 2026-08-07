@@ -43,26 +43,26 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               size: 20,
             ),
             onPressed: () => context.pop(),
           ),
-          const Text(
+          Text(
             'Choose Your Plan',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               fontWeight: FontWeight.w800,
               fontSize: 20,
               letterSpacing: 0.2,
             ),
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.receipt_long_rounded,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               size: 24,
             ),
             onPressed: () => context.push(AppRoutes.billingHistory),
@@ -97,7 +97,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -114,10 +114,10 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                 children: [
                   Text(
                     "${plan.name} Plan Details",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     ),
                   ),
                   IconButton(
@@ -134,14 +134,14 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                       ? const Color(0xFFFEF2F2)
                       : (provider.isInGracePeriod
                             ? const Color(0xFFFFFBEB)
-                            : AppColors.primary.withValues(alpha: 0.05)),
+                            : Theme.of(context).primaryColor.withValues(alpha: 0.05)),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: provider.hasBillingIssue
                         ? const Color(0xFFFCA5A5)
                         : (provider.isInGracePeriod
                               ? const Color(0xFFFCD34D)
-                              : AppColors.primary.withValues(alpha: 0.1)),
+                              : Theme.of(context).primaryColor.withValues(alpha: 0.1)),
                   ),
                 ),
                 child: Column(
@@ -157,28 +157,28 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                             ? const Color(0xFFDC2626)
                             : (provider.isInGracePeriod
                                   ? const Color(0xFFD97706)
-                                  : AppColors.primary),
+                                  : Theme.of(context).primaryColor),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Price: ${plan.displayPrice}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Included Limits & Features:',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 10),
@@ -187,18 +187,18 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.check_circle_outline_rounded,
                         size: 16,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         feat,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -220,10 +220,10 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
       body: Consumer<SubscriptionProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.plans.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(40.0),
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
               ),
             );
           }
@@ -318,7 +318,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                       color: Colors.white,
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                        color: AppColors.primary
+                                                        color: Theme.of(context).primaryColor
                                                             .withValues(
                                                               alpha: 0.08,
                                                             ),
@@ -390,18 +390,18 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                               ),
                                             ),
                                             const SizedBox(height: 16),
-                                            const Text(
+                                            Text(
                                               'Unlock Premium Perks',
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.w900,
-                                                color: AppColors.textPrimary,
+                                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                                 height: 1.25,
                                               ),
                                             ),
                                             const SizedBox(height: 10),
-                                            const Padding(
+                                            Padding(
                                               padding: EdgeInsets.symmetric(
                                                 horizontal: 24.0,
                                               ),
@@ -411,7 +411,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   color:
-                                                      AppColors.textSecondary,
+                                                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                                   fontWeight: FontWeight.w500,
                                                   height: 1.4,
                                                 ),
@@ -537,7 +537,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                 height: 8,
                                                 decoration: BoxDecoration(
                                                   color: isSelected
-                                                      ? AppColors.primary
+                                                      ? Theme.of(context).primaryColor
                                                       : const Color(0xFFE2E8F0),
                                                   borderRadius:
                                                       BorderRadius.circular(4),
@@ -547,13 +547,13 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                           ),
                                         ),
                                       ] else ...[
-                                        const Center(
+                                        Center(
                                           child: Padding(
                                             padding: EdgeInsets.all(40.0),
                                             child: Text(
                                               'No subscription plans available.',
                                               style: TextStyle(
-                                                color: AppColors.textLight,
+                                                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                                               ),
                                             ),
                                           ),
@@ -594,7 +594,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                             //   child: const Text(
                             //     'Restore Subscription',
                             //     style: TextStyle(
-                            //       color: AppColors.primary,
+                            //       color: Theme.of(context).primaryColor,
                             //       fontSize: 13,
                             //       fontWeight: FontWeight.w600,
                             //     ),
@@ -604,7 +604,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                               onPressed: () {
                                 showModalBottomSheet(
                                   context: context,
-                                  backgroundColor: AppColors.surface,
+                                  backgroundColor: Theme.of(context).colorScheme.surface,
                                   isScrollControlled: true,
                                   shape: const RoundedRectangleBorder(
                                     borderRadius: BorderRadius.vertical(
@@ -629,14 +629,14 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                     MainAxisAlignment
                                                         .spaceBetween,
                                                 children: [
-                                                  const Text(
+                                                  Text(
                                                     'Terms & Privacy Policy',
                                                     style: TextStyle(
                                                       fontSize: 18,
                                                       fontWeight:
                                                           FontWeight.w800,
                                                       color:
-                                                          AppColors.textPrimary,
+                                                          Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                                     ),
                                                   ),
                                                   IconButton(
@@ -726,10 +726,10 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                   },
                                 );
                               },
-                              child: const Text(
+                              child: Text(
                                 'Terms & Privacy',
                                 style: TextStyle(
-                                  color: AppColors.primary,
+                                  color: Theme.of(context).primaryColor,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                 ),

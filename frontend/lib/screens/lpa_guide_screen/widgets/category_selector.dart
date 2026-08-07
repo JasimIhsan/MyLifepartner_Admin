@@ -44,23 +44,23 @@ class CategorySelector extends StatelessWidget {
                   children: [
                     Icon(
                       cat['icon'] as IconData,
-                      color: AppColors.primary,
+                      color: Theme.of(context).primaryColor,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         cat['name'] as String,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         ),
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right_rounded,
-                      color: AppColors.textLight,
+                      color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                       size: 20,
                     ),
                   ],

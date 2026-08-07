@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 
 class InlineVideoPlayer extends StatefulWidget {
   final String source;
@@ -46,7 +45,7 @@ class _InlineVideoPlayerState extends State<InlineVideoPlayer> {
         width: 200,
         height: 200,
         decoration: BoxDecoration(
-          color: AppColors.primary.withValues(alpha: 0.1),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
         ),
         alignment: Alignment.center,
         child: Column(
@@ -55,14 +54,14 @@ class _InlineVideoPlayerState extends State<InlineVideoPlayer> {
             Icon(
               Icons.video_collection_rounded,
               size: 48,
-              color: AppColors.primary.withValues(alpha: 0.5),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 12),
-            const SizedBox(
+            SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 strokeWidth: 2,
               ),
             ),

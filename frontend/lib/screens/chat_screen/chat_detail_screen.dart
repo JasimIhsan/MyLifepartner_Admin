@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/chat_message.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
@@ -526,7 +525,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final isTyping = chatProvider.isUserTyping(widget.profile.userId);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: ChatDetailAppBar(
         profileName: widget.profile.name,
         profileImageUrl: _profileImageUrl,
@@ -573,14 +572,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       final msgIndex = showTypingIndicator ? index - 1 : index;
 
                       if (msgIndex == messages.length) {
-                        return const Padding(
+                        return Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: Center(
                             child: SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 strokeWidth: 2,
                               ),
                             ),
@@ -694,7 +693,7 @@ class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
         margin: const EdgeInsets.only(bottom: 8, top: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFECECEC),
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
@@ -717,8 +716,8 @@ class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
                 margin: const EdgeInsets.symmetric(horizontal: 2.5),
                 width: 7,
                 height: 7,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF9E9E9E),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF9E9E9E),
                   shape: BoxShape.circle,
                 ),
               ),

@@ -50,9 +50,11 @@ class ReportUserDialog extends StatefulWidget {
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.85,
             ),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
             ),
             child: ReportUserDialog(profile: profile, source: source),
           ),
@@ -254,13 +256,15 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                   ],
                 ),
                 const SizedBox(width: 16),
-                const Expanded(
+                Expanded(
                   child: Text(
                     'Help us keep the community\nsafe and respectful.',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
                       height: 1.3,
                     ),
                   ),
@@ -312,10 +316,14 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                             Expanded(
                               child: Text(
                                 item['label'],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
-                                  color: AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -350,8 +358,10 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                         });
                       },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
+                  backgroundColor: Theme.of(context).primaryColor,
+                  disabledBackgroundColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -416,10 +426,12 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
               _selectedReasonKey == 'OTHER'
                   ? 'Please describe the reason'
                   : 'Additional details (Optional)',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 10),
@@ -431,15 +443,15 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                 hintText: 'Enter details here...',
                 hintStyle: TextStyle(fontSize: 14, color: Colors.grey.shade400),
                 filled: true,
-                fillColor: Colors.grey.shade50,
+                fillColor: Theme.of(context).scaffoldBackgroundColor,
                 contentPadding: const EdgeInsets.all(14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+                  borderSide: BorderSide(color: Theme.of(context).dividerColor),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.primary),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
               ),
             ),
@@ -447,12 +459,14 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Attach Proof / Screenshot',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
                 Text(
@@ -468,10 +482,10 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: Colors.grey.shade300,
+                    color: Theme.of(context).dividerColor,
                     style: BorderStyle.solid,
                   ),
                 ),
@@ -572,7 +586,7 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
               child: ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitReport,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -624,21 +638,25 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Report Submitted',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
             Text(
               'Thank you for helping us keep the community safe. Your report for $userName is now under review.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.4,
               ),
             ),
@@ -649,7 +667,7 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
               child: ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -707,7 +725,9 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                         });
                       },
                       icon: const Icon(Icons.arrow_back_rounded),
-                      color: AppColors.textPrimary,
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
                     )
                   else
                     const SizedBox(width: 24), // Spacer when no back button
@@ -715,10 +735,12 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                     child: Text(
                       'Report $userName',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -727,14 +749,16 @@ class _ReportUserDialogState extends State<ReportUserDialog> {
                     constraints: const BoxConstraints(),
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close_rounded),
-                    color: AppColors.textSecondary,
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
                   ),
                 ],
               ),
             ],
           ),
         ),
-        const Divider(height: 0.1, color: AppColors.borderColor),
+        Divider(height: 0.1, color: Theme.of(context).dividerColor),
         if (_currentStep == 0)
           _buildStep0()
         else if (_currentStep == 1)

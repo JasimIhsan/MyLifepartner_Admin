@@ -32,7 +32,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final backgroundColor = AppColors.surface; // Light theme background
+    final backgroundColor = Theme.of(context).colorScheme.surface; // Light theme background
 
     return PopScope(
       canPop: false,
@@ -159,11 +159,11 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
                         ),
                       ),
                       const SizedBox(height: 16),
-                      const Text(
+                      Text(
                         "A premium space for emotionally mature relationships.",
                         style: TextStyle(
                           fontSize: 16,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                           height: 1.5,
                           letterSpacing: -0.2,
                         ),
@@ -175,26 +175,26 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
-                            color: AppColors.error.withValues(alpha: 0.1),
+                            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: AppColors.error.withValues(alpha: 0.4),
+                              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.4),
                               width: 1,
                             ),
                           ),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.error_outline,
-                                color: AppColors.error,
+                                color: Theme.of(context).colorScheme.error,
                                 size: 20,
                               ),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
                                   authErrorMessage!,
-                                  style: const TextStyle(
-                                    color: AppColors.error,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     height: 1.3,
@@ -225,19 +225,19 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
                         child: Text.rich(
                           TextSpan(
                             text: "By continuing, you agree to our ",
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                             ),
                             children: [
-                              const TextSpan(
+                              TextSpan(
                                 text: "Terms",
-                                style: TextStyle(color: AppColors.textPrimary),
+                                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
                               ),
                               const TextSpan(text: " and "),
-                              const TextSpan(
+                              TextSpan(
                                 text: "Privacy",
-                                style: TextStyle(color: AppColors.textPrimary),
+                                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
                               ),
                               const TextSpan(text: "."),
                             ],
@@ -302,17 +302,17 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: AppColors.borderColor, width: 1),
+                bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
               ),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.mail_outline, color: AppColors.black, size: 22),
                 SizedBox(width: 16),
                 Text(
                   "Continue with Email",
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -335,10 +335,10 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const Text(
+        Text(
           "Enter your email",
           style: TextStyle(
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -349,7 +349,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
           controller: emailController,
           enabled: !isLoading,
           keyboardType: TextInputType.text,
-          style: const TextStyle(color: AppColors.textPrimary, fontSize: 18),
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, fontSize: 18),
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.inputBackground,
@@ -358,18 +358,18 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
               horizontal: 20,
             ),
             hintText: "name@example.com",
-            hintStyle: const TextStyle(color: AppColors.textLight),
+            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: AppColors.primary),
+              borderSide: BorderSide(color: Theme.of(context).primaryColor),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: AppColors.primary),
+              borderSide: BorderSide(color: Theme.of(context).primaryColor),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
-              borderSide: const BorderSide(color: AppColors.error),
+              borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
             ),
           ),
           validator: (value) {
@@ -389,9 +389,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
         ElevatedButton(
           onPressed: isLoading ? null : initiateAuth,
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primary,
+            backgroundColor: Theme.of(context).primaryColor,
             foregroundColor: AppColors.white,
-            disabledBackgroundColor: AppColors.borderColor,
+            disabledBackgroundColor: Theme.of(context).dividerColor,
             padding: const EdgeInsets.symmetric(vertical: 20),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
@@ -429,10 +429,10 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
     final bgColor = isPrimary ? AppColors.white : Colors.transparent;
 
     final borderColor = isPrimary
-        ? AppColors.borderColor
-        : (isMuted ? Colors.transparent : AppColors.borderColor);
+        ? Theme.of(context).dividerColor
+        : (isMuted ? Colors.transparent : Theme.of(context).dividerColor);
 
-    final textColor = isMuted ? AppColors.textSecondary : AppColors.textPrimary;
+    final textColor = isMuted ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
 
     return Container(
       height: 60,
@@ -477,10 +477,10 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
                     ),
                     child: Text(
                       badgeText,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         letterSpacing: 0.5,
                       ),
                     ),

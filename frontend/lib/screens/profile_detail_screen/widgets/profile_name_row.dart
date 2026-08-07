@@ -44,10 +44,10 @@ class ProfileNameRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isOverlay ? Colors.white : AppColors.textPrimary;
+    final textColor = isOverlay ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
     final subTextColor = isOverlay
         ? Colors.white.withValues(alpha: 0.9)
-        : AppColors.textSecondary;
+        : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,

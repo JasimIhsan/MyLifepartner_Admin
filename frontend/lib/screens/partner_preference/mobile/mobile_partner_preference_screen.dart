@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 import '../widgets/partner_preference_controller.dart';
 
@@ -121,9 +120,9 @@ class _MobilePartnerPreferenceScreenState
                   borderRadius: BorderRadius.circular(10),
                   child: LinearProgressIndicator(
                     value: (currentStep + 1) / totalSteps,
-                    backgroundColor: AppColors.borderColor,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
+                    backgroundColor: Theme.of(context).dividerColor,
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Theme.of(context).primaryColor,
                     ),
                     minHeight: 6,
                   ),

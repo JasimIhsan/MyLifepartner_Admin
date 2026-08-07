@@ -53,7 +53,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
       builder: (context) {
         final provider = context.read<SubscriptionProvider>();
         return Dialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
@@ -69,10 +69,10 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                   children: [
                     Text(
                       '\${plan.name} Plan Details',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       ),
                     ),
                     IconButton(
@@ -89,14 +89,14 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                         ? const Color(0xFFFEF2F2)
                         : (provider.isInGracePeriod
                               ? const Color(0xFFFFFBEB)
-                              : AppColors.primary.withValues(alpha: 0.05)),
+                              : Theme.of(context).primaryColor.withValues(alpha: 0.05)),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: provider.hasBillingIssue
                           ? const Color(0xFFFCA5A5)
                           : (provider.isInGracePeriod
                                 ? const Color(0xFFFCD34D)
-                                : AppColors.primary.withValues(alpha: 0.1)),
+                                : Theme.of(context).primaryColor.withValues(alpha: 0.1)),
                     ),
                   ),
                   child: Column(
@@ -112,28 +112,28 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                               ? const Color(0xFFDC2626)
                               : (provider.isInGracePeriod
                                     ? const Color(0xFFD97706)
-                                    : AppColors.primary),
+                                    : Theme.of(context).primaryColor),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Price: \${plan.displayPrice}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Included Limits & Features:',
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -142,18 +142,18 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                     padding: const EdgeInsets.symmetric(vertical: 6.0),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.check_circle_outline_rounded,
                           size: 16,
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                         ),
                         const SizedBox(width: 12),
                         Text(
                           feat,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -176,8 +176,8 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
       body: Consumer<SubscriptionProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.plans.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+            return Center(
+              child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
             );
           }
 
@@ -222,26 +222,26 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                         child: Row(
                           children: [
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.arrow_back,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                               ),
                               onPressed: () => context.pop(),
                             ),
                             const SizedBox(width: 16),
-                            const Text(
+                            Text(
                               'Choose Your Plan',
                               style: TextStyle(
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 24,
                               ),
                             ),
                             const Spacer(),
                             IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.receipt_long_rounded,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 size: 28,
                               ),
                               onPressed: () =>
@@ -260,20 +260,20 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              const Text(
+                              Text(
                                 'Unlock Premium Perks',
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 12),
-                              const Text(
+                              Text(
                                 'Premium perks to help you find your perfect life partner.',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 48),
@@ -396,7 +396,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                             //     final confirm = await showDialog<bool>(
                             //       context: context,
                             //       builder: (context) => Dialog(
-                            //         backgroundColor: AppColors.surface,
+                            //         backgroundColor: Theme.of(context).colorScheme.surface,
                             //         shape: RoundedRectangleBorder(
                             //           borderRadius: BorderRadius.circular(24),
                             //         ),
@@ -417,7 +417,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                             //   child: const Text(
                             //     'Restore Subscription',
                             //     style: TextStyle(
-                            //       color: AppColors.primary,
+                            //       color: Theme.of(context).primaryColor,
                             //       fontSize: 14,
                             //       fontWeight: FontWeight.bold,
                             //     ),
@@ -429,7 +429,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                   context: context,
                                   builder: (context) {
                                     return Dialog(
-                                      backgroundColor: AppColors.surface,
+                                      backgroundColor: Theme.of(context).colorScheme.surface,
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(24),
                                       ),
@@ -444,13 +444,13 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                                   MainAxisAlignment
                                                       .spaceBetween,
                                               children: [
-                                                const Text(
+                                                Text(
                                                   'Terms & Privacy Policy',
                                                   style: TextStyle(
                                                     fontSize: 24,
                                                     fontWeight: FontWeight.bold,
                                                     color:
-                                                        AppColors.textPrimary,
+                                                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                                   ),
                                                 ),
                                                 IconButton(
@@ -527,10 +527,10 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                   },
                                 );
                               },
-                              child: const Text(
+                              child: Text(
                                 'Terms & Privacy',
                                 style: TextStyle(
-                                  color: AppColors.primary,
+                                  color: Theme.of(context).primaryColor,
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
                                 ),

@@ -51,7 +51,7 @@ class _FilledSlotState extends State<FilledSlot> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       border: isPrimary
-                          ? Border.all(color: AppColors.primary, width: 2.5)
+                          ? Border.all(color: Theme.of(context).primaryColor, width: 2.5)
                           : null,
                       boxShadow: [
                         BoxShadow(
@@ -73,19 +73,19 @@ class _FilledSlotState extends State<FilledSlot> {
                             fit: BoxFit.cover,
                             fadeInDuration: const Duration(milliseconds: 300),
                             placeholder: (_, __) => Container(
-                              color: AppColors.surface,
-                              child: const Center(
+                              color: Theme.of(context).colorScheme.surface,
+                              child: Center(
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  color: AppColors.primary,
+                                  color: Theme.of(context).primaryColor,
                                 ),
                               ),
                             ),
                             errorWidget: (_, __, ___) => Container(
-                              color: AppColors.primaryLight,
-                              child: const Icon(
+                              color: Theme.of(context).primaryColorLight,
+                              child: Icon(
                                 Icons.broken_image_outlined,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               ),
                             ),
                           ).animate().scale(
@@ -100,10 +100,10 @@ class _FilledSlotState extends State<FilledSlot> {
                                 filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                                 child: Container(
                                   color: Colors.white.withValues(alpha: 0.2),
-                                  child: const Center(
+                                  child: Center(
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2.5,
-                                      color: AppColors.primary,
+                                      color: Theme.of(context).primaryColor,
                                     ),
                                   ),
                                 ),
@@ -128,11 +128,11 @@ class _FilledSlotState extends State<FilledSlot> {
                                 vertical: 5,
                               ),
                               decoration: BoxDecoration(
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.primary.withValues(
+                                    color: Theme.of(context).primaryColor.withValues(
                                       alpha: 0.35,
                                     ),
                                     blurRadius: 8,

@@ -159,7 +159,7 @@ class _LocationStepState extends State<LocationStep> {
             CurrentLocationStatus.reverseGeocoding ||
         provider.currentLocationStatus ==
             CurrentLocationStatus.checkingPermission) {
-      return const Row(
+      return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
@@ -167,14 +167,14 @@ class _LocationStepState extends State<LocationStep> {
             height: 16,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
             ),
           ),
           SizedBox(width: 8),
           Text(
             "Detecting location...",
             style: TextStyle(
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -187,15 +187,15 @@ class _LocationStepState extends State<LocationStep> {
         TextButton.icon(
           onPressed: () =>
               provider.detectAndFillCurrentLocation(forceReplace: true),
-          icon: const Icon(
+          icon: Icon(
             Icons.my_location,
-            color: AppColors.primary,
+            color: Theme.of(context).primaryColor,
             size: 20,
           ),
-          label: const Text(
+          label: Text(
             "Use current location",
             style: TextStyle(
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -243,15 +243,15 @@ class _LocationStepState extends State<LocationStep> {
                     style: TextStyle(
                       fontSize: 16,
                       color: value != null
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
+                          ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
+                          : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.keyboard_arrow_down_rounded,
                   color: enabled
-                      ? AppColors.textSecondary
+                      ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary
                       : Colors.grey.shade400,
                   size: 24,
                 ),

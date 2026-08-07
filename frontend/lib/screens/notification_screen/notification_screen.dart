@@ -409,11 +409,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                             ),
                           itemWidget,
                           if (index < provider.notifications.length - 1)
-                            const Divider(
+                            Divider(
                               height: 1,
                               indent: 20,
                               endIndent: 20,
-                              color: AppColors.borderColor,
+                              color: Theme.of(context).dividerColor,
                             ),
                         ],
                       );

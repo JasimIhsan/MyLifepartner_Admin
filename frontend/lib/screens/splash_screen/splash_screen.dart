@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        color: AppColors.white,
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -85,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   Text(
                         "Find Love, Begin Again",
                         style: GoogleFonts.outfit(
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                           letterSpacing: -0.5,

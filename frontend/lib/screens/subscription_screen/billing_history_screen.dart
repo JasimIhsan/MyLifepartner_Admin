@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -54,7 +53,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                     ElevatedButton(
                       onPressed: () => provider.loadTransactions(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: Colors.white,
                       ),
                       child: const Text('Retry'),

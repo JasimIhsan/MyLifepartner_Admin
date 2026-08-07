@@ -23,12 +23,12 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
   @override
   Widget build(BuildContext context) {
     if (!hasApiData) {
-      return const Scaffold(
-        backgroundColor: AppColors.background,
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(child: SizedBox(width: 800, child: ProfileSkeleton())),
       );
     }
-    return Scaffold(backgroundColor: AppColors.background, body: _buildBody());
+    return Scaffold(backgroundColor: Theme.of(context).scaffoldBackgroundColor, body: _buildBody());
   }
 
   Widget _buildBody() {
@@ -46,7 +46,7 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
             height: 300,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.primary.withValues(alpha: 0.05),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
             ),
           ),
         ),
@@ -56,11 +56,11 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
             width: 1000, // Max width for web
             margin: const EdgeInsets.symmetric(vertical: 24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(24),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -78,7 +78,7 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                     children: [
                       if (images.isEmpty)
                         Container(
-                          color: AppColors.primaryLight,
+                          color: Theme.of(context).primaryColorLight,
                           child: const Center(
                             child: Icon(
                               Icons.person_rounded,
@@ -185,7 +185,7 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                 Expanded(
                   flex: 6,
                   child: Container(
-                    color: Colors.white,
+                    color: Colors.transparent,
                     child: Column(
                       children: [
                         // Scrollable details
@@ -199,12 +199,12 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Text(
+                                    Text(
                                       'Profile Details',
                                       style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
-                                        color: AppColors.textPrimary,
+                                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                       ),
                                     ),
                                     if (p['country'] != null &&
@@ -238,12 +238,12 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                 const SizedBox(height: 24),
                                 if (p['bio'] != null &&
                                     (p['bio'] as String).isNotEmpty) ...[
-                                  const Text(
+                                  Text(
                                     'About',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
+                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -256,9 +256,9 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                     ),
                                     child: Text(
                                       p['bio'],
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 15,
-                                        color: AppColors.textPrimary,
+                                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                         height: 1.6,
                                       ),
                                     ),
@@ -273,10 +273,10 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                 if (images.isNotEmpty) ...[
                                   Text(
                                     'Photos (\${images.length})',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.textPrimary,
+                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 16),
@@ -290,10 +290,10 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                         // Action Bar at the bottom
                         Container(
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
+                                color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
                                 blurRadius: 10,
                                 offset: const Offset(0, -5),
                               ),

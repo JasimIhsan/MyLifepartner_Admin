@@ -29,12 +29,12 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
   @override
   Widget build(BuildContext context) {
     if (!hasApiData) {
-      return const Scaffold(
-        backgroundColor: AppColors.white,
-        body: ProfileSkeleton(),
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: const ProfileSkeleton(),
       );
     }
-    return Scaffold(backgroundColor: AppColors.white, body: _buildBody());
+    return Scaffold(backgroundColor: Theme.of(context).scaffoldBackgroundColor, body: _buildBody());
   }
 
   Widget _buildBody() {
@@ -153,12 +153,12 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                     const SizedBox(height: 25),
                     if (p['bio'] != null &&
                         (p['bio'] as String).isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'About',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -166,14 +166,14 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Text(
                           p['bio'],
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                             height: 1.6,
                           ),
                         ),
@@ -185,10 +185,10 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                     if (images.isNotEmpty) ...[
                       Text(
                         'Photos (\${images.length})',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -218,21 +218,21 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
+                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                     spreadRadius: 1,
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 18,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
             ),
           ),
@@ -244,11 +244,11 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.95),
+              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                   blurRadius: 15,
                   offset: const Offset(0, 5),
                   spreadRadius: 1,
@@ -256,10 +256,10 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
               ],
             ),
             child: PopupMenuButton<String>(
-              icon: const Icon(
+              icon: Icon(
                 Icons.more_vert_rounded,
                 size: 20,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
               padding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
@@ -285,14 +285,14 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                 }
               },
               itemBuilder: (BuildContext context) => [
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'report',
                   child: Row(
                     children: [
                       Icon(
                         Icons.flag_outlined,
                         size: 20,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       ),
                       SizedBox(width: 12),
                       Text('Report user'),

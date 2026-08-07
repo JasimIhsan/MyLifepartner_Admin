@@ -62,7 +62,7 @@ class ProfileBrowserCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        color: Colors.grey.shade100,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
@@ -83,11 +83,11 @@ class ProfileBrowserCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   loadingBuilder: (context, child, loadingProgress) {
                     if (loadingProgress == null) return child;
-                    return _placeholder(showLoading: true);
+                    return _placeholder(context, showLoading: true);
                   },
-                  errorBuilder: (_, __, ___) => _placeholder(),
+                  errorBuilder: (_, __, ___) => _placeholder(context),
                 )
-              : _placeholder(),
+              : _placeholder(context),
 
           // Dark Gradient Overlay at the bottom
           Positioned.fill(
@@ -115,7 +115,7 @@ class ProfileBrowserCard extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary,
+                  color: Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
@@ -331,10 +331,10 @@ class ProfileBrowserCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder({bool showLoading = false}) => Container(
-    color: const Color(0xFFF2F2F2),
+  Widget _placeholder(BuildContext context, {bool showLoading = false}) => Container(
+    color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
     child: showLoading
-        ? const Center(
+        ? Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: AppColors.primary,
@@ -488,7 +488,7 @@ class ActionButton extends StatelessWidget {
         backgroundColor ??
         (isDisabled
             ? Colors.grey.shade400
-            : (primary ? AppColors.primary : Colors.transparent));
+            : (primary ? Theme.of(context).primaryColor : Colors.transparent));
 
     final Border? borderStyle =
         borderColor ??
@@ -516,7 +516,7 @@ class ActionButton extends StatelessWidget {
                     backgroundColor == null)
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 6),
                     ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import '../widgets/otp_controller.dart';
 import '../widgets/otp_form.dart';
 import '../widgets/otp_header.dart';
@@ -34,8 +33,8 @@ class _WebOtpScreenState extends State<WebOtpScreen> with OtpControllerState {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primary,
-                    AppColors.primary.withValues(alpha: 0.8),
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -66,9 +65,9 @@ class _WebOtpScreenState extends State<WebOtpScreen> with OtpControllerState {
                           height: 48,
                           width: 48,
                           errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
+                              Icon(
                                 Icons.favorite,
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 size: 36,
                               ),
                         ),

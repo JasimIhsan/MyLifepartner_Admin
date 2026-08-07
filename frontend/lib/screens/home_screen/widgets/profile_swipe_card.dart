@@ -33,7 +33,7 @@ class ProfileSwipeCard extends StatelessWidget {
               height: cardHeight,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.shadowColor,
@@ -80,13 +80,13 @@ class ProfileSwipeCard extends StatelessWidget {
                                 16,
                                 14,
                               ),
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.topCenter,
                                   end: Alignment.bottomCenter,
                                   colors: [
                                     Colors.transparent,
-                                    AppColors.primary,
+                                    Theme.of(context).primaryColor,
                                   ],
                                 ),
                               ),
@@ -147,11 +147,11 @@ class ProfileSwipeCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Why you match',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,
                                 ),

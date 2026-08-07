@@ -18,8 +18,8 @@ class InterestLimitBottomSheet extends StatelessWidget {
         top: 32,
         bottom: MediaQuery.of(context).padding.bottom + 24,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.background,
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
@@ -32,12 +32,12 @@ class InterestLimitBottomSheet extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.star_outline_rounded,
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
               size: 40,
             ),
           ),
@@ -47,7 +47,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ),
@@ -57,7 +57,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               height: 1.5,
             ),
           ),
@@ -70,7 +70,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
                 context.push(AppRoutes.subscription);
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -101,7 +101,7 @@ class InterestLimitBottomSheet extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
             ),

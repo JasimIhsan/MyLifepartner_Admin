@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage> {
         _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         extendBody: !isDesktop,
         appBar: isDesktop ? null : _buildAppBar(),
         body: _buildBody(),
@@ -190,7 +190,7 @@ class _HomePageState extends State<HomePage> {
       showLeading: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: AppColors.textPrimary),
+          icon: Icon(Icons.search, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
           onPressed: () {
             context.push(AppRoutes.browseProfiles);
           },
@@ -202,7 +202,7 @@ class _HomePageState extends State<HomePage> {
               isLabelVisible: count > 0,
               alignment: Alignment.topRight,
               offset: const Offset(-4, 4),
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).primaryColor,
               label: Text(
                 count > 99 ? '99+' : count.toString(),
                 style: const TextStyle(
@@ -212,9 +212,9 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               child: IconButton(
-                icon: const Icon(
+                icon: Icon(
                   Icons.notifications_active_outlined,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
                 onPressed: () {
                   setState(() {

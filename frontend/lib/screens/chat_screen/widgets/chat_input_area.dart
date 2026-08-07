@@ -42,8 +42,8 @@ class ChatInputArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.divider, width: 1)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
       ),
       padding: const EdgeInsets.only(top: 12, bottom: 20, left: 16, right: 16),
       child: Row(
@@ -60,7 +60,7 @@ class ChatInputArea extends StatelessWidget {
             IconButton(
               onPressed: onShowAttachmentOptions,
               icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               splashRadius: 24,
@@ -69,12 +69,12 @@ class ChatInputArea extends StatelessWidget {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F6F8),
+                color: Theme.of(context).scaffoldBackgroundColor,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.04)),
+                border: Border.all(color: Theme.of(context).dividerColor),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.02),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.02),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -114,7 +114,7 @@ class ChatInputArea extends StatelessWidget {
                   height: isRecording ? 52 : 44,
                   width: isRecording ? 52 : 44,
                   decoration: BoxDecoration(
-                    color: isRecording ? Colors.redAccent : AppColors.primary,
+                    color: isRecording ? Colors.redAccent : Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -196,7 +196,7 @@ class ChatInputArea extends StatelessWidget {
             maxLines: 4,
             minLines: 1,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Message...',
               hintStyle: TextStyle(
                 color: AppColors.textSecondary,
@@ -208,7 +208,7 @@ class ChatInputArea extends StatelessWidget {
                 vertical: 12,
               ),
             ),
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
           ),
         ),
       ],

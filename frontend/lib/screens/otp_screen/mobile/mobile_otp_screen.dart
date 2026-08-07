@@ -32,7 +32,7 @@ class _MobileOtpScreenState extends State<MobileOtpScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final backgroundColor = AppColors.surface;
+    final backgroundColor = Theme.of(context).colorScheme.surface;
 
     return Scaffold(
       backgroundColor: backgroundColor,

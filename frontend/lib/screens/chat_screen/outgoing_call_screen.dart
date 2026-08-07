@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 
@@ -180,13 +179,13 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            AppColors.primary.withValues(alpha: 0.7),
-                            AppColors.primaryDark,
+                            Theme.of(context).primaryColor.withValues(alpha: 0.7),
+                            Theme.of(context).primaryColorDark,
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.35),
+                            color: Theme.of(context).primaryColor.withValues(alpha: 0.35),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),

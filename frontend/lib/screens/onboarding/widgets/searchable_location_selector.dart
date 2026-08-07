@@ -72,10 +72,10 @@ class _SearchableLocationSelectorState
               children: [
                 Text(
                   widget.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   ),
                 ),
                 IconButton(
@@ -118,7 +118,7 @@ class _SearchableLocationSelectorState
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.primary),
+                  borderSide: BorderSide(color: Theme.of(context).primaryColor),
                 ),
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -128,10 +128,10 @@ class _SearchableLocationSelectorState
           const SizedBox(height: 16),
 
           if (widget.isSearching)
-            const Padding(
+            Padding(
               padding: EdgeInsets.all(20.0),
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
               ),
             )
           else if (widget.suggestions.isEmpty && _searchCtrl.text.length >= 2)
@@ -171,9 +171,9 @@ class _SearchableLocationSelectorState
                         color: Colors.grey.shade100,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.location_on,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                         size: 20,
                       ),
                     ),

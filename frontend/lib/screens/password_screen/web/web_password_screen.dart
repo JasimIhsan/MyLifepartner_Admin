@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import '../widgets/password_controller.dart';
 
@@ -34,8 +33,8 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    AppColors.primary,
-                    AppColors.primary.withValues(alpha: 0.8),
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withValues(alpha: 0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -66,9 +65,9 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                           height: 48,
                           width: 48,
                           errorBuilder: (context, error, stackTrace) =>
-                              const Icon(
+                              Icon(
                                 Icons.favorite,
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 size: 36,
                               ),
                         ),
@@ -204,21 +203,21 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                   ),
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.primary,
+                                    borderSide: BorderSide(
+                                      color: Theme.of(context).primaryColor,
                                       width: 1.5,
                                     ),
                                   ),
                                   errorBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.error,
+                                    borderSide: BorderSide(
+                                      color: Theme.of(context).colorScheme.error,
                                     ),
                                   ),
                                   focusedErrorBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
-                                    borderSide: const BorderSide(
-                                      color: AppColors.error,
+                                    borderSide: BorderSide(
+                                      color: Theme.of(context).colorScheme.error,
                                     ),
                                   ),
                                 ),
@@ -313,21 +312,21 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.primary,
+                                      borderSide: BorderSide(
+                                        color: Theme.of(context).primaryColor,
                                         width: 1.5,
                                       ),
                                     ),
                                     errorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.error,
+                                      borderSide: BorderSide(
+                                        color: Theme.of(context).colorScheme.error,
                                       ),
                                     ),
                                     focusedErrorBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: const BorderSide(
-                                        color: AppColors.error,
+                                      borderSide: BorderSide(
+                                        color: Theme.of(context).colorScheme.error,
                                       ),
                                     ),
                                   ),
@@ -353,7 +352,7 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                       : (widget.isExistingUser
                                             ? "Log In"
                                             : "Register"),
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: Theme.of(context).primaryColor,
                                   borderRadius: 12,
                                   height: 54,
                                 ),

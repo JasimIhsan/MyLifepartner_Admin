@@ -27,7 +27,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<MatchProvider>(
         builder: (context, provider, _) {
           if (provider.state == MatchLoadState.loading &&
@@ -59,11 +59,11 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                           constraints: const BoxConstraints(maxWidth: 900),
                           child: Card(
                             elevation: 6,
-                            shadowColor: Colors.black.withValues(alpha: 0.04),
+                            shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.04),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(24),
                             ),
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.surface,
                             clipBehavior: Clip.antiAlias,
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -105,7 +105,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                             decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               border: Border.all(
-                                                color: Colors.white,
+                                                color: Theme.of(context).colorScheme.surface,
                                                 width: 2.5,
                                               ),
                                               boxShadow: [
@@ -158,7 +158,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                                       fontWeight:
                                                           FontWeight.bold,
                                                       color:
-                                                          AppColors.textPrimary,
+                                                          Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                                       letterSpacing: -0.5,
                                                     ),
                                                   ),
@@ -216,7 +216,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                               style: GoogleFonts.outfit(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold,
-                                                color: AppColors.textPrimary,
+                                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                               ),
                                             ),
                                             const SizedBox(height: 20),
@@ -259,7 +259,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                               },
                                               style: ElevatedButton.styleFrom(
                                                 backgroundColor:
-                                                    AppColors.primary,
+                                                    Theme.of(context).primaryColor,
                                                 foregroundColor: Colors.white,
                                                 elevation: 0,
                                                 shape: RoundedRectangleBorder(
@@ -298,11 +298,11 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                                     backgroundColor:
                                                         const Color(0xFFFFF5F5),
                                                     iconColor:
-                                                        AppColors.primary,
+                                                        Theme.of(context).primaryColor,
                                                     textColor:
-                                                        AppColors.primary,
+                                                        Theme.of(context).primaryColor,
                                                     borderColor: Border.all(
-                                                      color: AppColors.primary
+                                                      color: Theme.of(context).primaryColor
                                                           .withValues(
                                                             alpha: 0.15,
                                                           ),
@@ -323,7 +323,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                                         ),
                                                     primary: true,
                                                     backgroundColor:
-                                                        AppColors.primary,
+                                                        Theme.of(context).primaryColor,
                                                     iconColor: Colors.white,
                                                     textColor: Colors.white,
                                                   ),
@@ -391,26 +391,26 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: isDisabled ? Colors.grey.shade200 : Colors.white,
+            color: isDisabled ? Theme.of(context).disabledColor.withValues(alpha: 0.1) : Theme.of(context).colorScheme.surface,
             shape: BoxShape.circle,
             boxShadow: isDisabled
                 ? []
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
+                      color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
                   ],
             border: Border.all(
-              color: isDisabled ? Colors.transparent : Colors.grey.shade200,
+              color: isDisabled ? Colors.transparent : Theme.of(context).dividerColor,
               width: 1,
             ),
           ),
           child: Center(
             child: Icon(
               isNext ? Icons.chevron_right_rounded : Icons.chevron_left_rounded,
-              color: isDisabled ? Colors.grey.shade400 : AppColors.primary,
+              color: isDisabled ? Theme.of(context).disabledColor : Theme.of(context).primaryColor,
               size: 28,
             ),
           ),
@@ -425,10 +425,10 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.08),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 22, color: AppColors.primary),
+          child: Icon(icon, size: 22, color: Theme.of(context).primaryColor),
         ),
         const SizedBox(width: 16),
         Column(
@@ -474,9 +474,13 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
             ? Image.network(
                 imgUrl,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _picPlaceholder(),
+                errorBuilder: (_, __, ___) => _picPlaceholder(context),
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return _picPlaceholder(context);
+                },
               )
-            : _picPlaceholder(),
+            : _picPlaceholder(context),
         if (isBlurred)
           Align(
             alignment: Alignment.center,
@@ -523,12 +527,12 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
     );
   }
 
-  Widget _picPlaceholder() => Container(
-    color: const Color(0xFFF3F4F6),
-    child: const Center(
+  Widget _picPlaceholder(BuildContext context) => Container(
+    color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
+    child: Center(
       child: Icon(
         Icons.image_not_supported_outlined,
-        color: Colors.grey,
+        color: Theme.of(context).disabledColor,
         size: 48,
       ),
     ),
@@ -546,16 +550,16 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
   }
 
   Widget _buildLoading() {
-    return const Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+          CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).primaryColor),
           SizedBox(height: 16),
           Text(
             "Finding best matches for you...",
             style: TextStyle(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               letterSpacing: 0.5,
             ),
           ),
@@ -582,14 +586,14 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
               style: GoogleFonts.outfit(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               provider.error ?? 'Something went wrong',
               textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(color: AppColors.textSecondary),
+              style: GoogleFonts.outfit(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
             ),
             const SizedBox(height: 32),
             CustomButton(
@@ -616,7 +620,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
             Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.05),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                     shape: BoxShape.circle,
                   ),
                   child: Image.asset(
@@ -627,7 +631,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                       return Icon(
                         Icons.favorite_border_rounded,
                         size: 100,
-                        color: AppColors.primary.withValues(alpha: 0.5),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
                       );
                     },
                   ),
@@ -646,7 +650,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                   style: GoogleFonts.outfit(
                     fontSize: 26,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     letterSpacing: -0.5,
                   ),
                   textAlign: TextAlign.center,
@@ -664,7 +668,7 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                   'We are looking for more compatible profiles. Please check back in a bit for fresh recommendations.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     fontSize: 15,
                     height: 1.5,
                   ),

@@ -2,7 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 
 class FaceDirectionOverlay extends StatelessWidget {
   final int step;
@@ -65,7 +64,7 @@ class _ScannerBase extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.35),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.35),
           width: 2,
         ),
       ),
@@ -86,7 +85,7 @@ class _FrontOverlay extends StatelessWidget {
         CustomPaint(
           size: Size(size * 0.58, size * 0.68),
           painter: _FaceOvalPainter(
-            color: AppColors.primary.withValues(alpha: 0.8),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
           ),
         ),
 
@@ -118,7 +117,7 @@ class _RunningChevrons extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (index) {
         final int animationOrder = isLeft ? (2 - index) : index;
-        return Icon(singleChevron, size: size * 0.16, color: AppColors.primary)
+        return Icon(singleChevron, size: size * 0.16, color: Theme.of(context).primaryColor)
             .animate(onPlay: (controller) => controller.repeat())
             .fadeIn(
               begin: 0.25,

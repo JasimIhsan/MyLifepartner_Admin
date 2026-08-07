@@ -5,8 +5,9 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
-import 'package:life_partner_again/services/user_repository.dart';
+import 'package:life_partner_again/providers/theme_provider.dart';
 import 'package:life_partner_again/services/api_service.dart';
+import 'package:life_partner_again/services/user_repository.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,10 +60,10 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.borderColor,
+                              color: Theme.of(context).dividerColor,
                               width: 2,
                             ),
-                            color: Colors.grey.shade300,
+                            color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                           ),
                         ),
                         const SizedBox(height: 24),
@@ -70,7 +71,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                           width: 140,
                           height: 20,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
+                            color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
@@ -79,7 +80,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                           width: 200,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
+                            color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
@@ -94,8 +95,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                           height: 56,
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.borderColor),
-                            color: Colors.grey.shade200,
+                            border: Border.all(color: Theme.of(context).dividerColor),
+                            color: Theme.of(context).disabledColor.withValues(alpha: 0.05),
                           ),
                         ),
                         const SizedBox(height: 50),
@@ -121,7 +122,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
             height: 12,
             margin: const EdgeInsets.only(bottom: 8, left: 8),
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(6),
             ),
           ),
@@ -130,9 +131,9 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
           margin: const EdgeInsets.only(bottom: 24),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.borderColor, width: 1.2),
+            border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
           ),
           child: Column(
             children: List.generate(2, (index) {
@@ -149,7 +150,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                           width: 22,
                           height: 22,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
+                            color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                         ),
@@ -158,7 +159,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                           child: Container(
                             height: 14,
                             decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
+                              color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                           ),
@@ -168,7 +169,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                           width: 12,
                           height: 12,
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
+                            color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
@@ -176,11 +177,11 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                     ),
                   ),
                   if (index == 0)
-                    const Divider(
+                    Divider(
                       height: 1,
                       thickness: 1,
                       indent: 56,
-                      color: AppColors.divider,
+                      color: Theme.of(context).dividerColor,
                     ),
                 ],
               );
@@ -210,8 +211,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderColor, width: 2),
-                  color: AppColors.surface,
+                  border: Border.all(color: Theme.of(context).dividerColor, width: 2),
+                  color: Theme.of(context).colorScheme.surface,
                 ),
                 child: Stack(
                   alignment: Alignment.center,
@@ -224,20 +225,20 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                               imageUrl: primaryImage!.imageUrl,
                               fit: BoxFit.cover,
                               placeholder: (context, url) =>
-                                  const CircularProgressIndicator(
-                                    color: AppColors.primary,
+                                  CircularProgressIndicator(
+                                    color: Theme.of(context).primaryColor,
                                   ),
-                              errorWidget: (context, url, error) => const Icon(
+                              errorWidget: (context, url, error) => Icon(
                                 Icons.person,
                                 size: 50,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               ),
                             ),
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.person,
                             size: 70,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                           ),
                   ],
                 ),
@@ -246,20 +247,20 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
             const SizedBox(height: 24),
             Text(
               user!.name ?? "Your Name",
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.w700,
                 letterSpacing: -0.5,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
               user!.email ?? "your.email@example.com",
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 40),
@@ -336,6 +337,20 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
               ),
             ]),
 
+            _buildSectionHeader("Appearance"),
+            _buildActionGroup([
+              _buildSwitchItem(
+                icon: Icons.dark_mode_outlined,
+                title: "Dark Mode",
+                subtitle: "Toggle dark theme for the app",
+                value: context.watch<ThemeProvider>().isDarkMode,
+                isItemLoading: false,
+                onChanged: (value) =>
+                    context.read<ThemeProvider>().toggleTheme(value),
+                showDivider: false,
+              ),
+            ]),
+
             _buildSectionHeader("Support"),
             _buildActionGroup([
               _buildActionItem(
@@ -364,7 +379,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 },
                 text: "Logout",
                 type: CustomButtonType.outline,
-                textColor: AppColors.primary,
+                textColor: Theme.of(context).primaryColor,
                 height: 56,
                 borderRadius: 16,
                 fontSize: 16,
@@ -399,11 +414,11 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
         alignment: Alignment.centerLeft,
         child: Text(
           title.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             letterSpacing: 1.0,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
           ),
         ),
       ),
@@ -414,9 +429,9 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderColor, width: 1.2),
+        border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
       ),
       child: Column(children: children),
     );
@@ -437,33 +452,33 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
-                Icon(icon, color: AppColors.primary, size: 22),
+                Icon(icon, color: Theme.of(context).primaryColor, size: 22),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     ),
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: AppColors.textSecondary.withValues(alpha: 0.5),
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.5),
                 ),
               ],
             ),
           ),
         ),
         if (showDivider)
-          const Divider(
+          Divider(
             height: 1,
             thickness: 1,
             indent: 56,
-            color: AppColors.divider,
+            color: Theme.of(context).dividerColor,
           ),
       ],
     );
@@ -484,7 +499,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             children: [
-              Icon(icon, color: AppColors.primary, size: 22),
+              Icon(icon, color: Theme.of(context).primaryColor, size: 22),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
@@ -492,18 +507,18 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       subtitle,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -519,18 +534,18 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 Switch(
                   value: value,
                   onChanged: onChanged,
-                  activeTrackColor: AppColors.primary.withValues(alpha: 0.5),
-                  activeThumbColor: AppColors.primary,
+                  activeTrackColor: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+                  activeThumbColor: Theme.of(context).primaryColor,
                 ),
             ],
           ),
         ),
         if (showDivider)
-          const Divider(
+          Divider(
             height: 1,
             thickness: 1,
             indent: 56,
-            color: AppColors.divider,
+            color: Theme.of(context).dividerColor,
           ),
       ],
     );
@@ -575,7 +590,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                   if (isSent)
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: Theme.of(context).primaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -585,7 +600,10 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                         Navigator.of(sheetContext).pop();
                         await ApiService.logoutAndRedirect();
                       },
-                      child: const Text('OK', style: TextStyle(color: Colors.white, fontSize: 16)),
+                      child: const Text(
+                        'OK',
+                        style: TextStyle(color: Colors.white, fontSize: 16),
+                      ),
                     )
                   else
                     Row(
@@ -601,7 +619,13 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                             onPressed: isLoading
                                 ? null
                                 : () => Navigator.of(sheetContext).pop(),
-                            child: const Text('Cancel', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(
+                                color: Colors.grey,
+                                fontSize: 16,
+                              ),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -619,7 +643,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                 : () async {
                                     setState(() => isLoading = true);
                                     try {
-                                      await UserRepository().requestAccountDeletion();
+                                      await UserRepository()
+                                          .requestAccountDeletion();
                                       if (context.mounted) {
                                         setState(() {
                                           isLoading = false;
@@ -629,7 +654,9 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                     } catch (e) {
                                       setState(() => isLoading = false);
                                       if (sheetContext.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
                                           SnackBar(content: Text('Error: $e')),
                                         );
                                       }
@@ -641,10 +668,18 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
                                     ),
                                   )
-                                : const Text('Confirm', style: TextStyle(color: Colors.white, fontSize: 16)),
+                                : const Text(
+                                    'Confirm',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],

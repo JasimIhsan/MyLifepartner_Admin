@@ -27,10 +27,10 @@ class MaritalPrefStep extends StatelessWidget {
           title: "Who would you consider matching with?",
         ),
         const SizedBox(height: 15),
-        const Text(
+        Text(
           "You can select more than one",
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
         ),
         const Spacer(),
         Center(

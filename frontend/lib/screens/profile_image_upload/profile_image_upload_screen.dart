@@ -261,12 +261,12 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                 height: 32,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderColor, width: 1.5),
+                  border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.question_mark_rounded,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
               onPressed: _showPhotoTips,
@@ -276,8 +276,8 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         body: SafeArea(
           top: false,
           child: _isLoading && _images.isEmpty
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+              ? Center(
+                  child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                 )
               : Column(
                   children: [
@@ -293,7 +293,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -301,7 +301,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                               'Upload at least 1 clear photo of yourself. Tap any photo to manage it.',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                 height: 1.5,
                               ),
                             ),

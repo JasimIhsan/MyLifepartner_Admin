@@ -1,6 +1,5 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 
 class DatingProfileCard extends StatelessWidget {
@@ -42,7 +41,7 @@ class DatingProfileCard extends StatelessWidget {
         margin: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.0),
-          color: Colors.grey.shade900,
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
@@ -61,13 +60,13 @@ class DatingProfileCard extends StatelessWidget {
                 ? Image.network(
                     _imageUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(),
+                    errorBuilder: (_, __, ___) => _placeholder(context),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
-                      return _placeholder(); // or a shimmer
+                      return _placeholder(context); // or a shimmer
                     },
                   )
-                : _placeholder(),
+                : _placeholder(context),
 
             // Dim overlay if swiped
             if (isSwiped)
@@ -206,7 +205,7 @@ class DatingProfileCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary,
+                            color: Theme.of(context).primaryColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(
@@ -311,7 +310,7 @@ class DatingProfileCard extends StatelessWidget {
                         icon: Icons.favorite_rounded,
                         color: Colors.white,
                         backgroundColor:
-                            AppColors.primary, // Using primary theme color
+                            Theme.of(context).primaryColor, // Using primary theme color
                         borderColor: Colors.transparent,
                         label: "Interest",
                         onTap: isSwiped ? null : onInterest,
@@ -327,11 +326,11 @@ class DatingProfileCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() {
+  Widget _placeholder(BuildContext context) {
     return Container(
-      color: Colors.grey.shade200,
-      child: const Center(
-        child: Icon(Icons.person, size: 100, color: Colors.grey),
+      color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
+      child: Center(
+        child: Icon(Icons.person, size: 100, color: Theme.of(context).disabledColor),
       ),
     );
   }

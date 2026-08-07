@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/inline_video_player.dart';
 
 class MediaPreviewScreen extends StatelessWidget {
@@ -61,8 +60,8 @@ class MediaPreviewScreen extends StatelessWidget {
                     },
                     child: Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(

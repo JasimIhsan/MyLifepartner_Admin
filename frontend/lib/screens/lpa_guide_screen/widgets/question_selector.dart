@@ -21,11 +21,11 @@ class QuestionSelector extends StatelessWidget {
         elevation: 0,
         color: Colors.grey.shade50,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Text(
             'No questions found in this category.',
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
           ),
         ),
       );
@@ -53,25 +53,25 @@ class QuestionSelector extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.help_outline_rounded,
-                      color: AppColors.primary,
+                      color: Theme.of(context).primaryColor,
                       size: 18,
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         q.question,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         ),
                       ),
                     ),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right_rounded,
-                      color: AppColors.textLight,
+                      color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                       size: 20,
                     ),
                   ],

@@ -32,7 +32,7 @@ class ConnectionCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: AppColors.white,
+              color: Theme.of(context).colorScheme.surface,
               boxShadow: [
                 BoxShadow(
                   color: AppColors.black.withValues(alpha: 0.04),
@@ -50,9 +50,13 @@ class ConnectionCard extends StatelessWidget {
                       ? Image.network(
                           _imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _placeholder(),
+                          errorBuilder: (_, __, ___) => _placeholder(context),
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return _placeholder(context);
+                          },
                         )
-                      : _placeholder(),
+                      : _placeholder(context),
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -137,7 +141,7 @@ class ConnectionCard extends StatelessWidget {
                         vertical: 3,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
@@ -156,7 +160,7 @@ class ConnectionCard extends StatelessWidget {
                     child: Theme(
                       data: Theme.of(context).copyWith(
                         cardTheme: CardThemeData(
-                          color: AppColors.white,
+                          color: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -178,7 +182,7 @@ class ConnectionCard extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         itemBuilder: (BuildContext context) => [
-                          const PopupMenuItem<String>(
+                          PopupMenuItem<String>(
                             value: 'view',
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -186,14 +190,14 @@ class ConnectionCard extends StatelessWidget {
                                 Icon(
                                   Icons.person_outline_rounded,
                                   size: 18,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 ),
                                 SizedBox(width: 8),
                                 Text(
                                   'View Profile',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: AppColors.textPrimary,
+                                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -201,7 +205,7 @@ class ConnectionCard extends StatelessWidget {
                             ),
                           ),
                           if (onCancel != null)
-                            const PopupMenuItem<String>(
+                            PopupMenuItem<String>(
                               value: 'cancel',
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -209,14 +213,14 @@ class ConnectionCard extends StatelessWidget {
                                   Icon(
                                     Icons.close_rounded,
                                     size: 18,
-                                    color: AppColors.primary,
+                                    color: Theme.of(context).primaryColor,
                                   ),
                                   SizedBox(width: 8),
                                   Text(
                                     'Cancel Request',
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: AppColors.primary,
+                                      color: Theme.of(context).primaryColor,
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
@@ -244,5 +248,5 @@ class ConnectionCard extends StatelessWidget {
         .slideY(begin: 0.1, curve: Curves.easeOutCubic);
   }
 
-  Widget _placeholder() => Container(color: AppColors.divider);
+  Widget _placeholder(BuildContext context) => Container(color: Theme.of(context).disabledColor.withValues(alpha: 0.1));
 }

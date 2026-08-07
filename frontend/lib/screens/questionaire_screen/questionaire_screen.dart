@@ -362,7 +362,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
           onPressed: () {
             // Navigator.pushAndRemoveUntil(
             //   context,
@@ -408,7 +408,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                         ),
                         decoration: BoxDecoration(
                           color: isCurrent
-                              ? AppColors.primary
+                              ? Theme.of(context).primaryColor
                               : isCompleted
                               ? AppColors.success.withValues(alpha: 0.12)
                               : Colors.transparent,
@@ -447,7 +447,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                                     ? Colors.white
                                     : isCompleted
                                     ? AppColors.success
-                                    : AppColors.textSecondary,
+                                    : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -464,7 +464,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
               child: LinearProgressIndicator(
                 value: progress,
                 backgroundColor: Colors.grey[300],
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 minHeight: 6,
               ),
             ),
@@ -477,9 +477,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                   children: [
                     Text(
                       'Question ${_currentIndex + 1} of ${_questions.length}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -497,14 +497,14 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                 context.go(AppRoutes.landing);
               }
             },
-            child: const Icon(Icons.logout, color: AppColors.textPrimary),
+            child: Icon(Icons.logout, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
           ),
         ],
       ),
       body: SafeArea(
         child: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+            ? Center(
+                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
               )
             : _errorMessage != null
             ? Center(
@@ -528,13 +528,13 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                               padding: const EdgeInsets.only(bottom: 16.0),
                               child: Text(
                                 question.sectionName!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                   letterSpacing: 1.2,
                                   // uppercase:
-                                  //     Color(0xFFB88973) == AppColors.primary
+                                  //     Color(0xFFB88973) == Theme.of(context).primaryColor
                                   //     ? false
                                   //     : true, // Just logic to keep it simple
                                 ),
@@ -584,7 +584,7 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                                       ? "Upload Profile Pictures"
                                       : "Done")
                                 : "Continue",
-                            backgroundColor: AppColors.primary,
+                            backgroundColor: Theme.of(context).primaryColor,
                             height: 50,
                           ),
                         ),

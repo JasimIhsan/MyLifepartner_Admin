@@ -490,8 +490,8 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
 
   Widget _buildChatBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return Center(
+        child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
       );
     }
 
@@ -502,19 +502,19 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline_rounded,
                 size: 64,
-                color: AppColors.error,
+                color: Theme.of(context).colorScheme.error,
               ),
               const SizedBox(height: 16),
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -523,7 +523,7 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Try Again'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -570,10 +570,10 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
           if (isAssistant) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: const Icon(
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              child: Icon(
                 Icons.support_agent_rounded,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 18,
               ),
             ),
@@ -610,10 +610,10 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: const Icon(
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              child: Icon(
                 Icons.person_outline_rounded,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 18,
               ),
             ),

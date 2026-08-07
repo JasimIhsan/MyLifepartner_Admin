@@ -34,7 +34,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
         appBar: CustomAppBar(
           title: "Edit Profile",
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            icon: Icon(Icons.arrow_back, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
             onPressed: handleBackPress,
           ),
         ),
@@ -54,7 +54,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                   ),
                 ],
                 border: Border.all(
-                  color: AppColors.borderColor.withValues(alpha: 0.5),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                 ),
               ),
               child: Stack(
@@ -83,12 +83,12 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: AppColors.primary.withValues(
+                                          color: Theme.of(context).primaryColor.withValues(
                                             alpha: 0.2,
                                           ),
                                           width: 4,
                                         ),
-                                        color: AppColors.surface,
+                                        color: Theme.of(context).colorScheme.surface,
                                       ),
                                       child: CircleAvatar(
                                         radius: 64,
@@ -101,8 +101,8 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                               )
                                             : null,
                                         child: loadingImage
-                                            ? const CircularProgressIndicator(
-                                                color: AppColors.primary,
+                                            ? CircularProgressIndicator(
+                                                color: Theme.of(context).primaryColor,
                                               )
                                             : (primaryImageUrl == null ||
                                                       primaryImageUrl!.isEmpty
@@ -118,7 +118,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary,
+                                        color: Theme.of(context).primaryColor,
                                         shape: BoxShape.circle,
                                         border: Border.all(
                                           color: Colors.white,
@@ -153,8 +153,8 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     const SizedBox(height: 8),
                                     Text(
                                       widget.user.email ?? '',
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
+                                      style: TextStyle(
+                                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                         fontSize: 16,
                                       ),
                                     ).animate().fadeIn(delay: 150.ms),
@@ -264,9 +264,9 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     ? saveProfile
                                     : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
+                                  backgroundColor: Theme.of(context).primaryColor,
                                   foregroundColor: Colors.white,
-                                  disabledBackgroundColor: AppColors.primary
+                                  disabledBackgroundColor: Theme.of(context).primaryColor
                                       .withValues(alpha: 0.5),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(28),

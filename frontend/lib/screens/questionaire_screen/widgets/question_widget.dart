@@ -79,10 +79,10 @@ class _QuestionWidgetState extends State<QuestionWidget> {
       children: [
         Text(
           widget.question.question,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 16),
@@ -148,7 +148,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
         hintText: "Type your answer here...",
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.borderColor),
+          borderSide: BorderSide(color: Theme.of(context).dividerColor),
         ),
         filled: true,
         fillColor: Colors.white,
@@ -167,10 +167,10 @@ class _QuestionWidgetState extends State<QuestionWidget> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withValues(alpha: 0.1)
+                  ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                   : Colors.white,
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.borderColor,
+                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
                 width: 1.5,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -186,15 +186,15 @@ class _QuestionWidgetState extends State<QuestionWidget> {
                           ? FontWeight.w600
                           : FontWeight.normal,
                       color: isSelected
-                          ? AppColors.primary
-                          : AppColors.textPrimary,
+                          ? Theme.of(context).primaryColor
+                          : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     ),
                   ),
                 ),
                 if (isSelected)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(left: 8.0),
-                    child: Icon(Icons.check_circle, color: AppColors.primary),
+                    child: Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
                   ),
               ],
             ),
@@ -222,9 +222,9 @@ class _QuestionWidgetState extends State<QuestionWidget> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: isSelected ? AppColors.primary : Colors.white,
+              color: isSelected ? Theme.of(context).primaryColor : Colors.white,
               border: Border.all(
-                color: isSelected ? AppColors.primary : AppColors.borderColor,
+                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
               ),
               shape: BoxShape.circle,
             ),
@@ -234,7 +234,7 @@ class _QuestionWidgetState extends State<QuestionWidget> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                  color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
             ),
@@ -262,10 +262,10 @@ class _QuestionWidgetState extends State<QuestionWidget> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
+              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
               : Colors.white,
           border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.borderColor,
+            color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -278,14 +278,14 @@ class _QuestionWidgetState extends State<QuestionWidget> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                  color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
             ),
             if (isSelected)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.check_circle, color: AppColors.primary),
+                child: Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
               ),
           ],
         ),

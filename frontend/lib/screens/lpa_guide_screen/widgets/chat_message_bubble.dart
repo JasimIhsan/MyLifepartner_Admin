@@ -22,10 +22,10 @@ class ChatMessageBubble extends StatelessWidget {
           if (isAssistant) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: const Icon(
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              child: Icon(
                 Icons.support_agent_rounded,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 18,
               ),
             ),
@@ -48,10 +48,10 @@ class ChatMessageBubble extends StatelessWidget {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: const Icon(
+              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+              child: Icon(
                 Icons.person_outline_rounded,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 18,
               ),
             ),
@@ -94,7 +94,7 @@ class ChatMessageBubble extends StatelessWidget {
           const SizedBox(width: 10),
           Text(
             text,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontStyle: FontStyle.italic,
               color: AppColors.textSecondary,

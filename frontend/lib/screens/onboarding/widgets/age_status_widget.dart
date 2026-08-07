@@ -31,7 +31,7 @@ class AgeStatusWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
-                color: isValid ? AppColors.primary : AppColors.error,
+                color: isValid ? Theme.of(context).primaryColor : Theme.of(context).colorScheme.error,
               ),
             ),
             const SizedBox(height: 6),
@@ -41,7 +41,7 @@ class AgeStatusWidget extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.error.withValues(alpha: 0.8),
+                  color: Theme.of(context).colorScheme.error.withValues(alpha: 0.8),
                 ),
               )
             else

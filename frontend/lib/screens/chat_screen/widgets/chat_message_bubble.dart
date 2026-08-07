@@ -34,13 +34,13 @@ class ChatMessageBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           gradient: isMe
-              ? const LinearGradient(
+              ? LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [AppColors.primary, Color(0xFFE82B2B)],
+                  colors: [Theme.of(context).primaryColor, Color(0xFFE82B2B)],
                 )
               : null,
-          color: isMe ? null : AppColors.background,
+          color: isMe ? null : Theme.of(context).scaffoldBackgroundColor,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),
@@ -50,7 +50,7 @@ class ChatMessageBubble extends StatelessWidget {
           boxShadow: isMe
               ? [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.2),
+                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -71,7 +71,7 @@ class ChatMessageBubble extends StatelessWidget {
                 msg.content,
                 textAlign: TextAlign.start,
                 style: TextStyle(
-                  color: isMe ? Colors.white : AppColors.textPrimary,
+                  color: isMe ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   height: 1.35,
@@ -88,7 +88,7 @@ class ChatMessageBubble extends StatelessWidget {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       value: msg.uploadProgress > 0 ? msg.uploadProgress : null,
-                      color: isMe ? Colors.white70 : AppColors.primary,
+                      color: isMe ? Colors.white70 : Theme.of(context).primaryColor,
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -106,7 +106,7 @@ class ChatMessageBubble extends StatelessWidget {
                   style: TextStyle(
                     color: isMe
                         ? Colors.white.withValues(alpha: 0.7)
-                        : AppColors.textSecondary,
+                        : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -132,7 +132,7 @@ class ChatMessageBubble extends StatelessWidget {
       width: 240,
       height: 240,
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.1),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
       ),
       alignment: Alignment.center,
       child: Column(
@@ -143,15 +143,15 @@ class ChatMessageBubble extends StatelessWidget {
                 ? Icons.image_rounded
                 : Icons.video_collection_rounded,
             size: 48,
-            color: AppColors.primary.withValues(alpha: 0.5),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 12),
           isDownloaded
-              ? const SizedBox(
+              ? SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
-                    color: AppColors.primary,
+                    color: Theme.of(context).primaryColor,
                     strokeWidth: 2,
                   ),
                 )
@@ -164,7 +164,7 @@ class ChatMessageBubble extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.8),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(

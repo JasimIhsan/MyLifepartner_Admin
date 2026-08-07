@@ -31,7 +31,7 @@ class OtpHeader extends StatelessWidget {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -40,13 +40,13 @@ class OtpHeader extends StatelessWidget {
             text: isPasswordReset
                 ? "We’ve sent a 6-digit password reset code to "
                 : "We’ve sent a 6-digit verification code to ",
-            style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
             children: [
               TextSpan(
                 text: "$_maskedEmail.",
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
             ],
@@ -65,27 +65,27 @@ class OtpWebBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(40),
       decoration: BoxDecoration(
-        color: AppColors.primaryLight,
+        color: Theme.of(context).primaryColorLight,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.shield_rounded, size: 150, color: AppColors.primary),
+          Icon(Icons.shield_rounded, size: 150, color: Theme.of(context).primaryColor),
           const SizedBox(height: 32),
           Text(
             "Account Verification",
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             "We've sent a 6-digit code to your email. Please enter it to verify your identity.",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
           ),
         ],
       ),

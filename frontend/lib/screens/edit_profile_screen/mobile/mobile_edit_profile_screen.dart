@@ -108,12 +108,12 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                           )
                                         : null,
                                     child: loadingImage
-                                        ? const SizedBox(
+                                        ? SizedBox(
                                             width: 24,
                                             height: 24,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: AppColors.primary,
+                                              color: Theme.of(context).primaryColor,
                                             ),
                                           )
                                         : (primaryImageUrl == null ||
@@ -128,8 +128,8 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                 ),
                                 Container(
                                   padding: const EdgeInsets.all(8),
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).primaryColor,
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -153,8 +153,8 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                           const SizedBox(height: 4),
                           Text(
                             widget.user.email ?? '',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
@@ -198,9 +198,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                     children: [
                                       Row(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.person_outline_rounded,
-                                            color: AppColors.primary,
+                                            color: Theme.of(context).primaryColor,
                                             size: 20,
                                           ),
                                           const SizedBox(width: 8),
@@ -256,9 +256,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                       const SizedBox(height: 24),
                                       Row(
                                         children: [
-                                          const Icon(
+                                          Icon(
                                             Icons.location_on_outlined,
-                                            color: AppColors.primary,
+                                            color: Theme.of(context).primaryColor,
                                             size: 20,
                                           ),
                                           const SizedBox(width: 8),
@@ -305,7 +305,7 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                               ? saveProfile
                                               : null,
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: AppColors.primary,
+                                            backgroundColor: Theme.of(context).primaryColor,
                                             foregroundColor: Colors.white,
                                             disabledBackgroundColor: AppColors
                                                 .primary

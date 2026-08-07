@@ -7,10 +7,10 @@ import 'package:flutter/services.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_theme.dart';
 import 'package:life_partner_again/core/app_router.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/providers/theme_provider.dart';
 import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
@@ -196,41 +196,24 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(
           create: (_) => NotificationProvider()..initialize(),
         ),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp.router(
-        title: 'Life Partner Again',
-        debugShowCheckedModeBanner: false,
-        scaffoldMessengerKey: scaffoldMessengerKey,
-        routerConfig: _router,
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp.router(
+            title: 'Life Partner Again',
+            debugShowCheckedModeBanner: false,
+            scaffoldMessengerKey: scaffoldMessengerKey,
+            routerConfig: _router,
 
-        theme: ThemeData(
-          useMaterial3: true,
+            themeMode: themeProvider.themeMode,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
 
-          // Prevent gray elevation tint from Material 3
-          applyElevationOverlayColor: false,
-
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: AppColors.primary,
-            brightness: Brightness.light,
-          ).copyWith(surface: Colors.white, surfaceTint: Colors.transparent),
-
-          scaffoldBackgroundColor: Colors.white,
-          canvasColor: Colors.white,
-          cardColor: Colors.white,
-          dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
-
-          textTheme: GoogleFonts.poppinsTextTheme(),
-
-          appBarTheme: const AppBarTheme(
-            elevation: 0,
-            backgroundColor: Colors.white,
-            surfaceTintColor: Colors.transparent,
-            centerTitle: true,
-          ),
-        ),
-
-        builder: (context, child) {
-          return Stack(children: [child!, const IncomingCallOverlay()]);
+            builder: (context, child) {
+              return Stack(children: [child!, const IncomingCallOverlay()]);
+            },
+          );
         },
       ),
     );

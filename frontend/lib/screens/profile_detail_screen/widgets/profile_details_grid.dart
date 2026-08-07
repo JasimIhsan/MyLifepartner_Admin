@@ -37,7 +37,7 @@ class ProfileDetailsGrid extends StatelessWidget {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 10),
@@ -48,12 +48,12 @@ class ProfileDetailsGrid extends StatelessWidget {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey.shade200, width: 1.5),
+                border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.03),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -65,14 +65,14 @@ class ProfileDetailsGrid extends StatelessWidget {
                   if (item.customLeading != null)
                     item.customLeading!
                   else if (item.icon != null)
-                    Icon(item.icon, size: 16, color: AppColors.primary),
+                    Icon(item.icon, size: 16, color: Theme.of(context).primaryColor),
                   const SizedBox(width: 8),
                   Text(
                     item.value,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     ),
                   ),
                 ],

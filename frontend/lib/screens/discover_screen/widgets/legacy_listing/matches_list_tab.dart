@@ -1,8 +1,8 @@
-import 'package:go_router/go_router.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
@@ -150,7 +150,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -160,7 +162,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -194,7 +198,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -204,7 +210,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.6,
               ),
             ),
@@ -309,7 +317,12 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 12),
             Text(
               'Loading more…',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -347,9 +360,13 @@ class _HeroCard extends StatelessWidget {
                   ? Image.network(
                       _imageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder(),
+                      errorBuilder: (_, __, ___) => _placeholder(context),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return _placeholder(context);
+                      },
                     )
-                  : _placeholder(),
+                  : _placeholder(context),
 
               // Bottom gradient overlay
               Positioned.fill(
@@ -437,7 +454,8 @@ class _HeroCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(color: const Color(0xFFEEEEEE));
+  Widget _placeholder(BuildContext context) =>
+      Container(color: Theme.of(context).disabledColor.withValues(alpha: 0.1));
 
   Widget _buildChips() {
     final items = <String>[];
@@ -491,12 +509,14 @@ class _PortraitCard extends StatelessWidget {
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFEBEBEB)),
+          border: Border.all(
+            color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
+              color: Theme.of(context).shadowColor.withValues(alpha: 0.04),
               blurRadius: 20,
               offset: const Offset(0, 6),
             ),
@@ -517,9 +537,13 @@ class _PortraitCard extends StatelessWidget {
                     ? Image.network(
                         _imageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorBuilder: (_, __, ___) => _placeholder(context),
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return _placeholder(context);
+                        },
                       )
-                    : _placeholder(),
+                    : _placeholder(context),
               ),
             ),
             // Info
@@ -538,7 +562,9 @@ class _PortraitCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                             height: 1.1,
                             letterSpacing: -0.2,
                           ),
@@ -549,10 +575,14 @@ class _PortraitCard extends StatelessWidget {
                           const SizedBox(height: 3),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.location_on_outlined,
                                 size: 11,
-                                color: AppColors.textSecondary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
                               ),
                               const SizedBox(width: 2),
                               Expanded(
@@ -562,7 +592,11 @@ class _PortraitCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -574,7 +608,7 @@ class _PortraitCard extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [Expanded(child: _buildBottom())],
+                      children: [Expanded(child: _buildBottom(context))],
                     ),
                   ],
                 ),
@@ -601,9 +635,10 @@ class _PortraitCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() => Container(color: const Color(0xFFF0F0F0));
+  Widget _placeholder(BuildContext context) =>
+      Container(color: Theme.of(context).disabledColor.withValues(alpha: 0.1));
 
-  Widget _buildBottom() {
+  Widget _buildBottom(BuildContext context) {
     final items = <String>[];
     // if (profile.religion != null) items.add(profile.religion!);
     if (profile.occupation != null) items.add(profile.occupation!);
@@ -615,14 +650,18 @@ class _PortraitCard extends StatelessWidget {
             (label) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFFDDDDDD)),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                ),
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Text(
                 label,
                 style: TextStyle(
                   fontSize: 10,
-                  color: AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,
                 ),
@@ -647,7 +686,7 @@ class _InteractionBadge extends StatelessWidget {
 
     switch (state) {
       case InteractionState.matched:
-        bgColor = AppColors.primary;
+        bgColor = Theme.of(context).primaryColor;
         label = 'MATCHED';
         icon = Icons.favorite_rounded;
         break;
@@ -718,7 +757,9 @@ class _MatchArc extends StatelessWidget {
             style: TextStyle(
               fontSize: size < 48 ? 9.5 : 11,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.2,
             ),
           ),

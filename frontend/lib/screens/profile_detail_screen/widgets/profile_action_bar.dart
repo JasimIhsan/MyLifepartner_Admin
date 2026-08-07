@@ -65,23 +65,23 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
           padding: const EdgeInsets.symmetric(vertical: 18),
           decoration: BoxDecoration(
             color: isOutlined
-                ? Colors.white
+                ? Theme.of(context).colorScheme.surface
                 : effectivelyDisabled
-                ? AppColors.primary.withValues(alpha: 0.5)
-                : AppColors.primary,
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
+                : Theme.of(context).primaryColor,
             borderRadius: BorderRadius.circular(16),
             border: isOutlined
                 ? Border.all(
                     color: effectivelyDisabled
-                        ? Colors.grey.shade200
-                        : Colors.grey.shade300,
+                        ? Theme.of(context).dividerColor.withValues(alpha: 0.5)
+                        : Theme.of(context).dividerColor,
                     width: 1.5,
                   )
                 : null,
             boxShadow: !isOutlined && !effectivelyDisabled
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
                       blurRadius: 15,
                       offset: const Offset(0, 8),
                       spreadRadius: 2,
@@ -98,7 +98,7 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                   height: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: isOutlined ? AppColors.textPrimary : Colors.white,
+                    color: isOutlined ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary : Colors.white,
                   ),
                 )
               else ...[
@@ -107,8 +107,8 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                   size: 18,
                   color: isOutlined
                       ? (effectivelyDisabled
-                            ? AppColors.textSecondary.withValues(alpha: 0.5)
-                            : AppColors.textPrimary)
+                            ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.5)
+                            : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary)
                       : Colors.white,
                 ),
                 const SizedBox(width: 8),
@@ -119,8 +119,8 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                     fontWeight: FontWeight.w600,
                     color: isOutlined
                         ? (effectivelyDisabled
-                              ? AppColors.textSecondary.withValues(alpha: 0.5)
-                              : AppColors.textPrimary)
+                              ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.5)
+                              : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary)
                         : Colors.white,
                   ),
                 ),
@@ -157,10 +157,10 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
         bottom: MediaQuery.of(context).padding.bottom + 16,
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
             blurRadius: 16,
             offset: const Offset(0, -4),
           ),

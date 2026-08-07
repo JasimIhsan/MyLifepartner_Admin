@@ -151,7 +151,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -161,7 +161,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -195,7 +195,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -205,7 +205,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 height: 1.6,
               ),
             ),
@@ -310,7 +310,7 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 12),
             Text(
               'Loading more…',
-              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+              style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
             ),
           ],
         ),
@@ -538,7 +538,7 @@ class _PortraitCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                             height: 1.1,
                             letterSpacing: -0.2,
                           ),
@@ -549,10 +549,10 @@ class _PortraitCard extends StatelessWidget {
                           const SizedBox(height: 3),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.location_on_outlined,
                                 size: 11,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               ),
                               const SizedBox(width: 2),
                               Expanded(
@@ -562,7 +562,7 @@ class _PortraitCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -646,7 +646,7 @@ class _InteractionBadge extends StatelessWidget {
 
     switch (state) {
       case InteractionState.matched:
-        bgColor = AppColors.primary;
+        bgColor = Theme.of(context).primaryColor;
         label = 'MATCHED';
         icon = Icons.favorite_rounded;
         break;
@@ -717,7 +717,7 @@ class _MatchArc extends StatelessWidget {
             style: TextStyle(
               fontSize: size < 48 ? 9.5 : 11,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               letterSpacing: -0.2,
             ),
           ),

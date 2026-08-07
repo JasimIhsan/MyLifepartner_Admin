@@ -85,17 +85,17 @@ class PlanCardWidget extends StatelessWidget {
                               ? Colors.orange
                               : (isDowngradeScheduled || isCancelled
                                     ? Colors.grey
-                                    : AppColors.primary)))
+                                    : Theme.of(context).primaryColor)))
                   : (isSelectedPage
                         ? visuals.borderColor
-                        : AppColors.borderColor),
+                        : Theme.of(context).dividerColor),
               width: (isCurrentPlan || isSelectedPage) ? 2 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isSelectedPage
-                    ? AppColors.primary.withValues(alpha: 0.12)
-                    : AppColors.primary.withValues(alpha: 0.03),
+                    ? Theme.of(context).primaryColor.withValues(alpha: 0.12)
+                    : Theme.of(context).primaryColor.withValues(alpha: 0.03),
                 blurRadius: isSelectedPage ? 20 : 10,
                 offset: const Offset(0, 8),
               ),
@@ -109,10 +109,10 @@ class PlanCardWidget extends StatelessWidget {
               Text(
                 plan.name,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 10),
@@ -125,10 +125,10 @@ class PlanCardWidget extends StatelessWidget {
                 children: [
                   Text(
                     plan.price > 0 ? plan.displayPrice : '₹0',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -136,10 +136,10 @@ class PlanCardWidget extends StatelessWidget {
               Text(
                 durationText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
               if (isCurrentPlan &&
@@ -222,19 +222,19 @@ class PlanCardWidget extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 6.0),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.check_circle_outline_rounded,
                             size: 16,
-                            color: AppColors.primary,
+                            color: Theme.of(context).primaryColor,
                           ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               displayFeatures[index],
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               ),
                             ),
                           ),
@@ -257,10 +257,10 @@ class PlanCardWidget extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Active Plan',
                       style: TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
@@ -318,15 +318,15 @@ class PlanCardWidget extends StatelessWidget {
                       color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
                       ),
                     ),
                     child: TextButton(
                       onPressed: () => onSubscribe(),
-                      child: const Text(
+                      child: Text(
                         'Cancel Subscription',
                         style: TextStyle(
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.w800,
                           fontSize: 14,
                         ),
@@ -350,7 +350,7 @@ class PlanCardWidget extends StatelessWidget {
                         ? null
                         : [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.3),
+                              color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -371,7 +371,7 @@ class PlanCardWidget extends StatelessWidget {
                       plan.price == 0 ? 'Free Plan' : 'Subscribe',
                       style: TextStyle(
                         color: plan.price == 0
-                            ? AppColors.textSecondary
+                            ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary
                             : Colors.white,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
@@ -406,8 +406,8 @@ class PlanCardWidget extends StatelessWidget {
                       plan.price == 0 ? 'Free Plan' : 'Subscribe',
                       style: TextStyle(
                         color: plan.price == 0
-                            ? AppColors.textSecondary
-                            : AppColors.primary,
+                            ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary
+                            : Theme.of(context).primaryColor,
                         fontWeight: FontWeight.w800,
                         fontSize: 14,
                       ),
@@ -454,7 +454,7 @@ class PlanCardWidget extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
+                      color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
                       blurRadius: 6,
                       offset: const Offset(0, 2),
                     ),

@@ -79,6 +79,8 @@ dependencies:
    firebase_messaging: 15.2.10
    flutter_local_notifications: ^22.2.0
 
+   flutter_web_plugins:
+      sdk: flutter
 dependency_overrides:
    zego_zim: ^2.21.1
 

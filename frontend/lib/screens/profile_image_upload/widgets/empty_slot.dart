@@ -40,7 +40,7 @@ class _EmptySlotState extends State<EmptySlot> {
                 curve: Curves.easeInOut,
                 child: CustomPaint(
                   painter: DashedBorderPainter(
-                    color: isMain ? AppColors.primary : AppColors.borderColor,
+                    color: isMain ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
                     borderRadius: 16,
                     dashLength: 7,
                     gapLength: 5,
@@ -49,15 +49,15 @@ class _EmptySlotState extends State<EmptySlot> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: isMain
-                          ? AppColors.primary.withValues(alpha: 0.04)
+                          ? Theme.of(context).primaryColor.withValues(alpha: 0.04)
                           : const Color(0xFFFAFAFA),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: widget.isUploading
-                        ? const Center(
+                        ? Center(
                             child: CircularProgressIndicator(
                               strokeWidth: 2.5,
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                             ),
                           )
                         : Column(
@@ -69,8 +69,8 @@ class _EmptySlotState extends State<EmptySlot> {
                                 height: 48,
                                 decoration: BoxDecoration(
                                   color: isMain
-                                      ? AppColors.primary.withValues(alpha: 0.1)
-                                      : AppColors.borderColor.withValues(
+                                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                                      : Theme.of(context).dividerColor.withValues(
                                           alpha: 0.5,
                                         ),
                                   shape: BoxShape.circle,
@@ -80,8 +80,8 @@ class _EmptySlotState extends State<EmptySlot> {
                                       ? Icons.add_photo_alternate_outlined
                                       : Icons.add_rounded,
                                   color: isMain
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
+                                      ? Theme.of(context).primaryColor
+                                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                   size: isMain ? 24 : 22,
                                 ),
                               ),
@@ -94,17 +94,17 @@ class _EmptySlotState extends State<EmptySlot> {
                                       ? FontWeight.w600
                                       : FontWeight.w500,
                                   color: isMain
-                                      ? AppColors.primary
-                                      : AppColors.textSecondary,
+                                      ? Theme.of(context).primaryColor
+                                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                 ),
                               ),
                               if (isMain) ...[
                                 const SizedBox(height: 4),
-                                const Text(
+                                Text(
                                   'First impression',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                   ),
                                 ),
                               ],

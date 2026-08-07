@@ -1,0 +1,32 @@
+Analyzing frontend...                                           
+
+warning • Unused import: 'package:google_fonts/google_fonts.dart' • lib/main.dart:10:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/main.dart:11:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/chat_screen/chat_detail_screen.dart:7:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/chat_screen/outgoing_call_screen.dart:6:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/chat_screen/widgets/inline_audio_player.dart:6:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/chat_screen/widgets/inline_video_player.dart:4:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/chat_screen/widgets/media_preview_screen.dart:4:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/discover_screen/widgets/dating_profile_card.dart:3:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/home_screen/widgets/profile_image_carousel.dart:4:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/home_screen/widgets/swipe_action_buttons.dart:2:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/landing_screen/landing_screen.dart:8:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps • lib/screens/likes_screen/widgets/matches_list.dart:132:39 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/likes_screen/widgets/matches_list.dart:141:39 • use_build_context_synchronously
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/login_screen/web/web_login_screen.dart:5:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/login_screen/widgets/login_form.dart:3:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/login_screen/widgets/otp_method_selector.dart:4:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/lpa_guide_screen/widgets/chat_header.dart:3:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/manage_profile_images_screens/widgets/manage_profile_pictures_controller.dart:5:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/onboarding/mobile/mobile_onboarding_screen.dart:2:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/onboarding/web/web_onboarding_screen.dart:3:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/otp_screen/web/web_otp_screen.dart:2:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/partner_preference/mobile/mobile_partner_preference_screen.dart:2:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/partner_preference/web/web_partner_preference_screen.dart:3:8 • unused_import
+  error • The argument type 'PaintingContext' can't be assigned to the parameter type 'BuildContext'.  • lib/screens/partner_preference/widgets/age_pref_step.dart:283:52 • argument_type_not_assignable
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/password_screen/web/web_password_screen.dart:2:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/password_screen/widgets/password_controller.dart:5:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/profile_detail_screen/widgets/header_carousel.dart:2:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/selfie_verification/widgets/face_direction_overlay.dart:5:8 • unused_import
+warning • Unused import: 'package:life_partner_again/core/app_colors.dart' • lib/screens/subscription_screen/billing_history_screen.dart:3:8 • unused_import
+

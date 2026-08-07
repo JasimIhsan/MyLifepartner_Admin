@@ -42,11 +42,11 @@ class ChatSearchBar extends StatelessWidget {
                   onSubmitted: enabled ? onSubmitted : null,
                   textInputAction: TextInputAction.send,
                   enabled: enabled,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Type your question or search term...',
                     hintStyle: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textLight,
+                      color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                     ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
@@ -65,8 +65,8 @@ class ChatSearchBar extends StatelessWidget {
                 opacity: enabled ? 1.0 : 0.5,
                 child: Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: const BoxDecoration(
-                    color: AppColors.primary,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

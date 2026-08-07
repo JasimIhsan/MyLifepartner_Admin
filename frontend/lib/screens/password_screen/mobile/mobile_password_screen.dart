@@ -40,7 +40,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final backgroundColor = AppColors.surface;
+    final backgroundColor = Theme.of(context).colorScheme.surface;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -147,26 +147,26 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                 : (widget.isExistingUser
                                       ? "Enter Password"
                                       : "Create Password"),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary,
+                              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 12),
                           Text(
                             _message,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                             ),
                           ),
                           const SizedBox(height: 6),
                           Text(
                             "For ${widget.email}",
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: AppColors.textSecondary,
+                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -174,8 +174,8 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                           TextFormField(
                             controller: passwordController,
                             obscureText: obscureText,
-                            style: const TextStyle(
-                              color: AppColors.textPrimary,
+                            style: TextStyle(
+                              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                               fontSize: 18,
                             ),
                             decoration: InputDecoration(
@@ -186,15 +186,15 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                 horizontal: 20,
                               ),
                               hintText: "Password",
-                              hintStyle: const TextStyle(
-                                color: AppColors.textLight,
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                               ),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   obscureText
                                       ? Icons.visibility_off
                                       : Icons.visibility,
-                                  color: AppColors.textLight,
+                                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -205,25 +205,25 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide(
-                                  color: AppColors.borderColor,
+                                  color: Theme.of(context).dividerColor,
                                 ),
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide(
-                                  color: AppColors.borderColor,
+                                  color: Theme.of(context).dividerColor,
                                 ),
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                                 borderSide: BorderSide(
-                                  color: AppColors.primary,
+                                  color: Theme.of(context).primaryColor,
                                 ),
                               ),
                               errorBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
-                                borderSide: const BorderSide(
-                                  color: AppColors.error,
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.error,
                                 ),
                               ),
                             ),
@@ -259,10 +259,10 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                 onPressed: isLoading
                                     ? null
                                     : handleForgotPassword,
-                                child: const Text(
+                                child: Text(
                                   "Forgot Password?",
                                   style: TextStyle(
-                                    color: AppColors.primary,
+                                    color: Theme.of(context).primaryColor,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -273,8 +273,8 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                             TextFormField(
                               controller: confirmPasswordController,
                               obscureText: obscureConfirmText,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
+                              style: TextStyle(
+                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 fontSize: 18,
                               ),
                               decoration: InputDecoration(
@@ -285,15 +285,15 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                   horizontal: 20,
                                 ),
                                 hintText: "Confirm Password",
-                                hintStyle: const TextStyle(
-                                  color: AppColors.textLight,
+                                hintStyle: TextStyle(
+                                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                                 ),
                                 suffixIcon: IconButton(
                                   icon: Icon(
                                     obscureConfirmText
                                         ? Icons.visibility_off
                                         : Icons.visibility,
-                                    color: AppColors.textLight,
+                                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                                   ),
                                   onPressed: () {
                                     setState(() {
@@ -304,25 +304,25 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
                                   borderSide: BorderSide(
-                                    color: AppColors.borderColor,
+                                    color: Theme.of(context).dividerColor,
                                   ),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
                                   borderSide: BorderSide(
-                                    color: AppColors.borderColor,
+                                    color: Theme.of(context).dividerColor,
                                   ),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
                                   borderSide: BorderSide(
-                                    color: AppColors.primary,
+                                    color: Theme.of(context).primaryColor,
                                   ),
                                 ),
                                 errorBorder: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(15),
-                                  borderSide: const BorderSide(
-                                    color: AppColors.error,
+                                  borderSide: BorderSide(
+                                    color: Theme.of(context).colorScheme.error,
                                   ),
                                 ),
                               ),
@@ -344,9 +344,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                             child: ElevatedButton(
                               onPressed: isLoading ? null : submit,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
+                                backgroundColor: Theme.of(context).primaryColor,
                                 foregroundColor: AppColors.white,
-                                disabledBackgroundColor: AppColors.borderColor,
+                                disabledBackgroundColor: Theme.of(context).dividerColor,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
                                 ),

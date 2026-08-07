@@ -51,13 +51,13 @@ class HeightPrefStep extends StatelessWidget {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 4,
-            activeTrackColor: AppColors.primary,
-            inactiveTrackColor: AppColors.borderColor,
-            thumbColor: AppColors.primary,
+            activeTrackColor: Theme.of(context).primaryColor,
+            inactiveTrackColor: Theme.of(context).dividerColor,
+            thumbColor: Theme.of(context).primaryColor,
             rangeThumbShape: const RoundRangeSliderThumbShape(
               enabledThumbRadius: 10,
             ),
-            overlayColor: AppColors.primary.withValues(alpha: 0.2),
+            overlayColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
           ),
           child: RangeSlider(
             values: heightRange,

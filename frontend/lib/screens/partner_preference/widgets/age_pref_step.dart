@@ -67,7 +67,7 @@ class _AgePrefStepState extends State<AgePrefStep> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.primary, width: 1.2),
+        border: Border.all(color: Theme.of(context).primaryColor, width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -78,11 +78,11 @@ class _AgePrefStepState extends State<AgePrefStep> {
       ),
       child: Column(
         children: [
-          const Text(
+          Text(
             'Age range',
             style: TextStyle(
               fontSize: 16,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -94,21 +94,21 @@ class _AgePrefStepState extends State<AgePrefStep> {
             children: [
               Text(
                 '${_currentRange.start.round()} - ${_currentRange.end.round()}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   height: 1.1,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'years',
             style: TextStyle(
               fontSize: 18,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -129,14 +129,14 @@ class _AgePrefStepState extends State<AgePrefStep> {
         SliderTheme(
           data: SliderTheme.of(context).copyWith(
             trackHeight: 6,
-            activeTrackColor: AppColors.primary,
+            activeTrackColor: Theme.of(context).primaryColor,
             inactiveTrackColor: const Color(0xFFE5E7EB),
-            thumbColor: AppColors.primary,
+            thumbColor: Theme.of(context).primaryColor,
             rangeThumbShape: const CustomRangeSliderThumbShape(
               enabledThumbRadius: 14,
               elevation: 2,
             ),
-            overlayColor: AppColors.primary.withValues(alpha: 0.1),
+            overlayColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             overlayShape: const RoundSliderOverlayShape(
               overlayRadius: sliderPadding,
             ),
@@ -186,7 +186,7 @@ class _AgePrefStepState extends State<AgePrefStep> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? AppColors.primary : AppColors.textSecondary,
+                color: isActive ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               ),
             ),
           ),
@@ -216,12 +216,12 @@ class _AgePrefStepState extends State<AgePrefStep> {
       children: [
         const OnboardingStepTitle(title: "What age range are you looking for?"),
         const SizedBox(height: 15),
-        const Text(
+        Text(
           "Choose the preferred age range\nyou are open to.",
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
             height: 1.4,
           ),
         ),

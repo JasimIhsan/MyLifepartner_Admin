@@ -16,7 +16,7 @@ class OnboardingStepTitle extends StatelessWidget {
         style: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
+          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           height: 1.2,
         ),
       ),
@@ -38,7 +38,7 @@ class OnboardingSectionLabel extends StatelessWidget {
         style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
+          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
         ),
       ),
     );
@@ -105,11 +105,11 @@ class OnboardingInputField extends StatelessWidget {
             inputFormatters: inputFormatters,
             minLines: minLines,
             maxLines: maxLines,
-            style: TextStyle(fontSize: 16, color: AppColors.textPrimary),
+            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: TextStyle(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 fontSize: 16,
               ),
               contentPadding: const EdgeInsets.symmetric(
@@ -182,7 +182,7 @@ class OnboardingSelectionTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: cardColor,
           border: Border.all(
-            color: isSelected ? AppColors.primary : borderColor,
+            color: isSelected ? Theme.of(context).primaryColor : borderColor,
             width: 1.2,
           ),
           borderRadius: BorderRadius.circular(16),
@@ -193,12 +193,12 @@ class OnboardingSelectionTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.08),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   icon,
-                  color: isDarkMode ? Colors.white : AppColors.textPrimary,
+                  color: isDarkMode ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   size: 22,
                 ),
               ),
@@ -210,15 +210,15 @@ class OnboardingSelectionTile extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isDarkMode ? Colors.white : AppColors.textPrimary,
+                  color: isDarkMode ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
             ),
             if (isSelected)
               Container(
                 padding: const EdgeInsets.all(4),
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.check, color: Colors.white, size: 14),
@@ -266,7 +266,7 @@ class OnboardingLanguageChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
-            color: isSelected ? AppColors.primary : const Color(0xFFF0E6E6),
+            color: isSelected ? Theme.of(context).primaryColor : const Color(0xFFF0E6E6),
             width: isSelected ? 1.5 : 1,
           ),
           borderRadius: BorderRadius.circular(30),
@@ -277,7 +277,7 @@ class OnboardingLanguageChip extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
@@ -288,9 +288,9 @@ class OnboardingLanguageChip extends StatelessWidget {
               maintainSize: true,
               maintainAnimation: true,
               maintainState: true,
-              child: const Icon(
+              child: Icon(
                 Icons.check_circle_rounded,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 16,
               ),
             ),
@@ -325,9 +325,9 @@ class OnboardingContinueButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: (canProceed && !isLoading) ? onNext : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
+          disabledBackgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.5),
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),

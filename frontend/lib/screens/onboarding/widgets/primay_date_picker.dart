@@ -182,16 +182,16 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isActive
-                      ? AppColors.primary
+                      ? Theme.of(context).primaryColor
                       : (isDark
                             ? const Color(0xFF444444)
-                            : AppColors.borderColor),
+                            : Theme.of(context).dividerColor),
                   width: isActive ? 1.5 : 1,
                 ),
                 boxShadow: isActive
                     ? [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.08),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -204,8 +204,8 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: isActive
-                      ? AppColors.primary
-                      : (isDark ? Colors.white : AppColors.textPrimary),
+                      ? Theme.of(context).primaryColor
+                      : (isDark ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
                 ),
               ),
             ),
@@ -215,7 +215,7 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white60 : AppColors.textSecondary,
+                color: isDark ? Colors.white60 : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               ),
             ),
           ],
@@ -227,7 +227,7 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
   Widget _buildSelectionOverlay() {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.06),
+        color: Theme.of(context).primaryColor.withValues(alpha: 0.06),
       ),
       margin: const EdgeInsets.symmetric(vertical: 2),
     );
@@ -239,7 +239,7 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
     final backgroundColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
     final dividerColor = isDark
         ? const Color(0xFF2C2C2C)
-        : AppColors.borderColor;
+        : Theme.of(context).dividerColor;
 
     final totalYears = _effectiveMaxDate.year - _effectiveMinDate.year + 1;
     final totalDays = _getDaysInMonth(_selectedYear, _selectedMonth);
@@ -284,7 +284,7 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white70 : AppColors.textSecondary,
+                      color: isDark ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -293,7 +293,7 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : AppColors.textPrimary,
+                    color: isDark ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   ),
                 ),
                 GestureDetector(
@@ -306,12 +306,12 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                     widget.onDateChanged(date);
                     Navigator.of(context).pop();
                   },
-                  child: const Text(
+                  child: Text(
                     "Done",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 ),
@@ -385,10 +385,10 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                             color: isSelected
                                 ? (isDark
                                       ? Colors.white
-                                      : AppColors.textPrimary)
+                                      : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary)
                                 : (isDark
                                       ? Colors.white38
-                                      : AppColors.textSecondary.withValues(
+                                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(
                                           alpha: 0.3,
                                         )),
                           ),
@@ -427,10 +427,10 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                             color: isSelected
                                 ? (isDark
                                       ? Colors.white
-                                      : AppColors.textPrimary)
+                                      : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary)
                                 : (isDark
                                       ? Colors.white38
-                                      : AppColors.textSecondary.withValues(
+                                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(
                                           alpha: 0.3,
                                         )),
                           ),
@@ -470,10 +470,10 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
                             color: isSelected
                                 ? (isDark
                                       ? Colors.white
-                                      : AppColors.textPrimary)
+                                      : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary)
                                 : (isDark
                                       ? Colors.white38
-                                      : AppColors.textSecondary.withValues(
+                                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(
                                           alpha: 0.3,
                                         )),
                           ),

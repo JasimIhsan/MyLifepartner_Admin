@@ -20,8 +20,8 @@ class ConnectionIllustration extends StatelessWidget {
               shape: BoxShape.circle,
               gradient: RadialGradient(
                 colors: [
-                  AppColors.primaryLight.withValues(alpha: 0.3),
-                  AppColors.primary.withValues(alpha: 0.1),
+                  Theme.of(context).primaryColorLight.withValues(alpha: 0.3),
+                  Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   Colors.transparent,
                 ],
               ),
@@ -121,7 +121,7 @@ class _ConnectionPainter extends CustomPainter {
     wavePath.cubicTo(w * 0.55, h * 0.2, w * 0.65, h * 0.8, w * 0.8, h * 0.5);
 
     final Paint pathPaint = Paint()
-      ..shader = const LinearGradient(
+      ..shader = LinearGradient(
         colors: [AppColors.primaryLight, AppColors.primaryDark],
       ).createShader(Rect.fromLTWH(w * 0.2, h * 0.2, w * 0.6, h * 0.6))
       ..style = PaintingStyle.stroke
