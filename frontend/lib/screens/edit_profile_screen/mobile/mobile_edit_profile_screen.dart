@@ -30,7 +30,7 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
         showDiscardBottomSheet(context);
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7FAFD),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
@@ -55,18 +55,22 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                 Align(
                                   alignment: Alignment.centerLeft,
                                   child: IconButton(
-                                    icon: const Icon(
+                                    icon: Icon(
                                       Icons.arrow_back_ios_new_rounded,
-                                      color: Colors.black,
+                                      color: Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color,
                                       size: 20,
                                     ),
                                     onPressed: handleBackPress,
                                   ),
                                 ),
-                                const Text(
+                                Text(
                                   'Profile',
                                   style: TextStyle(
-                                    color: Colors.black,
+                                    color: Theme.of(
+                                      context,
+                                    ).textTheme.titleLarge?.color,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -84,7 +88,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
-                                      color: Colors.white,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.surface,
                                       width: 3,
                                     ),
                                     boxShadow: [
@@ -99,7 +105,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                   ),
                                   child: CircleAvatar(
                                     radius: 54,
-                                    backgroundColor: Colors.grey[100],
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).disabledColor.withValues(alpha: 0.1),
                                     backgroundImage:
                                         primaryImageUrl != null &&
                                             primaryImageUrl!.isNotEmpty
@@ -113,15 +121,19 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                             height: 24,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: Theme.of(context).primaryColor,
+                                              color: Theme.of(
+                                                context,
+                                              ).primaryColor,
                                             ),
                                           )
                                         : (primaryImageUrl == null ||
                                                   primaryImageUrl!.isEmpty
-                                              ? const Icon(
+                                              ? Icon(
                                                   Icons.person,
                                                   size: 54,
-                                                  color: Colors.grey,
+                                                  color: Theme.of(
+                                                    context,
+                                                  ).disabledColor,
                                                 )
                                               : null),
                                   ),
@@ -132,9 +144,11 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                     color: Theme.of(context).primaryColor,
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.camera_alt_rounded,
-                                    color: Colors.white,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onPrimary,
                                     size: 16,
                                   ),
                                 ),
@@ -144,8 +158,10 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                           const SizedBox(height: 14),
                           Text(
                             widget.user.name ?? '',
-                            style: const TextStyle(
-                              color: Colors.black,
+                            style: TextStyle(
+                              color: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.color,
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
                             ),
@@ -154,7 +170,11 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                           Text(
                             widget.user.email ?? '',
                             style: TextStyle(
-                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.color ??
+                                  AppColors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
@@ -169,7 +189,7 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                               child: Container(
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.surface,
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
@@ -200,7 +220,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                         children: [
                                           Icon(
                                             Icons.person_outline_rounded,
-                                            color: Theme.of(context).primaryColor,
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
                                             size: 20,
                                           ),
                                           const SizedBox(width: 8),
@@ -209,7 +231,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.grey[700],
+                                              color: Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium?.color,
                                               letterSpacing: 0.5,
                                             ),
                                           ),
@@ -258,7 +282,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                         children: [
                                           Icon(
                                             Icons.location_on_outlined,
-                                            color: Theme.of(context).primaryColor,
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
                                             size: 20,
                                           ),
                                           const SizedBox(width: 8),
@@ -267,7 +293,9 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                             style: TextStyle(
                                               fontSize: 11,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.grey[700],
+                                              color: Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium?.color,
                                               letterSpacing: 0.5,
                                             ),
                                           ),
@@ -305,8 +333,12 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                               ? saveProfile
                                               : null,
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: Theme.of(context).primaryColor,
-                                            foregroundColor: Colors.white,
+                                            backgroundColor: Theme.of(
+                                              context,
+                                            ).primaryColor,
+                                            foregroundColor: Theme.of(
+                                              context,
+                                            ).colorScheme.onPrimary,
                                             disabledBackgroundColor: AppColors
                                                 .primary
                                                 .withValues(alpha: 0.5),
@@ -317,12 +349,14 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                             elevation: 0,
                                           ),
                                           child: isLoading
-                                              ? const SizedBox(
+                                              ? SizedBox(
                                                   height: 24,
                                                   width: 24,
                                                   child:
                                                       CircularProgressIndicator(
-                                                        color: Colors.white,
+                                                        color: Theme.of(
+                                                          context,
+                                                        ).colorScheme.onPrimary,
                                                         strokeWidth: 2.5,
                                                       ),
                                                 )
@@ -330,28 +364,34 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                                   mainAxisAlignment:
                                                       MainAxisAlignment.center,
                                                   children: [
-                                                    const Icon(
+                                                    Icon(
                                                       Icons.save_outlined,
-                                                      color: Colors.white,
+                                                      color: Theme.of(
+                                                        context,
+                                                      ).colorScheme.onPrimary,
                                                       size: 22,
                                                     ),
                                                     const SizedBox(width: 12),
                                                     Container(
                                                       width: 1,
                                                       height: 20,
-                                                      color: Colors.white
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onPrimary
                                                           .withValues(
                                                             alpha: 0.35,
                                                           ),
                                                     ),
                                                     const SizedBox(width: 12),
-                                                    const Text(
+                                                    Text(
                                                       'Save Changes',
                                                       style: TextStyle(
                                                         fontSize: 16,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: Colors.white,
+                                                        color: Theme.of(
+                                                          context,
+                                                        ).colorScheme.onPrimary,
                                                       ),
                                                     ),
                                                   ],

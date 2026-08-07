@@ -207,7 +207,7 @@ class _MobileManageProfilePicturesScreenState
     final hasImages = images.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: CustomAppBar(
         title: "Manage Photos",
         leading: IconButton(

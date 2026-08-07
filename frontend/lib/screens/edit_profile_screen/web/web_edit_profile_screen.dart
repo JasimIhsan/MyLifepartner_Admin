@@ -30,7 +30,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
         showDiscardBottomSheet(context);
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: CustomAppBar(
           title: "Edit Profile",
           leading: IconButton(
@@ -44,7 +44,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
             child: Container(
               constraints: const BoxConstraints(maxWidth: 800),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -121,13 +121,13 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                         color: Theme.of(context).primaryColor,
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.surface,
                                           width: 3,
                                         ),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.camera_alt_rounded,
-                                        color: Colors.white,
+                                        color: Theme.of(context).colorScheme.onPrimary,
                                         size: 20,
                                       ),
                                     ),
@@ -144,8 +144,8 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                   children: [
                                     Text(
                                       widget.user.name ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.black,
+                                      style: TextStyle(
+                                        color: Theme.of(context).textTheme.titleLarge?.color,
                                         fontSize: 28,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -265,7 +265,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     : null,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Theme.of(context).primaryColor,
-                                  foregroundColor: Colors.white,
+                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
                                   disabledBackgroundColor: Theme.of(context).primaryColor
                                       .withValues(alpha: 0.5),
                                   shape: RoundedRectangleBorder(
@@ -274,11 +274,11 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                   elevation: 0,
                                 ),
                                 child: isLoading
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         height: 24,
                                         width: 24,
                                         child: CircularProgressIndicator(
-                                          color: Colors.white,
+                                          color: Theme.of(context).colorScheme.onPrimary,
                                           strokeWidth: 2.5,
                                         ),
                                       )

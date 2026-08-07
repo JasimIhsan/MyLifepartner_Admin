@@ -22,10 +22,10 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Billing History'),
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         centerTitle: true,
       ),
@@ -47,14 +47,14 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                     Text(
                       provider.error!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16, color: Colors.black87),
+                      style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyLarge?.color),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => provider.loadTransactions(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
+                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       ),
                       child: const Text('Retry'),
                     ),
@@ -69,14 +69,14 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long, size: 80, color: Colors.grey[400]),
+                  Icon(Icons.receipt_long, size: 80, color: Theme.of(context).disabledColor),
                   const SizedBox(height: 16),
                   Text(
                     'No billing history yet',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                 ],
@@ -114,7 +114,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                    side: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -145,7 +145,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                           'Subscription Payment',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey[600],
+                            color: Theme.of(context).textTheme.bodyMedium?.color,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -166,7 +166,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                             Text(
                               DateFormat('MMM d, yyyy • h:mm a').format(transaction.createdAt.toLocal()),
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(context).textTheme.bodyMedium?.color,
                                 fontSize: 13,
                               ),
                             ),
@@ -179,7 +179,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                           Text(
                             'Transaction ID: ${transaction.originalTransactionId}',
                             style: TextStyle(
-                              color: Colors.grey[500],
+                              color: Theme.of(context).textTheme.bodyMedium?.color,
                               fontSize: 12,
                             ),
                           ),

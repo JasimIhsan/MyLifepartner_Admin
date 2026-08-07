@@ -194,7 +194,7 @@ class _WebManageProfilePicturesScreenState
     final hasImages = images.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: CustomAppBar(
         title: "Manage Photos",
         leading: IconButton(

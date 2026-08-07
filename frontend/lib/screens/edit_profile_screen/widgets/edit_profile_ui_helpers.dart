@@ -1,5 +1,5 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
 class EditProfileSection extends StatelessWidget {
@@ -44,13 +44,19 @@ class EditProfileSection extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
               ],
             ),
           ),
-          Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).dividerColor,
+          ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -76,7 +82,9 @@ class EditProfileLabel extends StatelessWidget {
       style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+        color:
+            Theme.of(context).textTheme.bodyLarge?.color ??
+            AppColors.textPrimary,
       ),
     );
   }
@@ -107,13 +115,21 @@ class EditProfileReadOnlyField extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).scaffoldBackgroundColor.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: Row(
             children: [
-              Icon(icon, size: 20, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+              Icon(
+                icon,
+                size: 20,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -124,7 +140,9 @@ class EditProfileReadOnlyField extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -132,7 +150,9 @@ class EditProfileReadOnlyField extends StatelessWidget {
                       lockedReason,
                       style: TextStyle(
                         fontSize: 10,
-                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                        color:
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                            AppColors.textLight,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -142,7 +162,9 @@ class EditProfileReadOnlyField extends StatelessWidget {
               Icon(
                 Icons.lock_outline_rounded,
                 size: 16,
-                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                color:
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
               ),
             ],
           ),
@@ -187,16 +209,31 @@ class EditProfileTextField extends StatelessWidget {
       onTap: onTap,
       style: TextStyle(
         fontSize: 15,
-        color: enabled ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+        color: enabled
+            ? Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary
+            : Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
       ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight, fontSize: 14),
+        hintStyle: TextStyle(
+          color:
+              Theme.of(context).textTheme.bodySmall?.color ??
+              AppColors.textLight,
+          fontSize: 14,
+        ),
         filled: true,
         fillColor: enabled
             ? Theme.of(context).colorScheme.surface
             : Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
-        prefixIcon: Icon(prefixIcon, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary, size: 20),
+        prefixIcon: Icon(
+          prefixIcon,
+          color:
+              Theme.of(context).textTheme.bodyMedium?.color ??
+              AppColors.textSecondary,
+          size: 20,
+        ),
         suffixIcon: suffixIcon,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -204,27 +241,45 @@ class EditProfileTextField extends StatelessWidget {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
+            width: 1,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 1.5),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
+            width: 1.5,
+          ),
         ),
       ),
     );
@@ -267,7 +322,9 @@ class EditProfileCountryPicker extends StatelessWidget {
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: hasCountry ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
+            color: hasCountry
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).dividerColor,
             width: hasCountry ? 1.5 : 1,
           ),
         ),
@@ -275,7 +332,9 @@ class EditProfileCountryPicker extends StatelessWidget {
           children: [
             Icon(
               Icons.public_outlined,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -285,14 +344,18 @@ class EditProfileCountryPicker extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   color: hasCountry
-                      ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
-                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      ? Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary
+                      : Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                 ),
               ),
             ),
             Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               size: 22,
             ),
           ],
@@ -362,7 +425,9 @@ class _EditProfileCountryPickerSheetState
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -374,27 +439,37 @@ class _EditProfileCountryPickerSheetState
                 decoration: InputDecoration(
                   hintText: 'Search country...',
                   hintStyle: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
                     fontSize: 14,
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
                     size: 20,
                   ),
                   filled: true,
-                  fillColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+                  fillColor: Theme.of(
+                    context,
+                  ).scaffoldBackgroundColor.withValues(alpha: 0.5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -417,7 +492,9 @@ class _EditProfileCountryPickerSheetState
                       margin: const EdgeInsets.symmetric(vertical: 2),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Theme.of(context).primaryColor.withValues(alpha: 0.05)
+                            ? Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.05)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -435,7 +512,10 @@ class _EditProfileCountryPickerSheetState
                                 : FontWeight.w400,
                             color: isSelected
                                 ? Theme.of(context).primaryColor
-                                : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                : Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                           ),
                         ),
                         trailing: isSelected
@@ -690,7 +770,9 @@ class MinimalTextField extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 2),
@@ -703,12 +785,18 @@ class MinimalTextField extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: enabled ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary : Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+              color: enabled
+                  ? Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary
+                  : Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
             ),
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(
-                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                color:
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
                 fontSize: 14,
                 fontWeight: FontWeight.normal,
               ),
@@ -724,13 +812,21 @@ class MinimalTextField extends StatelessWidget {
                 borderSide: BorderSide(color: Theme.of(context).dividerColor),
               ),
               focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 1.5),
+                borderSide: BorderSide(
+                  color: Theme.of(context).primaryColor,
+                  width: 1.5,
+                ),
               ),
               errorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
               focusedErrorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Theme.of(context).colorScheme.error, width: 1.5),
+                borderSide: BorderSide(
+                  color: Theme.of(context).colorScheme.error,
+                  width: 1.5,
+                ),
               ),
             ),
           ),
@@ -767,13 +863,17 @@ class MinimalReadOnlyField extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
               Icon(
                 Icons.lock_outline_rounded,
                 size: 14,
-                color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                color:
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
               ),
             ],
           ),
@@ -783,7 +883,9 @@ class MinimalReadOnlyField extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+              color:
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  AppColors.textLight,
             ),
           ),
           const SizedBox(height: 2),
@@ -791,12 +893,18 @@ class MinimalReadOnlyField extends StatelessWidget {
             lockedReason,
             style: TextStyle(
               fontSize: 10,
-              color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+              color:
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  AppColors.textLight,
               fontStyle: FontStyle.italic,
             ),
           ),
           const SizedBox(height: 8),
-          Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).dividerColor,
+          ),
         ],
       ),
     );
@@ -843,7 +951,9 @@ class MinimalCountryPicker extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
@@ -856,19 +966,27 @@ class MinimalCountryPicker extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: hasCountry
-                        ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
-                        : Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                        ? Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary
+                        : Theme.of(context).textTheme.bodySmall?.color ??
+                              AppColors.textLight,
                   ),
                 ),
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                  color:
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      AppColors.textLight,
                   size: 20,
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            Divider(height: 1, thickness: 1, color: Theme.of(context).dividerColor),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: Theme.of(context).dividerColor,
+            ),
           ],
         ),
       ),
