@@ -535,6 +535,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         isTyping: isTyping,
       ),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             Expanded(

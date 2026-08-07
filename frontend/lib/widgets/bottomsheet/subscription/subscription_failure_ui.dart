@@ -15,7 +15,7 @@ Future<void> showSubscriptionFailureUI(
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(32),
           ),
@@ -30,7 +30,7 @@ Future<void> showSubscriptionFailureUI(
   } else {
     return showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -70,33 +70,33 @@ class SubscriptionFailureUI extends StatelessWidget {
           decoration: BoxDecoration(
             color: isCancelled
                 ? Colors.amber.withValues(alpha: 0.1)
-                : Colors.red.withValues(alpha: 0.1),
+                : Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             isCancelled
                 ? Icons.info_outline_rounded
                 : Icons.error_outline_rounded,
-            color: isCancelled ? Colors.amber.shade800 : Colors.red,
+            color: isCancelled ? Colors.amber.shade800 : Theme.of(context).colorScheme.error,
             size: 48,
           ),
         ),
         const SizedBox(height: 24),
         Text(
           isCancelled ? 'Purchase Cancelled' : 'Something Went Wrong',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 12),
         Text(
           errorMessage,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -108,7 +108,7 @@ class SubscriptionFailureUI extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(

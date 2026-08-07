@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 
 class CustomBottomBar extends StatelessWidget {
   final int selectedIndex;
@@ -43,6 +42,7 @@ class CustomBottomBar extends StatelessWidget {
                 ? CustomPaint(
                     painter: _BottomBarNotchPainter(
                       color: actualBackgroundColor,
+                      shadowColor: Theme.of(context).shadowColor,
                       notchRadius: fabSize / 2 + 8, // FAB radius + gap
                     ),
                   )
@@ -51,7 +51,7 @@ class CustomBottomBar extends StatelessWidget {
                       color: actualBackgroundColor,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
+                          color: Theme.of(context).shadowColor.withValues(alpha: 0.06),
                           blurRadius: 16,
                           offset: const Offset(0, -4),
                         ),
@@ -90,7 +90,7 @@ class CustomBottomBar extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.35),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.35),
                           blurRadius: 14,
                           offset: const Offset(0, 6),
                         ),
@@ -186,9 +186,10 @@ class CustomBottomBar extends StatelessWidget {
 /// Paints a bar background with a smooth circular notch cut out at the center top.
 class _BottomBarNotchPainter extends CustomPainter {
   final Color color;
+  final Color shadowColor;
   final double notchRadius;
 
-  _BottomBarNotchPainter({required this.color, required this.notchRadius});
+  _BottomBarNotchPainter({required this.color, required this.shadowColor, required this.notchRadius});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -198,12 +199,12 @@ class _BottomBarNotchPainter extends CustomPainter {
 
     // Shadow paints – two layers for a natural, visible elevation
     final softShadow = Paint()
-      ..color = Colors.black.withValues(alpha: 0.05)
+      ..color = shadowColor.withValues(alpha: 0.05)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20)
       ..style = PaintingStyle.fill;
 
     final edgeShadow = Paint()
-      ..color = Colors.black.withValues(alpha: 0.08)
+      ..color = shadowColor.withValues(alpha: 0.08)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6)
       ..style = PaintingStyle.fill;
 

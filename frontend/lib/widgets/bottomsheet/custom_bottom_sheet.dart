@@ -48,7 +48,7 @@ class CustomBottomSheet {
     required Widget child,
     bool isDismissible = true,
     bool isScrollControlled = false,
-    Color backgroundColor = Colors.white,
+    Color? backgroundColor,
   }) {
     return showModalBottomSheet<T>(
       context: context,
@@ -58,11 +58,11 @@ class CustomBottomSheet {
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: backgroundColor ?? Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
               blurRadius: 24,
               offset: const Offset(0, -8),
             ),
@@ -106,17 +106,17 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.06),
             blurRadius: 20,
             offset: const Offset(0, -8),
           ),
         ],
-        border: const Border(
-          top: BorderSide(color: Color(0xFFF9F9F9), width: 1.5),
+        border: Border(
+          top: BorderSide(color: Theme.of(context).dividerColor, width: 1.5),
         ),
       ),
       child: widget.type == BottomSheetType.info
@@ -141,10 +141,10 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               // Title
               Text(
                     widget.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       letterSpacing: -0.4,
                       height: 1.2,
                     ),
@@ -158,9 +158,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               // Message
               Text(
                     widget.message,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       height: 1.55,
                     ),
                   )
@@ -212,10 +212,10 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               ),
               child: Text(
                 widget.secondaryButtonText!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
             ),
@@ -335,10 +335,10 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               Text(
                     widget.title,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       letterSpacing: -0.3,
                     ),
                   )
@@ -351,9 +351,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               Text(
                     widget.message,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       height: 1.55,
                     ),
                   )
@@ -396,8 +396,8 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               type: CustomButtonType.outline,
               borderRadius: 16,
               height: 52,
-              backgroundColor: AppColors.borderColor,
-              textColor: AppColors.textSecondary,
+              backgroundColor: Theme.of(context).dividerColor,
+              textColor: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               fontSize: 15,
             ),
           ),
@@ -408,7 +408,7 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               text: primaryText,
               borderRadius: 16,
               height: 52,
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).primaryColor,
               textColor: Colors.white,
               fontSize: 15,
             ),
@@ -456,9 +456,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
           defaultPrimaryText: 'Okay',
         );
       case BottomSheetType.confirmation:
-        return const _SheetConfig(
+        return _SheetConfig(
           icon: Icons.help_outline_rounded,
-          iconColor: AppColors.primary,
+          iconColor: Theme.of(context).primaryColor,
           iconBg: Color(0xFFFFF5F5),
           iconBorder: Color(0xFFFED7D7),
           defaultPrimaryText: 'Confirm',

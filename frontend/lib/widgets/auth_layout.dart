@@ -24,7 +24,7 @@ class AuthLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: LayoutBuilder(
         builder: (context, constraints) {
           final bool isWeb = constraints.maxWidth > 900;
@@ -46,7 +46,7 @@ class AuthLayout extends StatelessWidget {
         Expanded(
           flex: 1,
           child: Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.all(40),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -62,9 +62,9 @@ class AuthLayout extends StatelessWidget {
                         height: 32,
                         width: 32,
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
+                            Icon(
                               Icons.favorite,
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                               size: 24,
                             ),
                       ),
@@ -73,7 +73,7 @@ class AuthLayout extends StatelessWidget {
                     Text(
                       "Life Partner Again",
                       style: TextStyle(
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
                       ),
@@ -85,7 +85,7 @@ class AuthLayout extends StatelessWidget {
                   "A trusted platform for emotionally\nmature relationships.",
                   style: TextStyle(
                     fontSize: 16,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -98,7 +98,7 @@ class AuthLayout extends StatelessWidget {
         Expanded(
           flex: 1,
           child: Container(
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.surface,
             padding: const EdgeInsets.symmetric(horizontal: 60.0),
             child: Center(
               child: ConstrainedBox(
@@ -106,7 +106,7 @@ class AuthLayout extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Column(
                     children: [
-                      _buildHeader(true),
+                      _buildHeader(context, true),
                       const SizedBox(height: 24),
                       child,
                     ],
@@ -140,11 +140,11 @@ class AuthLayout extends StatelessWidget {
 
                   if (state == ImageAssetLoadState.loading) {
                     return Container(
-                      color: Colors.grey[200],
-                      child: const Center(
+                      color: Theme.of(context).dividerColor,
+                      child: Center(
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                     );
@@ -167,7 +167,7 @@ class AuthLayout extends StatelessWidget {
                     );
                   }
 
-                  return Container(color: Colors.grey[100]);
+                  return Container(color: Theme.of(context).dividerColor);
                 },
               ),
             )
@@ -202,14 +202,14 @@ class AuthLayout extends StatelessWidget {
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(32),
                           topRight: Radius.circular(32),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
+                            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                             blurRadius: 20,
                             offset: const Offset(0, -5),
                           ),
@@ -233,7 +233,7 @@ class AuthLayout extends StatelessWidget {
                                 height: 4,
                                 margin: const EdgeInsets.only(bottom: 32),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: Theme.of(context).dividerColor,
                                   borderRadius: BorderRadius.circular(2),
                                 ),
                               ),
@@ -248,9 +248,9 @@ class AuthLayout extends StatelessWidget {
                                     width: 80,
                                     errorBuilder:
                                         (context, error, stackTrace) =>
-                                            const Icon(
+                                            Icon(
                                               Icons.favorite_rounded,
-                                              color: AppColors.primary,
+                                              color: Theme.of(context).primaryColor,
                                               size: 64,
                                             ),
                                   ),
@@ -263,7 +263,7 @@ class AuthLayout extends StatelessWidget {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: AppColors.textSecondary,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                     height: 1.5,
                                   ),
                                 ),
@@ -289,12 +289,12 @@ class AuthLayout extends StatelessWidget {
               top: MediaQuery.of(context).padding.top + 10,
               left: 16,
               child: CircleAvatar(
-                backgroundColor: Colors.white.withValues(alpha: 0.8),
+                backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
                 child: IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back_ios_new,
                     size: 18,
-                    color: Colors.black,
+                    color: Theme.of(context).iconTheme.color,
                   ),
                   onPressed: () => context.pop(),
                 ),
@@ -305,7 +305,7 @@ class AuthLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(bool isWeb) {
+  Widget _buildHeader(BuildContext context, bool isWeb) {
     if (!isWeb) return const SizedBox.shrink(); // Only for Web now
     return Column(
       children: [
@@ -315,9 +315,9 @@ class AuthLayout extends StatelessWidget {
             'assets/icons/app_logo.png',
             height: 64,
             width: 64,
-            errorBuilder: (context, error, stackTrace) => const Icon(
+            errorBuilder: (context, error, stackTrace) => Icon(
               Icons.favorite_rounded,
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
               size: 48,
             ),
           ),
@@ -328,7 +328,7 @@ class AuthLayout extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -338,7 +338,7 @@ class AuthLayout extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               height: 1.5,
             ),
           ),

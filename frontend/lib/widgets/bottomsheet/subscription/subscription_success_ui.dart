@@ -12,7 +12,7 @@ Future<void> showSubscriptionSuccessUI(
       context: context,
       builder: (context) {
         return AlertDialog(
-          backgroundColor: AppColors.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(32),
           ),
@@ -24,7 +24,7 @@ Future<void> showSubscriptionSuccessUI(
   } else {
     return showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
@@ -57,7 +57,7 @@ class SubscriptionSuccessUI extends StatelessWidget {
         const SizedBox(width: 16),
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
             color: AppColors.textPrimary,
             fontWeight: FontWeight.w500,
@@ -83,7 +83,7 @@ class SubscriptionSuccessUI extends StatelessWidget {
         // Title
         RichText(
           textAlign: TextAlign.center,
-          text: const TextSpan(
+          text: TextSpan(
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w800,
@@ -92,11 +92,11 @@ class SubscriptionSuccessUI extends StatelessWidget {
             children: [
               TextSpan(
                 text: 'Subscription\n',
-                style: TextStyle(color: AppColors.textPrimary),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
               ),
               TextSpan(
                 text: 'Successful!',
-                style: TextStyle(color: AppColors.primary),
+                style: TextStyle(color: Theme.of(context).primaryColor),
               ),
             ],
           ),
@@ -104,11 +104,11 @@ class SubscriptionSuccessUI extends StatelessWidget {
         const SizedBox(height: 12),
 
         // Subtitle
-        const Text(
+        Text(
           'Welcome to Premium! You now have\naccess to all exclusive perks.',
           style: TextStyle(
             fontSize: 15,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
             height: 1.5,
           ),
           textAlign: TextAlign.center,
@@ -144,7 +144,7 @@ class SubscriptionSuccessUI extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: Theme.of(context).primaryColor,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
@@ -171,7 +171,7 @@ class SubscriptionSuccessUI extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           style: TextButton.styleFrom(
-            foregroundColor: AppColors.primary,
+            foregroundColor: Theme.of(context).primaryColor,
             splashFactory: NoSplash.splashFactory,
           ),
           child: const Text(

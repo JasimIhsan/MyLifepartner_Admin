@@ -82,9 +82,9 @@ class _BlockConfirmationBottomSheetState
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 16, bottom: 40, left: 24, right: 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -94,7 +94,7 @@ class _BlockConfirmationBottomSheetState
             width: 48,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).dividerColor,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -144,10 +144,12 @@ class _BlockConfirmationBottomSheetState
               ? 'Block ${widget.userName}?'
               : 'Unblock ${widget.userName}?',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
             letterSpacing: -0.5,
           ),
         ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
@@ -157,9 +159,11 @@ class _BlockConfirmationBottomSheetState
               ? 'Are you sure you want to block this user? They will not be able to message you or view your profile.'
               : 'Are you sure you want to unblock this user? They will be able to message you and view your profile again.',
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15,
-            color: AppColors.textSecondary,
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
             height: 1.5,
           ),
         ).animate().fadeIn(delay: 200.ms, duration: 300.ms),
@@ -185,8 +189,8 @@ class _BlockConfirmationBottomSheetState
                     text: widget.isBlocking ? "Yes, Block" : "Yes, Unblock",
                     type: CustomButtonType.primary,
                     backgroundColor: widget.isBlocking
-                        ? Colors.redAccent
-                        : AppColors.primary,
+                        ? Theme.of(context).colorScheme.error
+                        : Theme.of(context).primaryColor,
                     height: 54,
                     borderRadius: 27,
                     fontSize: 16,
@@ -207,13 +211,15 @@ class _BlockConfirmationBottomSheetState
           key: const ValueKey('success'),
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Success!',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -223,9 +229,11 @@ class _BlockConfirmationBottomSheetState
                   ? 'You have successfully blocked ${widget.userName}.'
                   : 'You have successfully unblocked ${widget.userName}.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -254,13 +262,13 @@ class _BlockConfirmationBottomSheetState
           key: const ValueKey('failure'),
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Error',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w700,
-                color: Colors.redAccent,
+                color: Theme.of(context).colorScheme.error,
                 letterSpacing: -0.5,
               ),
             ),
@@ -268,9 +276,11 @@ class _BlockConfirmationBottomSheetState
             Text(
               _errorMessage ?? 'Something went wrong.',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.5,
               ),
             ),

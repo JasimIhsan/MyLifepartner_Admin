@@ -23,9 +23,9 @@ class FeatureExhaustedModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
@@ -42,7 +42,7 @@ class FeatureExhaustedModal extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -56,8 +56,8 @@ class FeatureExhaustedModal extends StatelessWidget {
               const SizedBox(height: 20),
               Text(
                 '$featureType Limit Reached',
-                style: const TextStyle(
-                  color: AppColors.textPrimary,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -66,8 +66,8 @@ class FeatureExhaustedModal extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 'You have exhausted your $featureType capability. Please upgrade your subscription plan to continue using this feature.',
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -82,7 +82,7 @@ class FeatureExhaustedModal extends StatelessWidget {
                     context.push(AppRoutes.subscription);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -107,10 +107,10 @@ class FeatureExhaustedModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Maybe Later',
                     style: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),

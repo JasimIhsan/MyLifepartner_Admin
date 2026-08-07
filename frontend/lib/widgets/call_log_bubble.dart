@@ -37,7 +37,7 @@ class CallLogBubble extends StatelessWidget {
       icon = isVideo ? Icons.videocam_rounded : Icons.call_rounded;
       title = '${isVideo ? 'Video' : 'Voice'} Call';
       subtitle = _formatDuration(duration);
-      iconColor = AppColors.primary;
+      iconColor = Theme.of(context).primaryColor;
     } else if (status == 'declined') {
       icon = isVideo
           ? Icons.videocam_off_rounded
@@ -63,11 +63,11 @@ class CallLogBubble extends StatelessWidget {
         ),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppColors.background,
+          color: Theme.of(context).scaffoldBackgroundColor,
           border: Border.all(
             color: isMe
-                ? AppColors.primary.withValues(alpha: 0.3)
-                : Colors.grey.withValues(alpha: 0.2),
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.3)
+                : Theme.of(context).dividerColor,
           ),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(16),
@@ -77,7 +77,7 @@ class CallLogBubble extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
+              color: Theme.of(context).shadowColor.withValues(alpha: 0.02),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -101,8 +101,8 @@ class CallLogBubble extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -110,8 +110,8 @@ class CallLogBubble extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -122,8 +122,8 @@ class CallLogBubble extends StatelessWidget {
               padding: const EdgeInsets.only(top: 18),
               child: Text(
                 timeStr,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                   fontSize: 11,
                 ),
               ),

@@ -157,14 +157,12 @@ class _ChatListTileState extends State<ChatListTile> {
                                     color: isTyping
                                         ? Theme.of(context).primaryColor
                                         : (lastMessageStr.startsWith('Missed')
-                                              ? Colors.red
+                                              ? Theme.of(context).colorScheme.error
                                               : (conversation == null
                                                     ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary
                                                     : (hasUnread
-                                                          ? AppColors
-                                                                .textPrimary
-                                                          : AppColors
-                                                                .textSecondary))),
+                                                          ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
+                                                          : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary))),
                                     fontWeight: isTyping || hasUnread
                                         ? FontWeight.w600
                                         : (conversation == null
@@ -200,7 +198,7 @@ class _ChatListTileState extends State<ChatListTile> {
             color: Theme.of(context).colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

@@ -43,11 +43,16 @@ class ChatInputArea extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
+        border: Border(
+          top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+        ),
       ),
-      padding: const EdgeInsets.only(top: 12, bottom: 20, left: 16, right: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (isRecording || isRecordingFinished)
             IconButton(
@@ -60,7 +65,9 @@ class ChatInputArea extends StatelessWidget {
             IconButton(
               onPressed: onShowAttachmentOptions,
               icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               splashRadius: 24,
@@ -74,7 +81,9 @@ class ChatInputArea extends StatelessWidget {
                 border: Border.all(color: Theme.of(context).dividerColor),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).shadowColor.withValues(alpha: 0.02),
+                    color: Theme.of(
+                      context,
+                    ).shadowColor.withValues(alpha: 0.02),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -82,7 +91,7 @@ class ChatInputArea extends StatelessWidget {
               ),
               child: isRecording || isRecordingFinished
                   ? _buildRecordingMiddle()
-                  : _buildTextMiddle(),
+                  : _buildTextMiddle(context),
             ),
           ),
           const SizedBox(width: 12),
@@ -114,7 +123,9 @@ class ChatInputArea extends StatelessWidget {
                   height: isRecording ? 52 : 44,
                   width: isRecording ? 52 : 44,
                   decoration: BoxDecoration(
-                    color: isRecording ? Colors.redAccent : Theme.of(context).primaryColor,
+                    color: isRecording
+                        ? Colors.redAccent
+                        : Theme.of(context).primaryColor,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -142,6 +153,8 @@ class ChatInputArea extends StatelessWidget {
             },
           ),
         ],
+      ),
+        ),
       ),
     );
   }
@@ -184,7 +197,7 @@ class ChatInputArea extends StatelessWidget {
     );
   }
 
-  Widget _buildTextMiddle() {
+  Widget _buildTextMiddle(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -199,7 +212,9 @@ class ChatInputArea extends StatelessWidget {
             decoration: InputDecoration(
               hintText: 'Message...',
               hintStyle: TextStyle(
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 fontSize: 16,
               ),
               border: InputBorder.none,
@@ -208,7 +223,12 @@ class ChatInputArea extends StatelessWidget {
                 vertical: 12,
               ),
             ),
-            style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            style: TextStyle(
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
+              fontSize: 16,
+            ),
           ),
         ),
       ],
