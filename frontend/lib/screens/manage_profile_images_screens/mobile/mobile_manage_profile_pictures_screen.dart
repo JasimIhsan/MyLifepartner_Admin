@@ -48,7 +48,9 @@ class _MobileManageProfilePicturesScreenState
           "You can upload up to 4 photos.",
           style: TextStyle(
             fontSize: 12,
-            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -134,7 +136,9 @@ class _MobileManageProfilePicturesScreenState
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -143,7 +147,9 @@ class _MobileManageProfilePicturesScreenState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -211,14 +217,24 @@ class _MobileManageProfilePicturesScreenState
       appBar: CustomAppBar(
         title: "Manage Photos",
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+          ),
           onPressed: () {
             context.pop(true);
           },
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.more_horiz, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+            icon: Icon(
+              Icons.more_horiz,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            ),
             onPressed: () {},
           ),
         ],
@@ -226,7 +242,9 @@ class _MobileManageProfilePicturesScreenState
       body: SafeArea(
         child: isLoading && images.isEmpty
             ? Center(
-                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               )
             : errorMessage != null
             ? Center(
@@ -237,7 +255,9 @@ class _MobileManageProfilePicturesScreenState
                     children: [
                       Text(
                         errorMessage!,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),

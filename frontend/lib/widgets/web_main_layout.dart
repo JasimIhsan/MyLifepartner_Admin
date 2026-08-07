@@ -194,7 +194,7 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                       : Icons.notifications_active_outlined,
                   color: _showNotifications
                       ? Theme.of(context).primaryColor
-                      : Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
                 tooltip: 'Notifications',
                 onPressed: () {
@@ -236,14 +236,14 @@ class _WebMainLayoutState extends State<WebMainLayout> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.outfit(
-                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 15,
               ),

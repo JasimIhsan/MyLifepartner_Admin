@@ -73,7 +73,7 @@ class AuthLayout extends StatelessWidget {
                     Text(
                       "Life Partner Again",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
                       ),
@@ -85,7 +85,7 @@ class AuthLayout extends StatelessWidget {
                   "A trusted platform for emotionally\nmature relationships.",
                   style: TextStyle(
                     fontSize: 16,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -263,7 +263,7 @@ class AuthLayout extends StatelessWidget {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                     height: 1.5,
                                   ),
                                 ),
@@ -328,7 +328,7 @@ class AuthLayout extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -338,7 +338,7 @@ class AuthLayout extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               height: 1.5,
             ),
           ),

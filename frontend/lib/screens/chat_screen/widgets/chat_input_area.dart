@@ -50,110 +50,118 @@ class ChatInputArea extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 16),
+          padding: const EdgeInsets.only(
+            top: 12,
+            bottom: 12,
+            left: 16,
+            right: 16,
+          ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (isRecording || isRecordingFinished)
-            IconButton(
-              onPressed: onCancelRecording,
-              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            )
-          else
-            IconButton(
-              onPressed: onShowAttachmentOptions,
-              icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
-              color:
-                  Theme.of(context).textTheme.bodyMedium?.color ??
-                  AppColors.textSecondary,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              splashRadius: 24,
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).scaffoldBackgroundColor,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Theme.of(context).dividerColor),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(
-                      context,
-                    ).shadowColor.withValues(alpha: 0.02),
-                    blurRadius: 4,
-                    offset: const Offset(0, 2),
+            children: [
+              if (isRecording || isRecordingFinished)
+                IconButton(
+                  onPressed: onCancelRecording,
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.red,
                   ),
-                ],
-              ),
-              child: isRecording || isRecordingFinished
-                  ? _buildRecordingMiddle()
-                  : _buildTextMiddle(context),
-            ),
-          ),
-          const SizedBox(width: 12),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: msgController,
-            builder: (context, value, child) {
-              final isTextEmpty = value.text.trim().isEmpty;
-              return GestureDetector(
-                onTap: () {
-                  if (isRecordingFinished) {
-                    onSendRecordedAudio();
-                  } else if (isRecording) {
-                    onStopRecording();
-                  } else if (!isTextEmpty) {
-                    onSendMessage();
-                  } else {
-                    onStartRecording();
-                  }
-                },
-                onLongPressStart:
-                    (isTextEmpty && !isRecording && !isRecordingFinished)
-                    ? (_) => onStartRecording()
-                    : null,
-                onLongPressEnd: isRecording
-                    ? (_) => onStopAndSendRecording()
-                    : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: isRecording ? 52 : 44,
-                  width: isRecording ? 52 : 44,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+              else
+                IconButton(
+                  onPressed: onShowAttachmentOptions,
+                  icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 24,
+                ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
                   decoration: BoxDecoration(
-                    color: isRecording
-                        ? Colors.redAccent
-                        : Theme.of(context).primaryColor,
-                    shape: BoxShape.circle,
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                     boxShadow: [
                       BoxShadow(
-                        color: isRecording
-                            ? Colors.redAccent.withValues(alpha: 0.3)
-                            : const Color(0x33FF3F3F),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        color: Theme.of(
+                          context,
+                        ).shadowColor.withValues(alpha: 0.02),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Icon(
-                    isRecordingFinished
-                        ? Icons.send_rounded
-                        : (isRecording
-                              ? Icons.stop_rounded
-                              : (isTextEmpty
-                                    ? Icons.mic_rounded
-                                    : Icons.arrow_upward_rounded)),
-                    color: Colors.white,
-                    size: isRecording ? 28 : 24,
-                  ),
+                  child: isRecording || isRecordingFinished
+                      ? _buildRecordingMiddle()
+                      : _buildTextMiddle(context),
                 ),
-              );
-            },
+              ),
+              const SizedBox(width: 12),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: msgController,
+                builder: (context, value, child) {
+                  final isTextEmpty = value.text.trim().isEmpty;
+                  return GestureDetector(
+                    onTap: () {
+                      if (isRecordingFinished) {
+                        onSendRecordedAudio();
+                      } else if (isRecording) {
+                        onStopRecording();
+                      } else if (!isTextEmpty) {
+                        onSendMessage();
+                      } else {
+                        onStartRecording();
+                      }
+                    },
+                    onLongPressStart:
+                        (isTextEmpty && !isRecording && !isRecordingFinished)
+                        ? (_) => onStartRecording()
+                        : null,
+                    onLongPressEnd: isRecording
+                        ? (_) => onStopAndSendRecording()
+                        : null,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      height: isRecording ? 52 : 44,
+                      width: isRecording ? 52 : 44,
+                      decoration: BoxDecoration(
+                        color: isRecording
+                            ? Colors.redAccent
+                            : Theme.of(context).primaryColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: isRecording
+                                ? Colors.redAccent.withValues(alpha: 0.3)
+                                : const Color(0x33FF3F3F),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        isRecordingFinished
+                            ? Icons.send_rounded
+                            : (isRecording
+                                  ? Icons.stop_rounded
+                                  : (isTextEmpty
+                                        ? Icons.mic_rounded
+                                        : Icons.arrow_upward_rounded)),
+                        color: Colors.white,
+                        size: isRecording ? 28 : 24,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
         ),
       ),
     );

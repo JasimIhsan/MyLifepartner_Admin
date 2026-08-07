@@ -81,7 +81,11 @@ class _ChatListTileState extends State<ChatListTile> {
                                   style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w700,
-                                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color ??
+                                        AppColors.textPrimary,
                                     letterSpacing: -0.3,
                                   ),
                                   maxLines: 1,
@@ -105,9 +109,9 @@ class _ChatListTileState extends State<ChatListTile> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Theme.of(context).primaryColor.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: Theme.of(
+                                      context,
+                                    ).primaryColor.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
@@ -144,8 +148,16 @@ class _ChatListTileState extends State<ChatListTile> {
                                   color: lastMessageStr.startsWith('Missed')
                                       ? Colors.red
                                       : (hasUnread
-                                            ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
-                                            : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+                                            ? Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge
+                                                      ?.color ??
+                                                  AppColors.textPrimary
+                                            : Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.color ??
+                                                  AppColors.textSecondary),
                                 ),
                                 const SizedBox(width: 4),
                               ],
@@ -157,12 +169,29 @@ class _ChatListTileState extends State<ChatListTile> {
                                     color: isTyping
                                         ? Theme.of(context).primaryColor
                                         : (lastMessageStr.startsWith('Missed')
-                                              ? Theme.of(context).colorScheme.error
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.error
                                               : (conversation == null
-                                                    ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary
+                                                    ? Theme.of(context)
+                                                              .textTheme
+                                                              .bodyMedium
+                                                              ?.color ??
+                                                          AppColors
+                                                              .textSecondary
                                                     : (hasUnread
-                                                          ? Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
-                                                          : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary))),
+                                                          ? Theme.of(context)
+                                                                    .textTheme
+                                                                    .bodyLarge
+                                                                    ?.color ??
+                                                                AppColors
+                                                                    .textPrimary
+                                                          : Theme.of(context)
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.color ??
+                                                                AppColors
+                                                                    .textSecondary))),
                                     fontWeight: isTyping || hasUnread
                                         ? FontWeight.w600
                                         : (conversation == null
@@ -203,7 +232,10 @@ class _ChatListTileState extends State<ChatListTile> {
                 offset: const Offset(0, 4),
               ),
             ],
-            border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surface,
+              width: 2,
+            ),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
@@ -226,7 +258,10 @@ class _ChatListTileState extends State<ChatListTile> {
               decoration: BoxDecoration(
                 color: Colors.green,
                 shape: BoxShape.circle,
-                border: Border.all(color: Theme.of(context).colorScheme.surface, width: 2),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.surface,
+                  width: 2,
+                ),
               ),
             ),
           ),

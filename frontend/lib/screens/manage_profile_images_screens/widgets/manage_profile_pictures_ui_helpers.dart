@@ -26,7 +26,11 @@ class CustomEmptySlot extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
           child: Center(
-            child: Icon(Icons.add, color: Theme.of(context).primaryColor, size: 24),
+            child: Icon(
+              Icons.add,
+              color: Theme.of(context).primaryColor,
+              size: 24,
+            ),
           ),
         ),
       ),
@@ -71,7 +75,9 @@ class PrimaryImageSlot extends StatelessWidget {
                 color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                 child: Icon(
                   Icons.broken_image_outlined,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
             ),
@@ -176,7 +182,9 @@ class SmallImageSlot extends StatelessWidget {
                 color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
                 child: Icon(
                   Icons.broken_image_outlined,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
             ),
@@ -353,7 +361,9 @@ class EmptyStateIllustration extends StatelessWidget {
                 border: Border.all(color: Colors.white, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),

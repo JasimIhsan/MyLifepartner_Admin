@@ -79,7 +79,9 @@ class _WebChatScreenState extends State<WebChatScreen>
                     ),
                   ],
                   border: Border.all(
-                    color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -95,7 +97,11 @@ class _WebChatScreenState extends State<WebChatScreen>
                                 style: TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                   letterSpacing: -0.5,
                                 ),
                               )
@@ -135,9 +141,9 @@ class _WebChatScreenState extends State<WebChatScreen>
                             itemCount: mutualMatches.length,
                             separatorBuilder: (context, index) => Divider(
                               height: 1,
-                              color: Theme.of(context).dividerColor.withValues(
-                                alpha: 0.5,
-                              ),
+                              color: Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha: 0.5),
                               indent: 96,
                             ),
                             itemBuilder: (context, index) {
@@ -172,7 +178,9 @@ class _WebChatScreenState extends State<WebChatScreen>
                       ),
                     ],
                     border: Border.all(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.5),
                       width: 1,
                     ),
                   ),
@@ -223,7 +231,9 @@ class _WebChatScreenState extends State<WebChatScreen>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ).animate().fadeIn(delay: 400.ms),
@@ -243,12 +253,17 @@ class _WebChatScreenState extends State<WebChatScreen>
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: Theme.of(context).dividerColor, width: 2),
+              border: Border.all(
+                color: Theme.of(context).dividerColor,
+                width: 2,
+              ),
             ),
             child: Icon(
               Icons.chat_bubble_outline_rounded,
               size: 48,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
             ),
           ).animate().fadeIn(duration: 400.ms).scale(),
           const SizedBox(height: 24),
@@ -257,7 +272,9 @@ class _WebChatScreenState extends State<WebChatScreen>
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ).animate().fadeIn(delay: 200.ms),
@@ -267,7 +284,9 @@ class _WebChatScreenState extends State<WebChatScreen>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               height: 1.5,
             ),
           ).animate().fadeIn(delay: 300.ms),

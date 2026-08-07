@@ -34,7 +34,12 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
         appBar: CustomAppBar(
           title: "Edit Profile",
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+            icon: Icon(
+              Icons.arrow_back,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            ),
             onPressed: handleBackPress,
           ),
         ),
@@ -83,12 +88,14 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: Theme.of(context).primaryColor.withValues(
-                                            alpha: 0.2,
-                                          ),
+                                          color: Theme.of(
+                                            context,
+                                          ).primaryColor.withValues(alpha: 0.2),
                                           width: 4,
                                         ),
-                                        color: Theme.of(context).colorScheme.surface,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.surface,
                                       ),
                                       child: CircleAvatar(
                                         radius: 64,
@@ -102,7 +109,9 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                             : null,
                                         child: loadingImage
                                             ? CircularProgressIndicator(
-                                                color: Theme.of(context).primaryColor,
+                                                color: Theme.of(
+                                                  context,
+                                                ).primaryColor,
                                               )
                                             : (primaryImageUrl == null ||
                                                       primaryImageUrl!.isEmpty
@@ -121,13 +130,17 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                         color: Theme.of(context).primaryColor,
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: Theme.of(context).colorScheme.surface,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.surface,
                                           width: 3,
                                         ),
                                       ),
                                       child: Icon(
                                         Icons.camera_alt_rounded,
-                                        color: Theme.of(context).colorScheme.onPrimary,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimary,
                                         size: 20,
                                       ),
                                     ),
@@ -145,7 +158,9 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     Text(
                                       widget.user.name ?? '',
                                       style: TextStyle(
-                                        color: Theme.of(context).textTheme.titleLarge?.color,
+                                        color: Theme.of(
+                                          context,
+                                        ).textTheme.titleLarge?.color,
                                         fontSize: 28,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -154,7 +169,11 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     Text(
                                       widget.user.email ?? '',
                                       style: TextStyle(
-                                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.color ??
+                                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                         fontSize: 16,
                                       ),
                                     ).animate().fadeIn(delay: 150.ms),
@@ -264,10 +283,15 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     ? saveProfile
                                     : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).primaryColor,
-                                  foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                                  disabledBackgroundColor: Theme.of(context).primaryColor
-                                      .withValues(alpha: 0.5),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor,
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  disabledBackgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor.withValues(alpha: 0.5),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(28),
                                   ),
@@ -278,7 +302,9 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                         height: 24,
                                         width: 24,
                                         child: CircularProgressIndicator(
-                                          color: Theme.of(context).colorScheme.onPrimary,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimary,
                                           strokeWidth: 2.5,
                                         ),
                                       )

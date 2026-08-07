@@ -45,7 +45,9 @@ class _WebManageProfilePicturesScreenState
           "You can upload up to 4 photos. We recommend high-quality portraits.",
           style: TextStyle(
             fontSize: 14,
-            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.9),
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.9),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -123,7 +125,9 @@ class _WebManageProfilePicturesScreenState
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -132,7 +136,9 @@ class _WebManageProfilePicturesScreenState
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
                 height: 1.5,
               ),
             ),
@@ -198,7 +204,12 @@ class _WebManageProfilePicturesScreenState
       appBar: CustomAppBar(
         title: "Manage Photos",
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+          ),
           onPressed: () {
             context.pop(true);
           },
@@ -207,7 +218,9 @@ class _WebManageProfilePicturesScreenState
       body: SafeArea(
         child: isLoading && images.isEmpty
             ? Center(
-                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               )
             : errorMessage != null
             ? Center(
@@ -218,7 +231,9 @@ class _WebManageProfilePicturesScreenState
                     children: [
                       Text(
                         errorMessage!,
-                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),

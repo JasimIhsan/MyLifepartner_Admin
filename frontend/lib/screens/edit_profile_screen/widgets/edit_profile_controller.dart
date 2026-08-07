@@ -166,14 +166,21 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
                 'You have unsaved changes. Are you sure you want to discard them?',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 14,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 24),
               Row(
@@ -191,7 +198,9 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
                       child: Text(
                         'Keep Editing',
                         style: TextStyle(
-                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -320,7 +329,9 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
             colorScheme: ColorScheme.light(
               primary: Theme.of(context).primaryColor,
               onPrimary: Colors.white,
-              onSurface: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              onSurface:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             ),
           ),
           child: child!,

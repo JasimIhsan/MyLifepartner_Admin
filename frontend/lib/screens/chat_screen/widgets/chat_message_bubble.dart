@@ -50,7 +50,9 @@ class ChatMessageBubble extends StatelessWidget {
           boxShadow: isMe
               ? [
                   BoxShadow(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.2),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -71,7 +73,10 @@ class ChatMessageBubble extends StatelessWidget {
                 msg.content,
                 textAlign: TextAlign.start,
                 style: TextStyle(
-                  color: isMe ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color: isMe
+                      ? Colors.white
+                      : Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   height: 1.35,
@@ -88,7 +93,9 @@ class ChatMessageBubble extends StatelessWidget {
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       value: msg.uploadProgress > 0 ? msg.uploadProgress : null,
-                      color: isMe ? Colors.white70 : Theme.of(context).primaryColor,
+                      color: isMe
+                          ? Colors.white70
+                          : Theme.of(context).primaryColor,
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -106,7 +113,8 @@ class ChatMessageBubble extends StatelessWidget {
                   style: TextStyle(
                     color: isMe
                         ? Colors.white.withValues(alpha: 0.7)
-                        : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        : Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.textSecondary,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -164,7 +172,9 @@ class ChatMessageBubble extends StatelessWidget {
                       vertical: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(

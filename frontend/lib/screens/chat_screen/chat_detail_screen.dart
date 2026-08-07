@@ -718,7 +718,9 @@ class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
                 width: 7,
                 height: 7,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).textTheme.bodySmall?.color ?? const Color(0xFF9E9E9E),
+                  color:
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      const Color(0xFF9E9E9E),
                   shape: BoxShape.circle,
                 ),
               ),

@@ -27,12 +27,17 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Theme.of(context).appBarTheme.backgroundColor?.withValues(alpha: 0.95) ?? Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
+      backgroundColor:
+          Theme.of(
+            context,
+          ).appBarTheme.backgroundColor?.withValues(alpha: 0.95) ??
+          Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
       elevation: 0,
       centerTitle: false,
       scrolledUnderElevation: 1,
       surfaceTintColor: Theme.of(context).colorScheme.surface,
-      foregroundColor: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+      foregroundColor:
+          Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
       flexibleSpace: ClipRect(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
@@ -44,7 +49,9 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: IconButton(
           icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
             size: 22,
           ),
           onPressed: () => context.pop(),
@@ -58,7 +65,10 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Theme.of(context).dividerColor, width: 1),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor,
+                    width: 1,
+                  ),
                 ),
                 child: CircleAvatar(
                   radius: 18,
@@ -69,7 +79,9 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   child: profileImageUrl == null
                       ? Icon(
                           Icons.person,
-                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.textSecondary,
                           size: 20,
                         )
                       : null,
@@ -85,7 +97,10 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                     decoration: BoxDecoration(
                       color: Colors.green,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.surface,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -100,7 +115,9 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Text(
                   profileName,
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -120,7 +137,10 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   Text(
                     isOnline ? 'Online' : 'Offline',
                     style: TextStyle(
-                      color: isOnline ? Colors.green : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      color: isOnline
+                          ? Colors.green
+                          : Theme.of(context).textTheme.bodyMedium?.color ??
+                                AppColors.textSecondary,
                       fontSize: 11,
                       fontWeight: FontWeight.w400,
                     ),

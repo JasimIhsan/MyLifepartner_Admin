@@ -226,11 +226,11 @@ class _InlineAudioPlayerState extends State<InlineAudioPlayer> {
     final maxVal = _duration.inMilliseconds > 0
         ? _duration.inMilliseconds.toDouble()
         : 1.0;
-    
+
     double currentVal = _isDraggingSlider
         ? _dragValue
         : _position.inMilliseconds.toDouble();
-        
+
     if (_duration.inMilliseconds == 0) {
       currentVal = 0.0;
     } else {

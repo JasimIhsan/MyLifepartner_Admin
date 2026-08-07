@@ -15,7 +15,9 @@ class ChatEmptyState extends StatelessWidget {
           Text(
             'Say hi!',
             style: TextStyle(
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -23,7 +25,12 @@ class ChatEmptyState extends StatelessWidget {
           SizedBox(height: 8),
           Text(
             'Don\'t be shy, start the conversation.',
-            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary, fontSize: 14),
+            style: TextStyle(
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
+              fontSize: 14,
+            ),
           ),
         ],
       ),

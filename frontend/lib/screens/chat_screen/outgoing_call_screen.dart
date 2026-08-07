@@ -179,13 +179,17 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Theme.of(context).primaryColor.withValues(alpha: 0.7),
+                            Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.7),
                             Theme.of(context).primaryColorDark,
                           ],
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).primaryColor.withValues(alpha: 0.35),
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.35),
                             blurRadius: 30,
                             spreadRadius: 5,
                           ),

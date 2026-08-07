@@ -41,7 +41,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
       return Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
-          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+          child: CircularProgressIndicator(
+            color: Theme.of(context).primaryColor,
+          ),
         ),
       );
     }
@@ -70,7 +72,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                     ),
                   ],
                   border: Border.all(
-                    color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.5),
                   ),
                 ),
                 child: Column(
@@ -82,7 +86,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(
-                          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.2),
                           width: 4,
                         ),
                         color: Theme.of(context).colorScheme.surface,
@@ -96,17 +102,24 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                                     CircularProgressIndicator(
                                       color: Theme.of(context).primaryColor,
                                     ),
-                                errorWidget: (context, url, error) =>
-                                    Icon(
-                                      Icons.person,
-                                      size: 60,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
-                                    ),
+                                errorWidget: (context, url, error) => Icon(
+                                  Icons.person,
+                                  size: 60,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                ),
                               )
                             : Icon(
                                 Icons.person,
                                 size: 80,
-                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               ),
                       ),
                     ).animate().scale(
@@ -120,7 +133,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 100.ms),
@@ -131,7 +146,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
@@ -183,7 +200,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         style: TextStyle(
                           fontSize: 32,
                           fontWeight: FontWeight.w800,
-                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                           letterSpacing: -1.0,
                         ),
                       ).animate().fadeIn().slideX(begin: 0.1),
@@ -276,7 +295,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                             subtitle: "Toggle dark theme for the app",
                             value: context.watch<ThemeProvider>().isDarkMode,
                             isItemLoading: false,
-                            onChanged: (value) => context.read<ThemeProvider>().toggleTheme(value),
+                            onChanged: (value) => context
+                                .read<ThemeProvider>()
+                                .toggleTheme(value),
                             showDivider: false,
                           ),
                         ],
@@ -322,7 +343,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
               fontSize: 14,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
             ),
           ),
         ),
@@ -367,10 +390,16 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
+                  child: Icon(
+                    icon,
+                    color: Theme.of(context).primaryColor,
+                    size: 24,
+                  ),
                 ),
                 const SizedBox(width: 20),
                 Expanded(
@@ -382,7 +411,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -390,7 +421,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         subtitle,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -399,7 +432,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 18,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.4),
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.4),
                 ),
               ],
             ),
@@ -438,7 +473,11 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                   color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
+                child: Icon(
+                  icon,
+                  color: Theme.of(context).primaryColor,
+                  size: 24,
+                ),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -450,7 +489,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w600,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -458,7 +499,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                       subtitle,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -474,7 +517,9 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                 Switch(
                   value: value,
                   onChanged: onChanged,
-                  activeTrackColor: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                  activeTrackColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.3),
                   activeThumbColor: Theme.of(context).primaryColor,
                 ),
             ],

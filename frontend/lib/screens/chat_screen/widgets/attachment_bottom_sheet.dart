@@ -129,7 +129,9 @@ class _AttachmentOption extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               fontSize: 13,
               fontWeight: FontWeight.w500,
             ),

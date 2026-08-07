@@ -31,7 +31,12 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
   ) {
     final List<String> displayFeatures;
     if (plan.price == 0) {
-      displayFeatures = ['Limited matches', 'Basic search'];
+      displayFeatures = [
+        'Basic profile access only',
+        'Upgrade to send interests',
+        'Upgrade to start chatting',
+        'Upgrade for video & audio calls',
+      ];
     } else if (plan.name.toLowerCase().contains('yearly') ||
         plan.name.toLowerCase().contains('annual')) {
       displayFeatures = [
@@ -41,10 +46,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
       ];
     } else {
       displayFeatures = [
-        'Unlimited likes',
-        'Chat without limits',
-        'See who liked you',
-        'Profile boost',
+        'Access All Premium Features',
+        'Send Interests to Any Profile',
+        'Chat with Interested Members',
+        'Unlimited Video Calls',
+        'Unlimited Audio Calls',
       ];
     }
 
@@ -72,7 +78,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                       ),
                     ),
                     IconButton(
@@ -89,14 +99,18 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                         ? const Color(0xFFFEF2F2)
                         : (provider.isInGracePeriod
                               ? const Color(0xFFFFFBEB)
-                              : Theme.of(context).primaryColor.withValues(alpha: 0.05)),
+                              : Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.05)),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: provider.hasBillingIssue
                           ? const Color(0xFFFCA5A5)
                           : (provider.isInGracePeriod
                                 ? const Color(0xFFFCD34D)
-                                : Theme.of(context).primaryColor.withValues(alpha: 0.1)),
+                                : Theme.of(
+                                    context,
+                                  ).primaryColor.withValues(alpha: 0.1)),
                     ),
                   ),
                   child: Column(
@@ -121,7 +135,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -133,7 +151,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -153,7 +175,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color ??
+                                Theme.of(context).textTheme.bodyMedium?.color ??
+                                Theme.of(context).textTheme.bodyMedium?.color ??
+                                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -169,15 +195,134 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
     );
   }
 
+  Widget _buildTermsAndPrivacy(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 48.0,
+        vertical: 24.0,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextButton(
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog(
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Container(
+                      width: 600,
+                      height: 500,
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Terms & Privacy Policy',
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () => context.pop(),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: ListView(
+                              children: [
+                                const Text(
+                                  'Terms of Service',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
+                                  style: TextStyle(
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                const Text(
+                                  'Privacy Policy',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
+                                  style: TextStyle(
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                const Text(
+                                  'Subscription Management',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
+                                  style: TextStyle(
+                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+            child: Text(
+              'Terms & Privacy',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<SubscriptionProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.plans.isEmpty) {
             return Center(
-              child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+              child: CircularProgressIndicator(
+                color: Theme.of(context).primaryColor,
+              ),
             );
           }
 
@@ -216,7 +361,6 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                 child: SafeArea(
                   child: Column(
                     children: [
-                      // Header
                       Padding(
                         padding: const EdgeInsets.all(24.0),
                         child: Row(
@@ -244,13 +388,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 size: 28,
                               ),
-                              onPressed: () =>
-                                  context.push(AppRoutes.billingHistory),
+                              onPressed: () => context.push(AppRoutes.billingHistory),
                             ),
                           ],
                         ),
                       ),
-                      // Content
                       Expanded(
                         child: SingleChildScrollView(
                           padding: const EdgeInsets.symmetric(
@@ -291,38 +433,21 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
 
                                       return SizedBox(
                                         width: 320,
-                                        height:
-                                            450, // Fixed height for alignment
+                                        height: 450,
                                         child: PlanCardWidget(
                                           plan: plan,
                                           isCurrentPlan: isCurrentPlan,
                                           isLoading: provider.isLoading,
-                                          isSelectedPage:
-                                              false, // For web, no scaling down
-                                          willRenew:
-                                              provider
-                                                  .mySubscription
-                                                  ?.willRenew ??
-                                              true,
+                                          isSelectedPage: false,
+                                          willRenew: provider.mySubscription?.willRenew ?? true,
                                           visuals: visuals,
-                                          hasBillingIssue: isCurrentPlan
-                                              ? provider.hasBillingIssue
-                                              : false,
-                                          isInGracePeriod: isCurrentPlan
-                                              ? provider.isInGracePeriod
-                                              : false,
-                                          isCancelledButActive: isCurrentPlan
-                                              ? provider.isCancelledButActive
-                                              : false,
-                                          isDowngradeScheduled: isCurrentPlan
-                                              ? provider.isDowngradeScheduled
-                                              : false,
-                                          isCancelled: isCurrentPlan
-                                              ? provider.isCancelled
-                                              : false,
+                                          hasBillingIssue: isCurrentPlan ? provider.hasBillingIssue : false,
+                                          isInGracePeriod: isCurrentPlan ? provider.isInGracePeriod : false,
+                                          isCancelledButActive: isCurrentPlan ? provider.isCancelledButActive : false,
+                                          isDowngradeScheduled: isCurrentPlan ? provider.isDowngradeScheduled : false,
+                                          isCancelled: isCurrentPlan ? provider.isCancelled : false,
                                           onSubscribe: () {
-                                            if (isCurrentPlan &&
-                                                plan.price > 0) {
+                                            if (isCurrentPlan && plan.price > 0) {
                                               handleSubscribe(
                                                 provider.plans.firstWhere(
                                                   (p) => p.price == 0,
@@ -350,193 +475,9 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                   ),
                                 ),
                               const SizedBox(height: 48),
+                              _buildTermsAndPrivacy(context),
                             ],
                           ),
-                        ),
-                      ),
-                      // Footer
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 48.0,
-                          vertical: 24.0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // TextButton(
-                            //   onPressed: () async {
-                            //     final provider = context
-                            //         .read<SubscriptionProvider>();
-                            //     if (provider.mySubscription != null &&
-                            //         !provider.mySubscription!.willRenew) {
-                            //       ScaffoldMessenger.of(context).showSnackBar(
-                            //         const SnackBar(
-                            //           content: Text(
-                            //             'Your plan is already cancelled and will downgrade on expiration.',
-                            //           ),
-                            //           backgroundColor: Colors.black,
-                            //         ),
-                            //       );
-                            //       return;
-                            //     }
-
-                            //     if (provider.currentSubscription == null ||
-                            //         provider.currentSubscription!.price == 0) {
-                            //       ScaffoldMessenger.of(context).showSnackBar(
-                            //         const SnackBar(
-                            //           content: Text(
-                            //             'You are already on the Free plan.',
-                            //           ),
-                            //           backgroundColor: Colors.black,
-                            //         ),
-                            //       );
-                            //       return;
-                            //     }
-
-                            //     final confirm = await showDialog<bool>(
-                            //       context: context,
-                            //       builder: (context) => Dialog(
-                            //         backgroundColor: Theme.of(context).colorScheme.surface,
-                            //         shape: RoundedRectangleBorder(
-                            //           borderRadius: BorderRadius.circular(24),
-                            //         ),
-                            //         child: SizedBox(
-                            //           width: 400,
-                            //           child: buildCancelConfirmationSheet(),
-                            //         ),
-                            //       ),
-                            //     );
-
-                            //     if (confirm == true) {
-                            //       final freePlan = provider.plans.firstWhere(
-                            //         (p) => p.price == 0,
-                            //       );
-                            //       handleSubscribe(freePlan);
-                            //     }
-                            //   },
-                            //   child: const Text(
-                            //     'Restore Subscription',
-                            //     style: TextStyle(
-                            //       color: Theme.of(context).primaryColor,
-                            //       fontSize: 14,
-                            //       fontWeight: FontWeight.bold,
-                            //     ),
-                            //   ),
-                            // ),
-                            TextButton(
-                              onPressed: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return Dialog(
-                                      backgroundColor: Theme.of(context).colorScheme.surface,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(24),
-                                      ),
-                                      child: Container(
-                                        width: 600,
-                                        height: 500,
-                                        padding: const EdgeInsets.all(32.0),
-                                        child: Column(
-                                          children: [
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                Text(
-                                                  'Terms & Privacy Policy',
-                                                  style: TextStyle(
-                                                    fontSize: 24,
-                                                    fontWeight: FontWeight.bold,
-                                                    color:
-                                                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  icon: const Icon(Icons.close),
-                                                  onPressed: () =>
-                                                      context.pop(),
-                                                ),
-                                              ],
-                                            ),
-                                            const SizedBox(height: 24),
-                                            Expanded(
-                                              child: ListView(
-                                                children: const [
-                                                  Text(
-                                                    'Terms of Service',
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 8),
-                                                  Text(
-                                                    'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
-                                                    style: TextStyle(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      height: 1.5,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 24),
-                                                  Text(
-                                                    'Privacy Policy',
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 8),
-                                                  Text(
-                                                    'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
-                                                    style: TextStyle(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      height: 1.5,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 24),
-                                                  Text(
-                                                    'Subscription Management',
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  SizedBox(height: 8),
-                                                  Text(
-                                                    'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
-                                                    style: TextStyle(
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                      height: 1.5,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                              child: Text(
-                                'Terms & Privacy',
-                                style: TextStyle(
-                                  color: Theme.of(context).primaryColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ],

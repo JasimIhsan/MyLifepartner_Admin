@@ -174,7 +174,7 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                   Theme.of(
                                     context,
                                   ).textTheme.bodyMedium?.color ??
-                                  AppColors.textSecondary,
+                                  Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
