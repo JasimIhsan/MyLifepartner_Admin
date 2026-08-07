@@ -143,10 +143,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? AppColors.accent : Colors.white,
+            color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? AppColors.accent : Colors.grey.shade300,
+              color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
             ),
           ),
           child: Row(
@@ -156,14 +156,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 Icon(
                   icon,
                   size: 16,
-                  color: isSelected ? Colors.white : iconColor,
+                  color: isSelected ? Theme.of(context).colorScheme.onPrimary : iconColor,
                 ),
                 const SizedBox(width: 6),
               ],
               Text(
                 category,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: isSelected ? Theme.of(context).colorScheme.onPrimary : (Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textPrimary),
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   fontSize: 14,
                 ),
@@ -227,6 +227,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             notification.title,
             style: TextStyle(
               fontSize: 15,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               fontWeight: notification.isRead
                   ? FontWeight.w500
                   : FontWeight.bold,
@@ -238,12 +239,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
               const SizedBox(height: 2),
               Text(
                 notification.body,
-                style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 4),
               Text(
                 _formatTimeAgo(notification.createdAt),
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                ),
               ),
             ],
           ),
@@ -268,9 +275,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Notifications",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  ),
                 ),
                 Consumer<NotificationProvider>(
                   builder: (context, provider, _) {
@@ -282,7 +293,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       "${provider.totalCount} Total",
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
+                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                         fontWeight: FontWeight.w500,
                       ),
                     );
@@ -334,14 +345,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         Icon(
                           Icons.notifications_off_outlined,
                           size: 64,
-                          color: Colors.grey.shade400,
+                          color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.5) ?? Colors.grey.shade400,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           "No notifications yet",
                           style: TextStyle(
                             fontSize: 16,
-                            color: Colors.grey.shade600,
+                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -350,7 +361,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           "We'll notify you when something important happens",
                           style: TextStyle(
                             fontSize: 13,
-                            color: Colors.grey.shade400,
+                            color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                           ),
                         ),
                       ],
@@ -401,9 +412,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
                               child: Text(
                                 currentGroup,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 ),
                               ),
                             ),
