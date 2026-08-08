@@ -18,7 +18,7 @@ class ChildrenStep extends StatelessWidget {
         const OnboardingStepTitle(title: "Do you have children?"),
         const SizedBox(height: 10),
         SizedBox(
-          height: 150,
+          height: 200,
           child: Image.asset(
             'assets/images/onboarding/children.png',
             fit: BoxFit.contain,

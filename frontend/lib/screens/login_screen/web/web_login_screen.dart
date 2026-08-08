@@ -44,7 +44,7 @@ class _WebLoginScreenState extends State<WebLoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = const Color(0xFFFFFFFF);
+    final backgroundColor = Theme.of(context).colorScheme.surface;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -105,12 +105,11 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                           'assets/icons/app_logo.png',
                           height: 32,
                           width: 32,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Icon(
-                                Icons.favorite,
-                                color: Theme.of(context).primaryColor,
-                                size: 24,
-                              ),
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                            Icons.favorite,
+                            color: Theme.of(context).primaryColor,
+                            size: 24,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -143,22 +142,22 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         "Life\nPartner\nAgain.",
                         style: TextStyle(
                           fontSize: 64,
                           fontWeight: FontWeight.w900,
-                          color: Colors.black87,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                           height: 1.0,
                           letterSpacing: -2.0,
                         ),
                       ),
                       const SizedBox(height: 24),
-                      const Text(
+                      Text(
                         "A premium space for emotionally mature relationships. Join a community built on respect and depth.",
                         style: TextStyle(
                           fontSize: 18,
-                          color: Colors.black54,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                           height: 1.5,
                           letterSpacing: -0.2,
                         ),
@@ -182,23 +181,29 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                         child: Text.rich(
                           TextSpan(
                             text: "By continuing, you agree to our ",
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Colors.black54,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.color,
                             ),
                             children: [
-                              const TextSpan(
+                              TextSpan(
                                 text: "Terms",
                                 style: TextStyle(
-                                  color: Colors.black87,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
                               const TextSpan(text: " and "),
-                              const TextSpan(
+                              TextSpan(
                                 text: "Privacy",
                                 style: TextStyle(
-                                  color: Colors.black87,
+                                  color: Theme.of(
+                                    context,
+                                  ).textTheme.bodyLarge?.color,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),
@@ -249,7 +254,6 @@ class _WebLoginScreenState extends State<WebLoginScreen>
           ),
         const SizedBox(height: 16),
 
-
         // Tertiary (Apple) - Active
         _buildEditorialButton(
           icon: isAppleLoading
@@ -258,14 +262,19 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                   height: 28,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.apple, color: Colors.black87, size: 28),
-          label: isAppleLoading ? "Continuing with Apple..." : "Continue with Apple",
+              : Icon(
+                  Icons.apple,
+                  color: Theme.of(context).iconTheme.color,
+                  size: 28,
+                ),
+          label: isAppleLoading
+              ? "Continuing with Apple..."
+              : "Continue with Apple",
           onPressed: isAppleLoading ? null : initiateAppleAuth,
           isPrimary: true,
         ),
 
         const SizedBox(height: 16),
-
 
         // Secondary (Email) - Active
         GestureDetector(
@@ -278,23 +287,34 @@ class _WebLoginScreenState extends State<WebLoginScreen>
             padding: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Colors.grey.shade300, width: 1),
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                ),
               ),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.mail_outline, color: Colors.black87, size: 24),
-                SizedBox(width: 16),
+                Icon(
+                  Icons.mail_outline,
+                  color: Theme.of(context).iconTheme.color,
+                  size: 24,
+                ),
+                const SizedBox(width: 16),
                 Text(
                   "Continue with Email",
                   style: TextStyle(
-                    color: Colors.black87,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                Spacer(),
-                Icon(Icons.arrow_forward_ios, color: Colors.black45, size: 16),
+                const Spacer(),
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                  size: 16,
+                ),
               ],
             ),
           ),
@@ -308,7 +328,10 @@ class _WebLoginScreenState extends State<WebLoginScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).iconTheme.color,
+          ),
           padding: EdgeInsets.zero,
           alignment: Alignment.centerLeft,
           onPressed: () {
@@ -318,10 +341,10 @@ class _WebLoginScreenState extends State<WebLoginScreen>
           },
         ),
         const SizedBox(height: 16),
-        const Text(
+        Text(
           "Enter your email",
           style: TextStyle(
-            color: Colors.black87,
+            color: Theme.of(context).textTheme.bodyLarge?.color,
             fontSize: 16,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -331,27 +354,37 @@ class _WebLoginScreenState extends State<WebLoginScreen>
         TextFormField(
           controller: emailController,
           keyboardType: TextInputType.emailAddress,
-          style: const TextStyle(color: Colors.black87, fontSize: 18),
+          style: TextStyle(
+            color: Theme.of(context).textTheme.bodyLarge?.color,
+            fontSize: 18,
+          ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.grey.shade50,
+            fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 24,
               horizontal: 20,
             ),
             hintText: "name@example.com",
-            hintStyle: const TextStyle(color: Colors.black38),
+            hintStyle: TextStyle(
+              color: Theme.of(context).textTheme.bodySmall?.color,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: const BorderSide(color: Colors.black87, width: 1.5),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 1.5,
+              ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(4),
-              borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ),
           validator: (value) {
@@ -373,9 +406,9 @@ class _WebLoginScreenState extends State<WebLoginScreen>
           child: ElevatedButton(
             onPressed: isLoading ? null : initiateAuth,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.black,
-              foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.grey.shade300,
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+              disabledBackgroundColor: Theme.of(context).dividerColor,
               padding: const EdgeInsets.symmetric(vertical: 24),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
@@ -383,11 +416,11 @@ class _WebLoginScreenState extends State<WebLoginScreen>
               elevation: 0,
             ),
             child: isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     height: 24,
                     width: 24,
                     child: CircularProgressIndicator(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.onPrimary,
                       strokeWidth: 2,
                     ),
                   )
@@ -411,13 +444,17 @@ class _WebLoginScreenState extends State<WebLoginScreen>
   }) {
     final bool disabled = onPressed == null;
 
-    final bgColor = isPrimary ? Colors.white : Colors.transparent;
+    final bgColor = isPrimary
+        ? Theme.of(context).colorScheme.surface
+        : Colors.transparent;
 
     final borderColor = isPrimary
-        ? Colors.grey.shade300
-        : (isMuted ? Colors.transparent : Colors.grey.shade300);
+        ? Theme.of(context).dividerColor
+        : (isMuted ? Colors.transparent : Theme.of(context).dividerColor);
 
-    final textColor = isMuted ? Colors.black54 : Colors.black87;
+    final textColor = isMuted
+        ? Theme.of(context).textTheme.bodyMedium?.color
+        : Theme.of(context).textTheme.bodyLarge?.color;
 
     return Container(
       height: 64,
@@ -446,7 +483,7 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: textColor.withValues(alpha: disabled ? 0.4 : 1.0),
+                      color: textColor,
                     ),
                   ),
                 ),
@@ -457,15 +494,17 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade200,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       badgeText,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black54,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                         letterSpacing: 0.5,
                       ),
                     ),

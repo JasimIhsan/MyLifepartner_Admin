@@ -21,7 +21,7 @@ class _WebOnboardingScreenState extends State<WebOnboardingScreen>
         handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF3F4F6),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Row(
           children: [
             // Left Column: Branding, progress & stepper information
@@ -149,18 +149,18 @@ class _WebOnboardingScreenState extends State<WebOnboardingScreen>
             Expanded(
               flex: 1,
               child: Container(
-                color: const Color(0xFFF3F4F6),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 padding: const EdgeInsets.all(40),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 520),
                     child: Card(
                       elevation: 4,
-                      shadowColor: Colors.black.withValues(alpha: 0.05),
+                      shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.05),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Padding(
                         padding: const EdgeInsets.all(40),
                         child: Column(

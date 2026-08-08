@@ -73,7 +73,7 @@ class BioStep extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 12, bottom: 8),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isSelected
@@ -109,7 +109,9 @@ class BioStep extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 12,
                             height: 1.4,
-                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color ??
+                                AppColors.textSecondary,
                           ),
                         ),
                       ),

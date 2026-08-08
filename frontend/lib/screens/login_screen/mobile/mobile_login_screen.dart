@@ -32,7 +32,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final backgroundColor = Theme.of(context).colorScheme.surface; // Light theme background
+    final backgroundColor = Theme.of(
+      context,
+    ).colorScheme.surface; // Light theme background
 
     return PopScope(
       canPop: false,
@@ -48,6 +50,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
       },
       child: Scaffold(
         backgroundColor: backgroundColor,
+        resizeToAvoidBottomInset: true,
         body: Stack(
           children: [
             // Background Image
@@ -101,151 +104,207 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
             // Main Content Area
             Positioned.fill(
               child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Optional Back Button
-                      if (context.canPop())
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(50),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                              child: Container(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight:
+                          MediaQuery.of(context).size.height -
+                          MediaQuery.of(context).padding.top -
+                          MediaQuery.of(context).padding.bottom,
+                    ),
+                    child: IntrinsicHeight(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Optional Back Button
+                            if (context.canPop())
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 10,
+                                      sigmaY: 10,
+                                    ),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.4,
+                                        ),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: Colors.white.withValues(
+                                            alpha: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                      child: IconButton(
+                                        icon: Icon(
+                                          Icons.arrow_back_ios_new,
+                                          color: Theme.of(
+                                            context,
+                                          ).iconTheme.color,
+                                          size: 20,
+                                        ),
+                                        onPressed: () {
+                                          if (_showEmailForm) {
+                                            setState(() {
+                                              _showEmailForm = false;
+                                            });
+                                          } else {
+                                            context.pop();
+                                          }
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              const SizedBox(height: 48),
+
+                            const Spacer(),
+
+                            // Editorial Headline
+                            Text(
+                              "Life\nPartner\nAgain.",
+                              style: TextStyle(
+                                fontSize: 56,
+                                fontWeight: FontWeight.w900,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge?.color,
+                                height: 1.0,
+                                letterSpacing: -2.0,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              "A premium space for emotionally mature relationships.",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
+                                height: 1.5,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 48),
+
+                            if (authErrorMessage != null) ...[
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.4),
-                                  shape: BoxShape.circle,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.error.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
                                   border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.5),
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.error.withValues(alpha: 0.4),
+                                    width: 1,
                                   ),
                                 ),
-                                child: IconButton(
-                                  icon: const Icon(
-                                    Icons.arrow_back_ios_new,
-                                    color: AppColors.black,
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    if (_showEmailForm) {
-                                      setState(() {
-                                        _showEmailForm = false;
-                                      });
-                                    } else {
-                                      context.pop();
-                                    }
-                                  },
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.error,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        authErrorMessage!,
+                                        style: TextStyle(
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.error,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.3,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ),
-                          ),
-                        )
-                      else
-                        const SizedBox(height: 48),
+                              const SizedBox(height: 16),
+                            ],
 
-                      const Spacer(),
-
-                      // Editorial Headline
-                      const Text(
-                        "Life\nPartner\nAgain.",
-                        style: TextStyle(
-                          fontSize: 56,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.black,
-                          height: 1.0,
-                          letterSpacing: -2.0,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "A premium space for emotionally mature relationships.",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
-                          height: 1.5,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 48),
-
-                      if (authErrorMessage != null) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.error.withValues(alpha: 0.4),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.error_outline,
-                                color: Theme.of(context).colorScheme.error,
-                                size: 20,
+                            // Actions Container
+                            Form(
+                              key: formKey,
+                              child: AnimatedSize(
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeOutQuint,
+                                child: _showEmailForm
+                                    ? _buildEmailForm()
+                                    : _buildActionList(),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  authErrorMessage!,
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Terms
+                            Center(
+                              child: Text.rich(
+                                TextSpan(
+                                  text: "By continuing, you agree to our ",
                                   style: TextStyle(
-                                    color: Theme.of(context).colorScheme.error,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    height: 1.3,
+                                    fontSize: 11,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                   ),
+                                  children: [
+                                    TextSpan(
+                                      text: "Terms",
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge?.color ??
+                                            AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    const TextSpan(text: " and "),
+                                    TextSpan(
+                                      text: "Privacy",
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge?.color ??
+                                            AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    const TextSpan(text: "."),
+                                  ],
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                      ],
-
-                      // Actions Container
-                      Form(
-                        key: formKey,
-                        child: AnimatedSize(
-                          duration: const Duration(milliseconds: 400),
-                          curve: Curves.easeOutQuint,
-                          child: _showEmailForm
-                              ? _buildEmailForm()
-                              : _buildActionList(),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Terms
-                      Center(
-                        child: Text.rich(
-                          TextSpan(
-                            text: "By continuing, you agree to our ",
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                             ),
-                            children: [
-                              TextSpan(
-                                text: "Terms",
-                                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
-                              ),
-                              const TextSpan(text: " and "),
-                              TextSpan(
-                                text: "Privacy",
-                                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
-                              ),
-                              const TextSpan(text: "."),
-                            ],
-                          ),
+                            const SizedBox(height: 16),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
+                    ),
                   ),
                 ),
               ),
@@ -283,8 +342,14 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
                   height: 26,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Icon(Icons.apple, color: AppColors.black, size: 26),
-          label: isAppleLoading ? "Continuing with Apple..." : "Continue with Apple",
+              : Icon(
+                  Icons.apple,
+                  color: Theme.of(context).iconTheme.color,
+                  size: 26,
+                ),
+          label: isAppleLoading
+              ? "Continuing with Apple..."
+              : "Continue with Apple",
           onPressed: isAppleLoading ? null : initiateAppleAuth,
           isPrimary: true,
         ),
@@ -302,17 +367,26 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 15),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor,
+                  width: 1,
+                ),
               ),
             ),
             child: Row(
               children: [
-                Icon(Icons.mail_outline, color: AppColors.black, size: 22),
+                Icon(
+                  Icons.mail_outline,
+                  color: Theme.of(context).iconTheme.color,
+                  size: 22,
+                ),
                 SizedBox(width: 16),
                 Text(
                   "Continue with Email",
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
@@ -338,7 +412,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
         Text(
           "Enter your email",
           style: TextStyle(
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
             fontSize: 14,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
@@ -349,16 +425,25 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
           controller: emailController,
           enabled: !isLoading,
           keyboardType: TextInputType.text,
-          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary, fontSize: 18),
+          style: TextStyle(
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
+            fontSize: 18,
+          ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.inputBackground,
+            fillColor: Theme.of(context).cardColor,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 20,
               horizontal: 20,
             ),
             hintText: "name@example.com",
-            hintStyle: TextStyle(color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight),
+            hintStyle: TextStyle(
+              color:
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  AppColors.textLight,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
               borderSide: BorderSide(color: Theme.of(context).primaryColor),
@@ -369,7 +454,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(15),
-              borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+              borderSide: BorderSide(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ),
           validator: (value) {
@@ -390,7 +477,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
           onPressed: isLoading ? null : initiateAuth,
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: AppColors.white,
+            foregroundColor: Theme.of(context).colorScheme.onPrimary,
             disabledBackgroundColor: Theme.of(context).dividerColor,
             padding: const EdgeInsets.symmetric(vertical: 20),
             shape: RoundedRectangleBorder(
@@ -399,11 +486,11 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
             elevation: 0,
           ),
           child: isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   height: 20,
                   width: 20,
                   child: CircularProgressIndicator(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     strokeWidth: 2,
                   ),
                 )
@@ -426,13 +513,18 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
   }) {
     final bool disabled = onPressed == null;
 
-    final bgColor = isPrimary ? AppColors.white : Colors.transparent;
+    final bgColor = isPrimary
+        ? Theme.of(context).colorScheme.surface
+        : Colors.transparent;
 
     final borderColor = isPrimary
         ? Theme.of(context).dividerColor
         : (isMuted ? Colors.transparent : Theme.of(context).dividerColor);
 
-    final textColor = isMuted ? Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
+    final textColor = isMuted
+        ? Theme.of(context).textTheme.bodyMedium?.color ??
+              AppColors.textSecondary
+        : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
 
     return Container(
       height: 60,
@@ -472,7 +564,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.inputBackground,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -480,7 +574,9 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                         letterSpacing: 0.5,
                       ),
                     ),

@@ -138,7 +138,7 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
                     size: 20,
                   ),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                   contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),

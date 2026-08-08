@@ -30,7 +30,7 @@ class EducationStep extends StatelessWidget {
         const OnboardingStepTitle(title: "What's your\nhighest education?"),
         const SizedBox(height: 10),
         SizedBox(
-          height: 140,
+          height: 200,
           child: Image.asset(
             'assets/images/onboarding/education.png',
             fit: BoxFit.contain,

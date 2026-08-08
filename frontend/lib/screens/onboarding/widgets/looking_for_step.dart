@@ -18,7 +18,7 @@ class LookingForStep extends StatelessWidget {
         const OnboardingStepTitle(title: "What is your relationship goal?"),
         const SizedBox(height: 10),
         SizedBox(
-          height: 150,
+          height: 200,
           child: Image.asset(
             'assets/images/onboarding/relationship.png',
             fit: BoxFit.contain,

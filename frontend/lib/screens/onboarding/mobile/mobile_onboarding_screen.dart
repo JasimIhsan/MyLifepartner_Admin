@@ -20,7 +20,7 @@ class _MobileOnboardingScreenState extends State<MobileOnboardingScreen>
         handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).canvasColor,
         body: SafeArea(
           child: Column(
             children: [
@@ -86,10 +86,10 @@ class _MobileOnboardingScreenState extends State<MobileOnboardingScreen>
             if (currentStep > 0)
               IconButton(
                 onPressed: back,
-                icon: const Icon(
+                icon: Icon(
                   Icons.arrow_back_ios_new_rounded,
                   size: 20,
-                  color: Colors.black87,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             Expanded(

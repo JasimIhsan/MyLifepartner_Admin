@@ -16,7 +16,6 @@ class OtpForm extends StatelessWidget {
   final Function(String) onVerify;
   final int timerValue;
   final bool isResendEnabled;
-
   final String? errorMessage;
 
   const OtpForm({
@@ -37,17 +36,69 @@ class OtpForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final defaultPinTheme = PinTheme(
-      width: 50,
-      height: 60,
+      width: isWeb ? 56 : 48,
+      height: isWeb ? 64 : 56,
       textStyle: TextStyle(
-        fontSize: 26,
-        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+        fontSize: 24,
         fontWeight: FontWeight.bold,
+        color:
+            Theme.of(context).textTheme.bodyLarge?.color ??
+            (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
       ),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 3),
+        color: isDark
+            ? AppColors.darkSurface.withValues(alpha: 0.85)
+            : Colors.white.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark
+              ? AppColors.darkBorderColor
+              : AppColors.borderColor.withValues(alpha: 0.8),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+    );
+
+    final focusedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        border: Border.all(
+          color: Theme.of(context).primaryColor,
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.25),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+    );
+
+    final submittedPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        border: Border.all(
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+      ),
+    );
+
+    final errorPinTheme = defaultPinTheme.copyWith(
+      decoration: defaultPinTheme.decoration!.copyWith(
+        border: Border.all(
+          color: Theme.of(context).colorScheme.error,
+          width: 2,
         ),
       ),
     );
@@ -65,11 +116,15 @@ class OtpForm extends StatelessWidget {
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               defaultPinTheme: defaultPinTheme,
-              separatorBuilder: (index) => const SizedBox(width: 8),
+              focusedPinTheme: focusedPinTheme,
+              submittedPinTheme: submittedPinTheme,
+              errorPinTheme: errorPinTheme,
+              separatorBuilder: (index) => SizedBox(width: isWeb ? 10 : 8),
               forceErrorState: errorMessage != null,
               errorText: errorMessage,
               errorTextStyle: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
                 color: Theme.of(context).colorScheme.error,
               ),
               validator: (value) {
@@ -80,42 +135,6 @@ class OtpForm extends StatelessWidget {
               },
               hapticFeedbackType: HapticFeedbackType.lightImpact,
               onCompleted: onVerify,
-              focusedPinTheme: defaultPinTheme.copyWith(
-                textStyle: TextStyle(
-                  fontSize: 26,
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Theme.of(context).primaryColor, width: 4),
-                  ),
-                ),
-              ),
-              submittedPinTheme: defaultPinTheme.copyWith(
-                textStyle: TextStyle(
-                  fontSize: 26,
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Theme.of(context).primaryColor, width: 4),
-                  ),
-                ),
-              ),
-              errorPinTheme: defaultPinTheme.copyWith(
-                textStyle: TextStyle(
-                  fontSize: 26,
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Theme.of(context).colorScheme.error, width: 4),
-                  ),
-                ),
-              ),
             ),
           ),
           const SizedBox(height: 24),
@@ -125,7 +144,12 @@ class OtpForm extends StatelessWidget {
             child: Text.rich(
               TextSpan(
                 text: "Didn't receive a code? ",
-                style: TextStyle(fontSize: 14, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 14,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
+                ),
                 children: [
                   if (isResending)
                     WidgetSpan(
@@ -141,7 +165,7 @@ class OtpForm extends StatelessWidget {
                               color: Theme.of(context).primaryColor,
                             ),
                           ),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           SizedBox(
                             width: 12,
                             height: 12,
@@ -157,6 +181,7 @@ class OtpForm extends StatelessWidget {
                     )
                   else if (isResendEnabled)
                     WidgetSpan(
+                      alignment: PlaceholderAlignment.middle,
                       child: GestureDetector(
                         onTap: onResend,
                         child: Text(
@@ -173,11 +198,13 @@ class OtpForm extends StatelessWidget {
                   else
                     TextSpan(
                       text:
-                          "Resent in 00.${timerValue.toString().padLeft(2, '0')}",
+                          "Resend in 00.${timerValue.toString().padLeft(2, '0')}",
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                       ),
                     ),
                 ],
@@ -205,7 +232,7 @@ class OtpForm extends StatelessWidget {
                       : null,
                   isLoading: isLoading,
                   text: "Verify",
-                  borderRadius: 12,
+                  borderRadius: 14,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 );

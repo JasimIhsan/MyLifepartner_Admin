@@ -80,6 +80,8 @@ class _MatchesListState extends State<MatchesList> {
   ) async {
     final provider = context.read<MatchProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final successBgColor = Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
+    final errorBgColor = Theme.of(context).colorScheme.error;
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -129,7 +131,7 @@ class _MatchesListState extends State<MatchesList> {
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Interest request to ${profile.name} canceled'),
-            backgroundColor: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            backgroundColor: successBgColor,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ),
@@ -138,7 +140,7 @@ class _MatchesListState extends State<MatchesList> {
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Failed to cancel interest request: $e'),
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: errorBgColor,
             behavior: SnackBarBehavior.floating,
           ),
         );

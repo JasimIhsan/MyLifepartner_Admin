@@ -65,12 +65,12 @@ class _AgePrefStepState extends State<AgePrefStep> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Theme.of(context).primaryColor, width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.02),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -130,7 +130,7 @@ class _AgePrefStepState extends State<AgePrefStep> {
           data: SliderTheme.of(context).copyWith(
             trackHeight: 6,
             activeTrackColor: Theme.of(context).primaryColor,
-            inactiveTrackColor: const Color(0xFFE5E7EB),
+            inactiveTrackColor: Theme.of(context).dividerColor,
             thumbColor: Theme.of(context).primaryColor,
             rangeThumbShape: const CustomRangeSliderThumbShape(
               enabledThumbRadius: 14,

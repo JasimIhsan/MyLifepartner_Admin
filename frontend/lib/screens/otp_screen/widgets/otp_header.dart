@@ -23,30 +23,42 @@ class OtpHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryTextColor = Theme.of(context).textTheme.bodyLarge?.color ??
+        (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary);
+    final secondaryTextColor = Theme.of(context).textTheme.bodyMedium?.color ??
+        (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           isPasswordReset ? "Reset Password" : "Enter Verification Code",
           style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            fontSize: isWeb ? 32 : 28,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
+            color: primaryTextColor,
+            height: 1.2,
           ),
         ),
         const SizedBox(height: 12),
         Text.rich(
           TextSpan(
             text: isPasswordReset
-                ? "We’ve sent a 6-digit password reset code to "
-                : "We’ve sent a 6-digit verification code to ",
-            style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+                ? "We’ve sent a 6-digit password reset code to\n"
+                : "We’ve sent a 6-digit verification code to\n",
+            style: TextStyle(
+              fontSize: 15,
+              height: 1.4,
+              color: secondaryTextColor,
+            ),
             children: [
               TextSpan(
                 text: "$_maskedEmail.",
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color: primaryTextColor,
                 ),
               ),
             ],
@@ -71,21 +83,32 @@ class OtpWebBanner extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.shield_rounded, size: 150, color: Theme.of(context).primaryColor),
+          Icon(
+            Icons.shield_rounded,
+            size: 150,
+            color: Theme.of(context).primaryColor,
+          ),
           const SizedBox(height: 32),
           Text(
             "Account Verification",
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
           Text(
             "We've sent a 6-digit code to your email. Please enter it to verify your identity.",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 16,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
+            ),
           ),
         ],
       ),

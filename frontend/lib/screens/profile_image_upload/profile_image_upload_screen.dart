@@ -189,7 +189,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -248,9 +248,9 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
           scrolledUnderElevation: 0,
           leading: const SizedBox.shrink(),

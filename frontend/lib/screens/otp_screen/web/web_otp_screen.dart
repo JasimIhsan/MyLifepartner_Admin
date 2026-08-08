@@ -23,7 +23,7 @@ class _WebOtpScreenState extends State<WebOtpScreen> with OtpControllerState {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Row(
         children: [
           // Left side - Branding banner
@@ -111,18 +111,18 @@ class _WebOtpScreenState extends State<WebOtpScreen> with OtpControllerState {
           Expanded(
             flex: 1,
             child: Container(
-              color: const Color(0xFFF3F4F6),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 460),
                   child: Card(
                     elevation: 4,
-                    shadowColor: Colors.black.withValues(alpha: 0.05),
+                    shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.05),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     child: Padding(
                       padding: const EdgeInsets.all(40),
                       child: SingleChildScrollView(

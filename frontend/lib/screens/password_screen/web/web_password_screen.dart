@@ -23,7 +23,7 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Row(
         children: [
           // Left side - Branding banner
@@ -111,18 +111,18 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
           Expanded(
             flex: 1,
             child: Container(
-              color: const Color(0xFFF3F4F6),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               padding: const EdgeInsets.symmetric(horizontal: 40),
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 460),
                   child: Card(
                     elevation: 4,
-                    shadowColor: Colors.black.withValues(alpha: 0.05),
+                    shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.05),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(24),
                     ),
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     child: Padding(
                       padding: const EdgeInsets.all(40),
                       child: SingleChildScrollView(
@@ -138,27 +138,27 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                     : (widget.isExistingUser
                                           ? "Enter Password"
                                           : "Create Password"),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 "For ${widget.email}",
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
-                                  color: Colors.grey,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color,
                                 ),
                               ),
                               const SizedBox(height: 36),
-                              const Text(
+                              Text(
                                 "Password",
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.black54,
+                                  color: Theme.of(context).textTheme.bodySmall?.color,
                                 ),
                               ),
                               const SizedBox(height: 8),
@@ -167,21 +167,21 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                 obscureText: obscureText,
                                 decoration: InputDecoration(
                                   filled: true,
-                                  fillColor: const Color(0xFFF9FAFB),
+                                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                                   contentPadding: const EdgeInsets.symmetric(
                                     vertical: 16,
                                     horizontal: 16,
                                   ),
                                   hintText: "Enter password",
-                                  hintStyle: const TextStyle(
-                                    color: Colors.grey,
+                                  hintStyle: TextStyle(
+                                    color: Theme.of(context).textTheme.bodySmall?.color,
                                   ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       obscureText
                                           ? Icons.visibility_off
                                           : Icons.visibility,
-                                      color: Colors.grey,
+                                      color: Theme.of(context).textTheme.bodySmall?.color,
                                     ),
                                     onPressed: () {
                                       setState(() {
@@ -192,13 +192,13 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
-                                      color: Colors.grey.shade200,
+                                      color: Theme.of(context).dividerColor,
                                     ),
                                   ),
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                     borderSide: BorderSide(
-                                      color: Colors.grey.shade200,
+                                      color: Theme.of(context).dividerColor,
                                     ),
                                   ),
                                   focusedBorder: OutlineInputBorder(
@@ -261,12 +261,12 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                               if (!widget.isExistingUser ||
                                   widget.isPasswordReset) ...[
                                 const SizedBox(height: 24),
-                                const Text(
+                                Text(
                                   "Confirm Password",
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.black54,
+                                    color: Theme.of(context).textTheme.bodySmall?.color,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -275,21 +275,21 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                   obscureText: obscureConfirmText,
                                   decoration: InputDecoration(
                                     filled: true,
-                                    fillColor: const Color(0xFFF9FAFB),
+                                    fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                                     contentPadding: const EdgeInsets.symmetric(
                                       vertical: 16,
                                       horizontal: 16,
                                     ),
                                     hintText: "Confirm password",
-                                    hintStyle: const TextStyle(
-                                      color: Colors.grey,
+                                    hintStyle: TextStyle(
+                                      color: Theme.of(context).textTheme.bodySmall?.color,
                                     ),
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         obscureConfirmText
                                             ? Icons.visibility_off
                                             : Icons.visibility,
-                                        color: Colors.grey,
+                                        color: Theme.of(context).textTheme.bodySmall?.color,
                                       ),
                                       onPressed: () {
                                         setState(() {
@@ -301,13 +301,13 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: Colors.grey.shade200,
+                                        color: Theme.of(context).dividerColor,
                                       ),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                       borderSide: BorderSide(
-                                        color: Colors.grey.shade200,
+                                        color: Theme.of(context).dividerColor,
                                       ),
                                     ),
                                     focusedBorder: OutlineInputBorder(
