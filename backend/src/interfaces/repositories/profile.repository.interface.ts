@@ -10,7 +10,7 @@ export interface IProfileRepository {
    updateProfileStatus(userId: number, status: ProfileStatus): Promise<Profile>;
    getRequiredQuestionsCount(isPrimary?: boolean): Promise<number>;
    getUserAnsweredCount(userId: number, isPrimary?: boolean): Promise<number>;
-   updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile & { job: Job | null }>;
+   updateProfile(userId: number, data: UpdateProfileDto): Promise<Profile & { job: Job | null }>;
    updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference>;
    getUserImages(userId: number): Promise<UserImage[]>;
    getUserImagesCount(userId: number): Promise<number>;

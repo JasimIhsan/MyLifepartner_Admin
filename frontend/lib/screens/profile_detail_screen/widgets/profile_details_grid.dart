@@ -35,50 +35,92 @@ class ProfileDetailsGrid extends StatelessWidget {
         Text(
           'Details',
           style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 10,
-          runSpacing: 12,
-          children: details.map((item) {
+        const SizedBox(height: 16),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          itemCount: details.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final item = details[index];
             return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).shadowColor.withValues(alpha: 0.03),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                  width: 1,
+                ),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (item.customLeading != null)
-                    item.customLeading!
-                  else if (item.icon != null)
-                    Icon(item.icon, size: 16, color: Theme.of(context).primaryColor),
-                  const SizedBox(width: 8),
-                  Text(
-                    item.value,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: item.customLeading != null
+                          ? item.customLeading!
+                          : Icon(
+                              item.icon,
+                              size: 22,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          item.label,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color
+                                    ?.withValues(alpha: 0.6) ??
+                                Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          item.value,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             );
-          }).toList(),
+          },
         ),
       ],
     ).animate().fadeIn(duration: 350.ms, delay: 200.ms);
@@ -116,11 +158,30 @@ class ProfileDetailsGrid extends StatelessWidget {
       );
     }
     if (p['highestEducation'] != null) {
+      String readableEducation(String value) {
+        switch (value) {
+          case 'HIGH_SCHOOL':
+            return 'High School';
+          case 'DIPLOMA_CERTIFICATE':
+            return 'Diploma / Certificate';
+          case 'BACHELORS':
+            return "Bachelor's Degree";
+          case 'MASTERS':
+            return "Master's Degree";
+          case 'DOCTORATE':
+            return 'Doctorate / PhD';
+          case 'OTHER':
+            return 'Other';
+          default:
+            return _formatEnum(value);
+        }
+      }
+
       items.add(
         DetailItem(
           icon: Icons.school_outlined,
           label: 'Education',
-          value: p['highestEducation'],
+          value: readableEducation(p['highestEducation']),
         ),
       );
     }
@@ -128,7 +189,7 @@ class ProfileDetailsGrid extends StatelessWidget {
       items.add(
         DetailItem(
           icon: Icons.work_outline_rounded,
-          label: 'Occupation',
+          label: 'Profession',
           value: p['occupation'],
         ),
       );
@@ -150,8 +211,8 @@ class ProfileDetailsGrid extends StatelessWidget {
         flagWidget = ClipOval(
           child: CountryFlag.fromCountryCode(
             countryCode,
-            width: 18,
-            height: 18,
+            width: 24,
+            height: 24,
           ),
         );
       }
@@ -176,7 +237,7 @@ class ProfileDetailsGrid extends StatelessWidget {
     if (p['drinkingHabit'] != null) {
       items.add(
         DetailItem(
-          icon: Icons.local_bar_rounded,
+          icon: Icons.wine_bar_outlined,
           label: 'Drinking',
           value: _formatEnum(p['drinkingHabit']),
         ),
@@ -191,15 +252,7 @@ class ProfileDetailsGrid extends StatelessWidget {
         ),
       );
     }
-    if (p['emotionalReadiness'] != null) {
-      items.add(
-        DetailItem(
-          icon: Icons.psychology_rounded,
-          label: 'Emotional Readiness',
-          value: _formatEnum(p['emotionalReadiness']),
-        ),
-      );
-    }
+
     if (p['languages'] != null && (p['languages'] as List).isNotEmpty) {
       items.add(
         DetailItem(

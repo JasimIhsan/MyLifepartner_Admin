@@ -46,7 +46,8 @@ class EditProfileSection extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color:
                         Theme.of(context).textTheme.bodyLarge?.color ??
-                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
               ],
@@ -84,7 +85,8 @@ class EditProfileLabel extends StatelessWidget {
         fontWeight: FontWeight.w600,
         color:
             Theme.of(context).textTheme.bodyLarge?.color ??
-            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            Theme.of(context).textTheme.bodyLarge?.color ??
+            AppColors.textPrimary,
       ),
     );
   }
@@ -128,7 +130,8 @@ class EditProfileReadOnlyField extends StatelessWidget {
                 size: 20,
                 color:
                     Theme.of(context).textTheme.bodyMedium?.color ??
-                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -142,7 +145,8 @@ class EditProfileReadOnlyField extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                         color:
                             Theme.of(context).textTheme.bodyMedium?.color ??
-                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -152,7 +156,8 @@ class EditProfileReadOnlyField extends StatelessWidget {
                         fontSize: 10,
                         color:
                             Theme.of(context).textTheme.bodySmall?.color ??
-                            Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                            AppColors.textLight,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
@@ -164,7 +169,8 @@ class EditProfileReadOnlyField extends StatelessWidget {
                 size: 16,
                 color:
                     Theme.of(context).textTheme.bodySmall?.color ??
-                    Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
               ),
             ],
           ),
@@ -184,6 +190,8 @@ class EditProfileTextField extends StatelessWidget {
   final bool enabled;
   final bool readOnly;
   final VoidCallback? onTap;
+  final int? minLines;
+  final int? maxLines;
 
   const EditProfileTextField({
     super.key,
@@ -196,6 +204,8 @@ class EditProfileTextField extends StatelessWidget {
     this.enabled = true,
     this.readOnly = false,
     this.onTap,
+    this.minLines,
+    this.maxLines,
   });
 
   @override
@@ -211,16 +221,19 @@ class EditProfileTextField extends StatelessWidget {
         fontSize: 15,
         color: enabled
             ? Theme.of(context).textTheme.bodyLarge?.color ??
-                  Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary
             : Theme.of(context).textTheme.bodyMedium?.color ??
-                  Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
           color:
               Theme.of(context).textTheme.bodySmall?.color ??
-              Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+              Theme.of(context).textTheme.bodySmall?.color ??
+              AppColors.textLight,
           fontSize: 14,
         ),
         filled: true,
@@ -231,7 +244,8 @@ class EditProfileTextField extends StatelessWidget {
           prefixIcon,
           color:
               Theme.of(context).textTheme.bodyMedium?.color ??
-              Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              Theme.of(context).textTheme.bodyMedium?.color ??
+              AppColors.textSecondary,
           size: 20,
         ),
         suffixIcon: suffixIcon,
@@ -334,7 +348,8 @@ class EditProfileCountryPicker extends StatelessWidget {
               Icons.public_outlined,
               color:
                   Theme.of(context).textTheme.bodyMedium?.color ??
-                  Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -345,9 +360,11 @@ class EditProfileCountryPicker extends StatelessWidget {
                   fontSize: 15,
                   color: hasCountry
                       ? Theme.of(context).textTheme.bodyLarge?.color ??
-                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary
                       : Theme.of(context).textTheme.bodyMedium?.color ??
-                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                 ),
               ),
             ),
@@ -355,7 +372,8 @@ class EditProfileCountryPicker extends StatelessWidget {
               Icons.keyboard_arrow_down_rounded,
               color:
                   Theme.of(context).textTheme.bodyMedium?.color ??
-                  Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               size: 22,
             ),
           ],
@@ -427,7 +445,8 @@ class _EditProfileCountryPickerSheetState
                   fontWeight: FontWeight.bold,
                   color:
                       Theme.of(context).textTheme.bodyLarge?.color ??
-                      Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -441,14 +460,16 @@ class _EditProfileCountryPickerSheetState
                   hintStyle: TextStyle(
                     color:
                         Theme.of(context).textTheme.bodySmall?.color ??
-                        Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
                     fontSize: 14,
                   ),
                   prefixIcon: Icon(
                     Icons.search,
                     color:
                         Theme.of(context).textTheme.bodyMedium?.color ??
-                        Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
                     size: 20,
                   ),
                   filled: true,
@@ -515,7 +536,10 @@ class _EditProfileCountryPickerSheetState
                                 : Theme.of(
                                         context,
                                       ).textTheme.bodyLarge?.color ??
-                                      Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                           ),
                         ),
                         trailing: isSelected
@@ -740,22 +764,30 @@ const List<String> _kCountries = [
 
 class MinimalTextField extends StatelessWidget {
   final TextEditingController controller;
-  final String label;
+  final String? label;
   final String hintText;
   final bool enabled;
   final bool readOnly;
   final VoidCallback? onTap;
+  final int? minLines;
+  final int? maxLines;
   final String? Function(String?)? validator;
+  final double fontSize;
+  final TextInputType? keyboardType;
 
   const MinimalTextField({
     super.key,
     required this.controller,
-    required this.label,
     required this.hintText,
+    this.label,
     this.enabled = true,
     this.readOnly = false,
     this.onTap,
+    this.minLines,
+    this.maxLines,
     this.validator,
+    this.fontSize = 16,
+    this.keyboardType,
   });
 
   @override
@@ -765,16 +797,18 @@ class MinimalTextField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color:
-                  Theme.of(context).textTheme.bodyMedium?.color ??
-                  Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+          if (label != null)
+            Text(
+              label ?? "",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
             ),
-          ),
           const SizedBox(height: 2),
           TextFormField(
             controller: controller,
@@ -782,52 +816,99 @@ class MinimalTextField extends StatelessWidget {
             readOnly: readOnly,
             onTap: onTap,
             validator: validator,
+            minLines: minLines,
+            maxLines: (minLines == null && maxLines == null) ? 1 : maxLines,
+            keyboardType: keyboardType,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: fontSize,
               fontWeight: FontWeight.bold,
               color: enabled
                   ? Theme.of(context).textTheme.bodyLarge?.color ??
-                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary
                   : Theme.of(context).textTheme.bodySmall?.color ??
-                        Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
             ),
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(
                 color:
                     Theme.of(context).textTheme.bodySmall?.color ??
-                    Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
                 fontSize: 14,
                 fontWeight: FontWeight.normal,
               ),
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(vertical: 6),
-              border: UnderlineInputBorder(
-                borderSide: BorderSide(color: Theme.of(context).dividerColor),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: (minLines ?? 1) > 1 ? 12 : 6,
+                horizontal: (minLines ?? 1) > 1 ? 12 : 0,
               ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-              disabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Theme.of(context).dividerColor),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).primaryColor,
-                  width: 1.5,
-                ),
-              ),
-              errorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.error,
-                ),
-              ),
-              focusedErrorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: Theme.of(context).colorScheme.error,
-                  width: 1.5,
-                ),
-              ),
+              border: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+              enabledBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+              disabledBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+              focusedBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 1.5,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 1.5,
+                      ),
+                    ),
+              errorBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+              focusedErrorBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                        width: 1.5,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                        width: 1.5,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -865,7 +946,8 @@ class MinimalReadOnlyField extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                   color:
                       Theme.of(context).textTheme.bodyMedium?.color ??
-                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
               Icon(
@@ -873,7 +955,8 @@ class MinimalReadOnlyField extends StatelessWidget {
                 size: 14,
                 color:
                     Theme.of(context).textTheme.bodySmall?.color ??
-                    Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
               ),
             ],
           ),
@@ -885,7 +968,8 @@ class MinimalReadOnlyField extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color:
                   Theme.of(context).textTheme.bodySmall?.color ??
-                  Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  AppColors.textLight,
             ),
           ),
           const SizedBox(height: 2),
@@ -895,7 +979,8 @@ class MinimalReadOnlyField extends StatelessWidget {
               fontSize: 10,
               color:
                   Theme.of(context).textTheme.bodySmall?.color ??
-                  Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  AppColors.textLight,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -928,6 +1013,7 @@ class MinimalCountryPicker extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () async {
           final selected = await showModalBottomSheet<String>(
             context: context,
@@ -953,7 +1039,8 @@ class MinimalCountryPicker extends StatelessWidget {
                 fontWeight: FontWeight.w500,
                 color:
                     Theme.of(context).textTheme.bodyMedium?.color ??
-                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
@@ -967,16 +1054,19 @@ class MinimalCountryPicker extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: hasCountry
                         ? Theme.of(context).textTheme.bodyLarge?.color ??
-                              Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary
                         : Theme.of(context).textTheme.bodySmall?.color ??
-                              Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                              Theme.of(context).textTheme.bodySmall?.color ??
+                              AppColors.textLight,
                   ),
                 ),
                 Icon(
                   Icons.chevron_right_rounded,
                   color:
                       Theme.of(context).textTheme.bodySmall?.color ??
-                      Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      AppColors.textLight,
                   size: 20,
                 ),
               ],

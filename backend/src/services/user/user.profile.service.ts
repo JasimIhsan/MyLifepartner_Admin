@@ -179,8 +179,8 @@ export class ProfileService implements IProfileService {
     * @param data - Profile update data.
     * @returns Updated profile.
     */
-   async updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile> {
-      const dbProfile = await this.profileRepository.updateBasicProfile(userId, data);
+   async updateProfile(userId: number, data: UpdateProfileDto): Promise<Profile> {
+      const dbProfile = await this.profileRepository.updateProfile(userId, data);
       return toServiceProfile(dbProfile);
    }
 

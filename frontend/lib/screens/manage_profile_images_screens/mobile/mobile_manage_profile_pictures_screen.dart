@@ -50,7 +50,8 @@ class _MobileManageProfilePicturesScreenState
             fontSize: 12,
             color:
                 Theme.of(context).textTheme.bodyMedium?.color ??
-                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary.withValues(alpha: 0.8),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -138,7 +139,8 @@ class _MobileManageProfilePicturesScreenState
                     fontWeight: FontWeight.bold,
                     color:
                         Theme.of(context).textTheme.bodyLarge?.color ??
-                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -149,7 +151,8 @@ class _MobileManageProfilePicturesScreenState
                     fontSize: 14,
                     color:
                         Theme.of(context).textTheme.bodyMedium?.color ??
-                        Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -213,7 +216,7 @@ class _MobileManageProfilePicturesScreenState
     final hasImages = images.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: CustomAppBar(
         title: "Manage Photos",
         leading: IconButton(
@@ -221,7 +224,8 @@ class _MobileManageProfilePicturesScreenState
             Icons.arrow_back,
             color:
                 Theme.of(context).textTheme.bodyLarge?.color ??
-                Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
           ),
           onPressed: () {
             context.pop(true);
@@ -233,7 +237,8 @@ class _MobileManageProfilePicturesScreenState
               Icons.more_horiz,
               color:
                   Theme.of(context).textTheme.bodyLarge?.color ??
-                  Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
             onPressed: () {},
           ),

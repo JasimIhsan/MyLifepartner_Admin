@@ -1,15 +1,15 @@
-import { UserOnboardingStatusDto, ProfileStatusType, SelfieStatusType } from "@/dtos/auth.me.dto";
-import { toUserDto, UserDto, UserSelfieDataDto, UserImageDataDto } from "@/dtos/user.dto";
+import prisma from "@/config/prisma";
+import { ProfileStatusType, SelfieStatusType, UserOnboardingStatusDto } from "@/dtos/auth.me.dto";
+import { toUserDto, UserDto, UserImageDataDto, UserSelfieDataDto } from "@/dtos/user.dto";
 import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
-import { IUserRepository, ProfileImageDto, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
+import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
+import { ICacheService } from "@/interfaces/services/cache.service.interface";
+import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { S3Service } from "@/services/s3.service";
 import { ApiError } from "@/utils/ApiError";
-import { ICacheService } from "@/interfaces/services/cache.service.interface";
-import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { CACHE_KEYS } from "@/utils/constants";
 import crypto from "crypto";
-import prisma from "@/config/prisma";
 
 type PaginatedUsersDto = {
    data: UserDto[];
@@ -110,7 +110,12 @@ export class UserService implements IUserService {
    async getUserById(userId: number): Promise<UserDto> {
       const user = await this.findActiveUserById(userId);
 
-      return toUserDto(user);
+      const dto = toUserDto(user);
+      if (dto.primaryImageUrl) {
+         dto.primaryImageUrl = await this.getPresignedUrlOrNull(dto.primaryImageUrl);
+      }
+
+      return dto;
    }
 
    /**
@@ -411,6 +416,7 @@ export class UserService implements IUserService {
             isDeleteRequested: true,
             deleteRequestedAt: new Date(),
             deleteRequestStatus: "PENDING",
+            isSuspended: true,
          },
       });
 

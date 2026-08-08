@@ -31,6 +31,11 @@ export interface UserDto {
    highestEducation?: string | null;
    occupation?: string | null;
    bio?: string | null;
+   childrenStatus?: string | null;
+   lookingFor?: string | null;
+   smokingHabit?: string | null;
+   drinkingHabit?: string | null;
+   languages?: string[];
    profileCompletion?: number | null;
 
    createdAt: Date;
@@ -67,6 +72,11 @@ export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null
    highestEducation: user.profile?.highestEducation || null,
    occupation: user.profile?.job?.name || null,
    bio: user.profile?.bio || null,
+   childrenStatus: user.profile?.childrenStatus || null,
+   lookingFor: user.profile?.lookingFor || null,
+   smokingHabit: user.profile?.smokingHabit || null,
+   drinkingHabit: user.profile?.drinkingHabit || null,
+   languages: user.profile?.languages || [],
    profileCompletion: user.profile?.profileCompletion || null,
 
    createdAt: user.createdAt,

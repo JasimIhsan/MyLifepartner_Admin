@@ -218,7 +218,7 @@ export class ProfileRepository implements IProfileRepository {
     * @param data - Profile update data.
     * @returns Updated profile.
     */
-   async updateBasicProfile(userId: number, data: UpdateProfileDto) {
+   async updateProfile(userId: number, data: UpdateProfileDto) {
       await this.findOrCreateProfile(userId);
 
       const updateData: Prisma.ProfileUpdateInput = {

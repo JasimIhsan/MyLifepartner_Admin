@@ -3,7 +3,7 @@ import { z } from "zod";
 const GenderEnum = z.enum(["MALE", "FEMALE", "OTHER"]);
 const MaritalStatusEnum = z.enum(["AWAITING_DIVORCE", "DIVORCED", "WIDOWED", "SEPARATED"]);
 
-export const basicProfileSchema = z.object({
+export const profileSchema = z.object({
    body: z.object({
       name: z.string().min(1, "Name is required").optional(),
       gender: GenderEnum.nullish(),

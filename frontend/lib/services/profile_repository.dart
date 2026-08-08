@@ -144,27 +144,29 @@ class ProfileRepository {
     }
   }
 
-  Future<void> updateBasicProfile(Map<String, dynamic> data) async {
+  Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      if (userId == null) throw Exception('User not logged in');
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
 
       final response = await _client.patch(
-        '/profile/basic-profile/$userId',
+        '/profile/update/$userId',
         data: data,
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to update basic profile');
+        throw Exception('Failed to update profile');
       }
     } on DioException catch (e) {
       throw Exception(
-        getDioErrorMessage(e, fallback: 'Error updating basic profile'),
+        getDioErrorMessage(e, fallback: 'Error updating profile'),
       );
     } catch (e) {
-      throw Exception('Error updating basic profile: $e');
+      throw Exception('Error updating profile: $e');
     }
   }
 

@@ -98,7 +98,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
     try {
       final userName = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'
           .trim();
-      await _profileRepo.updateBasicProfile({
+      await _profileRepo.updateProfile({
         'name': userName.isEmpty ? null : userName,
         'gender': _gender,
         'dateOfBirth': _dob != null ? '${_dob!.toIso8601String()}Z' : null,

@@ -300,11 +300,9 @@ class OnboardingLanguageChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.only(
-          left: 35,
-          right: 16,
-          bottom: 14,
-          top: 14,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 10,
         ),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -330,18 +328,14 @@ class OnboardingLanguageChip extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
-            const SizedBox(width: 6),
-            Visibility(
-              visible: isSelected,
-              maintainSize: true,
-              maintainAnimation: true,
-              maintainState: true,
-              child: Icon(
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              Icon(
                 Icons.check_circle_rounded,
                 color: Theme.of(context).primaryColor,
                 size: 16,
               ),
-            ),
+            ],
           ],
         ),
       ),

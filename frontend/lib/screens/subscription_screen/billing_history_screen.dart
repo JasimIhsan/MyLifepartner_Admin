@@ -22,7 +22,7 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
         title: const Text('Billing History'),
         backgroundColor: Theme.of(context).colorScheme.surface,
@@ -42,19 +42,28 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       provider.error!,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyLarge?.color),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => provider.loadTransactions(),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
                       ),
                       child: const Text('Retry'),
                     ),
@@ -69,7 +78,11 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long, size: 80, color: Theme.of(context).disabledColor),
+                  Icon(
+                    Icons.receipt_long,
+                    size: 80,
+                    color: Theme.of(context).disabledColor,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'No billing history yet',
@@ -94,10 +107,10 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                 final isFailed = transaction.status == 'FAILED';
                 final isCancelled = transaction.status == 'CANCELLED';
                 final isRefunded = transaction.status == 'REFUNDED';
-                
+
                 Color statusColor = Colors.green;
                 IconData statusIcon = Icons.check_circle;
-                
+
                 if (isFailed) {
                   statusColor = Colors.red;
                   statusIcon = Icons.cancel;
@@ -145,7 +158,9 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                           'Subscription Payment',
                           style: TextStyle(
                             fontSize: 13,
-                            color: Theme.of(context).textTheme.bodyMedium?.color,
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.color,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -164,9 +179,13 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                             ),
                             const Spacer(),
                             Text(
-                              DateFormat('MMM d, yyyy • h:mm a').format(transaction.createdAt.toLocal()),
+                              DateFormat(
+                                'MMM d, yyyy • h:mm a',
+                              ).format(transaction.createdAt.toLocal()),
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyMedium?.color,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.color,
                                 fontSize: 13,
                               ),
                             ),
@@ -179,7 +198,9 @@ class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
                           Text(
                             'Transaction ID: ${transaction.originalTransactionId}',
                             style: TextStyle(
-                              color: Theme.of(context).textTheme.bodyMedium?.color,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.color,
                               fontSize: 12,
                             ),
                           ),

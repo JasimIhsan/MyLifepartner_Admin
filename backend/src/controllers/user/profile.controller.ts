@@ -1,12 +1,12 @@
 import { IProfileService } from "@/interfaces/services/user.profile.service.interface";
+import { auditService } from "@/services/audit.service";
 import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
+import { ActorType, AuditModule, AuditSeverity, AuditSource, AuditStatus } from "@prisma/client";
 import { Request, Response } from "express";
-import { auditService } from "@/services/audit.service";
-import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class ProfileController {
    constructor(private readonly profileService: IProfileService) {}
@@ -161,10 +161,10 @@ export class ProfileController {
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/basic-profile/:userId
-    * @purpose Updates basic profile details for the authenticated user.
+    * @route PATCH /api/v1/user/profile/update/:userId
+    * @purpose Updates profile details for the authenticated user.
     */
-   public updateBasicProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
+   public updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
       const userId = Number(req.params.userId);
 
@@ -174,23 +174,23 @@ export class ProfileController {
 
       this.ensureUserOwnsResource(userId, authUserId);
 
-      const result = await this.profileService.updateBasicProfile(userId, req.body);
+      const result = await this.profileService.updateProfile(userId, req.body);
 
       await auditService.log({
          userId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
-         action: "UPDATE_BASIC_PROFILE",
+         action: "UPDATE_PROFILE",
          status: AuditStatus.SUCCESS,
          severity: AuditSeverity.INFO,
-         message: `User updated basic profile`,
+         message: `User updated profile`,
          newValue: req.body,
          entityType: "User",
          entityId: userId.toString(),
          source: AuditSource.API,
       });
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Basic profile updated successfully"));
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Profile updated successfully"));
    });
 
    /**
