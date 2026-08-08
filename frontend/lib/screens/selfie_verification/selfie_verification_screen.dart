@@ -1,6 +1,5 @@
 // ignore_for_file: unused_import
 
-import 'package:go_router/go_router.dart';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -8,12 +7,13 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/widgets/face_direction_overlay.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
-import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -255,6 +255,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
   }
 
   void _retakeAll() {
+    if (_isLoading) return;
     setState(() {
       _frontImage = _leftImage = _rightImage = null;
       _currentStep = 0;
@@ -305,7 +306,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
   }
 
   Future<void> _handleBackPress() async {
-    if (!mounted) return;
+    if (!mounted || _isLoading) return;
     await CustomBottomSheet.show(
       context: context,
       type: BottomSheetType.confirmation,
@@ -337,9 +338,9 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
         _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).canvasColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: Theme.of(context).canvasColor,
           elevation: 0,
           leading: const SizedBox.shrink(),
           actions: [
@@ -462,25 +463,12 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                             ),
                           ),
                         ),
+
                         // Camera / captured image circle
                         Container(
                           width: circleDia,
                           height: circleDia,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color:
-                                  (_currentImage != null ||
-                                      _isCameraInitialized)
-                                  ? Theme.of(
-                                          context,
-                                        ).textTheme.bodyLarge?.color ??
-                                        AppColors.textPrimary
-                                  : Theme.of(context).dividerColor,
-                              width: 2,
-                            ),
-                            color: Theme.of(context).colorScheme.surface,
-                          ),
+                          decoration: BoxDecoration(shape: BoxShape.circle),
                           child: ClipOval(
                             child: _currentImage != null
                                 ? (kIsWeb
@@ -614,15 +602,18 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
                         ),
                   const SizedBox(height: 14),
                   TextButton(
-                    onPressed: _retakeAll,
+                    onPressed: _isLoading ? null : _retakeAll,
                     child: Text(
                       'Retake All',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color:
-                            Theme.of(context).textTheme.bodyMedium?.color ??
-                            AppColors.textSecondary,
+                        color: _isLoading
+                            ? (Theme.of(context).textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary)
+                                  .withValues(alpha: 0.4)
+                            : Theme.of(context).textTheme.bodyMedium?.color ??
+                                  AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -700,7 +691,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
     if (image == null) return const SizedBox();
     final isSelected = _previewIndex == index;
     return GestureDetector(
-      onTap: () => setState(() => _previewIndex = index),
+      onTap: _isLoading ? null : () => setState(() => _previewIndex = index),
       child: Column(
         children: [
           Container(

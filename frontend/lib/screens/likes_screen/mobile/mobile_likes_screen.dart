@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart';
+
 import '../widgets/animated_header.dart';
-import '../widgets/matches_list.dart';
 import '../widgets/likes_controller.dart';
+import '../widgets/matches_list.dart';
 
 class MobileLikedMatchesScreen extends StatefulWidget {
   const MobileLikedMatchesScreen({super.key});
@@ -34,7 +35,7 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -51,7 +52,9 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
                       style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w700,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                         letterSpacing: -0.5,
                       ),
                     ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.1),
@@ -102,7 +105,9 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
           ],
         ),
         labelColor: AppColors.textWhite,
-        unselectedLabelColor: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+        unselectedLabelColor:
+            Theme.of(context).textTheme.bodyMedium?.color ??
+            AppColors.textSecondary,
         splashBorderRadius: BorderRadius.circular(24),
         overlayColor: WidgetStateProperty.all(Colors.transparent),
         dividerColor: Colors.transparent,

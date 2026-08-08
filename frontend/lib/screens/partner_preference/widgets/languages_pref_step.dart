@@ -53,17 +53,17 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
   Widget build(BuildContext context) {
     // Filter remaining languages that match search and are NOT selected
     final filteredLangs = _allLangs
-        .where((l) =>
-            l.toLowerCase().contains(_searchQuery.toLowerCase()) &&
-            !widget.selectedLanguages.contains(l))
+        .where(
+          (l) =>
+              l.toLowerCase().contains(_searchQuery.toLowerCase()) &&
+              !widget.selectedLanguages.contains(l),
+        )
         .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const OnboardingStepTitle(
-          title: "Any language preference?",
-        ),
+        const OnboardingStepTitle(title: "Any language preference?"),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(
@@ -74,7 +74,9 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                  color:
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      AppColors.textLight,
                 ),
               ),
               const SizedBox(height: 12),
@@ -89,7 +91,9 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Row(
@@ -129,16 +133,20 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
                 decoration: InputDecoration(
                   hintText: "Search languages",
                   hintStyle: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
                     fontSize: 15,
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
                     size: 20,
                   ),
                   filled: true,
-                  fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  fillColor: Theme.of(context).cardColor,
                   contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -180,7 +188,9 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                           ),
                         ),
                         trailing: Container(
@@ -195,7 +205,9 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
                           child: Icon(
                             Icons.add,
                             size: 14,
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                           ),
                         ),
                         onTap: () {
@@ -218,7 +230,9 @@ class _LanguagesPrefStepState extends State<LanguagesPrefStep> {
                     child: Text(
                       "No matching languages found",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                        color:
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                            AppColors.textLight,
                         fontSize: 14,
                       ),
                     ),

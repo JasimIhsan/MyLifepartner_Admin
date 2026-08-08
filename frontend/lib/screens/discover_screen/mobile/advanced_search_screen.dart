@@ -21,21 +21,21 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
     'DIVORCED',
     'WIDOWED',
     'SEPARATED',
-    'NEVER_MARRIED'
+    'NEVER_MARRIED',
   ];
 
   final List<String> _smokingOptions = [
     'NEVER',
     'OCCASIONALLY',
     'SOCIALLY',
-    'REGULARLY'
+    'REGULARLY',
   ];
 
   final List<String> _drinkingOptions = [
     'NEVER',
     'OCCASIONALLY',
     'SOCIALLY',
-    'REGULARLY'
+    'REGULARLY',
   ];
 
   @override
@@ -67,19 +67,25 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
         title: Text(
           'Advanced Search',
           style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: _resetFilters,
-            child: Text('Reset', style: TextStyle(color: Theme.of(context).primaryColor)),
+            child: Text(
+              'Reset',
+              style: TextStyle(color: Theme.of(context).primaryColor),
+            ),
           ),
         ],
       ),
@@ -105,7 +111,9 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
                       min: 18,
                       max: 80,
                       activeColor: Theme.of(context).primaryColor,
-                      inactiveColor: Theme.of(context).primaryColor.withValues(alpha: 0.2),
+                      inactiveColor: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.2),
                       onChanged: (values) {
                         setState(() {
                           _ageRange = values;
@@ -114,7 +122,9 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
                     ),
                     const SizedBox(height: 24),
                     _buildSectionHeader('Marital Status'),
-                    _buildChips(_maritalOptions, _filter.maritalStatuses, (val) {
+                    _buildChips(_maritalOptions, _filter.maritalStatuses, (
+                      val,
+                    ) {
                       setState(() {
                         if (_filter.maritalStatuses.contains(val)) {
                           _filter.maritalStatuses.remove(val);
@@ -125,7 +135,9 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
                     }),
                     const SizedBox(height: 24),
                     _buildSectionHeader('Smoking Habit'),
-                    _buildChips(_smokingOptions, _filter.smokingStatuses, (val) {
+                    _buildChips(_smokingOptions, _filter.smokingStatuses, (
+                      val,
+                    ) {
                       setState(() {
                         if (_filter.smokingStatuses.contains(val)) {
                           _filter.smokingStatuses.remove(val);
@@ -136,7 +148,9 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
                     }),
                     const SizedBox(height: 24),
                     _buildSectionHeader('Drinking Habit'),
-                    _buildChips(_drinkingOptions, _filter.drinkingStatuses, (val) {
+                    _buildChips(_drinkingOptions, _filter.drinkingStatuses, (
+                      val,
+                    ) {
                       setState(() {
                         if (_filter.drinkingStatuses.contains(val)) {
                           _filter.drinkingStatuses.remove(val);
@@ -147,10 +161,14 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
                     }),
                     const SizedBox(height: 24),
                     SwitchListTile(
-                      title: const Text('Verified Profiles Only',
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      title: const Text(
+                        'Verified Profiles Only',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
                       value: _filter.verifiedOnly,
-                      activeTrackColor: Theme.of(context).primaryColor.withValues(alpha: 0.5),
+                      activeTrackColor: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.5),
                       activeThumbColor: Theme.of(context).primaryColor,
                       onChanged: (val) {
                         setState(() {
@@ -170,7 +188,7 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
                 onPressed: _applyFilters,
                 borderRadius: 30,
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -185,14 +203,19 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
         style: TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.bold,
-          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+          color:
+              Theme.of(context).textTheme.bodyLarge?.color ??
+              AppColors.textPrimary,
         ),
       ),
     );
   }
 
   Widget _buildChips(
-      List<String> options, List<String> selected, Function(String) onTap) {
+    List<String> options,
+    List<String> selected,
+    Function(String) onTap,
+  ) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -202,7 +225,10 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
           label: Text(
             opt.replaceAll('_', ' '),
             style: TextStyle(
-              color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color: isSelected
+                  ? Colors.white
+                  : Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
               fontSize: 13,
             ),
           ),
@@ -210,7 +236,9 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
           selectedColor: Theme.of(context).primaryColor,
           backgroundColor: Theme.of(context).colorScheme.surface,
           side: BorderSide(
-            color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).dividerColor,
           ),
           onSelected: (_) => onTap(opt),
         );

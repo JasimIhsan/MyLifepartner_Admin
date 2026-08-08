@@ -24,11 +24,14 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
   Widget build(BuildContext context) {
     if (!hasApiData) {
       return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).canvasColor,
         body: Center(child: SizedBox(width: 800, child: ProfileSkeleton())),
       );
     }
-    return Scaffold(backgroundColor: Theme.of(context).scaffoldBackgroundColor, body: _buildBody());
+    return Scaffold(
+      backgroundColor: Theme.of(context).canvasColor,
+      body: _buildBody(),
+    );
   }
 
   Widget _buildBody() {
@@ -272,7 +275,7 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                 const SizedBox(height: 32),
                                 if (images.isNotEmpty) ...[
                                   Text(
-                                    'Photos (\${images.length})',
+                                    'Photos (${images.length})',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,

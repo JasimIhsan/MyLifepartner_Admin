@@ -30,9 +30,24 @@ class MaritalPrefStep extends StatelessWidget {
         Text(
           "You can select more than one",
           textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+          style: TextStyle(
+            fontSize: 16,
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
+          ),
         ),
-        const Spacer(),
+        const SizedBox(height: 20),
+        SizedBox(
+          height: 200,
+          child: Image.asset(
+            'assets/images/onboarding/emotional_readiness.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        // const Spacer(),
+        const SizedBox(height: 40),
+
         Center(
           child: Wrap(
             spacing: 10,

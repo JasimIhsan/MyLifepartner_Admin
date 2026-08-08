@@ -52,6 +52,13 @@ export interface ProfileDetail {
    highestEducation: string | null;
    occupation: string | null;
    bio: string | null;
+   childrenStatus?: string | null;
+   drinkingHabit?: string | null;
+   emotionalReadiness?: string | null;
+   languages?: string[];
+   lookingFor?: string | null;
+   relationshipTimeline?: string | null;
+   smokingHabit?: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
    images: Array<{ imageUrl: string; isPrimary: boolean; isBlurred?: boolean }>;

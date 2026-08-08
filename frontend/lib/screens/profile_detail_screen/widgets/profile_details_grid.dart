@@ -164,6 +164,69 @@ class ProfileDetailsGrid extends StatelessWidget {
         ),
       );
     }
+    if (p['childrenStatus'] != null) {
+      items.add(
+        DetailItem(
+          icon: Icons.child_care_rounded,
+          label: 'Children',
+          value: _formatEnum(p['childrenStatus']),
+        ),
+      );
+    }
+    if (p['drinkingHabit'] != null) {
+      items.add(
+        DetailItem(
+          icon: Icons.local_bar_rounded,
+          label: 'Drinking',
+          value: _formatEnum(p['drinkingHabit']),
+        ),
+      );
+    }
+    if (p['smokingHabit'] != null) {
+      items.add(
+        DetailItem(
+          icon: Icons.smoking_rooms_rounded,
+          label: 'Smoking',
+          value: _formatEnum(p['smokingHabit']),
+        ),
+      );
+    }
+    if (p['emotionalReadiness'] != null) {
+      items.add(
+        DetailItem(
+          icon: Icons.psychology_rounded,
+          label: 'Emotional Readiness',
+          value: _formatEnum(p['emotionalReadiness']),
+        ),
+      );
+    }
+    if (p['languages'] != null && (p['languages'] as List).isNotEmpty) {
+      items.add(
+        DetailItem(
+          icon: Icons.language_rounded,
+          label: 'Languages',
+          value: (p['languages'] as List).join(', '),
+        ),
+      );
+    }
+    if (p['lookingFor'] != null) {
+      items.add(
+        DetailItem(
+          icon: Icons.search_rounded,
+          label: 'Looking For',
+          value: _formatEnum(p['lookingFor']),
+        ),
+      );
+    }
+    if (p['relationshipTimeline'] != null) {
+      items.add(
+        DetailItem(
+          icon: Icons.timeline_rounded,
+          label: 'Timeline',
+          value: _formatEnum(p['relationshipTimeline']),
+        ),
+      );
+    }
 
     return items;
   }

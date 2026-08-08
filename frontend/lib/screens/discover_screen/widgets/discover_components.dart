@@ -167,7 +167,7 @@ class ProfileBrowserCard extends StatelessWidget {
             bottom: 300,
             child: GestureDetector(
               onTap: () async {
-                context.push('/profile/${profile.id}');
+                await context.push('/profile/${profile.id}');
                 if (onReturnFromDetail != null) {
                   onReturnFromDetail!();
                 }

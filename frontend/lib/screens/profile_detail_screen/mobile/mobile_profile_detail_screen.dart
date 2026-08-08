@@ -30,11 +30,14 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
   Widget build(BuildContext context) {
     if (!hasApiData) {
       return Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).canvasColor,
         body: const ProfileSkeleton(),
       );
     }
-    return Scaffold(backgroundColor: Theme.of(context).scaffoldBackgroundColor, body: _buildBody());
+    return Scaffold(
+      backgroundColor: Theme.of(context).canvasColor,
+      body: _buildBody(),
+    );
   }
 
   Widget _buildBody() {
@@ -158,7 +161,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -166,14 +171,20 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor,
+                            width: 0.6,
+                          ),
                         ),
                         child: Text(
                           p['bio'],
                           style: TextStyle(
                             fontSize: 14,
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                             height: 1.6,
                           ),
                         ),
@@ -184,11 +195,13 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                     const SizedBox(height: 20),
                     if (images.isNotEmpty) ...[
                       Text(
-                        'Photos (\${images.length})',
+                        'Photos (${images.length})',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -218,7 +231,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.95),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -232,7 +247,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
               child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 18,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
           ),
@@ -244,7 +261,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.95),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -259,7 +278,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
               icon: Icon(
                 Icons.more_vert_rounded,
                 size: 20,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
               padding: EdgeInsets.zero,
               shape: RoundedRectangleBorder(
@@ -292,7 +313,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                       Icon(
                         Icons.flag_outlined,
                         size: 20,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                       ),
                       SizedBox(width: 12),
                       Text('Report user'),

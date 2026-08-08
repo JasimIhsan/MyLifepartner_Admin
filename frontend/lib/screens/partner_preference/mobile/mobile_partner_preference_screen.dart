@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
+
 import '../widgets/partner_preference_controller.dart';
 
 class MobilePartnerPreferenceScreen extends StatefulWidget {
@@ -22,7 +23,7 @@ class _MobilePartnerPreferenceScreenState
         handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).canvasColor,
         body: SafeArea(
           child: Column(
             children: [

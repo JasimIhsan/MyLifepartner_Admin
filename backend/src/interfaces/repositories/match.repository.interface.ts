@@ -41,6 +41,13 @@ export interface CandidateProfile {
    occupation: string | null;
    bio: string | null;
    gender: string | null;
+   childrenStatus: string | null;
+   drinkingHabit: string | null;
+   emotionalReadiness: string | null;
+   languages: string[];
+   lookingFor: string | null;
+   relationshipTimeline: string | null;
+   smokingHabit: string | null;
    privacyEnabled: boolean;
    blurredImageUrl: string | null;
    images: Array<{ id: number; imageUrl: string; isPrimary: boolean }>;

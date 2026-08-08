@@ -609,6 +609,13 @@ export class MatchRepository implements IMatchRepository {
          occupation: profile.job?.name || null,
          bio: profile.bio,
          gender: profile.gender,
+         childrenStatus: profile.childrenStatus,
+         drinkingHabit: profile.drinkingHabit,
+         emotionalReadiness: profile.emotionalReadiness,
+         languages: profile.languages,
+         lookingFor: profile.lookingFor,
+         relationshipTimeline: profile.relationshipTimeline,
+         smokingHabit: profile.smokingHabit,
          privacyEnabled: profile.user.privacySettings?.privacyEnabled ?? false,
          blurredImageUrl: profile.user.privacySettings?.blurredImageUrl ?? null,
          images: profile.images.map((image) => ({

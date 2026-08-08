@@ -20,7 +20,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       body: SafeArea(
         child: Consumer<MatchProvider>(
           builder: (context, provider, _) {
@@ -129,7 +129,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
 
   Widget _buildLoading() {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: Theme.of(context).canvasColor,
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -156,7 +156,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
 
   Widget _buildError(MatchProvider provider) {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: Theme.of(context).canvasColor,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.all(40),
@@ -207,7 +207,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
 
   Widget _buildEmpty() {
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      color: Theme.of(context).canvasColor,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
