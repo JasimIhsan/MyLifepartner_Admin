@@ -285,6 +285,20 @@ export class ProfileRepository implements IProfileRepository {
    }
 
    /**
+    * Gets partner preference.
+    *
+    * @param userId - User ID.
+    * @returns Partner preference, if saved.
+    */
+   async getPartnerPreference(userId: number) {
+      return prisma.partnerPreference.findUnique({
+         where: {
+            userId,
+         },
+      });
+   }
+
+   /**
     * Updates partner preference.
     *
     * @param userId - User ID.

@@ -251,7 +251,9 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                       appBar: AppBar(
                                         backgroundColor: Colors.black,
                                         elevation: 0,
-                                        iconTheme: const IconThemeData(color: Colors.white),
+                                        iconTheme: const IconThemeData(
+                                          color: Colors.white,
+                                        ),
                                       ),
                                       body: SafeArea(
                                         child: Center(
@@ -262,10 +264,18 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                             child: CachedNetworkImage(
                                               imageUrl: primaryImage!.imageUrl,
                                               fit: BoxFit.contain,
-                                              placeholder: (context, url) => CircularProgressIndicator(
-                                                color: Theme.of(context).primaryColor,
-                                              ),
-                                              errorWidget: (context, url, error) => const Icon(Icons.error, color: Colors.white),
+                                              placeholder: (context, url) =>
+                                                  CircularProgressIndicator(
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).primaryColor,
+                                                  ),
+                                              errorWidget:
+                                                  (context, url, error) =>
+                                                      const Icon(
+                                                        Icons.error,
+                                                        color: Colors.white,
+                                                      ),
                                             ),
                                           ),
                                         ),
@@ -292,7 +302,10 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                       Theme.of(
                                         context,
                                       ).textTheme.bodyMedium?.color ??
-                                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
                                 ),
                               ),
                             ),
@@ -302,7 +315,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                             size: 70,
                             color:
                                 Theme.of(context).textTheme.bodyMedium?.color ??
-                                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                Theme.of(context).textTheme.bodyMedium?.color ??
+                                AppColors.textSecondary,
                           ),
                   ],
                 ),
@@ -317,7 +331,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 letterSpacing: -0.5,
                 color:
                     Theme.of(context).textTheme.bodyLarge?.color ??
-                    Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 4),
@@ -328,7 +343,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                 fontWeight: FontWeight.w400,
                 color:
                     Theme.of(context).textTheme.bodyMedium?.color ??
-                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 40),
@@ -347,6 +363,18 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                     if (result == true) {
                       fetchProfileData();
                     }
+                  }
+                },
+              ),
+              _buildActionItem(
+                icon: Icons.tune_rounded,
+                title: "Edit Partner Preferences",
+                onTap: () async {
+                  final result = await context.push(
+                    AppRoutes.editPartnerPreference,
+                  );
+                  if (result == true) {
+                    fetchProfileData();
                   }
                 },
               ),
@@ -488,7 +516,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
             letterSpacing: 1.0,
             color:
                 Theme.of(context).textTheme.bodyMedium?.color ??
-                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
           ),
         ),
       ),
@@ -532,7 +561,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                       fontWeight: FontWeight.w500,
                       color:
                           Theme.of(context).textTheme.bodyLarge?.color ??
-                          Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
                     ),
                   ),
                 ),
@@ -541,7 +571,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                   size: 16,
                   color:
                       Theme.of(context).textTheme.bodyMedium?.color ??
-                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.5),
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary.withValues(alpha: 0.5),
                 ),
               ],
             ),
@@ -586,7 +617,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                         fontWeight: FontWeight.w500,
                         color:
                             Theme.of(context).textTheme.bodyLarge?.color ??
-                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -596,7 +628,8 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                         fontSize: 12,
                         color:
                             Theme.of(context).textTheme.bodyMedium?.color ??
-                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -682,7 +715,10 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                       },
                       child: Text(
                         'OK',
-                        style: TextStyle(color: Theme.of(context).colorScheme.onPrimary, fontSize: 16),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontSize: 16,
+                        ),
                       ),
                     )
                   else
@@ -756,7 +792,9 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                 : Text(
                                     'Confirm',
                                     style: TextStyle(
-                                      color: Theme.of(context).colorScheme.onPrimary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimary,
                                       fontSize: 16,
                                     ),
                                   ),

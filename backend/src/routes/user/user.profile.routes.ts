@@ -63,6 +63,7 @@ router.patch("/update/:userId", validate(profileSchema), profileController.updat
  * @desc    Update partner preferences details (age range, religion, etc)
  * @access  Private
  */
+router.get("/partner-preference/:userId", profileController.getPartnerPreference);
 router.patch("/partner-preference/:userId", validate(partnerPreferenceSchema), profileController.updatePartnerPreference);
 
 /**

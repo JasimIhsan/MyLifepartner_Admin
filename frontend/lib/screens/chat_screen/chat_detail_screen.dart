@@ -525,7 +525,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final isTyping = chatProvider.isUserTyping(widget.profile.userId);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: ChatDetailAppBar(
         profileName: widget.profile.name,
         profileImageUrl: _profileImageUrl,

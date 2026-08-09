@@ -194,6 +194,25 @@ export class ProfileController {
    });
 
    /**
+    * @route GET /api/v1/user/profile/partner-preference/:userId
+    * @purpose Fetches partner preference details for the authenticated user.
+    */
+   public getPartnerPreference = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      this.ensureUserOwnsResource(userId, authUserId);
+
+      const result = await this.profileService.getPartnerPreference(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Partner preference fetched successfully"));
+   });
+
+   /**
     * @route PATCH /api/v1/user/profile/partner-preference/:userId
     * @purpose Updates partner preference details for the authenticated user.
     */

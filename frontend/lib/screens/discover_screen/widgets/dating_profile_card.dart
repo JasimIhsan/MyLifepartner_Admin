@@ -1,6 +1,8 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
+
+import 'profile_photo_fallback.dart';
 
 class DatingProfileCard extends StatelessWidget {
   final MatchRecommendation profile;
@@ -309,8 +311,9 @@ class DatingProfileCard extends StatelessWidget {
                       _ActionButton(
                         icon: Icons.favorite_rounded,
                         color: Colors.white,
-                        backgroundColor:
-                            Theme.of(context).primaryColor, // Using primary theme color
+                        backgroundColor: Theme.of(
+                          context,
+                        ).primaryColor, // Using primary theme color
                         borderColor: Colors.transparent,
                         label: "Interest",
                         onTap: isSwiped ? null : onInterest,
@@ -327,12 +330,7 @@ class DatingProfileCard extends StatelessWidget {
   }
 
   Widget _placeholder(BuildContext context) {
-    return Container(
-      color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
-      child: Center(
-        child: Icon(Icons.person, size: 100, color: Theme.of(context).disabledColor),
-      ),
-    );
+    return ProfilePhotoFallback(profileName: profile.name);
   }
 
   String _formatEnum(String value) {

@@ -109,7 +109,10 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                                       Theme.of(
                                         context,
                                       ).textTheme.bodyMedium?.color ??
-                                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
                                 ),
                               )
                             : Icon(
@@ -119,7 +122,10 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                                     Theme.of(
                                       context,
                                     ).textTheme.bodyMedium?.color ??
-                                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
                               ),
                       ),
                     ).animate().scale(
@@ -135,7 +141,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         letterSpacing: -0.5,
                         color:
                             Theme.of(context).textTheme.bodyLarge?.color ??
-                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                       ),
                       textAlign: TextAlign.center,
                     ).animate().fadeIn(delay: 100.ms),
@@ -202,7 +209,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                           fontWeight: FontWeight.w800,
                           color:
                               Theme.of(context).textTheme.bodyLarge?.color ??
-                              Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                           letterSpacing: -1.0,
                         ),
                       ).animate().fadeIn().slideX(begin: 0.1),
@@ -223,6 +231,18 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                                 );
                                 if (result == true) fetchProfileData();
                               }
+                            },
+                          ),
+                          _buildWebActionItem(
+                            icon: Icons.tune_rounded,
+                            title: "Edit Partner Preferences",
+                            subtitle:
+                                "Adjust age, status, and language filters",
+                            onTap: () async {
+                              final result = await context.push(
+                                AppRoutes.editPartnerPreference,
+                              );
+                              if (result == true) fetchProfileData();
                             },
                           ),
                           _buildWebActionItem(
@@ -345,7 +365,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
               letterSpacing: 1.2,
               color:
                   Theme.of(context).textTheme.bodyMedium?.color ??
-                  Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
             ),
           ),
         ),
@@ -413,7 +434,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                           fontWeight: FontWeight.w600,
                           color:
                               Theme.of(context).textTheme.bodyLarge?.color ??
-                              Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -423,7 +445,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                           fontSize: 14,
                           color:
                               Theme.of(context).textTheme.bodyMedium?.color ??
-                              Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -434,7 +457,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                   size: 18,
                   color:
                       Theme.of(context).textTheme.bodyMedium?.color ??
-                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.4),
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary.withValues(alpha: 0.4),
                 ),
               ],
             ),
@@ -491,7 +515,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         fontWeight: FontWeight.w600,
                         color:
                             Theme.of(context).textTheme.bodyLarge?.color ??
-                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -501,7 +526,8 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                         fontSize: 14,
                         color:
                             Theme.of(context).textTheme.bodyMedium?.color ??
-                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                       ),
                     ),
                   ],

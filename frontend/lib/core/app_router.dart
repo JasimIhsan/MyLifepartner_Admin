@@ -10,6 +10,7 @@ import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/edit_partner_preference_screen/edit_partner_preference_screen.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
@@ -240,6 +241,10 @@ GoRouter createRouter(AuthProvider authProvider) {
               }
               return EditProfileScreen(user: user);
             },
+          ),
+          GoRoute(
+            path: AppRoutes.editPartnerPreference,
+            builder: (context, state) => const EditPartnerPreferenceScreen(),
           ),
           GoRoute(
             path: AppRoutes.manageProfilePictures,

@@ -1,10 +1,11 @@
-import 'package:life_partner_again/core/app_routes.dart';
-import 'package:go_router/go_router.dart';
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:provider/provider.dart';
 
 /// Screen shown to the caller while waiting for the callee to accept/decline.
 class OutgoingCallScreen extends StatefulWidget {

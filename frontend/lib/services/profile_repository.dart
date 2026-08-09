@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:life_partner_again/models/partner_preference.dart';
 import 'package:life_partner_again/models/profile_question.dart';
 import 'package:life_partner_again/models/profile_section.dart';
 import 'package:life_partner_again/models/user_image.dart';
@@ -191,6 +192,36 @@ class ProfileRepository {
       );
     } catch (e) {
       throw Exception('Error updating partner preferences: $e');
+    }
+  }
+
+  Future<PartnerPreference?> getPartnerPreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+
+      if (userId == null) throw Exception('User not logged in');
+
+      final response = await _client.get('/profile/partner-preference/$userId');
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        if (data == null) return null;
+        if (data is Map<String, dynamic>) {
+          return PartnerPreference.fromJson(data);
+        }
+        if (data is Map) {
+          return PartnerPreference.fromJson(Map<String, dynamic>.from(data));
+        }
+      }
+
+      throw Exception('Failed to fetch partner preferences');
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error fetching partner preferences'),
+      );
+    } catch (e) {
+      throw Exception('Error fetching partner preferences: $e');
     }
   }
 

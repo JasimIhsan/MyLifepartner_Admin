@@ -60,6 +60,7 @@ export interface IProfileService {
    completeProfile(userId: number): Promise<ProfileStatusDto>;
    getProfileCompletionStatus(userId: number): Promise<{ isCompleted: boolean; nextPendingSectionOrder: number }>;
    updateProfile(userId: number, data: UpdateProfileDto): Promise<Profile>;
+   getPartnerPreference(userId: number): Promise<PartnerPreference | null>;
    updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference>;
    getUserImages(userId: number): Promise<UserImageDto[]>;
    uploadUserImage(userId: number, file: Express.Multer.File): Promise<UserImageDto>;

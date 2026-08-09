@@ -197,6 +197,16 @@ export class ProfileService implements IProfileService {
    }
 
    /**
+    * Gets partner preference.
+    *
+    * @param userId - User ID.
+    * @returns Existing partner preference, if saved.
+    */
+   async getPartnerPreference(userId: number): Promise<PartnerPreference | null> {
+      return this.profileRepository.getPartnerPreference(userId) as unknown as PartnerPreference | null;
+   }
+
+   /**
     * Updates partner preference.
     *
     * @param userId - User ID.

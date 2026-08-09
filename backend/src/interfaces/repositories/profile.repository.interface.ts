@@ -11,6 +11,7 @@ export interface IProfileRepository {
    getRequiredQuestionsCount(isPrimary?: boolean): Promise<number>;
    getUserAnsweredCount(userId: number, isPrimary?: boolean): Promise<number>;
    updateProfile(userId: number, data: UpdateProfileDto): Promise<Profile & { job: Job | null }>;
+   getPartnerPreference(userId: number): Promise<PartnerPreference | null>;
    updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference>;
    getUserImages(userId: number): Promise<UserImage[]>;
    getUserImagesCount(userId: number): Promise<number>;

@@ -1,12 +1,12 @@
-import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:life_partner_again/main.dart';
 
 import '../widgets/chat_controller.dart';
 import '../widgets/chat_list_tile.dart';
@@ -35,11 +35,11 @@ class _MobileChatScreenState extends State<MobileChatScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            backgroundColor: Theme.of(context).canvasColor,
             elevation: 0,
             pinned: true,
             centerTitle: false,
