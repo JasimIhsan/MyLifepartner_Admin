@@ -24,6 +24,7 @@ import DeletionRequestsPage from "./pages/deletion-requests-page/DeletionRequest
 import DeletedUsersPage from "./pages/deleted-users-page/DeletedUsersPage";
 
 import AuditLogsPage from "./pages/audit-logs-page/AuditLogsPage";
+import TransactionsPage from "./pages/transactions-page/TransactionsPage";
 
 function App() {
    const dispatch = useDispatch();
@@ -68,6 +69,7 @@ function App() {
                   <Route path="/lpa-guide" element={<LpaGuidePage />} />
                   <Route path="/subscriptions/plans" element={<SubscriptionPage />} />
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />
+                  <Route path="/transactions" element={<TransactionsPage />} />
                   <Route path="/reports" element={<ReportsPage />} />
                   <Route path="/reports/:id" element={<ReportDetailPage />} />
                   <Route path="/audit-logs" element={<AuditLogsPage />} />

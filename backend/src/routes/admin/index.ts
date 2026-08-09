@@ -12,6 +12,7 @@ import adminUsersRoutes from "@routes/admin/admin.users.routes";
 import imageAssetRoutes from "@routes/admin/image-asset.routes";
 import adminReportRoutes from "@routes/admin/admin.report.routes";
 import auditRoutes from "@routes/admin/audit.routes";
+import adminTransactionRoutes from "@routes/admin/admin.transaction.routes";
 
 const router = Router();
 
@@ -40,5 +41,7 @@ router.use("/users", authenticateAdmin, adminUsersRoutes);
 router.use("/image-assets", authenticateAdmin, imageAssetRoutes);
 router.use("/reports", authenticateAdmin, adminReportRoutes);
 router.use("/audit-logs", authenticateAdmin, auditRoutes);
+router.use("/transactions", authenticateAdmin, adminTransactionRoutes);
 
 export default router;
+
