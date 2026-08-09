@@ -102,7 +102,7 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Image.asset(
-                          'assets/icons/app_logo.png',
+                          Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                           height: 32,
                           width: 32,
                           errorBuilder: (context, error, stackTrace) => Icon(

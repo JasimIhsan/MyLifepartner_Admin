@@ -61,7 +61,7 @@ class _WebOtpScreenState extends State<WebOtpScreen> with OtpControllerState {
                           ],
                         ),
                         child: Image.asset(
-                          'assets/icons/app_logo.png',
+                          Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                           height: 48,
                           width: 48,
                           errorBuilder: (context, error, stackTrace) =>

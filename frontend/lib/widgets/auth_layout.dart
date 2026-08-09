@@ -58,7 +58,7 @@ class AuthLayout extends StatelessWidget {
                     Transform.scale(
                       scale: 2,
                       child: Image.asset(
-                        'assets/icons/app_logo.png',
+                        Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                         height: 32,
                         width: 32,
                         errorBuilder: (context, error, stackTrace) =>
@@ -243,7 +243,7 @@ class AuthLayout extends StatelessWidget {
                                 Transform.scale(
                                   scale: 1.5,
                                   child: Image.asset(
-                                    'assets/icons/app_logo.png',
+                                    Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                                     height: 80,
                                     width: 80,
                                     errorBuilder:
@@ -312,7 +312,7 @@ class AuthLayout extends StatelessWidget {
         Transform.scale(
           scale: 1.5,
           child: Image.asset(
-            'assets/icons/app_logo.png',
+            Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
             height: 64,
             width: 64,
             errorBuilder: (context, error, stackTrace) => Icon(

@@ -8,6 +8,7 @@ import 'package:life_partner_again/services/notification/firebase_notification_s
 import 'package:life_partner_again/services/token_service.dart';
 import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/services/zego_service.dart';
+import 'package:life_partner_again/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -86,6 +87,12 @@ class AuthProvider extends ChangeNotifier {
       await ZegoService.instance.logout();
     } catch (e) {
       debugPrint('Zego logout failed: $e');
+    }
+
+    // Reset theme to light mode
+    final context = navigatorKey.currentContext;
+    if (context != null && context.mounted) {
+      context.read<ThemeProvider>().setThemeMode(ThemeMode.light);
     }
 
     await _authService.logoutLocal();

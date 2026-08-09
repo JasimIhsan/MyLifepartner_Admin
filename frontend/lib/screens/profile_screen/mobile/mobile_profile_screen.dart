@@ -240,24 +240,60 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                   alignment: Alignment.center,
                   children: [
                     primaryImage != null
-                        ? ClipOval(
-                            child: CachedNetworkImage(
-                              width: 140,
-                              height: 140,
-                              imageUrl: primaryImage!.imageUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) =>
-                                  CircularProgressIndicator(
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                              errorWidget: (context, url, error) => Icon(
-                                Icons.person,
-                                size: 50,
-                                color:
-                                    Theme.of(
-                                      context,
-                                    ).textTheme.bodyMedium?.color ??
-                                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        ? GestureDetector(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  opaque: false,
+                                  pageBuilder: (BuildContext context, _, __) {
+                                    return Scaffold(
+                                      backgroundColor: Colors.black,
+                                      appBar: AppBar(
+                                        backgroundColor: Colors.black,
+                                        elevation: 0,
+                                        iconTheme: const IconThemeData(color: Colors.white),
+                                      ),
+                                      body: SafeArea(
+                                        child: Center(
+                                          child: InteractiveViewer(
+                                            panEnabled: true,
+                                            minScale: 0.5,
+                                            maxScale: 4.0,
+                                            child: CachedNetworkImage(
+                                              imageUrl: primaryImage!.imageUrl,
+                                              fit: BoxFit.contain,
+                                              placeholder: (context, url) => CircularProgressIndicator(
+                                                color: Theme.of(context).primaryColor,
+                                              ),
+                                              errorWidget: (context, url, error) => const Icon(Icons.error, color: Colors.white),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              );
+                            },
+                            child: ClipOval(
+                              child: CachedNetworkImage(
+                                width: 140,
+                                height: 140,
+                                imageUrl: primaryImage!.imageUrl,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    CircularProgressIndicator(
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                errorWidget: (context, url, error) => Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                ),
                               ),
                             ),
                           )

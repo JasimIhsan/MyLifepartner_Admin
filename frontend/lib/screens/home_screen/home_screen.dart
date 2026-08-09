@@ -183,7 +183,7 @@ class _HomePageState extends State<HomePage> {
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
       titleWidget: Image.asset(
-        'assets/icons/app_logo.png',
+        Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
         height: 40,
         fit: BoxFit.contain,
       ),

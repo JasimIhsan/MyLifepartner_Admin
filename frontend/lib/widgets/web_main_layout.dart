@@ -80,7 +80,9 @@ class _WebMainLayoutState extends State<WebMainLayout> {
               height: 600,
               child: Card(
                 elevation: 16,
-                shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.15),
+                shadowColor: Theme.of(
+                  context,
+                ).shadowColor.withValues(alpha: 0.15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -131,7 +133,9 @@ class _WebMainLayoutState extends State<WebMainLayout> {
           Row(
             children: [
               Image.asset(
-                'assets/icons/app_logo.png',
+                Theme.of(context).brightness == Brightness.dark
+                    ? 'assets/icons/app_logo_dark.png'
+                    : 'assets/icons/app_logo.png',
                 height: 36,
                 width: 36,
                 errorBuilder: (context, error, stackTrace) => Icon(
@@ -194,7 +198,8 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                       : Icons.notifications_active_outlined,
                   color: _showNotifications
                       ? Theme.of(context).primaryColor
-                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      : Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                 ),
                 tooltip: 'Notifications',
                 onPressed: () {
@@ -227,7 +232,9 @@ class _WebMainLayoutState extends State<WebMainLayout> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Colors.transparent,
               width: 3,
             ),
           ),
@@ -236,14 +243,20 @@ class _WebMainLayoutState extends State<WebMainLayout> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.outfit(
-                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 15,
               ),

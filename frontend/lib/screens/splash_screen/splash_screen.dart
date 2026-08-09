@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
-                      'assets/icons/app_logo.png',
+                      Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                       height: 250,
                       width: 250,
                       errorBuilder: (context, error, stackTrace) => const Icon(
