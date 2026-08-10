@@ -16,23 +16,28 @@ class CategorySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // In dark mode: a slightly elevated surface. In light: crisp white.
+    final tileBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final textColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final chevronColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textLight;
+
     if (categories.isEmpty) {
       return Container(
         width: double.infinity,
         constraints: const BoxConstraints(maxWidth: 320),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.grey.shade100,
+          color: tileBg,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           'No guide categories are available right now.',
-          style: TextStyle(
-            fontSize: 14,
-            color:
-                Theme.of(context).textTheme.bodyMedium?.color ??
-                AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: chevronColor),
         ),
       );
     }
@@ -43,48 +48,56 @@ class CategorySelector extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: categories.map((cat) {
-          return Card(
-            elevation: 1,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          return Container(
             margin: const EdgeInsets.symmetric(vertical: 4),
-            child: InkWell(
+            decoration: BoxDecoration(
+              color: tileBg,
               borderRadius: BorderRadius.circular(12),
-              onTap: enabled ? () => onSelectCategory(cat.id, cat.name) : null,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      _iconForCategory(cat.name),
-                      color: Theme.of(context).primaryColor,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        cat.name,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              Theme.of(context).textTheme.bodyLarge?.color ??
-                              AppColors.textPrimary,
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: enabled
+                    ? () => onSelectCategory(cat.id, cat.name)
+                    : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _iconForCategory(cat.name),
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          cat.name,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
                         ),
                       ),
-                    ),
-                    Icon(
-                      Icons.chevron_right_rounded,
-                      color:
-                          Theme.of(context).textTheme.bodySmall?.color ??
-                          AppColors.textLight,
-                      size: 20,
-                    ),
-                  ],
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: chevronColor,
+                        size: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

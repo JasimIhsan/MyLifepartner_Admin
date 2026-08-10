@@ -1,11 +1,9 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/providers/image_asset_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
 import '../widgets/password_controller.dart';
 
@@ -50,14 +48,12 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
         Theme.of(context).textTheme.bodyMedium?.color ??
         (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary);
 
-    final inputFillColor =
-        isDark
-            ? AppColors.darkSurface.withValues(alpha: 0.85)
-            : Colors.white.withValues(alpha: 0.92);
-    final inputBorderColor =
-        isDark
-            ? AppColors.darkBorderColor
-            : AppColors.borderColor.withValues(alpha: 0.8);
+    final inputFillColor = isDark
+        ? AppColors.darkSurface.withValues(alpha: 0.85)
+        : Colors.white.withValues(alpha: 0.92);
+    final inputBorderColor = isDark
+        ? AppColors.darkBorderColor
+        : AppColors.borderColor.withValues(alpha: 0.8);
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -70,23 +66,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
             left: 0,
             right: 0,
             height: size.height * 0.65,
-            child: Consumer<ImageAssetProvider>(
-              builder: (context, provider, _) {
-                final asset = provider.getFeaturedAsset('ONBOARDING_SCREEN');
-                if (asset != null) {
-                  return CachedNetworkImage(
-                    imageUrl: asset.imageUrl,
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                  );
-                }
-                return Image.asset(
-                  'assets/images/landing_couple.png',
-                  fit: BoxFit.cover,
-                  alignment: Alignment.topCenter,
-                );
-              },
-            ),
+            child: const OnboardingBackgroundImage(),
           ),
 
           // Seamless Gradient Fade to Background Color (no hard cutoff)
@@ -180,8 +160,8 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                     widget.isPasswordReset
                                         ? "Reset Password"
                                         : (widget.isExistingUser
-                                            ? "Enter Password"
-                                            : "Create Password"),
+                                              ? "Enter Password"
+                                              : "Create Password"),
                                     style: TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.w800,
@@ -238,10 +218,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                           ),
                                       hintText: "Password",
                                       hintStyle: TextStyle(
-                                        color:
-                                            isDark
-                                                ? AppColors.darkTextLight
-                                                : AppColors.textLight,
+                                        color: isDark
+                                            ? AppColors.darkTextLight
+                                            : AppColors.textLight,
                                         fontSize: 15,
                                       ),
                                       suffixIcon: IconButton(
@@ -249,10 +228,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                           obscureText
                                               ? Icons.visibility_off
                                               : Icons.visibility,
-                                          color:
-                                              isDark
-                                                  ? AppColors.darkTextLight
-                                                  : AppColors.textLight,
+                                          color: isDark
+                                              ? AppColors.darkTextLight
+                                              : AppColors.textLight,
                                           size: 22,
                                         ),
                                         onPressed: () {
@@ -285,10 +263,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                       errorBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(15),
                                         borderSide: BorderSide(
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.error,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.error,
                                           width: 1.5,
                                         ),
                                       ),
@@ -324,15 +301,15 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                     Align(
                                       alignment: Alignment.centerRight,
                                       child: TextButton(
-                                        onPressed:
-                                            isLoading
-                                                ? null
-                                                : handleForgotPassword,
+                                        onPressed: isLoading
+                                            ? null
+                                            : handleForgotPassword,
                                         child: Text(
                                           "Forgot Password?",
                                           style: TextStyle(
-                                            color:
-                                                Theme.of(context).primaryColor,
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
                                             fontWeight: FontWeight.w600,
                                             fontSize: 14,
                                           ),
@@ -358,10 +335,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                             ),
                                         hintText: "Confirm Password",
                                         hintStyle: TextStyle(
-                                          color:
-                                              isDark
-                                                  ? AppColors.darkTextLight
-                                                  : AppColors.textLight,
+                                          color: isDark
+                                              ? AppColors.darkTextLight
+                                              : AppColors.textLight,
                                           fontSize: 15,
                                         ),
                                         suffixIcon: IconButton(
@@ -369,10 +345,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                             obscureConfirmText
                                                 ? Icons.visibility_off
                                                 : Icons.visibility,
-                                            color:
-                                                isDark
-                                                    ? AppColors.darkTextLight
-                                                    : AppColors.textLight,
+                                            color: isDark
+                                                ? AppColors.darkTextLight
+                                                : AppColors.textLight,
                                             size: 22,
                                           ),
                                           onPressed: () {
@@ -405,8 +380,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                             15,
                                           ),
                                           borderSide: BorderSide(
-                                            color:
-                                                Theme.of(context).primaryColor,
+                                            color: Theme.of(
+                                              context,
+                                            ).primaryColor,
                                             width: 2,
                                           ),
                                         ),
@@ -415,10 +391,9 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                             15,
                                           ),
                                           borderSide: BorderSide(
-                                            color:
-                                                Theme.of(
-                                                  context,
-                                                ).colorScheme.error,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.error,
                                             width: 1.5,
                                           ),
                                         ),
@@ -443,14 +418,15 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                     child: ElevatedButton(
                                       onPressed: isLoading ? null : submit,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Theme.of(context).primaryColor,
-                                        foregroundColor:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.onPrimary,
-                                        disabledBackgroundColor:
-                                            Theme.of(context).dividerColor,
+                                        backgroundColor: Theme.of(
+                                          context,
+                                        ).primaryColor,
+                                        foregroundColor: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimary,
+                                        disabledBackgroundColor: Theme.of(
+                                          context,
+                                        ).dividerColor,
                                         padding: const EdgeInsets.symmetric(
                                           vertical: 16,
                                         ),
@@ -461,31 +437,28 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                         ),
                                         elevation: 0,
                                       ),
-                                      child:
-                                          isLoading
-                                              ? SizedBox(
-                                                height: 20,
-                                                width: 20,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      color:
-                                                          Theme.of(
-                                                            context,
-                                                          ).colorScheme.onPrimary,
-                                                      strokeWidth: 2,
-                                                    ),
-                                              )
-                                              : Text(
-                                                widget.isPasswordReset
-                                                    ? "Update Password"
-                                                    : (widget.isExistingUser
+                                      child: isLoading
+                                          ? SizedBox(
+                                              height: 20,
+                                              width: 20,
+                                              child: CircularProgressIndicator(
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onPrimary,
+                                                strokeWidth: 2,
+                                              ),
+                                            )
+                                          : Text(
+                                              widget.isPasswordReset
+                                                  ? "Update Password"
+                                                  : (widget.isExistingUser
                                                         ? "Log In"
                                                         : "Register"),
-                                                style: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w700,
                                               ),
+                                            ),
                                     ),
                                   ),
                                 ],

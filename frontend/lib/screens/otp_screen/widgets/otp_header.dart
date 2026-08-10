@@ -24,9 +24,11 @@ class OtpHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryTextColor = Theme.of(context).textTheme.bodyLarge?.color ??
+    final primaryTextColor =
+        Theme.of(context).textTheme.bodyLarge?.color ??
         (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary);
-    final secondaryTextColor = Theme.of(context).textTheme.bodyMedium?.color ??
+    final secondaryTextColor =
+        Theme.of(context).textTheme.bodyMedium?.color ??
         (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary);
 
     return Column(

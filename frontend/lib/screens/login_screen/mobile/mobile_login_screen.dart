@@ -1,12 +1,10 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/providers/image_asset_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
 import '../widgets/login_controller.dart';
 
@@ -59,23 +57,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
               left: 0,
               right: 0,
               height: size.height * 0.65,
-              child: Consumer<ImageAssetProvider>(
-                builder: (context, provider, _) {
-                  final asset = provider.getFeaturedAsset('ONBOARDING_SCREEN');
-                  if (asset != null) {
-                    return CachedNetworkImage(
-                      imageUrl: asset.imageUrl,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.topCenter,
-                    );
-                  }
-                  return Image.asset(
-                    'assets/images/landing_couple.png',
-                    fit: BoxFit.cover,
-                    alignment: Alignment.topCenter,
-                  );
-                },
-              ),
+              child: const OnboardingBackgroundImage(),
             ),
 
             // Gradient Fade to Background Color

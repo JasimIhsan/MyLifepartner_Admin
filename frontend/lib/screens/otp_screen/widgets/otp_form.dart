@@ -71,10 +71,7 @@ class OtpForm extends StatelessWidget {
 
     final focusedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration!.copyWith(
-        border: Border.all(
-          color: Theme.of(context).primaryColor,
-          width: 2,
-        ),
+        border: Border.all(color: Theme.of(context).primaryColor, width: 2),
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).primaryColor.withValues(alpha: 0.25),

@@ -1,10 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:google_sign_in_web/web_only.dart' as web;
-import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/google_auth_service.dart';
-import 'package:provider/provider.dart';
+import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
 import '../widgets/login_controller.dart';
 
@@ -56,22 +54,9 @@ class _WebLoginScreenState extends State<WebLoginScreen>
             child: Stack(
               children: [
                 Positioned.fill(
-                  child: Consumer<ImageAssetProvider>(
-                    builder: (context, provider, _) {
-                      final asset = provider.getFeaturedAsset(
-                        'ONBOARDING_SCREEN',
-                      );
-                      if (asset != null) {
-                        return CachedNetworkImage(
-                          imageUrl: asset.imageUrl,
-                          fit: BoxFit.cover,
-                        );
-                      }
-                      return Image.asset(
-                        'assets/images/landing_couple.png',
-                        fit: BoxFit.cover,
-                      );
-                    },
+                  child: OnboardingBackgroundImage(
+                    alignment: Alignment.center,
+                    loadingBackgroundColor: backgroundColor,
                   ),
                 ),
                 // Gradient overlay to make text legible
@@ -102,7 +87,9 @@ class _WebLoginScreenState extends State<WebLoginScreen>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Image.asset(
-                          Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+                          Theme.of(context).brightness == Brightness.dark
+                              ? 'assets/icons/app_logo_dark.png'
+                              : 'assets/icons/app_logo.png',
                           height: 32,
                           width: 32,
                           errorBuilder: (context, error, stackTrace) => Icon(

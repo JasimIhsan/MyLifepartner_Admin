@@ -173,7 +173,9 @@ class _OtpMethodSelectionContentState
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade300,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
           ),
         ),
