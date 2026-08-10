@@ -1,5 +1,5 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatHeader extends StatelessWidget {
   final VoidCallback onRestartChat;
@@ -35,10 +35,11 @@ class ChatHeader extends StatelessWidget {
               CircleAvatar(
                 radius: 24,
                 backgroundColor: Colors.white.withValues(alpha: 0.2),
-                child: const Icon(
-                  Icons.support_agent_rounded,
-                  color: Colors.white,
-                  size: 28,
+                child: Image.asset(
+                  'assets/icons/lpa_assist.png',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.contain,
                 ),
               ),
               Positioned(
@@ -50,7 +51,10 @@ class ChatHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.greenAccent,
                     shape: BoxShape.circle,
-                    border: Border.all(color: Theme.of(context).primaryColor, width: 2),
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor,
+                      width: 2,
+                    ),
                   ),
                 ),
               ),
@@ -62,20 +66,23 @@ class ChatHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'LPA Support Bot',
+                  'Find Your Self',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                    height: 1.1,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
-                  'Online | Frequently Asked Questions',
+                  'Your Life Partner Guide',
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
+                    color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ],

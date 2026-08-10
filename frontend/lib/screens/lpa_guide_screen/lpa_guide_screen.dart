@@ -98,8 +98,8 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
       ChatMessage(
         sender: MessageSender.assistant,
         text: _categories.isEmpty
-            ? 'Hi there! I am your LPA Guide Assistant. 🌟\n\nGuide categories are not available right now. Please try again later.'
-            : 'Hi there! I am your LPA Guide Assistant. 🌟\n\nHow can I help you find your life partner with confidence and privacy today? Please select a category to get started:',
+            ? 'Welcome to Find Your Self! ✨\n\nOur guide is temporarily unavailable. Please check your connection and try again.'
+            : 'Welcome to Find Your Self! ✨\n\nI\'m here to help you navigate your journey to finding your life partner with confidence and clarity. Select a topic below to get started:',
         timestamp: DateTime.now(),
       ),
     );

@@ -27,9 +27,18 @@ class CustomBottomBar extends StatelessWidget {
     const double barContentHeight = 60.0;
     const double fabSize = 56.0;
 
-    final actualBackgroundColor = backgroundColor ?? Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface;
-    final actualSelectedItemColor = selectedItemColor ?? Theme.of(context).bottomNavigationBarTheme.selectedItemColor ?? Theme.of(context).primaryColor;
-    final actualUnselectedItemColor = unselectedItemColor ?? Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ?? Theme.of(context).unselectedWidgetColor;
+    final actualBackgroundColor =
+        backgroundColor ??
+        Theme.of(context).bottomNavigationBarTheme.backgroundColor ??
+        Theme.of(context).colorScheme.surface;
+    final actualSelectedItemColor =
+        selectedItemColor ??
+        Theme.of(context).bottomNavigationBarTheme.selectedItemColor ??
+        Theme.of(context).primaryColor;
+    final actualUnselectedItemColor =
+        unselectedItemColor ??
+        Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ??
+        Theme.of(context).unselectedWidgetColor;
 
     return SizedBox(
       height: barContentHeight + bottomPadding,
@@ -51,7 +60,9 @@ class CustomBottomBar extends StatelessWidget {
                       color: actualBackgroundColor,
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).shadowColor.withValues(alpha: 0.06),
+                          color: Theme.of(
+                            context,
+                          ).shadowColor.withValues(alpha: 0.06),
                           blurRadius: 16,
                           offset: const Offset(0, -4),
                         ),
@@ -66,7 +77,13 @@ class CustomBottomBar extends StatelessWidget {
             right: 0,
             top: 0,
             bottom: bottomPadding,
-            child: Row(children: _buildItems(showCenterButton, actualSelectedItemColor, actualUnselectedItemColor)),
+            child: Row(
+              children: _buildItems(
+                showCenterButton,
+                actualSelectedItemColor,
+                actualUnselectedItemColor,
+              ),
+            ),
           ),
 
           // ── Floating center "+" button (overflows above the bar) ──────
@@ -90,16 +107,19 @@ class CustomBottomBar extends StatelessWidget {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).primaryColor.withValues(alpha: 0.35),
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.35),
                           blurRadius: 14,
                           offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.support_agent,
-                      color: Colors.white,
-                      size: 30,
+                    child: Image.asset(
+                      'assets/icons/lpa_assist.png',
+                      width: 30,
+                      height: 30,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -110,7 +130,11 @@ class CustomBottomBar extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildItems(bool showCenterButton, Color selectedItemColor, Color unselectedItemColor) {
+  List<Widget> _buildItems(
+    bool showCenterButton,
+    Color selectedItemColor,
+    Color unselectedItemColor,
+  ) {
     List<Widget> children = [];
 
     if (showCenterButton) {
@@ -118,7 +142,16 @@ class CustomBottomBar extends StatelessWidget {
       final secondHalf = items.sublist(items.length ~/ 2);
 
       for (int i = 0; i < firstHalf.length; i++) {
-        children.add(Expanded(child: _buildTabItem(i, firstHalf[i], selectedItemColor, unselectedItemColor)));
+        children.add(
+          Expanded(
+            child: _buildTabItem(
+              i,
+              firstHalf[i],
+              selectedItemColor,
+              unselectedItemColor,
+            ),
+          ),
+        );
       }
 
       // Center spacer for the floating button
@@ -126,19 +159,40 @@ class CustomBottomBar extends StatelessWidget {
 
       for (int i = 0; i < secondHalf.length; i++) {
         children.add(
-          Expanded(child: _buildTabItem(i + firstHalf.length, secondHalf[i], selectedItemColor, unselectedItemColor)),
+          Expanded(
+            child: _buildTabItem(
+              i + firstHalf.length,
+              secondHalf[i],
+              selectedItemColor,
+              unselectedItemColor,
+            ),
+          ),
         );
       }
     } else {
       for (int i = 0; i < items.length; i++) {
-        children.add(Expanded(child: _buildTabItem(i, items[i], selectedItemColor, unselectedItemColor)));
+        children.add(
+          Expanded(
+            child: _buildTabItem(
+              i,
+              items[i],
+              selectedItemColor,
+              unselectedItemColor,
+            ),
+          ),
+        );
       }
     }
 
     return children;
   }
 
-  Widget _buildTabItem(int index, BottomNavigationBarItem item, Color selectedItemColor, Color unselectedItemColor) {
+  Widget _buildTabItem(
+    int index,
+    BottomNavigationBarItem item,
+    Color selectedItemColor,
+    Color unselectedItemColor,
+  ) {
     final isSelected = selectedIndex == index;
     final color = isSelected ? selectedItemColor : unselectedItemColor;
 
@@ -189,7 +243,11 @@ class _BottomBarNotchPainter extends CustomPainter {
   final Color shadowColor;
   final double notchRadius;
 
-  _BottomBarNotchPainter({required this.color, required this.shadowColor, required this.notchRadius});
+  _BottomBarNotchPainter({
+    required this.color,
+    required this.shadowColor,
+    required this.notchRadius,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
