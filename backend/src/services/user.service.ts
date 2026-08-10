@@ -169,6 +169,11 @@ export class UserService implements IUserService {
       const previousIsFoundingMember = user.isFoundingMember;
       const previousFoundingMemberSince = user.foundingMemberSince;
       const isFoundingMember = !previousIsFoundingMember;
+
+      if (isFoundingMember && !user.isVerified) {
+         throw new ApiError(403, "Only verified users can be granted founding-member status");
+      }
+
       const foundingMemberSince = isFoundingMember
          ? (user.foundingMemberSince ?? new Date())
          : null;
