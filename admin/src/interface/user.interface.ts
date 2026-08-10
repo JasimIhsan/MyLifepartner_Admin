@@ -5,6 +5,8 @@ export interface UserInterface {
    email: string | null;
    isBanned: boolean;
    isSuspended: boolean;
+   isFoundingMember: boolean;
+   foundingMemberSince?: string | Date | null;
    isDeleted: boolean;
    profileStatus: "INCOMPLETE" | "ONBOARDING_COMPLETED" | "COMPLETED";
    hasCompletedImageUpload: boolean;

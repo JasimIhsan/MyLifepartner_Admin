@@ -34,7 +34,7 @@ export class UserRepository implements IUserRepository {
    async create(data: CreateUserDto): Promise<UserWithProfile> {
       return prisma.user.create({
          data: {
-            ...data,
+            ...this.buildUserCreateInput(data),
             userFeature: {
                create: {},
             },
@@ -102,6 +102,26 @@ export class UserRepository implements IUserRepository {
             id,
          },
          include: UserRepository.STANDARD_INCLUDE,
+      });
+   }
+
+   /**
+    * Finds the minimal user state needed for feature-access decisions.
+    */
+   async findFeatureAccessStatusById(id: number) {
+      return prisma.user.findUnique({
+         where: {
+            id,
+         },
+         select: {
+            id: true,
+            isFoundingMember: true,
+            isBanned: true,
+            isSuspended: true,
+            isDeleted: true,
+            isDeleteRequested: true,
+            deleteRequestStatus: true,
+         },
       });
    }
 
@@ -225,6 +245,22 @@ export class UserRepository implements IUserRepository {
    }
 
    /**
+    * Updates founding-member status.
+    */
+   async updateFoundingMemberStatus(id: number, isFoundingMember: boolean, foundingMemberSince: Date | null): Promise<UserWithProfile> {
+      return prisma.user.update({
+         where: {
+            id,
+         },
+         data: {
+            isFoundingMember,
+            foundingMemberSince,
+         },
+         include: UserRepository.STANDARD_INCLUDE,
+      });
+   }
+
+   /**
     * Soft deletes a user.
     *
     * @param id - User ID.
@@ -298,17 +334,47 @@ export class UserRepository implements IUserRepository {
    }
 
    /**
+    * Builds user create query.
+    *
+    * @param data - User create data.
+    * @returns Prisma user create input.
+    */
+   private buildUserCreateInput(data: CreateUserDto): Prisma.UserCreateInput {
+      const createData: Prisma.UserCreateInput = {
+         email: data.email,
+      };
+
+      if (data.mobileNumber !== undefined) createData.mobileNumber = data.mobileNumber;
+      if (data.password !== undefined) createData.password = data.password;
+      if (data.role !== undefined) createData.role = data.role;
+      if (data.isBanned !== undefined) createData.isBanned = data.isBanned;
+      if (data.isSuspended !== undefined) createData.isSuspended = data.isSuspended;
+      if (data.isDeleted !== undefined) createData.isDeleted = data.isDeleted;
+
+      return createData;
+   }
+
+   /**
     * Builds user update query.
     *
     * @param data - User update data.
     * @returns Prisma user update input.
     */
    private buildUserUpdateInput(data: UpdateUserDto): Prisma.UserUpdateInput {
-      const { name, selfieStatus, ...userData } = data;
+      const { name, selfieStatus } = data;
 
-      const updateData: Prisma.UserUpdateInput = {
-         ...userData,
-      };
+      const updateData: Prisma.UserUpdateInput = {};
+
+      if (data.email !== undefined) updateData.email = data.email;
+      if (data.mobileNumber !== undefined) updateData.mobileNumber = data.mobileNumber;
+      if (data.password !== undefined) updateData.password = data.password;
+      if (data.role !== undefined) updateData.role = data.role;
+      if (data.isBanned !== undefined) updateData.isBanned = data.isBanned;
+      if (data.bannedAt !== undefined) updateData.bannedAt = data.bannedAt;
+      if (data.isSuspended !== undefined) updateData.isSuspended = data.isSuspended;
+      if (data.suspendedAt !== undefined) updateData.suspendedAt = data.suspendedAt;
+      if (data.isDeleted !== undefined) updateData.isDeleted = data.isDeleted;
+      if (data.isVerified !== undefined) updateData.isVerified = data.isVerified;
 
       const profileUpdateData: Prisma.ProfileUpdateWithoutUserInput = {};
 

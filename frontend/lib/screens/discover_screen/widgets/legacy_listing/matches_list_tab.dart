@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
 
 /// Discover listing – editorial magazine feel with portrait cards.
@@ -397,7 +398,7 @@ class _HeroCard extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Expanded(
+                        Flexible(
                           child: Text(
                             '${profile.name}, ${profile.age}',
                             style: TextStyle(
@@ -411,6 +412,10 @@ class _HeroCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+                        if (profile.isFoundingMember) ...[
+                          const SizedBox(width: 8),
+                          const FoundingMemberBadge(size: 22, isOverlay: true),
+                        ],
                         const SizedBox(width: 10),
                         _MatchArc(percentage: profile.matchPercentage),
                       ],
@@ -557,19 +562,31 @@ class _PortraitCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${profile.name}, ${profile.age}',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                Theme.of(context).textTheme.bodyLarge?.color ??
-                                AppColors.textPrimary,
-                            height: 1.1,
-                            letterSpacing: -0.2,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                '${profile.name}, ${profile.age}',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
+                                  height: 1.1,
+                                  letterSpacing: -0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (profile.isFoundingMember) ...[
+                              const SizedBox(width: 6),
+                              const FoundingMemberBadge(size: 18),
+                            ],
+                          ],
                         ),
                         if (profile.city != null) ...[
                           const SizedBox(height: 3),

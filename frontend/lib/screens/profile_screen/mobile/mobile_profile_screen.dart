@@ -8,6 +8,8 @@ import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/theme_provider.dart';
 import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/services/user_repository.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
+import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -323,16 +325,52 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
               ),
             ),
             const SizedBox(height: 24),
-            Text(
-              user!.name ?? "Your Name",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.5,
-                color:
-                    Theme.of(context).textTheme.bodyLarge?.color ??
-                    Theme.of(context).textTheme.bodyLarge?.color ??
-                    AppColors.textPrimary,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Flexible(
+                    child: Text(
+                      user!.name ?? "Your Name",
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  if (user!.isVerified) ...[
+                    const SizedBox(width: 6),
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => VerifiedProfileBottomSheet(
+                            profileName: user!.name ?? "Your Name",
+                          ),
+                        );
+                      },
+                      child: Image.asset(
+                        'assets/icons/verified_icon.png',
+                        width: 22,
+                        height: 22,
+                      ),
+                    ),
+                  ],
+                  if (user!.isFoundingMember) ...[
+                    const SizedBox(width: 6),
+                    const FoundingMemberBadge(size: 22),
+                  ],
+                ],
               ),
             ),
             const SizedBox(height: 4),

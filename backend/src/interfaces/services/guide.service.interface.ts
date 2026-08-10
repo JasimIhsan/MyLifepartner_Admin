@@ -1,4 +1,4 @@
-import { CreateGuideDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
+import { CreateGuideCategoryDto, CreateGuideDto, UpdateGuideCategoryDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
 
 export interface Guide {
    id: number;
@@ -7,6 +7,16 @@ export interface Guide {
    categoryId: number;
    bullets: string[];
    displayOrder: number;
+   createdAt: Date;
+   updatedAt: Date;
+}
+
+export interface GuideCategory {
+   id: number;
+   name: string;
+   displayOrder: number;
+   guideCount?: number;
+   guides?: Guide[];
    createdAt: Date;
    updatedAt: Date;
 }
@@ -20,8 +30,12 @@ export interface GuideFilters {
 
 export interface IGuideService {
    createGuide(data: CreateGuideDto): Promise<Guide>;
-   getAllGuides(filters: GuideFilters): Promise<{ guides: Guide[]; total: number; categories: { id: number; name: string }[] }>;
+   getAllGuides(filters: GuideFilters): Promise<{ guides: Guide[]; total: number; categories: GuideCategory[] }>;
    getGuideById(id: number): Promise<Guide | null>;
    updateGuide(id: number, data: UpdateGuideDto): Promise<Guide>;
    deleteGuide(id: number): Promise<Guide>;
+   getGuideCategories(includeGuides?: boolean): Promise<GuideCategory[]>;
+   createGuideCategory(data: CreateGuideCategoryDto): Promise<GuideCategory>;
+   updateGuideCategory(id: number, data: UpdateGuideCategoryDto): Promise<GuideCategory>;
+   deleteGuideCategory(id: number): Promise<GuideCategory>;
 }

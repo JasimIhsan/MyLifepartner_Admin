@@ -2,8 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:life_partner_again/services/block_service.dart';
-import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom_sheet.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 
 class BlockedUsersScreen extends StatefulWidget {
   const BlockedUsersScreen({super.key});
@@ -73,19 +73,23 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).canvasColor,
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).iconTheme.color ?? Colors.black),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).iconTheme.color ?? Colors.black,
+          ),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Blocked Users',
           style: TextStyle(
-            color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
+            color:
+                Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -109,11 +113,21 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                 ),
                 child: TextField(
                   controller: _searchController,
-                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'Search blocked users',
-                    hintStyle: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey, fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color ?? Colors.grey),
+                    hintStyle: TextStyle(
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          Colors.grey,
+                      fontSize: 14,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: Theme.of(context).iconTheme.color ?? Colors.grey,
+                    ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.symmetric(
                       horizontal: 20,
@@ -149,7 +163,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                   ? Center(
                       child: Text(
                         'No blocked users found',
-                        style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                        style: TextStyle(
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
+                        ),
                       ),
                     )
                   : ListView.builder(
@@ -192,32 +208,46 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                     height: 50,
                                     fit: BoxFit.cover,
                                     placeholder: (context, url) => Container(
-                                      color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                                      color: Theme.of(
+                                        context,
+                                      ).dividerColor.withValues(alpha: 0.1),
                                       width: 50,
                                       height: 50,
                                       child: Icon(
                                         Icons.person,
-                                        color: Theme.of(context).iconTheme.color ?? Colors.grey,
+                                        color:
+                                            Theme.of(context).iconTheme.color ??
+                                            Colors.grey,
                                       ),
                                     ),
                                     errorWidget: (context, url, error) =>
                                         Container(
-                                          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                                          color: Theme.of(
+                                            context,
+                                          ).dividerColor.withValues(alpha: 0.1),
                                           width: 50,
                                           height: 50,
                                           child: Icon(
                                             Icons.person,
-                                            color: Theme.of(context).iconTheme.color ?? Colors.grey,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).iconTheme.color ??
+                                                Colors.grey,
                                           ),
                                         ),
                                   )
                                 : Container(
                                     width: 50,
                                     height: 50,
-                                    color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                                    color: Theme.of(
+                                      context,
+                                    ).dividerColor.withValues(alpha: 0.1),
                                     child: Icon(
                                       Icons.person,
-                                      color: Theme.of(context).iconTheme.color ?? Colors.grey,
+                                      color:
+                                          Theme.of(context).iconTheme.color ??
+                                          Colors.grey,
                                     ),
                                   ),
                           ),
@@ -226,7 +256,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
-                              color: Theme.of(context).textTheme.bodyLarge?.color,
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyLarge?.color,
                             ),
                           ),
                           subtitle: Padding(
@@ -234,7 +266,11 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                             child: Text(
                               'Blocked on $dateStr',
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey.shade500,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    Colors.grey.shade500,
                                 fontSize: 12,
                               ),
                             ),
@@ -247,7 +283,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                                 isBlocking: false,
                                 userName: name,
                                 onConfirm: () async {
-                                  await _blockService.unblockUser(targetUser['id']);
+                                  await _blockService.unblockUser(
+                                    targetUser['id'],
+                                  );
                                 },
                                 onSuccess: () {
                                   _fetchBlockedUsers();
@@ -275,7 +313,9 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                   child: Text(
                     'You can unblock a user anytime.',
                     style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? Colors.grey.shade700,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          Colors.grey.shade700,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),

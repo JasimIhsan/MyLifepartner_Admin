@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
 
 import 'profile_photo_fallback.dart';
 
@@ -219,6 +220,18 @@ class DatingProfileCard extends StatelessWidget {
                             ),
                           ),
                         ),
+                      if (profile.isVerified) ...[
+                        const SizedBox(width: 8),
+                        Image.asset(
+                          'assets/icons/verified_icon.png',
+                          width: 22,
+                          height: 22,
+                        ),
+                      ],
+                      if (profile.isFoundingMember) ...[
+                        const SizedBox(width: 8),
+                        const FoundingMemberBadge(size: 22, isOverlay: true),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 8),

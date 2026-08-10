@@ -11,7 +11,7 @@ export interface SwipeNotificationContext {
 export interface IMatchRepository {
    getCandidateProfiles(currentUserId: number, excludedProfileIds: number[]): Promise<CandidateProfile[]>;
    getUserPreference(userId: number): Promise<UserPreferenceData | null>;
-   getUserAnswers(userId: number): Promise<UserAnswerData[]>;
+   getUserMatchProfile(userId: number): Promise<MatchProfileData | null>;
    getLikedProfiles(userId: number): Promise<CandidateProfile[]>;
    getSentInterests(userId: number): Promise<CandidateProfile[]>;
    getReceivedInterests(userId: number): Promise<CandidateProfile[]>;
@@ -31,6 +31,8 @@ export interface CandidateProfile {
    userId: number;
    name: string | null;
    isVerified: boolean;
+   isFoundingMember: boolean;
+   jobId: number | null;
    dateOfBirth: Date | null;
    maritalStatus: string | null;
    city: string | null;
@@ -51,7 +53,6 @@ export interface CandidateProfile {
    privacyEnabled: boolean;
    blurredImageUrl: string | null;
    images: Array<{ id: number; imageUrl: string; isPrimary: boolean }>;
-   answers: UserAnswerData[];
    createdAt: Date;
    lastLoginAt: Date;
 }
@@ -59,13 +60,26 @@ export interface CandidateProfile {
 export interface UserPreferenceData {
    ageFrom: number | null;
    ageTo: number | null;
+   maritalStatus: string[];
    motherTongue: string[];
 }
 
-export interface UserAnswerData {
-   questionId: number;
-   answer: import("@prisma/client").Prisma.JsonValue;
-   score: number | null;
+export interface MatchProfileData {
+   jobId: number | null;
+   dateOfBirth: Date | null;
+   maritalStatus: string | null;
+   city: string | null;
+   state: string | null;
+   country: string | null;
+   motherTongue: string | null;
+   highestEducation: string | null;
+   occupation: string | null;
+   childrenStatus: string | null;
+   drinkingHabit: string | null;
+   emotionalReadiness: string | null;
+   languages: string[];
+   lookingFor: string | null;
+   smokingHabit: string | null;
 }
 
 export interface SwipedProfile {

@@ -11,6 +11,7 @@ import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/attachment_bottom_sheet.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_detail_app_bar.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_empty_state.dart';
@@ -694,7 +695,9 @@ class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
         margin: const EdgeInsets.only(bottom: 8, top: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: Theme.of(context).brightness == Brightness.light
+              ? AppColors.background
+              : Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),

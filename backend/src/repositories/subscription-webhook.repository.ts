@@ -108,7 +108,8 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
          freePlanDurationDays, 
          defaultSubscriptionDurationDays,
          buildFeatureFullPayload,
-         buildFeatureLimitsOnlyPayload 
+         buildFeatureLimitsOnlyPayload,
+         shouldApplyFeaturePayload = true
       } = params;
 
       let processed = false;
@@ -352,7 +353,7 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
 
                const targetPlan = subscription?.plan || (targetPlanId ? await tx.subscriptionPlan.findUnique({ where: { id: targetPlanId }, include: { features: true } }) : null);
 
-               if (targetPlan) {
+               if (targetPlan && shouldApplyFeaturePayload) {
                   const featurePayload = isInitialPurchase
                      ? buildFeatureFullPayload(targetPlan)
                      : buildFeatureLimitsOnlyPayload(targetPlan);
@@ -678,12 +679,12 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                   },
                });
 
-               // Only downgrade to FREE if no other active subscription exists
+               // Only downgrade plan-backed users to FREE if no other active subscription exists.
                const remaining = await tx.userSubscription.findFirst({
                   where: { userId, status: "ACTIVE" },
                });
                if (!remaining) {
-                  if (freePlanId) {
+                  if (freePlanId && shouldApplyFeaturePayload) {
                      const freeSub = await tx.userSubscription.create({
                         data: {
                            userId,

@@ -1,4 +1,5 @@
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
+import { IUserRepository, UserFeatureAccessStatus } from "@/interfaces/repositories/user.repository.interface";
 import { SwipeAction } from "@/interfaces/services/match.service.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ApiError } from "@/utils/ApiError";
@@ -10,9 +11,13 @@ type CallType = "audio" | "video";
 const PAYMENT_REQUIRED_STATUS = 402;
 const NOT_FOUND_STATUS = 404;
 const MIN_FEATURE_USAGE = 0;
+const UNLIMITED_FEATURE_LIMIT = Number.MAX_SAFE_INTEGER;
 
 export class UserFeatureService implements IUserFeatureService {
-   constructor(private readonly userFeatureRepository: IUserFeatureRepository) {}
+   constructor(
+      private readonly userFeatureRepository: IUserFeatureRepository,
+      private readonly userRepository: IUserRepository
+   ) {}
 
    /**
     * Gets user features.
@@ -21,6 +26,10 @@ export class UserFeatureService implements IUserFeatureService {
     * @returns User features, or null if not found.
     */
    async getUserFeatures(userId: number): Promise<UserFeature | null> {
+      if (await this.isActiveFoundingMember(userId)) {
+         return this.buildFoundingMemberFeatures(userId);
+      }
+
       return this.userFeatureRepository.findByUserId(userId);
    }
 
@@ -96,6 +105,10 @@ export class UserFeatureService implements IUserFeatureService {
          return false;
       }
 
+      if (await this.isActiveFoundingMember(userId)) {
+         return true;
+      }
+
       const features = await this.userFeatureRepository.findByUserId(userId);
 
       if (!features) {
@@ -117,6 +130,10 @@ export class UserFeatureService implements IUserFeatureService {
          return;
       }
 
+      if (await this.isActiveFoundingMember(userId)) {
+         return;
+      }
+
       const features = await this.getRequiredFeatures(userId);
 
       this.ensureFeatureAvailable(features, UserFeatureMaxKey.MAX_INTERESTS, "Interest feature not available in your plan.");
@@ -133,6 +150,10 @@ export class UserFeatureService implements IUserFeatureService {
     * @returns True if message is allowed.
     */
    async checkMessageAccess(userId: number): Promise<boolean> {
+      if (await this.isActiveFoundingMember(userId)) {
+         return true;
+      }
+
       const features = await this.userFeatureRepository.findByUserId(userId);
 
       if (!features) {
@@ -149,6 +170,10 @@ export class UserFeatureService implements IUserFeatureService {
     * @returns Nothing.
     */
    async consumeMessage(userId: number): Promise<void> {
+      if (await this.isActiveFoundingMember(userId)) {
+         return;
+      }
+
       const features = await this.getRequiredFeatures(userId);
 
       this.ensureFeatureAvailable(features, UserFeatureMaxKey.MAX_MESSAGES, "Message feature not available in your plan.");
@@ -167,6 +192,10 @@ export class UserFeatureService implements IUserFeatureService {
     * @returns Nothing.
     */
    async consumeCallDuration(userId: number, type: CallType, durationSeconds: number): Promise<void> {
+      if (await this.isActiveFoundingMember(userId)) {
+         return;
+      }
+
       const features = await this.userFeatureRepository.findByUserId(userId);
 
       if (!features || durationSeconds <= 0) {
@@ -195,11 +224,16 @@ export class UserFeatureService implements IUserFeatureService {
          throw new ApiError(400, "You cannot call yourself");
       }
 
+      const checkUserId = targetUserId ?? userId;
+
+      if (await this.isActiveFoundingMember(checkUserId)) {
+         return;
+      }
+
       if (!targetUserId && consumeSeconds && consumeSeconds > 0) {
          await this.consumeCallDuration(userId, type, consumeSeconds);
       }
 
-      const checkUserId = targetUserId ?? userId;
       const features = await this.userFeatureRepository.findByUserId(checkUserId);
 
       if (!features) {
@@ -223,6 +257,10 @@ export class UserFeatureService implements IUserFeatureService {
     * @returns Updated user features.
     */
    private async updateFeatureUsage(userId: number, key: "interests" | "messages" | "videoCallMinutes" | "audioCallMinutes", amount: number): Promise<UserFeature> {
+      if (await this.isActiveFoundingMember(userId)) {
+         return this.buildFoundingMemberFeatures(userId);
+      }
+
       const features = await this.getRequiredFeatures(userId);
 
       return this.userFeatureRepository.update(userId, {
@@ -295,6 +333,47 @@ export class UserFeatureService implements IUserFeatureService {
     */
    private isLimitedSwipeAction(action: SwipeAction): boolean {
       return action === SwipeAction.RIGHT || action === SwipeAction.LEFT;
+   }
+
+   /**
+    * Checks whether the user should bypass feature-plan and usage-limit checks.
+    */
+   private async isActiveFoundingMember(userId: number): Promise<boolean> {
+      const user = await this.userRepository.findFeatureAccessStatusById(userId);
+
+      return Boolean(user && user.isFoundingMember && this.isFeatureEligibleAccount(user));
+   }
+
+   /**
+    * Keeps founding-member access below account safety restrictions.
+    */
+   private isFeatureEligibleAccount(user: UserFeatureAccessStatus): boolean {
+      return !user.isBanned && !user.isSuspended && !user.isDeleted && !(user.isDeleteRequested && user.deleteRequestStatus === "PENDING");
+   }
+
+   /**
+    * Returns a virtual unlimited feature set without reading UserFeature usage.
+    */
+   private buildFoundingMemberFeatures(userId: number): UserFeature {
+      const now = new Date();
+
+      return {
+         id: 0,
+         userId,
+         isProfileBlurEnabled: true,
+         maxInterests: UNLIMITED_FEATURE_LIMIT,
+         interests: 0,
+         maxVideoCallMinutes: UNLIMITED_FEATURE_LIMIT,
+         videoCallMinutes: 0,
+         maxAudioCallMinutes: UNLIMITED_FEATURE_LIMIT,
+         audioCallMinutes: 0,
+         maxMessages: UNLIMITED_FEATURE_LIMIT,
+         messages: 0,
+         createdAt: now,
+         updatedAt: now,
+         isFoundingMember: true,
+         isUnlimited: true,
+      };
    }
 
    /**

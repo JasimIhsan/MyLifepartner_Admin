@@ -9,6 +9,7 @@ import 'package:life_partner_again/core/country_helper.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/services/image_access_service.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 
 class ProfileBrowserCard extends StatelessWidget {
@@ -270,13 +271,17 @@ class ProfileBrowserCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            Text(
-              '${profile.name}, ${profile.age}',
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                letterSpacing: -0.5,
+            Flexible(
+              child: Text(
+                '${profile.name}, ${profile.age}',
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             if (profile.isVerified) ...[
@@ -296,6 +301,10 @@ class ProfileBrowserCard extends StatelessWidget {
                   height: 24,
                 ),
               ),
+            ],
+            if (profile.isFoundingMember) ...[
+              const SizedBox(width: 8),
+              const FoundingMemberBadge(size: 24, isOverlay: true),
             ],
           ],
         ),
@@ -331,17 +340,18 @@ class ProfileBrowserCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder(BuildContext context, {bool showLoading = false}) => Container(
-    color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
-    child: showLoading
-        ? Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: AppColors.primary,
-            ),
-          )
-        : null,
-  );
+  Widget _placeholder(BuildContext context, {bool showLoading = false}) =>
+      Container(
+        color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
+        child: showLoading
+            ? Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppColors.primary,
+                ),
+              )
+            : null,
+      );
 
   String _formatEnum(String value) {
     return value
@@ -516,7 +526,9 @@ class ActionButton extends StatelessWidget {
                     backgroundColor == null)
                 ? [
                     BoxShadow(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 6),
                     ),

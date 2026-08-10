@@ -74,6 +74,13 @@ adminUsersRoute.patch("/:id/verify-profile", adminUsersController.verifyProfile)
 adminUsersRoute.patch("/:id/ban", adminUsersController.toggleBanUser);
 
 /**
+ * @route   PATCH /api/v1/admin/users/:id/founding-member
+ * @desc    Toggle founding-member status
+ * @access  Admin
+ */
+adminUsersRoute.patch("/:id/founding-member", adminUsersController.toggleFoundingMemberStatus);
+
+/**
  * @route   PATCH /api/v1/admin/users/:id/lift-suspension
  * @desc    Lift temporary suspension of a user
  * @access  Admin

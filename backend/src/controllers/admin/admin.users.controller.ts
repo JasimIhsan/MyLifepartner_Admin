@@ -156,6 +156,44 @@ export class AdminUsersController {
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User updated successfully"));
    });
 
+   /**
+    * @route PATCH /api/v1/admin/users/:id/founding-member
+    * @purpose Toggles founding-member status.
+    */
+   public toggleFoundingMemberStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+      const adminId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const { user: result, previousIsFoundingMember, previousFoundingMemberSince } = await this.userService.toggleFoundingMemberStatus(userId);
+      const action = result.isFoundingMember ? "GRANT_FOUNDING_MEMBER" : "REVOKE_FOUNDING_MEMBER";
+
+      await auditService.log({
+         userId,
+         adminId: Number.isInteger(adminId) && adminId > 0 ? adminId : undefined,
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action,
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Admin ${result.isFoundingMember ? "granted" : "revoked"} founding-member status for user ID: ${userId}`,
+         oldValue: { isFoundingMember: previousIsFoundingMember, foundingMemberSince: previousFoundingMemberSince },
+         newValue: { isFoundingMember: result.isFoundingMember, foundingMemberSince: result.foundingMemberSince },
+         metadata: {
+            affectedUserId: userId,
+            actingAdminId: Number.isInteger(adminId) && adminId > 0 ? adminId : null,
+         },
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Founding-member status updated successfully"));
+   });
+
 
 
    /**

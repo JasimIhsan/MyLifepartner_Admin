@@ -14,6 +14,8 @@ export interface UserFeature {
    messages: number;
    createdAt: Date;
    updatedAt: Date;
+   isFoundingMember?: boolean;
+   isUnlimited?: boolean;
 }
 
 

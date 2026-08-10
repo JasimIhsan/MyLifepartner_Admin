@@ -7,7 +7,7 @@ import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscript
 import { FeatureFullPayload, FeatureLimitsOnlyPayload, ISubscriptionWebhookRepository, RevenueCatWebhookEventData } from "@/interfaces/repositories/subscription-webhook.repository.interface";
 import { ISyncTransactionContext, IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
-import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
+import { IUserRepository, UserFeatureAccessStatus } from "@/interfaces/repositories/user.repository.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
 import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan, VerifyPurchaseParams } from "@/interfaces/services/user.subscription.service.interface";
@@ -42,6 +42,7 @@ const DEFAULT_SUBSCRIPTION_DURATION_DAYS = 30;
  */
 const FREE_PLAN_DURATION_DAYS = 365 * 100;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const UNLIMITED_FEATURE_LIMIT = Number.MAX_SAFE_INTEGER;
 /**
  * Minimum buffer applied to /sync before it can downgrade an active subscription
  * when RC shows no active product.  The check uses endDate (not createdAt) so a
@@ -94,6 +95,10 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    async getUserFeatures(userId: number): Promise<UserFeature | null> {
+      if (await this.isActiveFoundingMember(userId)) {
+         return this.buildFoundingMemberFeatures(userId);
+      }
+
       return this.userFeatureRepository.findByUserId(userId);
    }
 
@@ -106,6 +111,15 @@ export class UserSubscriptionService implements IUserSubscriptionService {
     * the store receipt is independently verified.
     */
    async subscribe(userId: number, planId: number): Promise<EnrichedUserSubscription> {
+      if (await this.isFoundingMember(userId)) {
+         const currentSubscription = await this.getMySubscription(userId);
+         if (currentSubscription) {
+            return currentSubscription;
+         }
+
+         throw new ApiError(403, "Founding members already have unlimited access without a subscription.");
+      }
+
       const plan = await this.getRequiredActivePlan(planId);
       const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
@@ -145,6 +159,8 @@ export class UserSubscriptionService implements IUserSubscriptionService {
     */
    async reconcileUserSubscription(userId: number): Promise<void> {
       try {
+         if (await this.isFoundingMember(userId)) return;
+
          const subscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
          if (!subscription) return;
 
@@ -262,6 +278,12 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
    async syncSubscription(userId: number): Promise<EnrichedUserSubscription | null> {
       logger.info(`[SYNC_SUBSCRIPTION] Starting sync for userId: ${userId}`);
+
+      if (await this.isFoundingMember(userId)) {
+         logger.info(`[SYNC_SUBSCRIPTION] Skipping RevenueCat sync for founding member userId: ${userId}`);
+         return this.getMySubscription(userId);
+      }
+
       const revenueCatData = await this.getRevenueCatSubscriberData(userId);
 
       const originalUserIdStr = revenueCatData.subscriber?.original_app_user_id;
@@ -501,6 +523,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       const now = new Date();
       const endDate = matchedExpiry ?? this.addDays(now, DEFAULT_SUBSCRIPTION_DURATION_DAYS);
       const targetStatus = willRenew ? SubscriptionStatus.ACTIVE : SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
+      const shouldApplyFeaturePayload = !(await this.isFoundingMember(userId));
 
       await this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
          const currentSub = await ctx.findActiveSubscriptionByUserId(userId);
@@ -526,13 +549,15 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             plan: { connect: { id: targetPlan.id } },
          } as any);
 
-         // Apply features immediately
-         const enrichedPlan = this.enrichPlan(targetPlan);
-         const featurePayload = previousPlanId === null
-            ? this.buildFeatureFullPayload(enrichedPlan)   // first purchase — reset usage
-            : this.buildFeatureLimitsOnlyPayload(enrichedPlan); // upgrade — preserve usage
+         if (shouldApplyFeaturePayload) {
+            // Apply features immediately
+            const enrichedPlan = this.enrichPlan(targetPlan);
+            const featurePayload = previousPlanId === null
+               ? this.buildFeatureFullPayload(enrichedPlan)   // first purchase — reset usage
+               : this.buildFeatureLimitsOnlyPayload(enrichedPlan); // upgrade — preserve usage
 
-         await ctx.applyFeatures(userId, featurePayload);
+            await ctx.applyFeatures(userId, featurePayload);
+         }
 
          // Write audit log
          await this.writeSyncAuditLog(ctx, {
@@ -617,6 +642,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    private async handleRevenueCatEvent(userId: number, event: RevenueCatWebhookEventData): Promise<void> {
       const targetPlanId = await this.resolveTargetPlanId(event);
       const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
+      const shouldApplyFeaturePayload = !(await this.isFoundingMember(userId));
 
       const processed = await this.subscriptionWebhookRepository.processWebhookEvent({
          userId,
@@ -627,6 +653,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          defaultSubscriptionDurationDays: DEFAULT_SUBSCRIPTION_DURATION_DAYS,
          buildFeatureFullPayload: (plan) => this.buildFeatureFullPayload(this.enrichPlan(plan)),
          buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan)),
+         shouldApplyFeaturePayload,
       });
 
       // Email & Push notification logic — all lifecycle events covered
@@ -778,6 +805,10 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    private async applyFeaturesForPlan(userId: number, plan: EnrichedSubscriptionPlan, resetUsage: boolean): Promise<void> {
+      if (await this.isFoundingMember(userId)) {
+         return;
+      }
+
       const featurePayload = resetUsage ? this.buildFeatureFullPayload(plan) : this.buildFeatureLimitsOnlyPayload(plan);
 
       const existingUserFeature = await this.userFeatureRepository.findByUserId(userId);
@@ -848,6 +879,44 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       return limits;
+   }
+
+   private async isFoundingMember(userId: number): Promise<boolean> {
+      const user = await this.userRepository.findFeatureAccessStatusById(userId);
+
+      return Boolean(user?.isFoundingMember);
+   }
+
+   private async isActiveFoundingMember(userId: number): Promise<boolean> {
+      const user = await this.userRepository.findFeatureAccessStatusById(userId);
+
+      return Boolean(user && user.isFoundingMember && this.isFeatureEligibleAccount(user));
+   }
+
+   private isFeatureEligibleAccount(user: UserFeatureAccessStatus): boolean {
+      return !user.isBanned && !user.isSuspended && !user.isDeleted && !(user.isDeleteRequested && user.deleteRequestStatus === "PENDING");
+   }
+
+   private buildFoundingMemberFeatures(userId: number): UserFeature {
+      const now = new Date();
+
+      return {
+         id: 0,
+         userId,
+         isProfileBlurEnabled: true,
+         maxInterests: UNLIMITED_FEATURE_LIMIT,
+         interests: 0,
+         maxVideoCallMinutes: UNLIMITED_FEATURE_LIMIT,
+         videoCallMinutes: 0,
+         maxAudioCallMinutes: UNLIMITED_FEATURE_LIMIT,
+         audioCallMinutes: 0,
+         maxMessages: UNLIMITED_FEATURE_LIMIT,
+         messages: 0,
+         createdAt: now,
+         updatedAt: now,
+         isFoundingMember: true,
+         isUnlimited: true,
+      };
    }
 
    /**

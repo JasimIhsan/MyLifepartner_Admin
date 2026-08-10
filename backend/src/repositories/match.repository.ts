@@ -1,12 +1,13 @@
 import prisma from "@/config/prisma";
 import { Gender, Prisma } from "@prisma/client";
-import { CandidateProfile, IMatchRepository, SwipedProfile, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
+import { CandidateProfile, IMatchRepository, MatchProfileData, SwipedProfile, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
 import { InteractionState, SwipeAction } from "../interfaces/services/match.service.interface";
 
 const candidateProfileInclude = {
    user: {
       select: {
          isVerified: true,
+         isFoundingMember: true,
          createdAt: true,
          updatedAt: true,
          privacySettings: true,
@@ -14,13 +15,6 @@ const candidateProfileInclude = {
    },
    images: {
       orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
-   },
-   answers: {
-      select: {
-         questionId: true,
-         answer: true,
-         score: true,
-      },
    },
    job: true,
 } satisfies Prisma.ProfileInclude;
@@ -35,13 +29,6 @@ type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
       images: {
          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }];
       };
-      answers: {
-         select: {
-            questionId: true;
-            answer: true;
-            score: true;
-         };
-      };
       swipesOnMe: {
          where: {
             userId: number;
@@ -51,6 +38,7 @@ type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
          select: {
             profileSwipes: true;
             isVerified: true;
+            isFoundingMember: true;
             createdAt: true;
             updatedAt: true;
             privacySettings: true;
@@ -92,29 +80,48 @@ export class MatchRepository implements IMatchRepository {
       return {
          ageFrom: preference.ageFrom,
          ageTo: preference.ageTo,
+         maritalStatus: preference.maritalStatus,
          motherTongue: preference.motherTongue,
       };
    }
 
    /**
-    * Gets user answers.
+    * Gets the current user's profile fields used by compatibility scoring.
     *
     * @param userId - User ID.
-    * @returns User answers.
+    * @returns Match profile data, or null if no profile exists.
     */
-   async getUserAnswers(userId: number): Promise<UserAnswerData[]> {
-      return prisma.userAnswer.findMany({
+   async getUserMatchProfile(userId: number): Promise<MatchProfileData | null> {
+      const profile = await prisma.profile.findUnique({
          where: {
-            profile: {
-               userId,
-            },
+            userId,
          },
-         select: {
-            questionId: true,
-            answer: true,
-            score: true,
+         include: {
+            job: true,
          },
       });
+
+      if (!profile) {
+         return null;
+      }
+
+      return {
+         jobId: profile.jobId,
+         dateOfBirth: profile.dateOfBirth,
+         maritalStatus: profile.maritalStatus,
+         city: profile.city,
+         state: profile.state,
+         country: profile.country,
+         motherTongue: profile.motherTongue,
+         highestEducation: profile.highestEducation,
+         occupation: profile.job?.name || null,
+         childrenStatus: profile.childrenStatus,
+         drinkingHabit: profile.drinkingHabit,
+         emotionalReadiness: profile.emotionalReadiness,
+         languages: profile.languages,
+         lookingFor: profile.lookingFor,
+         smokingHabit: profile.smokingHabit,
+      };
    }
 
    /**
@@ -188,7 +195,6 @@ export class MatchRepository implements IMatchRepository {
                isBanned: false,
                isSuspended: false,
                isDeleted: false,
-               isVerified: true,
                id: {
                   notIn: [currentUserId, ...excludedBlockUserIds],
                },
@@ -204,13 +210,6 @@ export class MatchRepository implements IMatchRepository {
             job: true,
             images: {
                orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
-            },
-            answers: {
-               select: {
-                  questionId: true,
-                  answer: true,
-                  score: true,
-               },
             },
             swipesOnMe: {
                where: {
@@ -229,6 +228,7 @@ export class MatchRepository implements IMatchRepository {
                           },
                   },
                   isVerified: true,
+                  isFoundingMember: true,
                   createdAt: true,
                   updatedAt: true,
                   privacySettings: true,
@@ -469,13 +469,6 @@ export class MatchRepository implements IMatchRepository {
             images: {
                orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
             },
-            answers: {
-               select: {
-                  questionId: true,
-                  answer: true,
-                  score: true,
-               },
-            },
             swipesOnMe: {
                where: {
                   userId: currentUserId,
@@ -493,6 +486,7 @@ export class MatchRepository implements IMatchRepository {
                           },
                   },
                   isVerified: true,
+                  isFoundingMember: true,
                   createdAt: true,
                   updatedAt: true,
                   privacySettings: true,
@@ -599,6 +593,8 @@ export class MatchRepository implements IMatchRepository {
          userId: profile.userId,
          name: profile.name,
          isVerified: profile.user.isVerified,
+         isFoundingMember: profile.user.isFoundingMember,
+         jobId: profile.jobId,
          dateOfBirth: profile.dateOfBirth,
          maritalStatus: profile.maritalStatus,
          city: profile.city,
@@ -623,7 +619,6 @@ export class MatchRepository implements IMatchRepository {
             imageUrl: image.imageUrl,
             isPrimary: image.isPrimary,
          })),
-         answers: profile.answers,
          interactionState,
          createdAt: profile.user.createdAt,
          lastLoginAt: profile.user.updatedAt,
@@ -705,4 +700,3 @@ export class MatchRepository implements IMatchRepository {
       };
    }
 }
-

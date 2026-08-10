@@ -164,6 +164,24 @@ export class UserService implements IUserService {
       return toUserDto(updatedUser);
    }
 
+   async toggleFoundingMemberStatus(userId: number): Promise<{ user: UserDto; previousIsFoundingMember: boolean; previousFoundingMemberSince: Date | null }> {
+      const user = await this.findActiveUserById(userId);
+      const previousIsFoundingMember = user.isFoundingMember;
+      const previousFoundingMemberSince = user.foundingMemberSince;
+      const isFoundingMember = !previousIsFoundingMember;
+      const foundingMemberSince = isFoundingMember
+         ? (user.foundingMemberSince ?? new Date())
+         : null;
+
+      const updatedUser = await this.userRepository.updateFoundingMemberStatus(userId, isFoundingMember, foundingMemberSince);
+
+      return {
+         user: toUserDto(updatedUser),
+         previousIsFoundingMember,
+         previousFoundingMemberSince,
+      };
+   }
+
    async toggleBanStatus(id: number): Promise<UserDto> {
       const user = await this.userRepository.findById(id);
 

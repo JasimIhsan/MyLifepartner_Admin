@@ -6,51 +6,67 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ChevronDown, ChevronRight, MoreVertical, Plus, X } from "lucide-react";
+import { ChevronDown, ChevronRight, MoreVertical, Pencil, Plus, Trash2, X } from "lucide-react";
 import React, { useCallback, useEffect, useState } from "react";
+import type { AxiosError } from "axios";
 import { toast } from "sonner";
 
 export interface Guide {
    id: number;
    question: string;
    answer: string;
-   categoryId: number; // 1 = About LPA, 2 = Safety & Privacy, 3 = Account & Trust, 4 = Membership
+   categoryId: number;
    bullets: string[];
    createdAt: string;
    updatedAt: string;
 }
 
-const CATEGORIES = [
-   { id: 1, name: "About LPA" },
-   { id: 2, name: "Safety & Privacy" },
-   { id: 3, name: "Account & Trust" },
-   { id: 4, name: "Membership" },
-];
+export interface GuideCategory {
+   id: number;
+   name: string;
+   displayOrder: number;
+   guideCount?: number;
+   guides?: Guide[];
+   createdAt?: string;
+   updatedAt?: string;
+}
+
+type ApiErrorResponse = {
+   message?: string;
+};
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+   const axiosError = error as AxiosError<ApiErrorResponse>;
+   return axiosError.response?.data?.message || fallback;
+};
 
 const LpaGuidePage = () => {
    const [guides, setGuides] = useState<Guide[]>([]);
+   const [categories, setCategories] = useState<GuideCategory[]>([]);
    const [isFetching, setIsFetching] = useState(true);
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
 
-   // Custom Delete Confirmation Modal state
+   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+   const [selectedCategory, setSelectedCategory] = useState<GuideCategory | null>(null);
+   const [categoryName, setCategoryName] = useState("");
+
    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
    const [guideToDelete, setGuideToDelete] = useState<Guide | null>(null);
+   const [isDeleteCategoryModalOpen, setIsDeleteCategoryModalOpen] = useState(false);
+   const [categoryToDelete, setCategoryToDelete] = useState<GuideCategory | null>(null);
 
-   // Collapsible Row state
    const [expandedRowIds, setExpandedRowIds] = useState<Set<number>>(new Set());
 
-   // Pagination & Filter state
    const [page, setPage] = useState(1);
    const [limit, setLimit] = useState(10);
    const [totalGuides, setTotalGuides] = useState(0);
    const [categoryFilter, setCategoryFilter] = useState<string>("ALL");
    const [searchQuery, setSearchQuery] = useState("");
 
-   // Form states
    const [question, setQuestion] = useState("");
    const [answer, setAnswer] = useState("");
-   const [categoryId, setCategoryId] = useState("1");
+   const [categoryId, setCategoryId] = useState("");
    const [bullets, setBullets] = useState<string[]>([]);
    const [newBulletText, setNewBulletText] = useState("");
 
@@ -61,11 +77,12 @@ const LpaGuidePage = () => {
             params: {
                page,
                limit,
-               categoryId: categoryFilter !== "ALL" ? parseInt(categoryFilter) : undefined,
+               categoryId: categoryFilter !== "ALL" ? parseInt(categoryFilter, 10) : undefined,
                search: searchQuery.trim() || undefined,
             },
          });
          setGuides(response.data.data.guides || []);
+         setCategories(response.data.data.categories || []);
          setTotalGuides(response.data.data.total || 0);
       } catch (error) {
          console.error("Error fetching guides:", error);
@@ -83,7 +100,28 @@ const LpaGuidePage = () => {
       return () => clearTimeout(delayDebounceFn);
    }, [fetchGuides]);
 
-   // Reset page to 1 on filter changes
+   useEffect(() => {
+      if (categories.length === 0) {
+         if (categoryId) setCategoryId("");
+         if (categoryFilter !== "ALL") setCategoryFilter("ALL");
+         return;
+      }
+
+      if (!categoryId || !categories.some((category) => category.id.toString() === categoryId)) {
+         setCategoryId(categories[0].id.toString());
+      }
+
+      if (categoryFilter !== "ALL" && !categories.some((category) => category.id.toString() === categoryFilter)) {
+         setCategoryFilter("ALL");
+      }
+   }, [categories, categoryFilter, categoryId]);
+
+   const getDefaultCategoryId = () => categories[0]?.id.toString() || "";
+
+   const getCategoryName = (guideCategoryId: number) => {
+      return categories.find((category) => category.id === guideCategoryId)?.name || `Category ${guideCategoryId}`;
+   };
+
    const handleCategoryChange = (val: string) => {
       setCategoryFilter(val);
       setPage(1);
@@ -94,7 +132,6 @@ const LpaGuidePage = () => {
       setPage(1);
    };
 
-   // Toggle expanded rows
    const toggleRowExpand = (id: number) => {
       setExpandedRowIds((prev) => {
          const next = new Set(prev);
@@ -107,18 +144,22 @@ const LpaGuidePage = () => {
       });
    };
 
-   // Open modal for add
-   const handleAddGuide = () => {
+   const handleAddGuide = (presetCategoryId?: number) => {
+      if (categories.length === 0) {
+         toast.error("Create a category before adding guide Q&A");
+         handleAddCategory();
+         return;
+      }
+
       setSelectedGuide(null);
       setQuestion("");
       setAnswer("");
-      setCategoryId("1");
+      setCategoryId(presetCategoryId?.toString() || getDefaultCategoryId());
       setBullets([]);
       setNewBulletText("");
       setIsModalOpen(true);
    };
 
-   // Open modal for edit
    const handleEditGuide = (guide: Guide) => {
       setSelectedGuide(guide);
       setQuestion(guide.question);
@@ -129,13 +170,11 @@ const LpaGuidePage = () => {
       setIsModalOpen(true);
    };
 
-   // Delete guide prompt
    const promptDeleteGuide = (guide: Guide) => {
       setGuideToDelete(guide);
       setIsDeleteModalOpen(true);
    };
 
-   // Delete guide confirmed
    const confirmDeleteGuide = async () => {
       if (!guideToDelete) return;
       try {
@@ -150,7 +189,70 @@ const LpaGuidePage = () => {
       }
    };
 
-   // Add bullet to list
+   const handleAddCategory = () => {
+      setSelectedCategory(null);
+      setCategoryName("");
+      setIsCategoryModalOpen(true);
+   };
+
+   const handleEditCategory = (category: GuideCategory) => {
+      setSelectedCategory(category);
+      setCategoryName(category.name);
+      setIsCategoryModalOpen(true);
+   };
+
+   const handleSaveCategory = async (e: React.FormEvent) => {
+      e.preventDefault();
+      const trimmedName = categoryName.trim();
+
+      if (!trimmedName) {
+         toast.error("Category name is required");
+         return;
+      }
+
+      try {
+         if (selectedCategory) {
+            await axiosInstance.put(`/admin/guides/categories/${selectedCategory.id}`, { name: trimmedName });
+            toast.success("Guide category updated successfully");
+         } else {
+            await axiosInstance.post("/admin/guides/categories", { name: trimmedName });
+            toast.success("Guide category created successfully");
+         }
+         setIsCategoryModalOpen(false);
+         setSelectedCategory(null);
+         setCategoryName("");
+         fetchGuides();
+      } catch (error) {
+         console.error("Error saving guide category:", error);
+         toast.error(getErrorMessage(error, "Failed to save guide category"));
+      }
+   };
+
+   const promptDeleteCategory = (category: GuideCategory) => {
+      setCategoryToDelete(category);
+      setIsDeleteCategoryModalOpen(true);
+   };
+
+   const confirmDeleteCategory = async () => {
+      if (!categoryToDelete) return;
+
+      if ((categoryToDelete.guideCount || 0) > 0) {
+         toast.error("Move or delete guide questions before deleting this category");
+         return;
+      }
+
+      try {
+         await axiosInstance.delete(`/admin/guides/categories/${categoryToDelete.id}`);
+         toast.success("Guide category deleted successfully");
+         setIsDeleteCategoryModalOpen(false);
+         setCategoryToDelete(null);
+         fetchGuides();
+      } catch (error) {
+         console.error("Error deleting guide category:", error);
+         toast.error(getErrorMessage(error, "Failed to delete guide category"));
+      }
+   };
+
    const handleAddBullet = () => {
       const trimmed = newBulletText.trim();
       if (!trimmed) return;
@@ -158,13 +260,11 @@ const LpaGuidePage = () => {
       setNewBulletText("");
    };
 
-   // Remove bullet from list
    const handleRemoveBullet = (index: number) => {
       const updated = bullets.filter((_, idx) => idx !== index);
       setBullets(updated);
    };
 
-   // Save / update guide
    const handleSaveGuide = async (e: React.FormEvent) => {
       e.preventDefault();
       if (!question.trim() || !answer.trim()) {
@@ -172,10 +272,21 @@ const LpaGuidePage = () => {
          return;
       }
 
+      if (!categoryId) {
+         toast.error("Category is required");
+         return;
+      }
+
+      const parsedCategoryId = parseInt(categoryId, 10);
+      if (Number.isNaN(parsedCategoryId)) {
+         toast.error("Invalid category selected");
+         return;
+      }
+
       const payload = {
          question: question.trim(),
          answer: answer.trim(),
-         categoryId: parseInt(categoryId),
+         categoryId: parsedCategoryId,
          bullets,
       };
 
@@ -189,29 +300,149 @@ const LpaGuidePage = () => {
          }
          setIsModalOpen(false);
          fetchGuides();
-      } catch (error: any) {
+      } catch (error) {
          console.error("Error saving guide:", error);
-         const errMsg = error.response?.data?.message || "Failed to save guide question";
+         const errMsg = getErrorMessage(error, "Failed to save guide question");
          toast.error(errMsg);
       }
    };
 
    const totalPages = Math.ceil(totalGuides / limit) || 1;
+   const knownCategoryIds = new Set(categories.map((category) => category.id));
+   const guideGroups = categories
+      .map((category) => ({
+         category,
+         guides: guides.filter((guide) => guide.categoryId === category.id),
+      }))
+      .filter(({ category, guides: categoryGuides }) => categoryGuides.length > 0 || (categoryFilter === category.id.toString() && !searchQuery.trim()));
+   const uncategorizedGuides = guides.filter((guide) => !knownCategoryIds.has(guide.categoryId));
+
+   if (uncategorizedGuides.length > 0) {
+      guideGroups.push({
+         category: {
+            id: 0,
+            name: "Uncategorized",
+            displayOrder: 0,
+            guideCount: uncategorizedGuides.length,
+         },
+         guides: uncategorizedGuides,
+      });
+   }
+
+   const renderGuideRows = (guide: Guide) => {
+      const isExpanded = expandedRowIds.has(guide.id);
+
+      return (
+         <React.Fragment key={guide.id}>
+            <TableRow onClick={() => toggleRowExpand(guide.id)} className="cursor-pointer hover:bg-muted/50 transition-colors">
+               <TableCell>
+                  <Badge variant="secondary">{getCategoryName(guide.categoryId)}</Badge>
+               </TableCell>
+               <TableCell className="font-medium max-w-md truncate">
+                  <div className="flex items-center gap-2">
+                     {isExpanded ? <ChevronDown className="h-4 w-4 text-primary shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
+                     <span>{guide.question}</span>
+                  </div>
+               </TableCell>
+               <TableCell>{guide.bullets?.length || 0} bullets</TableCell>
+               <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                     <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                           <MoreVertical className="h-4 w-4" />
+                        </Button>
+                     </DropdownMenuTrigger>
+                     <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEditGuide(guide)}>Edit</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => promptDeleteGuide(guide)}>
+                           Delete
+                        </DropdownMenuItem>
+                     </DropdownMenuContent>
+                  </DropdownMenu>
+               </TableCell>
+            </TableRow>
+
+            {isExpanded && (
+               <TableRow className="bg-muted/10 hover:bg-muted/10 border-b">
+                  <TableCell colSpan={4} className="py-4 pl-12 pr-6">
+                     <div className="border-l-2 border-primary pl-4 space-y-3">
+                        <div>
+                           <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Answer</h4>
+                           <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{guide.answer}</p>
+                        </div>
+                        {guide.bullets && guide.bullets.length > 0 && (
+                           <div>
+                              <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Bullets</h4>
+                              <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+                                 {guide.bullets.map((bullet, idx) => (
+                                    <li key={idx}>{bullet}</li>
+                                 ))}
+                              </ul>
+                           </div>
+                        )}
+                     </div>
+                  </TableCell>
+               </TableRow>
+            )}
+         </React.Fragment>
+      );
+   };
 
    return (
       <div className="space-y-6 flex flex-col w-full">
-         <div className="flex items-center justify-between">
+         <div className="flex items-center justify-between gap-4">
             <div>
                <h1 className="text-2xl font-bold tracking-tight">LPA Guide Management</h1>
-               <p className="text-muted-foreground">Manage the Life Partner Again onboarding, safety, account, and membership guide questions.</p>
+               <p className="text-muted-foreground">Manage guide categories and the questions and answers displayed in the app.</p>
             </div>
-            <Button onClick={handleAddGuide}>
+            <Button onClick={() => handleAddGuide()}>
                <Plus className="mr-2 h-4 w-4" />
                Add Guide Q&A
             </Button>
          </div>
 
-         {/* Filters and search */}
+         <div className="rounded-md border bg-card p-4 space-y-4">
+            <div className="flex items-center justify-between gap-4">
+               <div>
+                  <h2 className="text-sm font-semibold">Categories</h2>
+                  <p className="text-sm text-muted-foreground">Add questions and answers beneath each guide category.</p>
+               </div>
+               <Button variant="outline" onClick={handleAddCategory}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Category
+               </Button>
+            </div>
+
+            {categories.length === 0 ? (
+               <div className="rounded-md border border-dashed p-4 text-sm text-muted-foreground">No guide categories found.</div>
+            ) : (
+               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                  {categories.map((category) => (
+                     <div key={category.id} className="rounded-md border bg-background p-3">
+                        <div className="flex items-start justify-between gap-3">
+                           <div className="min-w-0">
+                              <div className="truncate text-sm font-semibold">{category.name}</div>
+                              <div className="mt-1 text-xs text-muted-foreground">{category.guideCount || 0} Q&A</div>
+                           </div>
+                           <div className="flex shrink-0 items-center gap-1">
+                              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleEditCategory(category)}>
+                                 <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => promptDeleteCategory(category)}>
+                                 <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                           </div>
+                        </div>
+                        <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => handleAddGuide(category.id)}>
+                           <Plus className="mr-2 h-3.5 w-3.5" />
+                           Add Q&A
+                        </Button>
+                     </div>
+                  ))}
+               </div>
+            )}
+         </div>
+
          <div className="flex items-center gap-4">
             <Input placeholder="Search by keyword..." value={searchQuery} onChange={(e) => handleSearchChange(e.target.value)} className="max-w-xs" />
             <Select value={categoryFilter} onValueChange={handleCategoryChange}>
@@ -220,9 +451,9 @@ const LpaGuidePage = () => {
                </SelectTrigger>
                <SelectContent>
                   <SelectItem value="ALL">All Categories</SelectItem>
-                  {CATEGORIES.map((c) => (
-                     <SelectItem key={c.id} value={c.id.toString()}>
-                        {c.name}
+                  {categories.map((category) => (
+                     <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
                      </SelectItem>
                   ))}
                </SelectContent>
@@ -241,7 +472,6 @@ const LpaGuidePage = () => {
             )}
          </div>
 
-         {/* Guides Table */}
          <div className="rounded-md border bg-card">
             <Table>
                <TableHeader>
@@ -259,79 +489,47 @@ const LpaGuidePage = () => {
                            Loading guide questions...
                         </TableCell>
                      </TableRow>
-                  ) : guides.length === 0 ? (
+                  ) : guideGroups.length === 0 ? (
                      <TableRow>
                         <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                            No guide questions found.
                         </TableCell>
                      </TableRow>
                   ) : (
-                     guides.map((guide) => {
-                        const cat = CATEGORIES.find((c) => c.id === guide.categoryId);
-                        const isExpanded = expandedRowIds.has(guide.id);
-                        return (
-                           <React.Fragment key={guide.id}>
-                              {/* Main Row */}
-                              <TableRow onClick={() => toggleRowExpand(guide.id)} className="cursor-pointer hover:bg-muted/50 transition-colors">
-                                 <TableCell>
-                                    <Badge variant="secondary">{cat?.name || `Category ${guide.categoryId}`}</Badge>
-                                 </TableCell>
-                                 <TableCell className="font-medium max-w-md truncate">
+                     guideGroups.map(({ category, guides: categoryGuides }) => (
+                        <React.Fragment key={category.id}>
+                           <TableRow className="bg-muted/40 hover:bg-muted/40">
+                              <TableCell colSpan={4}>
+                                 <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-2">
-                                       {isExpanded ? <ChevronDown className="h-4 w-4 text-primary shrink-0" /> : <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />}
-                                       <span>{guide.question}</span>
+                                       <Badge variant="outline">{category.name}</Badge>
+                                       <span className="text-xs text-muted-foreground">{categoryGuides.length} Q&A on this page</span>
                                     </div>
-                                 </TableCell>
-                                 <TableCell>{guide.bullets?.length || 0} bullets</TableCell>
-                                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                                    <DropdownMenu>
-                                       <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" className="h-8 w-8 p-0">
-                                             <MoreVertical className="h-4 w-4" />
-                                          </Button>
-                                       </DropdownMenuTrigger>
-                                       <DropdownMenuContent align="end">
-                                          <DropdownMenuItem onClick={() => handleEditGuide(guide)}>Edit</DropdownMenuItem>
-                                          <DropdownMenuItem className="text-destructive" onClick={() => promptDeleteGuide(guide)}>
-                                             Delete
-                                          </DropdownMenuItem>
-                                       </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    {category.id > 0 && (
+                                       <Button variant="ghost" size="sm" onClick={() => handleAddGuide(category.id)}>
+                                          <Plus className="mr-2 h-3.5 w-3.5" />
+                                          Add Q&A
+                                       </Button>
+                                    )}
+                                 </div>
+                              </TableCell>
+                           </TableRow>
+                           {categoryGuides.length === 0 ? (
+                              <TableRow>
+                                 <TableCell colSpan={4} className="h-20 text-center text-muted-foreground">
+                                    No guide questions in this category yet.
                                  </TableCell>
                               </TableRow>
-
-                              {/* Expanded Row Detail */}
-                              {isExpanded && (
-                                 <TableRow className="bg-muted/10 hover:bg-muted/10 border-b">
-                                    <TableCell colSpan={4} className="py-4 pl-12 pr-6">
-                                       <div className="border-l-2 border-primary pl-4 space-y-3">
-                                          <div>
-                                             <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Answer</h4>
-                                             <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{guide.answer}</p>
-                                          </div>
-                                          {guide.bullets && guide.bullets.length > 0 && (
-                                             <div>
-                                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Bullets</h4>
-                                                <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
-                                                   {guide.bullets.map((bullet, idx) => (
-                                                      <li key={idx}>{bullet}</li>
-                                                   ))}
-                                                </ul>
-                                             </div>
-                                          )}
-                                       </div>
-                                    </TableCell>
-                                 </TableRow>
-                              )}
-                           </React.Fragment>
-                        );
-                     })
+                           ) : (
+                              categoryGuides.map(renderGuideRows)
+                           )}
+                        </React.Fragment>
+                     ))
                   )}
                </TableBody>
             </Table>
          </div>
 
-         {/* Pagination Controls */}
          {totalGuides > 0 && (
             <div className="flex items-center justify-between mt-4">
                <div className="text-sm text-muted-foreground">
@@ -350,7 +548,7 @@ const LpaGuidePage = () => {
                   <Select
                      value={limit.toString()}
                      onValueChange={(val) => {
-                        setLimit(parseInt(val));
+                        setLimit(parseInt(val, 10));
                         setPage(1);
                      }}
                   >
@@ -368,7 +566,27 @@ const LpaGuidePage = () => {
             </div>
          )}
 
-         {/* Create/Edit Modal Dialog */}
+         <Dialog open={isCategoryModalOpen} onOpenChange={setIsCategoryModalOpen}>
+            <DialogContent className="max-w-md">
+               <form onSubmit={handleSaveCategory}>
+                  <DialogHeader>
+                     <DialogTitle>{selectedCategory ? "Edit Guide Category" : "Add Guide Category"}</DialogTitle>
+                     <DialogDescription>Categories appear in the mobile guide assistant and organize guide Q&A.</DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-2 py-4">
+                     <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category Name</label>
+                     <Input value={categoryName} onChange={(e) => setCategoryName(e.target.value)} placeholder="Safety & Privacy" required />
+                  </div>
+                  <DialogFooter>
+                     <Button type="button" variant="outline" onClick={() => setIsCategoryModalOpen(false)}>
+                        Cancel
+                     </Button>
+                     <Button type="submit">{selectedCategory ? "Update" : "Create"}</Button>
+                  </DialogFooter>
+               </form>
+            </DialogContent>
+         </Dialog>
+
          <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
             <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
                <form onSubmit={handleSaveGuide}>
@@ -385,9 +603,9 @@ const LpaGuidePage = () => {
                               <SelectValue placeholder="Select category" />
                            </SelectTrigger>
                            <SelectContent>
-                              {CATEGORIES.map((c) => (
-                                 <SelectItem key={c.id} value={c.id.toString()}>
-                                    {c.name}
+                              {categories.map((category) => (
+                                 <SelectItem key={category.id} value={category.id.toString()}>
+                                    {category.name}
                                  </SelectItem>
                               ))}
                            </SelectContent>
@@ -411,7 +629,6 @@ const LpaGuidePage = () => {
                         />
                      </div>
 
-                     {/* Bullet builder */}
                      <div className="space-y-2 border rounded-lg p-3 bg-muted/40">
                         <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground block mb-1">Additional Bullet Points (Optional)</label>
                         <div className="flex gap-2 mb-2">
@@ -455,7 +672,6 @@ const LpaGuidePage = () => {
             </DialogContent>
          </Dialog>
 
-         {/* Delete Confirmation Modal Dialog */}
          <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
             <DialogContent className="max-w-md">
                <DialogHeader>
@@ -472,6 +688,27 @@ const LpaGuidePage = () => {
                   </Button>
                   <Button variant="destructive" onClick={confirmDeleteGuide}>
                      Delete Question
+                  </Button>
+               </DialogFooter>
+            </DialogContent>
+         </Dialog>
+
+         <Dialog open={isDeleteCategoryModalOpen} onOpenChange={setIsDeleteCategoryModalOpen}>
+            <DialogContent className="max-w-md">
+               <DialogHeader>
+                  <DialogTitle className="text-destructive flex items-center gap-2">Delete Guide Category</DialogTitle>
+                  <DialogDescription className="pt-2">
+                     Are you sure you want to delete:
+                     <span className="block font-semibold text-foreground mt-2">"{categoryToDelete?.name}"</span>
+                     Categories with guide Q&A cannot be deleted until their questions are moved or removed.
+                  </DialogDescription>
+               </DialogHeader>
+               <DialogFooter className="mt-4">
+                  <Button variant="outline" onClick={() => setIsDeleteCategoryModalOpen(false)}>
+                     Cancel
+                  </Button>
+                  <Button variant="destructive" onClick={confirmDeleteCategory} disabled={(categoryToDelete?.guideCount || 0) > 0}>
+                     Delete Category
                   </Button>
                </DialogFooter>
             </DialogContent>

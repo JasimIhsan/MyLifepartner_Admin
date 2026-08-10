@@ -1,8 +1,8 @@
 import prisma from "@/config/prisma";
-import { CreateGuideDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
+import { CreateGuideCategoryDto, CreateGuideDto, UpdateGuideCategoryDto, UpdateGuideDto } from "@/dtos/guide.input.dto";
 import { GuideFilters } from "@/interfaces/services/guide.service.interface";
-import { Guide, Prisma } from "@prisma/client";
-import { IGuideRepository } from "../interfaces/repositories/guide.repository.interface";
+import { Guide, GuideCategory, Prisma } from "@prisma/client";
+import { GuideCategoryWithRelations, IGuideRepository } from "../interfaces/repositories/guide.repository.interface";
 
 type PaginatedGuides = {
    guides: Guide[];
@@ -21,7 +21,10 @@ export class GuideRepository implements IGuideRepository {
 
       return prisma.guide.create({
          data: {
-            ...data,
+            question: data.question,
+            answer: data.answer,
+            categoryId: data.categoryId,
+            bullets: data.bullets ?? [],
             displayOrder: nextDisplayOrder,
          },
       });
@@ -68,9 +71,12 @@ export class GuideRepository implements IGuideRepository {
     * @returns Updated guide.
     */
    async update(id: number, data: UpdateGuideDto): Promise<Guide> {
-      const updateData: Prisma.GuideUpdateInput = {
-         ...data,
-      };
+      const updateData: Prisma.GuideUncheckedUpdateInput = {};
+
+      if (data.question !== undefined) updateData.question = data.question;
+      if (data.answer !== undefined) updateData.answer = data.answer;
+      if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
+      if (data.bullets !== undefined) updateData.bullets = data.bullets;
 
       return prisma.guide.update({
          where: {
@@ -95,6 +101,127 @@ export class GuideRepository implements IGuideRepository {
    }
 
    /**
+    * Gets guide categories ordered for display.
+    *
+    * @param includeGuides - Include nested guide questions.
+    * @returns Guide categories with guide counts.
+    */
+   async findCategories(includeGuides = false): Promise<GuideCategoryWithRelations[]> {
+      const include = includeGuides
+         ? {
+              guides: {
+                 orderBy: {
+                    displayOrder: "asc" as const,
+                 },
+              },
+              _count: {
+                 select: {
+                    guides: true,
+                 },
+              },
+           }
+         : {
+              _count: {
+                 select: {
+                    guides: true,
+                 },
+              },
+           };
+
+      return prisma.guideCategory.findMany({
+         include,
+         orderBy: [
+            {
+               displayOrder: "asc",
+            },
+            {
+               name: "asc",
+            },
+         ],
+      }) as unknown as GuideCategoryWithRelations[];
+   }
+
+   /**
+    * Finds a guide category by ID.
+    *
+    * @param id - Guide category ID.
+    * @returns Guide category, or null if not found.
+    */
+   async findCategoryById(id: number): Promise<GuideCategory | null> {
+      return prisma.guideCategory.findUnique({
+         where: {
+            id,
+         },
+      });
+   }
+
+   /**
+    * Creates a guide category.
+    *
+    * @param data - Guide category creation data.
+    * @returns Created guide category.
+    */
+   async createCategory(data: CreateGuideCategoryDto): Promise<GuideCategory> {
+      const displayOrder = data.displayOrder ?? (await this.getNextCategoryDisplayOrder());
+
+      return prisma.guideCategory.create({
+         data: {
+            name: data.name,
+            displayOrder,
+         },
+      });
+   }
+
+   /**
+    * Updates a guide category.
+    *
+    * @param id - Guide category ID.
+    * @param data - Guide category update data.
+    * @returns Updated guide category.
+    */
+   async updateCategory(id: number, data: UpdateGuideCategoryDto): Promise<GuideCategory> {
+      const updateData: Prisma.GuideCategoryUpdateInput = {};
+
+      if (data.name !== undefined) updateData.name = data.name;
+      if (data.displayOrder !== undefined) updateData.displayOrder = data.displayOrder;
+
+      return prisma.guideCategory.update({
+         where: {
+            id,
+         },
+         data: updateData,
+      });
+   }
+
+   /**
+    * Deletes a guide category.
+    *
+    * @param id - Guide category ID.
+    * @returns Deleted guide category.
+    */
+   async deleteCategory(id: number): Promise<GuideCategory> {
+      return prisma.guideCategory.delete({
+         where: {
+            id,
+         },
+      });
+   }
+
+   /**
+    * Counts guide questions for a category.
+    *
+    * @param categoryId - Guide category ID.
+    * @returns Number of guide questions in the category.
+    */
+   async countGuidesByCategory(categoryId: number): Promise<number> {
+      return prisma.guide.count({
+         where: {
+            categoryId,
+         },
+      });
+   }
+
+   /**
     * Gets next guide display order.
     *
     * @returns Next display order.
@@ -110,6 +237,24 @@ export class GuideRepository implements IGuideRepository {
       });
 
       return (latestGuide?.displayOrder ?? 0) + 1;
+   }
+
+   /**
+    * Gets next guide category display order.
+    *
+    * @returns Next category display order.
+    */
+   private async getNextCategoryDisplayOrder(): Promise<number> {
+      const latestCategory = await prisma.guideCategory.findFirst({
+         orderBy: {
+            displayOrder: "desc",
+         },
+         select: {
+            displayOrder: true,
+         },
+      });
+
+      return (latestCategory?.displayOrder ?? 0) + 1;
    }
 
    /**

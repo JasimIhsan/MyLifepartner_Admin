@@ -50,7 +50,7 @@ export class UserSubscriptionController {
    public getUserFeatures = asyncHandler(async (req: Request, res: Response) => {
       const userId = this.getAuthenticatedUserId(req);
 
-      const features = await this.userSubscriptionService.getUserFeatures(userId);
+      const features = await this.userFeatureService.getUserFeatures(userId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, features, "Current features retrieved successfully"));
    });
@@ -191,7 +191,7 @@ export class UserSubscriptionController {
       const userId = this.getAuthenticatedUserId(req);
 
       const subscription = await this.userSubscriptionService.syncSubscription(userId);
-      const features = await this.userSubscriptionService.getUserFeatures(userId);
+      const features = await this.userFeatureService.getUserFeatures(userId);
 
       const responseData = {
          subscription: subscription ? toUserSubscriptionDto(subscription) : null,

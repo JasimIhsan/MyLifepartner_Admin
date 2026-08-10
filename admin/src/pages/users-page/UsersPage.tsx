@@ -115,6 +115,29 @@ const UsersPage = () => {
       }
    };
 
+   const handleToggleFoundingMember = async (id: number, currentStatus: boolean) => {
+      try {
+         const response = await axiosInstance.patch(`/admin/users/${id}/founding-member`);
+         const updatedUser = response.data.data as UserInterface | undefined;
+         setUsers((currentUsers) =>
+            currentUsers.map((user) =>
+               user.id === id
+                  ? {
+                       ...user,
+                       isFoundingMember: updatedUser?.isFoundingMember ?? !currentStatus,
+                       foundingMemberSince: updatedUser?.foundingMemberSince ?? (!currentStatus ? new Date() : null),
+                    }
+                  : user
+            )
+         );
+         toast.success(`Founding Member status ${currentStatus ? "revoked" : "granted"} successfully`);
+      } catch (error) {
+         console.error("Error toggling founding member status:", error);
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "Failed to update Founding Member status");
+      }
+   };
+
    const handleSaveUser = async (data: Partial<UserInterface>) => {
       try {
          if (selectedUser) {
@@ -154,6 +177,7 @@ const UsersPage = () => {
                onEdit={handleEditUser}
                onDelete={handleDeleteUser}
                onToggleBan={handleToggleBan}
+               onToggleFoundingMember={handleToggleFoundingMember}
                onViewAuditHistory={handleViewAuditHistory}
             />
             <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={selectedUser} />

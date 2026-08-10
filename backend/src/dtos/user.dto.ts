@@ -6,8 +6,11 @@ export interface UserDto {
    name: string | null;
    email: string | null;
    role: string;
+   isVerified: boolean;
    isBanned: boolean;
    isSuspended: boolean;
+   isFoundingMember: boolean;
+   foundingMemberSince: Date | null;
    bannedAt: Date | null;
    suspendedAt: Date | null;
    isDeleted: boolean;
@@ -48,8 +51,11 @@ export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null
    name: user.profile?.name || null,
    email: user.email,
    role: user.role,
+   isVerified: user.isVerified,
    isBanned: user.isBanned,
    isSuspended: user.isSuspended,
+   isFoundingMember: user.isFoundingMember,
+   foundingMemberSince: user.foundingMemberSince,
    bannedAt: user.bannedAt,
    suspendedAt: user.suspendedAt,
    isDeleted: user.isDeleted,

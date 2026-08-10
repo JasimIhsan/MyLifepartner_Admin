@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
 
 import 'advanced_search_screen.dart';
@@ -449,6 +450,13 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                                                 Icons.verified_rounded,
                                                 color: Colors.blueAccent,
                                                 size: 16,
+                                              ),
+                                            ],
+                                            if (profile.isFoundingMember) ...[
+                                              const SizedBox(width: 4),
+                                              const FoundingMemberBadge(
+                                                size: 16,
+                                                isOverlay: true,
                                               ),
                                             ],
                                           ],

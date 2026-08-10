@@ -11,6 +11,8 @@ import type { UserInterface } from "@/interface/user.interface";
 import { CheckCircle2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreVertical, Search, XCircle } from "lucide-react";
 import * as React from "react";
 
+type UserActionType = "delete" | "ban" | "unban" | "grantFoundingMember" | "revokeFoundingMember";
+
 export function UsersTable({
    data: initialData = [],
    searchQuery,
@@ -24,6 +26,7 @@ export function UsersTable({
    onAdd,
    onEdit,
    onToggleBan,
+   onToggleFoundingMember,
    onDelete,
    onViewAuditHistory,
 }: {
@@ -39,6 +42,7 @@ export function UsersTable({
    onAdd?: () => void;
    onEdit?: (user: UserInterface) => void;
    onToggleBan?: (id: number, currentStatus: boolean) => void;
+   onToggleFoundingMember?: (id: number, currentStatus: boolean) => void;
    onDelete?: (id: number) => void;
    onViewAuditHistory?: (user: UserInterface) => void;
 }) {
@@ -47,7 +51,7 @@ export function UsersTable({
 
    // Modal state
    const [actionModalOpen, setActionModalOpen] = React.useState(false);
-   const [actionType, setActionType] = React.useState<"delete" | "ban" | "unban" | null>(null);
+   const [actionType, setActionType] = React.useState<UserActionType | null>(null);
    const [selectedUser, setSelectedUser] = React.useState<UserInterface | null>(null);
 
    React.useEffect(() => {
@@ -82,7 +86,7 @@ export function UsersTable({
       });
    };
 
-   const handleActionClick = (user: UserInterface, type: "delete" | "ban" | "unban") => {
+   const handleActionClick = (user: UserInterface, type: UserActionType) => {
       setSelectedUser(user);
       setActionType(type);
       setActionModalOpen(true);
@@ -95,8 +99,42 @@ export function UsersTable({
          onDelete(selectedUser.id);
       } else if ((actionType === "ban" || actionType === "unban") && onToggleBan) {
          onToggleBan(selectedUser.id, selectedUser.isBanned);
+      } else if ((actionType === "grantFoundingMember" || actionType === "revokeFoundingMember") && onToggleFoundingMember) {
+         onToggleFoundingMember(selectedUser.id, selectedUser.isFoundingMember);
       }
       setActionModalOpen(false);
+   };
+
+   const getActionTitle = () => {
+      if (actionType === "delete") return "Delete User";
+      if (actionType === "ban") return "Ban User";
+      if (actionType === "unban") return "Unban User";
+      if (actionType === "grantFoundingMember") return "Grant Founding Member";
+      return "Revoke Founding Member";
+   };
+
+   const getActionDescription = () => {
+      if (actionType === "delete") {
+         return `Are you sure you want to delete ${selectedUser?.name || "this user"}? This action cannot be undone and will permanently remove all their data.`;
+      }
+      if (actionType === "ban") {
+         return `Are you sure you want to ban ${selectedUser?.name || "this user"}? They will no longer be able to log in or access the application.`;
+      }
+      if (actionType === "unban") {
+         return `Are you sure you want to unban ${selectedUser?.name || "this user"}? They will regain access to the application.`;
+      }
+      if (actionType === "grantFoundingMember") {
+         return `Grant Founding Member status to ${selectedUser?.name || "this user"}? They will receive all application features for free with unlimited usage.`;
+      }
+      return `Revoke Founding Member status from ${selectedUser?.name || "this user"}? They will immediately use their normal subscription and feature limits again.`;
+   };
+
+   const getConfirmText = () => {
+      if (actionType === "delete") return "Delete";
+      if (actionType === "ban") return "Ban User";
+      if (actionType === "unban") return "Unban User";
+      if (actionType === "grantFoundingMember") return "Grant";
+      return "Revoke";
    };
 
    return (
@@ -159,6 +197,7 @@ export function UsersTable({
                                     <span className="font-medium">{user.name || "Unknown"}</span>
                                     {user.isBanned && <span className="text-xs text-destructive font-semibold">Banned</span>}
                                     {user.isSuspended && <span className="text-xs text-orange-500 font-semibold">Suspended</span>}
+                                    {user.isFoundingMember && <span className="text-xs text-amber-600 font-semibold">Founding Member{user.foundingMemberSince ? ` since ${formatDate(user.foundingMemberSince)}` : ""}</span>}
                                     <span className="text-xs text-muted-foreground">ID: {user.id}</span>
                                  </div>
                               </TableCell>
@@ -192,6 +231,7 @@ export function UsersTable({
                                        <DropdownMenuItem onClick={() => onEdit?.(user)}>Edit User</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => onViewAuditHistory?.(user)}>View Audit History</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => handleActionClick(user, user.isBanned ? "unban" : "ban")}>{user.isBanned ? "Unban User" : "Ban User"}</DropdownMenuItem>
+                                       <DropdownMenuItem onClick={() => handleActionClick(user, user.isFoundingMember ? "revokeFoundingMember" : "grantFoundingMember")}>{user.isFoundingMember ? "Revoke Founding Member" : "Grant Founding Member"}</DropdownMenuItem>
                                        <DropdownMenuSeparator />
                                        <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>
                                           Delete User
@@ -268,16 +308,10 @@ export function UsersTable({
             isOpen={actionModalOpen}
             onClose={() => setActionModalOpen(false)}
             onConfirm={handleConfirmAction}
-            title={actionType === "delete" ? "Delete User" : actionType === "ban" ? "Ban User" : "Unban User"}
-            description={
-               actionType === "delete"
-                  ? `Are you sure you want to delete ${selectedUser?.name || "this user"}? This action cannot be undone and will permanently remove all their data.`
-                  : actionType === "ban"
-                    ? `Are you sure you want to ban ${selectedUser?.name || "this user"}? They will no longer be able to log in or access the application.`
-                    : `Are you sure you want to unban ${selectedUser?.name || "this user"}? They will regain access to the application.`
-            }
-            confirmText={actionType === "delete" ? "Delete" : actionType === "ban" ? "Ban User" : "Unban User"}
-            variant={actionType === "delete" ? "destructive" : actionType === "ban" ? "destructive" : "default"}
+            title={getActionTitle()}
+            description={getActionDescription()}
+            confirmText={getConfirmText()}
+            variant={actionType === "delete" || actionType === "ban" || actionType === "revokeFoundingMember" ? "destructive" : "default"}
          />
       </div>
    );

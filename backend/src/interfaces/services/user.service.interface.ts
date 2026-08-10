@@ -11,6 +11,7 @@ export interface IUserService {
    getUserById(userId: number): Promise<UserDto>;
    getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto>;
    updateUser(userId: number, updateData: UpdateUserDto): Promise<UserDto>;
+   toggleFoundingMemberStatus(userId: number): Promise<{ user: UserDto; previousIsFoundingMember: boolean; previousFoundingMemberSince: Date | null }>;
    toggleBanStatus(userId: number): Promise<UserDto>;
    getSuspendedUsers(): Promise<UserDto[]>;
    liftSuspension(userId: number): Promise<UserDto>;

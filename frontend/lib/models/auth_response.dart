@@ -84,6 +84,9 @@ class User {
   final bool hasCompletedImageUpload;
   final bool hasCompletedPartnerPreference;
   final String? selfieStatus;
+  final bool isVerified;
+  final bool isFoundingMember;
+  final DateTime? foundingMemberSince;
   final String? name;
   final String? email;
 
@@ -119,6 +122,9 @@ class User {
     required this.hasCompletedPartnerPreference,
     this.privacyEnabled = false,
     this.selfieStatus,
+    this.isVerified = false,
+    this.isFoundingMember = false,
+    this.foundingMemberSince,
     this.name,
     this.email,
     this.gender,
@@ -158,6 +164,11 @@ class User {
       privacyEnabled:
           json['privacyEnabled'] ?? privacySettings?['privacyEnabled'] ?? false,
       selfieStatus: json['selfieStatus'],
+      isVerified: json['isVerified'] as bool? ?? false,
+      isFoundingMember: json['isFoundingMember'] as bool? ?? false,
+      foundingMemberSince: json['foundingMemberSince'] != null
+          ? DateTime.parse(json['foundingMemberSince'])
+          : null,
       name: json['name'],
       email: json['email'],
       gender: json['gender'],

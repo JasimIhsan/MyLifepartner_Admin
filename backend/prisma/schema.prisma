@@ -14,6 +14,8 @@ model User {
   isVerified            Boolean              @default(false)
   isBanned              Boolean              @default(false)
   isSuspended           Boolean              @default(false)
+  isFoundingMember      Boolean              @default(false)
+  foundingMemberSince   DateTime?
   bannedAt              DateTime?
   suspendedAt           DateTime?
   isDeleted             Boolean                @default(false)
@@ -59,6 +61,7 @@ model UserBlock {
   blocked       User     @relation("BlockedUser", fields: [blockedUserId], references: [id])
 
   @@unique([blockerUserId, blockedUserId])
+  @@index([blockedUserId], map: "user_blocks_blocked_user_id_idx")
   @@map("user_blocks")
 }
 
@@ -100,6 +103,14 @@ model Profile {
   answers                       UserAnswer[]
   images                        UserImage[]
 
+  @@index([gender, id(sort: Desc)], map: "profiles_discovery_gender_id_idx")
+  @@index([dateOfBirth], map: "profiles_discovery_date_of_birth_idx")
+  @@index([maritalStatus], map: "profiles_discovery_marital_status_idx")
+  @@index([childrenStatus], map: "profiles_discovery_children_status_idx")
+  @@index([smokingHabit], map: "profiles_discovery_smoking_habit_idx")
+  @@index([drinkingHabit], map: "profiles_discovery_drinking_habit_idx")
+  @@index([languages], type: Gin, map: "profiles_discovery_languages_gin_idx")
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "profiles_discovery_name_trgm_idx")
   @@map("profiles")
 }
 
@@ -425,16 +436,29 @@ model ChatMessage {
   @@map("chat_messages")
 }
 
-model Guide {
+model GuideCategory {
   id           Int      @id @default(autoincrement())
-  question     String   @unique
-  answer       String
-  categoryId   Int
-  bullets      String[] @default([])
+  name         String   @unique
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  guides       Guide[]
 
+  @@map("guide_categories")
+}
+
+model Guide {
+  id           Int           @id @default(autoincrement())
+  question     String        @unique
+  answer       String
+  categoryId   Int
+  bullets      String[]      @default([])
+  displayOrder Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  category     GuideCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([categoryId])
   @@map("guides")
 }
 
