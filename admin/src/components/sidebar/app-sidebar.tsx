@@ -9,6 +9,7 @@ import type { RootState } from "@/store";
 import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, Send, Trash2, UserCheck2Icon, UserX, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { NavMain } from "./nav-main";
 
 const data = {
@@ -125,7 +126,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
                <SidebarMenuItem>
                   <SidebarMenuButton size="lg" asChild>
-                     <a href="#">
+                     <Link to="/">
                         <div className="flex h-8 items-center justify-center">
                            <img src={AppLogoLight} alt="App Logo" className="h-8 w-auto object-contain dark:hidden" />
                            <img src={AppLogoDark} alt="App Logo" className="hidden h-8 w-auto object-contain dark:block" />
@@ -134,7 +135,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                            <span className="truncate font-medium">Life Partner Again</span>
                            <span className="truncate text-xs">Admin Panel</span>
                         </div> */}
-                     </a>
+                     </Link>
                   </SidebarMenuButton>
                </SidebarMenuItem>
             </SidebarMenu>

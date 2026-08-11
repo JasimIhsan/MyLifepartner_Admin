@@ -3,6 +3,7 @@ import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { S3Service } from "@/services/s3.service";
+import prisma from "@/config/prisma";
 
 jest.mock("@/config/prisma", () => {
    const mockPrismaClient = {
@@ -56,14 +57,25 @@ const makeUser = (overrides: Partial<UserWithProfile> = {}): UserWithProfile =>
 const mockUserRepository = {
    findById: jest.fn(),
    updateFoundingMemberStatus: jest.fn(),
+   clearDeviceTokens: jest.fn(),
+};
+
+const mockEmailService = {
+   sendAccountDeletionEmail: jest.fn(),
+};
+
+const mockCacheService = {
+   getCache: jest.fn(),
+   setCache: jest.fn(),
+   deleteCache: jest.fn(),
 };
 
 const makeService = () =>
    new UserService(
       mockUserRepository as unknown as IUserRepository,
       {} as S3Service,
-      {} as IEmailService,
-      {} as ICacheService
+      mockEmailService as unknown as IEmailService,
+      mockCacheService as unknown as ICacheService
    );
 
 describe("UserService founding-member status", () => {
@@ -116,5 +128,58 @@ describe("UserService founding-member status", () => {
       expect(result.previousIsFoundingMember).toBe(true);
       expect(result.previousFoundingMemberSince).toBe(previousFoundingMemberSince);
       expect(result.user.isFoundingMember).toBe(false);
+   });
+});
+
+describe("UserService account deletion requests", () => {
+   const mockPrisma = prisma as unknown as {
+      user: {
+         findUnique: jest.Mock;
+         update: jest.Mock;
+      };
+   };
+
+   beforeEach(() => {
+      jest.clearAllMocks();
+   });
+
+   it("marks deletion request pending without suspending the user", async () => {
+      mockCacheService.getCache.mockResolvedValue(JSON.stringify({ userId: 42, reason: "No longer needed" }));
+      mockUserRepository.findById.mockResolvedValue(makeUser());
+      mockPrisma.user.update.mockResolvedValue(makeUser());
+      mockUserRepository.clearDeviceTokens.mockResolvedValue(undefined);
+
+      await expect(makeService().verifyAccountDeletion("valid-token")).resolves.toBe(42);
+
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+         where: { id: 42 },
+         data: {
+            isDeleteRequested: true,
+            deleteRequestedAt: expect.any(Date),
+            deleteRequestStatus: "PENDING",
+            deleteRequestReason: "No longer needed",
+         },
+      });
+      expect(mockPrisma.user.update.mock.calls[0][0].data).not.toHaveProperty("isSuspended");
+      expect(mockPrisma.user.update.mock.calls[0][0].data).not.toHaveProperty("suspendedAt");
+      expect(mockCacheService.deleteCache).toHaveBeenCalled();
+      expect(mockUserRepository.clearDeviceTokens).toHaveBeenCalledWith(42);
+   });
+
+   it("rejects deletion request without changing suspension state", async () => {
+      mockPrisma.user.findUnique.mockResolvedValue(makeUser({ deleteRequestStatus: "PENDING", isSuspended: true }));
+      mockPrisma.user.update.mockResolvedValue(makeUser({ deleteRequestStatus: "REJECTED", isSuspended: true }));
+
+      await expect(makeService().rejectDeletionRequest(42, 7)).resolves.toBeUndefined();
+
+      expect(mockPrisma.user.update).toHaveBeenCalledWith({
+         where: { id: 42 },
+         data: {
+            deleteRequestStatus: "REJECTED",
+            deleteRequestReason: null,
+         },
+      });
+      expect(mockPrisma.user.update.mock.calls[0][0].data).not.toHaveProperty("isSuspended");
+      expect(mockPrisma.user.update.mock.calls[0][0].data).not.toHaveProperty("suspendedAt");
    });
 });

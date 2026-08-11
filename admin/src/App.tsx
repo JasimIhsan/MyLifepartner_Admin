@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import axiosInstance from "./api/api.config";
 import { AdminLayout } from "./components/layout/admin-layout";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
@@ -28,7 +28,6 @@ import TransactionsPage from "./pages/transactions-page/TransactionsPage";
 
 function App() {
    const dispatch = useDispatch();
-   const location = useLocation();
    const navigate = useNavigate();
 
    useEffect(() => {
@@ -38,10 +37,10 @@ function App() {
             dispatch(setUser(response.data.data.user));
             dispatch(setAuthenticated(true));
 
-            if (location.pathname === "/login") {
+            if (window.location.pathname === "/login") {
                navigate("/", { replace: true });
             }
-         } catch (error) {
+         } catch {
             dispatch(setAuthenticated(false));
          } finally {
             dispatch(setLoading(false));
@@ -49,7 +48,7 @@ function App() {
       };
 
       verifySession();
-   }, [dispatch, location.pathname, navigate]);
+   }, [dispatch, navigate]);
 
    return (
       <>

@@ -2,7 +2,7 @@ import env from "@/config/env";
 import { toUserDto } from "@/dtos/user.dto";
 import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
 import { IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
-import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
+import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
 import { AuthTokens, IOAuthService } from "@/interfaces/services/user.oauth.service.interface";
 import { ApiError } from "@/utils/ApiError";
@@ -102,15 +102,7 @@ export class OAuthService implements IOAuthService {
          }
       }
 
-      if (user.isBanned) {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
-      }
-      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account deletion is pending approval.");
-      }
-      if (user.isSuspended) {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
-      }
+      this.assertUserCanSignIn(user);
 
       // Upsert the Google social account record (create or update updatedAt)
       await this.userRepository.upsertSocialAccount(user.id, "GOOGLE", googleUserId);
@@ -225,15 +217,7 @@ export class OAuthService implements IOAuthService {
          }
       }
 
-      if (user.isBanned) {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
-      }
-      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account deletion is pending approval.");
-      }
-      if (user.isSuspended) {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
-      }
+      this.assertUserCanSignIn(user);
 
       // Upsert the Apple social account record (create or update updatedAt)
       await this.userRepository.upsertSocialAccount(user.id, "APPLE", appleUserId);
@@ -282,5 +266,23 @@ export class OAuthService implements IOAuthService {
          accessToken: this.jwtService.signAccess(payload, ACCESS_TOKEN_EXPIRY),
          refreshToken: this.jwtService.signRefresh(payload, REFRESH_TOKEN_EXPIRY),
       };
+   }
+
+   private assertUserCanSignIn(user: UserWithProfile): void {
+      if (user.isBanned) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+      }
+
+      if (user.isDeleted) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been deleted.");
+      }
+
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account deletion is pending approval.");
+      }
+
+      if (user.isSuspended) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
+      }
    }
 }

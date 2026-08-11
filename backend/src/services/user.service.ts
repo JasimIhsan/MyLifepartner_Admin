@@ -304,7 +304,7 @@ export class UserService implements IUserService {
    }
 
    /**
-    * Validates user account status (checking if banned or suspended).
+    * Validates user account status.
     *
     * @param userId - User ID.
     */
@@ -317,6 +317,14 @@ export class UserService implements IUserService {
 
       if (user.isBanned) {
          throw new ApiError(403, "Your account has been permanently banned.");
+      }
+
+      if (user.isDeleted) {
+         throw new ApiError(403, "Your account has been deleted.");
+      }
+
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(403, "Your account deletion is pending approval.");
       }
 
       if (user.isSuspended) {
@@ -491,7 +499,6 @@ export class UserService implements IUserService {
             deleteRequestedAt: new Date(),
             deleteRequestStatus: "PENDING",
             deleteRequestReason: reason,
-            isSuspended: true,
          },
       });
 
@@ -546,7 +553,6 @@ export class UserService implements IUserService {
          where: { id: userId },
          data: {
             deleteRequestStatus: "REJECTED",
-            isSuspended: false,
             deleteRequestReason: null,
          },
       });
