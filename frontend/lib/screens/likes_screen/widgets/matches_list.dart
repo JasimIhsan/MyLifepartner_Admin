@@ -80,36 +80,38 @@ class _MatchesListState extends State<MatchesList> {
   ) async {
     final provider = context.read<MatchProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final successBgColor = Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
+    final errorBgColor = Theme.of(context).colorScheme.error;
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          backgroundColor: AppColors.white,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text(
+          title: Text(
             'Cancel Interest?',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             ),
           ),
           content: Text(
             'Are you sure you want to cancel your interest request to ${profile.name}?',
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => dialogContext.pop(false),
-              child: const Text(
+              child: Text(
                 'No',
-                style: TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
               ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: AppColors.textWhite,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -129,7 +131,7 @@ class _MatchesListState extends State<MatchesList> {
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Interest request to ${profile.name} canceled'),
-            backgroundColor: AppColors.textPrimary,
+            backgroundColor: successBgColor,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 2),
           ),
@@ -138,7 +140,7 @@ class _MatchesListState extends State<MatchesList> {
         scaffoldMessenger.showSnackBar(
           SnackBar(
             content: Text('Failed to cancel interest request: $e'),
-            backgroundColor: AppColors.error,
+            backgroundColor: errorBgColor,
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -164,10 +166,10 @@ class _MatchesListState extends State<MatchesList> {
         }
 
         if (provider.state == MatchLoadState.loading && profiles.isEmpty) {
-          return const Center(
+          return Center(
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
             ),
           );
         }
@@ -176,7 +178,7 @@ class _MatchesListState extends State<MatchesList> {
           return Center(
             child: Text(
               provider.error ?? 'Error loading profiles',
-              style: const TextStyle(color: AppColors.error),
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           );
         }
@@ -218,10 +220,10 @@ class _MatchesListState extends State<MatchesList> {
                   Text(
                         title,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
+                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                           letterSpacing: -0.5,
                         ),
                       )
@@ -232,9 +234,9 @@ class _MatchesListState extends State<MatchesList> {
                   Text(
                         subtitle,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                           height: 1.5,
                         ),
                       )

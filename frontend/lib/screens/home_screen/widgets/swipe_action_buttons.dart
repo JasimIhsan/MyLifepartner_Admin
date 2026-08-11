@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 
 class SwipeActionButtons extends StatelessWidget {
   final VoidCallback onNotInterested;
@@ -28,7 +27,7 @@ class SwipeActionButtons extends StatelessWidget {
         _ActionButton(
           onTap: onSkip,
           icon: Icons.skip_next_rounded,
-          color: AppColors.background,
+          color: Theme.of(context).scaffoldBackgroundColor,
           label: 'Skip',
           size: 44,
         ),
@@ -109,7 +108,7 @@ class _ActionButtonState extends State<_ActionButton>
               height: widget.size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.surface,
+                color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
                     color: widget.color.withValues(alpha: 0.3),

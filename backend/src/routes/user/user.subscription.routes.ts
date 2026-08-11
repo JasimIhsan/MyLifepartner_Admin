@@ -71,6 +71,15 @@ router.get("/features", userSubscriptionController.getUserFeatures);
 router.post("/subscribe", subscriptionActionLimiter, userSubscriptionController.subscribe);
 
 /**
+ * @route POST /user/subscription/verify-purchase
+ * @desc Verifies a RevenueCat purchase and immediately activates the plan in the DB.
+ *       Call this right after Purchases.purchasePackage() succeeds in Flutter.
+ *       Body: { originalTransactionId, productId, store, environment }
+ * @access Private
+ */
+router.post("/verify-purchase", subscriptionActionLimiter, userSubscriptionController.verifyPurchase);
+
+/**
  * @route POST /user/subscription/check-call
  * @desc Check if user can initiate an audio or video call
  * @access Private

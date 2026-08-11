@@ -159,6 +159,9 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       if (mounted) {
         await context.read<AuthProvider>().bootstrap();
       }
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {
@@ -186,7 +189,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -245,9 +248,9 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
           scrolledUnderElevation: 0,
           leading: const SizedBox.shrink(),
@@ -258,12 +261,12 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                 height: 32,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderColor, width: 1.5),
+                  border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.question_mark_rounded,
                   size: 16,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
               onPressed: _showPhotoTips,
@@ -273,8 +276,8 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         body: SafeArea(
           top: false,
           child: _isLoading && _images.isEmpty
-              ? const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
+              ? Center(
+                  child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
                 )
               : Column(
                   children: [
@@ -290,7 +293,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
+                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -298,7 +301,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                               'Upload at least 1 clear photo of yourself. Tap any photo to manage it.',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: AppColors.textSecondary,
+                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                 height: 1.5,
                               ),
                             ),

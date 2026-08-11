@@ -11,8 +11,18 @@ export interface IUserService {
    getUserById(userId: number): Promise<UserDto>;
    getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto>;
    updateUser(userId: number, updateData: UpdateUserDto): Promise<UserDto>;
-   toggleBlockUser(userId: number): Promise<UserDto>;
+   toggleFoundingMemberStatus(userId: number): Promise<{ user: UserDto; previousIsFoundingMember: boolean; previousFoundingMemberSince: Date | null }>;
+   toggleBanStatus(userId: number): Promise<UserDto>;
+   getSuspendedUsers(): Promise<UserDto[]>;
+   liftSuspension(userId: number): Promise<UserDto>;
    deleteUser(userId: number): Promise<void>;
    getUserSelfieData(userId: number): Promise<UserSelfieDataDto>;
    getUserImagesData(userId: number): Promise<UserImageDataDto[]>;
+   validateUserAccountStatus(userId: number): Promise<void>;
+   requestAccountDeletion(userId: number, reason: string): Promise<void>;
+   verifyAccountDeletion(token: string): Promise<number>;
+   getPendingDeletionRequests(page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }>;
+   approveDeletionRequest(userId: number, adminId: number): Promise<void>;
+   rejectDeletionRequest(userId: number, adminId: number): Promise<void>;
+   getArchivedUsers(page?: number, limit?: number): Promise<{ data: any[]; total: number }>;
 }

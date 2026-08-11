@@ -77,7 +77,7 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
   Future<void> handleCancelSubscription() async {
     final confirm = await showModalBottomSheet<bool>(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -89,12 +89,12 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         if (mounted) {
           final isCompleted = ValueNotifier(false);
           final dialogFuture = showDynamicLoadingUI(context, isCompleted);
-          
+
           await context.read<SubscriptionProvider>().cancelSubscriptionDebug();
-          
+
           isCompleted.value = true;
           await dialogFuture;
-          
+
           if (mounted) {
             initSubscriptions();
           }
@@ -102,7 +102,9 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
       } else {
         _awaitingStoreReturn = true;
         if (mounted) {
-          await context.read<SubscriptionProvider>().openGooglePlaySubscription();
+          await context
+              .read<SubscriptionProvider>()
+              .openGooglePlaySubscription();
         }
       }
     }
@@ -114,6 +116,14 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
     if (plan.price == 0 &&
         provider.currentSubscription != null &&
         provider.currentSubscription!.price > 0) {
+      final mySub = provider.mySubscription;
+      if (mySub != null && (!mySub.willRenew || mySub.isCancelledButActive || mySub.isDowngradeScheduled || mySub.isCancelled || mySub.isInGracePeriod || mySub.isPaymentFailed)) {
+        _awaitingStoreReturn = true;
+        if (mounted) {
+          await provider.openGooglePlaySubscription();
+        }
+        return;
+      }
       await handleCancelSubscription();
       return;
     }
@@ -161,19 +171,22 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         children: [
           const Icon(Icons.warning_rounded, color: Colors.redAccent, size: 48),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'Cancel Subscription?',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
           Text(
             'To cancel your subscription, you will be directed to your ${(defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) ? "Apple App Store" : "Google Play"} subscription settings. Your premium features will remain active until the end of your current billing period.',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 32),
           Row(
@@ -183,8 +196,8 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
                   onPressed: () => context.pop(true),
                   text: 'Yes, Cancel',
                   type: CustomButtonType.outline,
-                  backgroundColor: AppColors.surface,
-                  textColor: AppColors.textPrimary,
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  textColor: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                   height: 52,
                   borderRadius: 16,
                 ),
@@ -195,7 +208,7 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
                   onPressed: () => context.pop(false),
                   text: 'Keep Plan',
                   type: CustomButtonType.primary,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   textColor: Colors.white,
                   height: 52,
                   borderRadius: 16,
@@ -216,9 +229,9 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
   PlanVisuals getPlanVisuals(model.SubscriptionPlan plan) {
     if (plan.price == 0) {
       return PlanVisuals(
-        themeColor: AppColors.textLight,
-        borderColor: AppColors.borderColor,
-        bgColor: AppColors.background,
+        themeColor: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+        borderColor: Theme.of(context).dividerColor,
+        bgColor: Theme.of(context).scaffoldBackgroundColor,
         gradientColors: const [Color(0xFF94A3B8), Color(0xFF64748B)],
         isPopular: false,
         badgeText: null,
@@ -228,26 +241,26 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
     final nameLower = plan.name.toLowerCase();
     if (plan.isMostPopular) {
       return PlanVisuals(
-        themeColor: AppColors.primary,
-        borderColor: AppColors.primaryLight,
-        bgColor: const Color(0xFFF8FAFC),
-        gradientColors: const [AppColors.primaryLight, AppColors.primary],
+        themeColor: Theme.of(context).primaryColor,
+        borderColor: Theme.of(context).primaryColorLight,
+        bgColor: Color(0xFFF8FAFC),
+        gradientColors: [Theme.of(context).primaryColorLight, Theme.of(context).primaryColor],
         isPopular: true,
         badgeText: 'Most Popular',
       );
     } else if (nameLower.contains('yearly') || nameLower.contains('annual')) {
       return PlanVisuals(
-        themeColor: AppColors.primary,
-        borderColor: AppColors.primaryLight,
-        bgColor: const Color(0xFFF8FAFC),
-        gradientColors: const [AppColors.primaryLight, AppColors.primaryDark],
+        themeColor: Theme.of(context).primaryColor,
+        borderColor: Theme.of(context).primaryColorLight,
+        bgColor: Color(0xFFF8FAFC),
+        gradientColors: [Theme.of(context).primaryColorLight, Theme.of(context).primaryColorDark],
         isPopular: false,
         badgeText: '40% OFF',
       );
     } else {
       return PlanVisuals(
-        themeColor: AppColors.primary,
-        borderColor: AppColors.borderColor,
+        themeColor: Theme.of(context).primaryColor,
+        borderColor: Theme.of(context).dividerColor,
         bgColor: const Color(0xFFF8FAFC),
         gradientColors: const [Color(0xFFF1F5F9), Color(0xFFE2E8F0)],
         isPopular: false,

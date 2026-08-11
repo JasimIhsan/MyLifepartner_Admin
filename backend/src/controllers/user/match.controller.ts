@@ -82,7 +82,6 @@ export class MatchController {
       const targetProfileId = this.getRequiredPositiveNumber(req.body.targetProfileId, "Target profile ID is required");
       const action = this.getSwipeAction(req.body.action);
 
-
       await this.matchService.swipeProfile({
          userId,
          targetProfileId,

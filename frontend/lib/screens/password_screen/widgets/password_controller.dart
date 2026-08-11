@@ -2,7 +2,6 @@ import 'package:life_partner_again/core/app_routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
@@ -127,7 +126,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }
@@ -195,7 +194,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

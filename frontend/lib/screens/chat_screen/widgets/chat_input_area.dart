@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/widgets/inline_audio_player.dart';
+import 'package:life_partner_again/screens/chat_screen/widgets/inline_audio_player.dart';
 
 class ChatInputArea extends StatelessWidget {
   final bool isRecording;
@@ -15,6 +15,7 @@ class ChatInputArea extends StatelessWidget {
   final VoidCallback onSendRecordedAudio;
   final VoidCallback onStartRecording;
   final VoidCallback onStopRecording;
+  final VoidCallback onStopAndSendRecording;
 
   const ChatInputArea({
     super.key,
@@ -29,6 +30,7 @@ class ChatInputArea extends StatelessWidget {
     required this.onSendRecordedAudio,
     required this.onStartRecording,
     required this.onStopRecording,
+    required this.onStopAndSendRecording,
   });
 
   String _formatDuration(Duration d) {
@@ -40,91 +42,127 @@ class ChatInputArea extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.divider, width: 1)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          top: BorderSide(color: Theme.of(context).dividerColor, width: 1),
+        ),
       ),
-      padding: const EdgeInsets.only(top: 12, bottom: 20, left: 16, right: 16),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (isRecording || isRecordingFinished)
-            IconButton(
-              onPressed: onCancelRecording,
-              icon: const Icon(Icons.delete_outline_rounded, color: Colors.red),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-            )
-          else
-            IconButton(
-              onPressed: onShowAttachmentOptions,
-              icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
-              color: AppColors.textSecondary,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              splashRadius: 24,
-            ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-              ),
-              child: isRecording || isRecordingFinished
-                  ? _buildRecordingMiddle()
-                  : _buildTextMiddle(),
-            ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.only(
+            top: 12,
+            bottom: 12,
+            left: 16,
+            right: 16,
           ),
-          const SizedBox(width: 12),
-          ValueListenableBuilder<TextEditingValue>(
-            valueListenable: msgController,
-            builder: (context, value, child) {
-              final isTextEmpty = value.text.trim().isEmpty;
-              return GestureDetector(
-                onTap: () {
-                  if (isRecordingFinished) {
-                    onSendRecordedAudio();
-                  } else if (!isTextEmpty && !isRecording) {
-                    onSendMessage();
-                  }
-                },
-                onLongPressStart:
-                    (isTextEmpty && !isRecording && !isRecordingFinished)
-                    ? (_) => onStartRecording()
-                    : null,
-                onLongPressEnd: isRecording ? (_) => onStopRecording() : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  height: isRecording ? 52 : 44,
-                  width: isRecording ? 52 : 44,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (isRecording || isRecordingFinished)
+                IconButton(
+                  onPressed: onCancelRecording,
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.red,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+              else
+                IconButton(
+                  onPressed: onShowAttachmentOptions,
+                  icon: const Icon(Icons.add_circle_outline_rounded, size: 28),
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  splashRadius: 24,
+                ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Container(
                   decoration: BoxDecoration(
-                    color: isRecording ? Colors.redAccent : AppColors.primary,
-                    shape: BoxShape.circle,
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Theme.of(context).dividerColor),
                     boxShadow: [
                       BoxShadow(
-                        color: isRecording
-                            ? Colors.redAccent.withValues(alpha: 0.3)
-                            : const Color(0x33FF3F3F),
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        color: Theme.of(
+                          context,
+                        ).shadowColor.withValues(alpha: 0.02),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Icon(
-                    isRecordingFinished
-                        ? Icons.send_rounded
-                        : (isTextEmpty
-                              ? Icons.mic_rounded
-                              : Icons.arrow_upward_rounded),
-                    color: Colors.white,
-                    size: isRecording ? 28 : 24,
-                  ),
+                  child: isRecording || isRecordingFinished
+                      ? _buildRecordingMiddle()
+                      : _buildTextMiddle(context),
                 ),
-              );
-            },
+              ),
+              const SizedBox(width: 12),
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: msgController,
+                builder: (context, value, child) {
+                  final isTextEmpty = value.text.trim().isEmpty;
+                  return GestureDetector(
+                    onTap: () {
+                      if (isRecordingFinished) {
+                        onSendRecordedAudio();
+                      } else if (isRecording) {
+                        onStopRecording();
+                      } else if (!isTextEmpty) {
+                        onSendMessage();
+                      } else {
+                        onStartRecording();
+                      }
+                    },
+                    onLongPressStart:
+                        (isTextEmpty && !isRecording && !isRecordingFinished)
+                        ? (_) => onStartRecording()
+                        : null,
+                    onLongPressEnd: isRecording
+                        ? (_) => onStopAndSendRecording()
+                        : null,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      height: isRecording ? 52 : 44,
+                      width: isRecording ? 52 : 44,
+                      decoration: BoxDecoration(
+                        color: isRecording
+                            ? Colors.redAccent
+                            : Theme.of(context).primaryColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: isRecording
+                                ? Colors.redAccent.withValues(alpha: 0.3)
+                                : const Color(0x33FF3F3F),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        isRecordingFinished
+                            ? Icons.send_rounded
+                            : (isRecording
+                                  ? Icons.stop_rounded
+                                  : (isTextEmpty
+                                        ? Icons.mic_rounded
+                                        : Icons.arrow_upward_rounded)),
+                        color: Colors.white,
+                        size: isRecording ? 28 : 24,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -159,11 +197,15 @@ class ChatInputArea extends StatelessWidget {
                 ),
               ],
             )
-          : InlineAudioPlayer(source: recordingPath!, isMe: true),
+          : InlineAudioPlayer(
+              source: recordingPath!,
+              isMe: false,
+              width: double.infinity,
+            ),
     );
   }
 
-  Widget _buildTextMiddle() {
+  Widget _buildTextMiddle(BuildContext context) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -175,10 +217,12 @@ class ChatInputArea extends StatelessWidget {
             maxLines: 4,
             minLines: 1,
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Message...',
               hintStyle: TextStyle(
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 fontSize: 16,
               ),
               border: InputBorder.none,
@@ -187,7 +231,12 @@ class ChatInputArea extends StatelessWidget {
                 vertical: 12,
               ),
             ),
-            style: const TextStyle(color: AppColors.textPrimary, fontSize: 16),
+            style: TextStyle(
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
+              fontSize: 16,
+            ),
           ),
         ),
       ],

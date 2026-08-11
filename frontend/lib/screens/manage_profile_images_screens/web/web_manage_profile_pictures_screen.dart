@@ -38,14 +38,16 @@ class _WebManageProfilePicturesScreenState
         Icon(
           Icons.info_outline_rounded,
           size: 18,
-          color: AppColors.primary.withValues(alpha: 0.8),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
         ),
         const SizedBox(width: 8),
         Text(
           "You can upload up to 4 photos. We recommend high-quality portraits.",
           style: TextStyle(
             fontSize: 14,
-            color: AppColors.textSecondary.withValues(alpha: 0.9),
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.9),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -118,12 +120,14 @@ class _WebManageProfilePicturesScreenState
                 .fade(duration: 400.ms)
                 .scale(begin: const Offset(0.9, 0.9)),
             const SizedBox(height: 32),
-            const Text(
+            Text(
               "No photos yet",
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -132,7 +136,9 @@ class _WebManageProfilePicturesScreenState
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
-                color: AppColors.textSecondary.withValues(alpha: 0.8),
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
                 height: 1.5,
               ),
             ),
@@ -153,7 +159,7 @@ class _WebManageProfilePicturesScreenState
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Theme.of(context).primaryColor,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 40,
                   vertical: 20,
@@ -194,11 +200,16 @@ class _WebManageProfilePicturesScreenState
     final hasImages = images.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: CustomAppBar(
         title: "Manage Photos",
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+          ),
           onPressed: () {
             context.pop(true);
           },
@@ -206,8 +217,10 @@ class _WebManageProfilePicturesScreenState
       ),
       body: SafeArea(
         child: isLoading && images.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               )
             : errorMessage != null
             ? Center(
@@ -218,7 +231,9 @@ class _WebManageProfilePicturesScreenState
                     children: [
                       Text(
                         errorMessage!,
-                        style: const TextStyle(color: AppColors.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),

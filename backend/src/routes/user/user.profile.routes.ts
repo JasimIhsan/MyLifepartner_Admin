@@ -2,7 +2,7 @@ import { profileController, profileImageController, privacyController } from "@/
 import { multerConfig } from "@/config/multer.config";
 import { verifyJWT } from "@/middlewares/auth.middleware";
 import { validate } from "@/middlewares/validate.middleware";
-import { basicProfileSchema, partnerPreferenceSchema } from "@/validators/profile.validator";
+import { profileSchema, partnerPreferenceSchema } from "@/validators/profile.validator";
 import { Router } from "express";
 
 const router = Router();
@@ -52,17 +52,18 @@ router.patch("/complete/:userId", profileController.completeProfile);
 router.get("/completion-status/:userId", profileController.getCompletionStatus);
 
 /**
- * @route   PATCH /api/v1/user/profile/basic-profile/:userId
- * @desc    Update basic user profile details (height, occupation, etc)
+ * @route   PATCH /api/v1/user/profile/update/:userId
+ * @desc    Update user profile details (height, occupation, etc)
  * @access  Private
  */
-router.patch("/basic-profile/:userId", validate(basicProfileSchema), profileController.updateBasicProfile);
+router.patch("/update/:userId", validate(profileSchema), profileController.updateProfile);
 
 /**
  * @route   PATCH /api/v1/user/profile/partner-preference/:userId
  * @desc    Update partner preferences details (age range, religion, etc)
  * @access  Private
  */
+router.get("/partner-preference/:userId", profileController.getPartnerPreference);
 router.patch("/partner-preference/:userId", validate(partnerPreferenceSchema), profileController.updatePartnerPreference);
 
 /**

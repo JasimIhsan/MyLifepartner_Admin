@@ -41,15 +41,21 @@ export type UserOnboardingStatus = {
    } | null;
 };
 
+export type UserFeatureAccessStatus = Pick<User, "id" | "isFoundingMember" | "isBanned" | "isSuspended" | "isDeleted" | "isDeleteRequested" | "deleteRequestStatus">;
+
 export interface IUserRepository {
    create(data: CreateUserDto): Promise<UserWithProfile>;
    findAll(filters?: UserListFilters, skip?: number, take?: number): Promise<PaginatedUsersResult>;
+   findSuspendedUsers(): Promise<User[]>;
    findById(id: number): Promise<UserWithProfile | null>;
+   findFeatureAccessStatusById(id: number): Promise<UserFeatureAccessStatus | null>;
    findOnboardingStatusById(id: number): Promise<UserOnboardingStatus | null>;
    findByEmail(email: string): Promise<UserWithProfile | null>;
    findByProviderId(provider: string, providerUserId: string): Promise<UserWithProfile | null>;
    findByMobileNumber(mobileNumber: string): Promise<UserWithProfile | null>;
    upsertSocialAccount(userId: number, provider: string, providerUserId: string): Promise<void>;
    update(id: number, data: UpdateUserDto): Promise<UserWithProfile>;
+   updateFoundingMemberStatus(id: number, isFoundingMember: boolean, foundingMemberSince: Date | null): Promise<UserWithProfile>;
    delete(id: number): Promise<User>;
+   clearDeviceTokens(userId: number): Promise<void>;
 }

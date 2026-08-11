@@ -56,24 +56,24 @@ class PhotoTipsSheet extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.borderColor,
+                    color: Theme.of(context).dividerColor,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 'How to pick great photos',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Follow these tips for the best first impression.',
-                style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
               ),
               const SizedBox(height: 24),
               Expanded(
@@ -81,7 +81,7 @@ class PhotoTipsSheet extends StatelessWidget {
                   controller: ctrl,
                   itemCount: tips.length,
                   separatorBuilder: (_, __) =>
-                      const Divider(height: 28, color: AppColors.borderColor),
+                      Divider(height: 28, color: Theme.of(context).dividerColor),
                   itemBuilder: (_, i) {
                     final (icon, title, desc) = tips[i];
                     return Row(
@@ -91,10 +91,10 @@ class PhotoTipsSheet extends StatelessWidget {
                           width: 42,
                           height: 42,
                           decoration: BoxDecoration(
-                            color: AppColors.background,
+                            color: Theme.of(context).scaffoldBackgroundColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, size: 20, color: AppColors.primary),
+                          child: Icon(icon, size: 20, color: Theme.of(context).primaryColor),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -103,18 +103,18 @@ class PhotoTipsSheet extends StatelessWidget {
                             children: [
                               Text(
                                 title,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.textPrimary,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 3),
                               Text(
                                 desc,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 13,
-                                  color: AppColors.textSecondary,
+                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                   height: 1.5,
                                 ),
                               ),
@@ -133,7 +133,7 @@ class PhotoTipsSheet extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => context.pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(

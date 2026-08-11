@@ -3,8 +3,15 @@ export interface UserInterface {
    mobileNumber: string;
    name: string | null;
    email: string | null;
-   isBlocked: boolean;
+   isBanned: boolean;
+   isSuspended: boolean;
+   isFoundingMember: boolean;
+   foundingMemberSince?: string | Date | null;
    isDeleted: boolean;
+   isDeleteRequested?: boolean;
+   deleteRequestedAt?: string | Date | null;
+   deleteRequestStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
+   deleteRequestReason?: string | null;
    profileStatus: "INCOMPLETE" | "ONBOARDING_COMPLETED" | "COMPLETED";
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;
@@ -35,3 +42,13 @@ export interface UserInterface {
 }
 
 export type SelfieStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export interface ArchivedUserInterface {
+   id: number;
+   userId: number;
+   originalEmail: string;
+   originalPhone: string | null;
+   originalName: string | null;
+   reasonForArchive: string | null;
+   archivedAt: string | Date;
+}

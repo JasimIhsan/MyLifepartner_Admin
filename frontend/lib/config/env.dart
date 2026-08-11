@@ -13,12 +13,12 @@ class Env {
   // Environment flags
   // isProduction => Siraj
   // !isProduction => Jasim
-  static const bool isProduction = false;
+  static const bool isProduction = true;
 
   // ZEGOCLOUD — AppID only. AppSign is NEVER stored on the client.
   // Authentication uses backend-generated tokens from /api/user/zego/token.
   // Token renewal uses POST /api/user/zego/renew-token.
-  static const int zegoAppId = 1331651742;
+  static const int zegoAppId = 1974143131;
 
   // RevenueCat - Payment Gateway (Google Play Store - Production)
   static const String revenueCatPlayStoreApiKey =

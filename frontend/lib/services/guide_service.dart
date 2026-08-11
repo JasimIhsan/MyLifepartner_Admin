@@ -1,3 +1,4 @@
+import 'package:life_partner_again/models/guide_category.dart';
 import 'package:life_partner_again/models/guide_item.dart';
 import 'package:life_partner_again/services/api_service.dart';
 
@@ -21,6 +22,19 @@ class GuideService {
       if (response.data['success'] == true) {
         final List<dynamic> data = response.data['data']['guides'];
         return data.map((json) => GuideItem.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<List<GuideCategory>> getGuideCategories() async {
+    try {
+      final response = await _client.get('/guide/categories');
+      if (response.data['success'] == true) {
+        final List<dynamic> data = response.data['data'];
+        return data.map((json) => GuideCategory.fromJson(json)).toList();
       }
       return [];
     } catch (e) {

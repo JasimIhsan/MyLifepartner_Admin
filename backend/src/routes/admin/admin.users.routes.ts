@@ -11,6 +11,27 @@ const adminUsersRoute = Router();
 adminUsersRoute.get("/", adminUsersController.getAllUsers);
 
 /**
+ * @route   GET /api/v1/admin/users/suspended
+ * @desc    Get all suspended users
+ * @access  Admin
+ */
+adminUsersRoute.get("/suspended", adminUsersController.getSuspendedUsers);
+
+/**
+ * @route   GET /api/v1/admin/users/deletion-requests
+ * @desc    Get all pending deletion requests
+ * @access  Admin
+ */
+adminUsersRoute.get("/deletion-requests", adminUsersController.getPendingDeletionRequests);
+
+/**
+ * @route   GET /api/v1/admin/users/archived
+ * @desc    Get all archived (deleted) users
+ * @access  Admin
+ */
+adminUsersRoute.get("/archived", adminUsersController.getArchivedUsers);
+
+/**
  * @route   POST /api/v1/admin/users
  * @desc    Create a new user
  * @access  Admin
@@ -46,11 +67,25 @@ adminUsersRoute.get("/:id/images", adminUsersController.getUserImages);
 adminUsersRoute.patch("/:id/verify-profile", adminUsersController.verifyProfile);
 
 /**
- * @route   PATCH /api/v1/admin/users/:id/block-status
- * @desc    Block or unblock a user
+ * @route   PATCH /api/v1/admin/users/:id/ban
+ * @desc    Ban or unban a user
  * @access  Admin
  */
-adminUsersRoute.patch("/:id/block-status", adminUsersController.toggleBlockUser);
+adminUsersRoute.patch("/:id/ban", adminUsersController.toggleBanUser);
+
+/**
+ * @route   PATCH /api/v1/admin/users/:id/founding-member
+ * @desc    Toggle founding-member status
+ * @access  Admin
+ */
+adminUsersRoute.patch("/:id/founding-member", adminUsersController.toggleFoundingMemberStatus);
+
+/**
+ * @route   PATCH /api/v1/admin/users/:id/lift-suspension
+ * @desc    Lift temporary suspension of a user
+ * @access  Admin
+ */
+adminUsersRoute.patch("/:id/lift-suspension", adminUsersController.liftSuspension);
 
 /**
  * @route   DELETE /api/v1/admin/users/:id
@@ -58,5 +93,19 @@ adminUsersRoute.patch("/:id/block-status", adminUsersController.toggleBlockUser)
  * @access  Admin
  */
 adminUsersRoute.delete("/:id", adminUsersController.deleteUser);
+
+/**
+ * @route   POST /api/v1/admin/users/:id/approve-deletion
+ * @desc    Approve account deletion
+ * @access  Admin
+ */
+adminUsersRoute.post("/:id/approve-deletion", adminUsersController.approveDeletionRequest);
+
+/**
+ * @route   POST /api/v1/admin/users/:id/reject-deletion
+ * @desc    Reject account deletion
+ * @access  Admin
+ */
+adminUsersRoute.post("/:id/reject-deletion", adminUsersController.rejectDeletionRequest);
 
 export default adminUsersRoute;

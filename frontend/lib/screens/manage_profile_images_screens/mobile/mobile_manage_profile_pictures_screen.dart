@@ -41,14 +41,17 @@ class _MobileManageProfilePicturesScreenState
         Icon(
           Icons.info_outline_rounded,
           size: 16,
-          color: AppColors.primary.withValues(alpha: 0.6),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.6),
         ),
         const SizedBox(width: 6),
         Text(
           "You can upload up to 4 photos.",
           style: TextStyle(
             fontSize: 12,
-            color: AppColors.textSecondary.withValues(alpha: 0.8),
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary.withValues(alpha: 0.8),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -129,12 +132,15 @@ class _MobileManageProfilePicturesScreenState
                     .fade(duration: 400.ms)
                     .scale(begin: const Offset(0.9, 0.9)),
                 const SizedBox(height: 32),
-                const Text(
+                Text(
                   "No photos yet",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -143,7 +149,10 @@ class _MobileManageProfilePicturesScreenState
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: AppColors.textSecondary.withValues(alpha: 0.8),
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
                 ),
@@ -160,7 +169,7 @@ class _MobileManageProfilePicturesScreenState
                     ),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: Theme.of(context).primaryColor,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 32,
                       vertical: 14,
@@ -207,26 +216,40 @@ class _MobileManageProfilePicturesScreenState
     final hasImages = images.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: CustomAppBar(
         title: "Manage Photos",
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
+          ),
           onPressed: () {
             context.pop(true);
           },
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_horiz, color: AppColors.textPrimary),
+            icon: Icon(
+              Icons.more_horiz,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
+            ),
             onPressed: () {},
           ),
         ],
       ),
       body: SafeArea(
         child: isLoading && images.isEmpty
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               )
             : errorMessage != null
             ? Center(
@@ -237,7 +260,9 @@ class _MobileManageProfilePicturesScreenState
                     children: [
                       Text(
                         errorMessage!,
-                        style: const TextStyle(color: AppColors.error),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),

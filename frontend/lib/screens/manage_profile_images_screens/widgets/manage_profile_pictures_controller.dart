@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/profile_image_upload/widgets/image_options_sheet.dart';
 
 mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
@@ -55,7 +54,7 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: AppColors.error,
+            backgroundColor: Theme.of(context).colorScheme.error,
           ),
         );
       }

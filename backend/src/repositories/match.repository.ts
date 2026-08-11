@@ -1,12 +1,13 @@
 import prisma from "@/config/prisma";
 import { Gender, Prisma } from "@prisma/client";
-import { CandidateProfile, IMatchRepository, SwipedProfile, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
+import { CandidateProfile, IMatchRepository, MatchProfileData, SwipedProfile, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
 import { InteractionState, SwipeAction } from "../interfaces/services/match.service.interface";
 
 const candidateProfileInclude = {
    user: {
       select: {
          isVerified: true,
+         isFoundingMember: true,
          createdAt: true,
          updatedAt: true,
          privacySettings: true,
@@ -14,13 +15,6 @@ const candidateProfileInclude = {
    },
    images: {
       orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
-   },
-   answers: {
-      select: {
-         questionId: true,
-         answer: true,
-         score: true,
-      },
    },
    job: true,
 } satisfies Prisma.ProfileInclude;
@@ -35,13 +29,6 @@ type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
       images: {
          orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }];
       };
-      answers: {
-         select: {
-            questionId: true;
-            answer: true;
-            score: true;
-         };
-      };
       swipesOnMe: {
          where: {
             userId: number;
@@ -51,6 +38,7 @@ type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
          select: {
             profileSwipes: true;
             isVerified: true;
+            isFoundingMember: true;
             createdAt: true;
             updatedAt: true;
             privacySettings: true;
@@ -92,29 +80,48 @@ export class MatchRepository implements IMatchRepository {
       return {
          ageFrom: preference.ageFrom,
          ageTo: preference.ageTo,
+         maritalStatus: preference.maritalStatus,
          motherTongue: preference.motherTongue,
       };
    }
 
    /**
-    * Gets user answers.
+    * Gets the current user's profile fields used by compatibility scoring.
     *
     * @param userId - User ID.
-    * @returns User answers.
+    * @returns Match profile data, or null if no profile exists.
     */
-   async getUserAnswers(userId: number): Promise<UserAnswerData[]> {
-      return prisma.userAnswer.findMany({
+   async getUserMatchProfile(userId: number): Promise<MatchProfileData | null> {
+      const profile = await prisma.profile.findUnique({
          where: {
-            profile: {
-               userId,
-            },
+            userId,
          },
-         select: {
-            questionId: true,
-            answer: true,
-            score: true,
+         include: {
+            job: true,
          },
       });
+
+      if (!profile) {
+         return null;
+      }
+
+      return {
+         jobId: profile.jobId,
+         dateOfBirth: profile.dateOfBirth,
+         maritalStatus: profile.maritalStatus,
+         city: profile.city,
+         state: profile.state,
+         country: profile.country,
+         motherTongue: profile.motherTongue,
+         highestEducation: profile.highestEducation,
+         occupation: profile.job?.name || null,
+         childrenStatus: profile.childrenStatus,
+         drinkingHabit: profile.drinkingHabit,
+         emotionalReadiness: profile.emotionalReadiness,
+         languages: profile.languages,
+         lookingFor: profile.lookingFor,
+         smokingHabit: profile.smokingHabit,
+      };
    }
 
    /**
@@ -137,6 +144,31 @@ export class MatchRepository implements IMatchRepository {
       return swipes as unknown as SwipedProfile[];
    }
 
+   private async getExcludedUserIds(userId: number): Promise<number[]> {
+      const blocks = await prisma.userBlock.findMany({
+         where: {
+            OR: [
+               { blockerUserId: userId },
+               { blockedUserId: userId },
+            ],
+         },
+         select: {
+            blockerUserId: true,
+            blockedUserId: true,
+         },
+      });
+
+      const excludedUserIdsSet = new Set<number>();
+      for (const block of blocks) {
+         if (block.blockerUserId === userId) {
+            excludedUserIdsSet.add(block.blockedUserId);
+         } else {
+            excludedUserIdsSet.add(block.blockerUserId);
+         }
+      }
+      return Array.from(excludedUserIdsSet);
+   }
+
    /**
     * Gets candidate profiles for matching.
     *
@@ -145,6 +177,7 @@ export class MatchRepository implements IMatchRepository {
     * @returns Candidate profiles.
     */
    async getCandidateProfiles(currentUserId: number, excludedProfileIds: number[]): Promise<CandidateProfile[]> {
+      const excludedBlockUserIds = await this.getExcludedUserIds(currentUserId);
       const currentUser = await prisma.user.findUnique({
          where: {
             id: currentUserId,
@@ -159,11 +192,11 @@ export class MatchRepository implements IMatchRepository {
       const profiles = await prisma.profile.findMany({
          where: {
             user: {
-               isBlocked: false,
+               isBanned: false,
+               isSuspended: false,
                isDeleted: false,
-               isVerified: true,
                id: {
-                  not: currentUserId,
+                  notIn: [currentUserId, ...excludedBlockUserIds],
                },
             },
             ...(targetGenderFilter && {
@@ -177,13 +210,6 @@ export class MatchRepository implements IMatchRepository {
             job: true,
             images: {
                orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
-            },
-            answers: {
-               select: {
-                  questionId: true,
-                  answer: true,
-                  score: true,
-               },
             },
             swipesOnMe: {
                where: {
@@ -202,6 +228,7 @@ export class MatchRepository implements IMatchRepository {
                           },
                   },
                   isVerified: true,
+                  isFoundingMember: true,
                   createdAt: true,
                   updatedAt: true,
                   privacySettings: true,
@@ -262,10 +289,16 @@ export class MatchRepository implements IMatchRepository {
     * @returns Liked candidate profiles.
     */
    async getLikedProfiles(userId: number): Promise<CandidateProfile[]> {
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
       const swipes = await prisma.profileSwipe.findMany({
          where: {
             userId,
             action: SwipeAction.RIGHT,
+            targetProfile: {
+               userId: {
+                  notIn: excludedBlockUserIds,
+               }
+            }
          },
          include: {
             targetProfile: {
@@ -285,6 +318,7 @@ export class MatchRepository implements IMatchRepository {
     */
    async getSentInterests(userId: number): Promise<CandidateProfile[]> {
       const currentProfile = await this.getUserProfile(userId);
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
 
       if (!currentProfile) {
          return [];
@@ -294,6 +328,9 @@ export class MatchRepository implements IMatchRepository {
          where: {
             userId,
             action: SwipeAction.RIGHT,
+            targetProfile: {
+               userId: { notIn: excludedBlockUserIds },
+            },
          },
          include: {
             targetProfile: {
@@ -324,6 +361,7 @@ export class MatchRepository implements IMatchRepository {
     */
    async getReceivedInterests(userId: number): Promise<CandidateProfile[]> {
       const currentProfile = await this.getUserProfile(userId);
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
 
       if (!currentProfile) {
          return [];
@@ -333,6 +371,9 @@ export class MatchRepository implements IMatchRepository {
          where: {
             targetProfileId: currentProfile.id,
             action: SwipeAction.RIGHT,
+            userId: {
+               notIn: excludedBlockUserIds,
+            }
          },
          include: {
             user: {
@@ -369,6 +410,7 @@ export class MatchRepository implements IMatchRepository {
     */
    async getMutualMatches(userId: number): Promise<CandidateProfile[]> {
       const currentProfile = await this.getUserProfile(userId);
+      const excludedBlockUserIds = await this.getExcludedUserIds(userId);
 
       if (!currentProfile) {
          return [];
@@ -390,6 +432,7 @@ export class MatchRepository implements IMatchRepository {
          where: {
             targetProfileId: currentProfile.id,
             action: SwipeAction.RIGHT,
+            userId: { notIn: excludedBlockUserIds },
          },
          include: {
             user: {
@@ -426,13 +469,6 @@ export class MatchRepository implements IMatchRepository {
             images: {
                orderBy: [{ isPrimary: "desc" }, { createdAt: "asc" }],
             },
-            answers: {
-               select: {
-                  questionId: true,
-                  answer: true,
-                  score: true,
-               },
-            },
             swipesOnMe: {
                where: {
                   userId: currentUserId,
@@ -450,9 +486,15 @@ export class MatchRepository implements IMatchRepository {
                           },
                   },
                   isVerified: true,
+                  isFoundingMember: true,
                   createdAt: true,
                   updatedAt: true,
                   privacySettings: true,
+                  blockedBy: {
+                     where: {
+                        blockerUserId: currentUserId,
+                     }
+                  }
                },
             },
          },
@@ -464,7 +506,10 @@ export class MatchRepository implements IMatchRepository {
 
       const interactionState = this.determineInteractionState(profile.swipesOnMe as unknown as { action: SwipeAction }[], profile.user.profileSwipes as unknown as { action: SwipeAction }[]);
 
-      return this.mapToCandidateProfile(profile, interactionState);
+      const candidateProfile = this.mapToCandidateProfile(profile, interactionState);
+      candidateProfile.isBlocked = profile.user.blockedBy.length > 0;
+
+      return candidateProfile;
    }
 
    /**
@@ -548,6 +593,8 @@ export class MatchRepository implements IMatchRepository {
          userId: profile.userId,
          name: profile.name,
          isVerified: profile.user.isVerified,
+         isFoundingMember: profile.user.isFoundingMember,
+         jobId: profile.jobId,
          dateOfBirth: profile.dateOfBirth,
          maritalStatus: profile.maritalStatus,
          city: profile.city,
@@ -558,6 +605,13 @@ export class MatchRepository implements IMatchRepository {
          occupation: profile.job?.name || null,
          bio: profile.bio,
          gender: profile.gender,
+         childrenStatus: profile.childrenStatus,
+         drinkingHabit: profile.drinkingHabit,
+         emotionalReadiness: profile.emotionalReadiness,
+         languages: profile.languages,
+         lookingFor: profile.lookingFor,
+         relationshipTimeline: profile.relationshipTimeline,
+         smokingHabit: profile.smokingHabit,
          privacyEnabled: profile.user.privacySettings?.privacyEnabled ?? false,
          blurredImageUrl: profile.user.privacySettings?.blurredImageUrl ?? null,
          images: profile.images.map((image) => ({
@@ -565,7 +619,6 @@ export class MatchRepository implements IMatchRepository {
             imageUrl: image.imageUrl,
             isPrimary: image.isPrimary,
          })),
-         answers: profile.answers,
          interactionState,
          createdAt: profile.user.createdAt,
          lastLoginAt: profile.user.updatedAt,
@@ -606,5 +659,44 @@ export class MatchRepository implements IMatchRepository {
       });
 
       return deleteResult.count > 0;
+   }
+
+   /**
+    * Gets notification context for a swipe action.
+    *
+    * @param userId - Swiper user ID.
+    * @param targetProfileId - Target profile ID.
+    * @returns Swipe notification context, or null if profiles not found.
+    */
+   async getSwipeNotificationContext(userId: number, targetProfileId: number): Promise<import("../interfaces/repositories/match.repository.interface").SwipeNotificationContext | null> {
+      const swiperProfile = await prisma.profile.findFirst({
+         where: { userId },
+         select: { id: true, userId: true, name: true },
+      });
+
+      const targetProfile = await prisma.profile.findUnique({
+         where: { id: targetProfileId },
+         select: { id: true, userId: true, name: true },
+      });
+
+      if (!swiperProfile || !targetProfile) {
+         return null;
+      }
+
+      const mutualSwipe = await prisma.profileSwipe.findFirst({
+         where: {
+            userId: targetProfile.userId,
+            targetProfileId: swiperProfile.id,
+            action: SwipeAction.RIGHT,
+         },
+      });
+
+      return {
+         swiperUserId: swiperProfile.userId,
+         swiperName: swiperProfile.name || "Someone",
+         targetUserId: targetProfile.userId,
+         targetName: targetProfile.name || "Someone",
+         isMutualMatch: Boolean(mutualSwipe),
+      };
    }
 }

@@ -206,7 +206,7 @@ class _CallScreenState extends State<CallScreen> {
     return SafeArea(
       child: ZegoUIKitPrebuiltCall(
         appID: Env.zegoAppId,
-        appSign: '',  // Always blank — token-only mode
+        appSign: '', // Always blank — token-only mode
         token: _zegoToken ?? '',
         userID: widget.userID,
         userName: widget.userName,

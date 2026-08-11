@@ -11,9 +11,9 @@ class VerifiedProfileBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 24, bottom: 32, left: 24, right: 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -22,7 +22,7 @@ class VerifiedProfileBottomSheet extends StatelessWidget {
             width: 48,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).dividerColor,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -31,19 +31,19 @@ class VerifiedProfileBottomSheet extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             'Fully Verified',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
           Text(
             'This profile ($profileName) has been fully authenticated and verified by our moderation team. You can interact with them confidently and securely.',
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               height: 1.5,
             ),
           ),
@@ -53,7 +53,7 @@ class VerifiedProfileBottomSheet extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => context.pop(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
+                backgroundColor: Theme.of(context).primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100),

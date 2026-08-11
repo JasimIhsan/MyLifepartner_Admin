@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
 import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,16 +16,29 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _proceed();
+    _initializeApp();
   }
 
-  // Auth is already bootstrapped in main(). We just show the splash animation
-  // briefly and then trigger GoRouter to re-evaluate and navigate to the
-  // correct screen based on the already-known auth state.
-  Future<void> _proceed() async {
-    await Future.delayed(const Duration(seconds: 1));
+  Future<void> _initializeApp() async {
+    final authProvider = context.read<AuthProvider>();
+
+    // 1. Minimum 3-second splash duration
+    final minimum3SecondDelay = Future.delayed(const Duration(seconds: 3));
+
+    // 2. All required startup API/data fetching in parallel
+    final startupDataInitialization = Future(() async {
+      // Initialize Firebase notifications first as Auth bootstrap might depend on it.
+      await FirebaseNotificationService().initialize();
+      await authProvider.bootstrap();
+    });
+
+    // Wait for BOTH conditions to complete
+    await Future.wait([minimum3SecondDelay, startupDataInitialization]);
+
     if (!mounted) return;
-    context.read<AuthProvider>().triggerRedirect();
+
+    // Signal that initialization is complete, triggering GoRouter to redirect
+    authProvider.finishInitialization();
   }
 
   @override
@@ -34,17 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.center,
-            radius: 1.2,
-            colors: [
-              AppColors.primary.withValues(alpha: 0.15),
-              AppColors.primaryDark,
-            ],
-            stops: const [0.0, 1.0],
-          ),
-        ),
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -52,26 +55,14 @@ class _SplashScreenState extends State<SplashScreen> {
             Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.1),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Image.asset(
-                        'assets/icons/app_logo.png',
-                        height: 96,
-                        width: 96,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                              Icons.favorite_rounded,
-                              color: Colors.white,
-                              size: 64,
-                            ),
+                Image.asset(
+                      Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+                      height: 250,
+                      width: 250,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.favorite_rounded,
+                        color: Colors.white,
+                        size: 64,
                       ),
                     )
                     .animate()
@@ -80,22 +71,9 @@ class _SplashScreenState extends State<SplashScreen> {
                       begin: const Offset(0.8, 0.8),
                       curve: Curves.easeOutBack,
                     ),
-                const SizedBox(height: 24),
-                Text(
-                      "Life Partner Again",
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
-                      ),
-                    )
-                    .animate()
-                    .fadeIn(duration: 800.ms, delay: 300.ms)
-                    .slideY(begin: 0.1, end: 0),
               ],
             ),
-            // Loading and footer information
+            // footer information
             Positioned(
               bottom: 80,
               left: 0,
@@ -103,24 +81,18 @@ class _SplashScreenState extends State<SplashScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const SizedBox(
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                    ),
-                  ).animate().fadeIn(duration: 800.ms, delay: 500.ms),
-                  const SizedBox(height: 24),
                   Text(
-                    "Trusted Platform",
-                    style: GoogleFonts.outfit(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 1.5,
-                    ),
-                  ).animate().fadeIn(duration: 800.ms, delay: 700.ms),
+                        "Find Love, Begin Again",
+                        style: GoogleFonts.outfit(
+                          color: Theme.of(context).primaryColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -0.5,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(duration: 800.ms, delay: 300.ms)
+                      .slideY(begin: 0.1, end: 0),
                 ],
               ),
             ),

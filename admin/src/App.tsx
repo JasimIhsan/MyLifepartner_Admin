@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import axiosInstance from "./api/api.config";
 import { AdminLayout } from "./components/layout/admin-layout";
 import { ProtectedRoute } from "./components/layout/ProtectedRoute";
@@ -17,10 +17,17 @@ import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 import { FeaturesPage } from "./pages/features-page/FeaturesPage"; // New
 import ImageAssetsPage from "./pages/image-assets-page/ImageAssetsPage";
 import LpaGuidePage from "./pages/lpa-guide-page/LpaGuidePage";
+import ReportsPage from "./pages/reports-page/ReportsPage";
+import ReportDetailPage from "./pages/reports-page/ReportDetailPage";
+import SuspendedUsersPage from "./pages/suspended-users-page/SuspendedUsersPage";
+import DeletionRequestsPage from "./pages/deletion-requests-page/DeletionRequestsPage";
+import DeletedUsersPage from "./pages/deleted-users-page/DeletedUsersPage";
+
+import AuditLogsPage from "./pages/audit-logs-page/AuditLogsPage";
+import TransactionsPage from "./pages/transactions-page/TransactionsPage";
 
 function App() {
    const dispatch = useDispatch();
-   const location = useLocation();
    const navigate = useNavigate();
 
    useEffect(() => {
@@ -30,10 +37,10 @@ function App() {
             dispatch(setUser(response.data.data.user));
             dispatch(setAuthenticated(true));
 
-            if (location.pathname === "/login") {
+            if (window.location.pathname === "/login") {
                navigate("/", { replace: true });
             }
-         } catch (error) {
+         } catch {
             dispatch(setAuthenticated(false));
          } finally {
             dispatch(setLoading(false));
@@ -41,7 +48,7 @@ function App() {
       };
 
       verifySession();
-   }, [dispatch, location.pathname, navigate]);
+   }, [dispatch, navigate]);
 
    return (
       <>
@@ -52,12 +59,19 @@ function App() {
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/admins" element={<AdminsPage />} />
                   <Route path="/users" element={<UsersPage />} />
+                  <Route path="/suspended-users" element={<SuspendedUsersPage />} />
+                  <Route path="/deletion-requests" element={<DeletionRequestsPage />} />
+                  <Route path="/deleted-users" element={<DeletedUsersPage />} />
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
                   <Route path="/image-assets" element={<ImageAssetsPage />} />
                   <Route path="/lpa-guide" element={<LpaGuidePage />} />
                   <Route path="/subscriptions/plans" element={<SubscriptionPage />} />
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />
+                  <Route path="/transactions" element={<TransactionsPage />} />
+                  <Route path="/reports" element={<ReportsPage />} />
+                  <Route path="/reports/:id" element={<ReportDetailPage />} />
+                  <Route path="/audit-logs" element={<AuditLogsPage />} />
                   <Route path="*" element={<NotFoundPage />} />
                </Route>
             </Route>

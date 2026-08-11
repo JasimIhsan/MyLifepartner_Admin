@@ -3,7 +3,6 @@ import 'package:life_partner_again/core/app_routes.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart' show navigatorKey;
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
@@ -149,13 +148,13 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          AppColors.primary.withValues(alpha: 0.8),
-                          AppColors.primaryDark,
+                          Theme.of(context).primaryColor.withValues(alpha: 0.8),
+                          Theme.of(context).primaryColorDark,
                         ],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
+                          color: Theme.of(context).primaryColor.withValues(alpha: 0.4),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),

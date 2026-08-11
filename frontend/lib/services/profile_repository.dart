@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:life_partner_again/models/partner_preference.dart';
 import 'package:life_partner_again/models/profile_question.dart';
 import 'package:life_partner_again/models/profile_section.dart';
 import 'package:life_partner_again/models/user_image.dart';
@@ -10,6 +11,7 @@ import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileRepository {
+  static final _client = ApiService.client;
   Future<List<ProfileSection>> getSections({bool? isPrimary}) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -17,7 +19,7 @@ class ProfileRepository {
         queryParams['isPrimary'] = isPrimary;
       }
 
-      final response = await ApiService.client.get(
+      final response = await _client.get(
         '/profile/sections',
         queryParameters: queryParams.isNotEmpty ? queryParams : null,
       );
@@ -50,7 +52,7 @@ class ProfileRepository {
         // throw Exception('User not logged in');
       }
 
-      final response = await ApiService.client.get(
+      final response = await _client.get(
         '/profile/questions/$userId',
         queryParameters: {'sectionOrder': sectionOrder},
       );
@@ -78,7 +80,7 @@ class ProfileRepository {
       final userId = prefs.getInt('userId');
       debugPrint('👉 User ID: $userId');
 
-      final response = await ApiService.client.post(
+      final response = await _client.post(
         '/profile/questions/save-answer/$userId/$questionId',
         data: {'answer': answer},
       );
@@ -102,9 +104,7 @@ class ProfileRepository {
         throw Exception('User not logged in');
       }
 
-      final response = await ApiService.client.patch(
-        '/profile/complete/$userId',
-      );
+      final response = await _client.patch('/profile/complete/$userId');
 
       if (response.statusCode != 200) {
         throw Exception('Failed to complete profile');
@@ -129,9 +129,7 @@ class ProfileRepository {
         // throw Exception('User not logged in');
       }
 
-      final response = await ApiService.client.get(
-        '/profile/completion-status/$userId',
-      );
+      final response = await _client.get('/profile/completion-status/$userId');
 
       if (response.statusCode == 200) {
         return response.data['data'];
@@ -147,27 +145,29 @@ class ProfileRepository {
     }
   }
 
-  Future<void> updateBasicProfile(Map<String, dynamic> data) async {
+  Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      if (userId == null) throw Exception('User not logged in');
+      if (userId == null) {
+        throw Exception('User not logged in');
+      }
 
-      final response = await ApiService.client.patch(
-        '/profile/basic-profile/$userId',
+      final response = await _client.patch(
+        '/profile/update/$userId',
         data: data,
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to update basic profile');
+        throw Exception('Failed to update profile');
       }
     } on DioException catch (e) {
       throw Exception(
-        getDioErrorMessage(e, fallback: 'Error updating basic profile'),
+        getDioErrorMessage(e, fallback: 'Error updating profile'),
       );
     } catch (e) {
-      throw Exception('Error updating basic profile: $e');
+      throw Exception('Error updating profile: $e');
     }
   }
 
@@ -178,7 +178,7 @@ class ProfileRepository {
 
       if (userId == null) throw Exception('User not logged in');
 
-      final response = await ApiService.client.patch(
+      final response = await _client.patch(
         '/profile/partner-preference/$userId',
         data: data,
       );
@@ -195,12 +195,42 @@ class ProfileRepository {
     }
   }
 
+  Future<PartnerPreference?> getPartnerPreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+
+      if (userId == null) throw Exception('User not logged in');
+
+      final response = await _client.get('/profile/partner-preference/$userId');
+
+      if (response.statusCode == 200) {
+        final data = response.data['data'];
+        if (data == null) return null;
+        if (data is Map<String, dynamic>) {
+          return PartnerPreference.fromJson(data);
+        }
+        if (data is Map) {
+          return PartnerPreference.fromJson(Map<String, dynamic>.from(data));
+        }
+      }
+
+      throw Exception('Failed to fetch partner preferences');
+    } on DioException catch (e) {
+      throw Exception(
+        getDioErrorMessage(e, fallback: 'Error fetching partner preferences'),
+      );
+    } catch (e) {
+      throw Exception('Error fetching partner preferences: $e');
+    }
+  }
+
   Future<List<UserImage>> getUserImages() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      final response = await ApiService.client.get('/profile/images/$userId');
+      final response = await _client.get('/profile/images/$userId');
 
       return UserImageResponse.fromJson(response.data).data;
     } on DioException catch (e) {
@@ -228,7 +258,7 @@ class ProfileRepository {
         ),
       });
 
-      final response = await ApiService.client.post(
+      final response = await _client.post(
         '/profile/upload-image/$userId',
         data: formData,
       );
@@ -281,7 +311,7 @@ class ProfileRepository {
         formData.fields.add(MapEntry('longitude', longitude.toString()));
       }
 
-      final response = await ApiService.client.post(
+      final response = await _client.post(
         '/profile/upload-selfie/$userId',
         data: formData,
       );
@@ -315,7 +345,7 @@ class ProfileRepository {
         ),
       });
 
-      final response = await ApiService.client.put(
+      final response = await _client.put(
         '/profile/replace-image/$userId/$imageId',
         data: formData,
       );
@@ -333,7 +363,7 @@ class ProfileRepository {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      final response = await ApiService.client.patch(
+      final response = await _client.patch(
         '/profile/privacy/$userId',
         data: {'privacyEnabled': enabled},
       );
@@ -355,7 +385,7 @@ class ProfileRepository {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      final response = await ApiService.client.patch(
+      final response = await _client.patch(
         '/profile/set-primary/$userId/$imageId',
       );
 
@@ -376,7 +406,7 @@ class ProfileRepository {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
 
-      final response = await ApiService.client.post(
+      final response = await _client.post(
         '/profile/complete-image-upload/$userId',
       );
 
@@ -396,7 +426,7 @@ class ProfileRepository {
 
   Future<void> sendEmailVerificationLink({required String email}) async {
     try {
-      final response = await ApiService.client.post(
+      final response = await _client.post(
         "/auth/send-magic-link",
         data: {"email": email},
       );
@@ -417,7 +447,7 @@ class ProfileRepository {
 
   Future<Map<String, dynamic>> verifyEmail(String token) async {
     try {
-      final response = await ApiService.client.post(
+      final response = await _client.post(
         "/auth/verify-email",
         data: {"token": token},
       );

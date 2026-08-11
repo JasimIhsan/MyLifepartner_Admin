@@ -4,7 +4,21 @@ import { Router } from "express";
 
 const router = Router();
 
+/**
+ * @route   GET /api/v1/user/account-deletion/verify
+ * @desc    Verify account deletion request
+ * @access  Public
+ */
+router.get("/account-deletion/verify", userController.verifyAccountDeletion);
+
 router.use(verifyJWT);
+
+/**
+ * @route   POST /api/v1/user/account-deletion/request
+ * @desc    Request account deletion
+ * @access  Private
+ */
+router.post("/account-deletion/request", userController.requestAccountDeletion);
 
 /**
  * @route   GET /api/v1/user

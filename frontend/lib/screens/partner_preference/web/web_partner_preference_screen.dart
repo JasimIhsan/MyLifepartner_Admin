@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 
 import '../widgets/partner_preference_controller.dart';
@@ -24,7 +23,7 @@ class _WebPartnerPreferenceScreenState extends State<WebPartnerPreferenceScreen>
         handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF3F4F6),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Row(
           children: [
             // Left Column: Branding, progress & stepper details
@@ -34,8 +33,8 @@ class _WebPartnerPreferenceScreenState extends State<WebPartnerPreferenceScreen>
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      AppColors.primary,
-                      AppColors.primary.withValues(alpha: 0.8),
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).primaryColor.withValues(alpha: 0.8),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -49,7 +48,7 @@ class _WebPartnerPreferenceScreenState extends State<WebPartnerPreferenceScreen>
                     Row(
                       children: [
                         Image.asset(
-                          'assets/icons/app_logo.png',
+                          Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                           height: 48,
                           width: 48,
                           errorBuilder: (context, error, stackTrace) =>
@@ -152,18 +151,18 @@ class _WebPartnerPreferenceScreenState extends State<WebPartnerPreferenceScreen>
             Expanded(
               flex: 1,
               child: Container(
-                color: const Color(0xFFF3F4F6),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 padding: const EdgeInsets.all(40),
                 child: Center(
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 520),
                     child: Card(
                       elevation: 4,
-                      shadowColor: Colors.black.withValues(alpha: 0.05),
+                      shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.05),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      color: Colors.white,
+                      color: Theme.of(context).cardColor,
                       child: Padding(
                         padding: const EdgeInsets.all(40),
                         child: Column(

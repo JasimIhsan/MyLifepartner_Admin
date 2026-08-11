@@ -123,6 +123,14 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
     return Column(
       children: [
         const OnboardingStepTitle(title: "Hey! Let's talk little about you"),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 200,
+          child: Image.asset(
+            'assets/images/onboarding/basic_details.png',
+            fit: BoxFit.contain,
+          ),
+        ),
         const SizedBox(height: 20),
         const OnboardingSectionLabel(text: "First Name"),
         OnboardingInputField(
@@ -150,7 +158,9 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
           onTap: _showDatePickerDialog,
           suffixIcon: Icon(
             Icons.calendar_today_rounded,
-            color: AppColors.textSecondary.withValues(alpha: 0.5),
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary.withValues(alpha: 0.5),
             size: 20,
           ),
         ),

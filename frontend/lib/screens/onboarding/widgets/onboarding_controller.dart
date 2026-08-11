@@ -270,7 +270,7 @@ mixin OnboardingControllerState<T extends StatefulWidget> on State<T> {
       if (!mounted) return;
       final locProvider = context.read<LocationProvider>();
 
-      await profileRepo.updateBasicProfile({
+      await profileRepo.updateProfile({
         'name': name,
         'bio': bio,
         'gender': gender,

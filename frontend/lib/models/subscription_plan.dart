@@ -158,6 +158,11 @@ class UserSubscription {
   final String? store;
   final String? environment;
   final String? originalTransactionId;
+  final bool isExpired;
+  final bool isGracePeriod;
+  final bool isPaymentFailed;
+  final bool isDowngradeScheduled;
+  final bool isCancelled;
 
   UserSubscription({
     required this.id,
@@ -174,6 +179,11 @@ class UserSubscription {
     this.store,
     this.environment,
     this.originalTransactionId,
+    this.isExpired = false,
+    this.isGracePeriod = false,
+    this.isPaymentFailed = false,
+    this.isDowngradeScheduled = false,
+    this.isCancelled = false,
   });
 
   factory UserSubscription.fromJson(Map<String, dynamic> json) {
@@ -200,6 +210,11 @@ class UserSubscription {
       store: json['store'],
       environment: json['environment'],
       originalTransactionId: json['originalTransactionId'],
+      isExpired: json['isExpired'] ?? false,
+      isGracePeriod: json['isGracePeriod'] ?? false,
+      isPaymentFailed: json['isPaymentFailed'] ?? false,
+      isDowngradeScheduled: json['isDowngradeScheduled'] ?? false,
+      isCancelled: json['isCancelled'] ?? false,
     );
   }
 

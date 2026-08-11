@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 
 class HeaderWavesBackground extends StatelessWidget {
   final double height;
@@ -13,12 +12,15 @@ class HeaderWavesBackground extends StatelessWidget {
       left: 0,
       right: 0,
       height: height,
-      child: CustomPaint(painter: HeaderWavesPainter()),
+      child: CustomPaint(painter: HeaderWavesPainter(context)),
     );
   }
 }
 
 class HeaderWavesPainter extends CustomPainter {
+  final BuildContext context;
+  HeaderWavesPainter(this.context);
+
   @override
   void paint(Canvas canvas, Size size) {
     // Soft gradient base background
@@ -27,8 +29,8 @@ class HeaderWavesPainter extends CustomPainter {
       begin: Alignment.topCenter,
       end: Alignment.bottomCenter,
       colors: [
-        AppColors.primary.withValues(alpha: 0.12),
-        Colors.white.withValues(alpha: 0.0),
+        Theme.of(context).primaryColor.withValues(alpha: 0.12),
+        Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.0),
       ],
     );
     final paintBg = Paint()..shader = gradient.createShader(rect);
@@ -37,7 +39,7 @@ class HeaderWavesPainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
 
     // Layer 1: Softest background wave shape (double wave)
-    paint.color = AppColors.primary.withValues(alpha: 0.08);
+    paint.color = Theme.of(context).primaryColor.withValues(alpha: 0.08);
     final path1 = Path();
     path1.moveTo(0, 0);
     path1.lineTo(0, size.height * 0.7);
@@ -62,7 +64,7 @@ class HeaderWavesPainter extends CustomPainter {
     canvas.drawPath(path1, paint);
 
     // Layer 2: Subtle overlapping foreground wave (offset double wave)
-    paint.color = AppColors.primary.withValues(alpha: 0.15);
+    paint.color = Theme.of(context).primaryColor.withValues(alpha: 0.15);
     final path2 = Path();
     path2.moveTo(0, 0);
     path2.lineTo(0, size.height * 0.55);
@@ -87,7 +89,7 @@ class HeaderWavesPainter extends CustomPainter {
     canvas.drawPath(path2, paint);
 
     // Layer 3: Top-left accent wave
-    paint.color = AppColors.primary.withValues(alpha: 0.07);
+    paint.color = Theme.of(context).primaryColor.withValues(alpha: 0.07);
     final path3 = Path();
     path3.moveTo(0, 0);
     path3.lineTo(0, size.height * 0.35);
@@ -103,7 +105,7 @@ class HeaderWavesPainter extends CustomPainter {
     canvas.drawPath(path3, paint);
 
     // Layer 4: Top-right accent wave
-    paint.color = AppColors.primary.withValues(alpha: 0.06);
+    paint.color = Theme.of(context).primaryColor.withValues(alpha: 0.06);
     final path4 = Path();
     path4.moveTo(size.width, 0);
     path4.lineTo(size.width * 0.6, 0);
@@ -120,7 +122,7 @@ class HeaderWavesPainter extends CustomPainter {
 
     // Grid of dots (top right)
     final dotPaint = Paint()
-      ..color = AppColors.primaryLight.withValues(alpha: 0.25)
+      ..color = Theme.of(context).primaryColorLight.withValues(alpha: 0.25)
       ..style = PaintingStyle.fill;
 
     double startX = size.width - 55;

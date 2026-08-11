@@ -20,7 +20,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).canvasColor,
       body: SafeArea(
         child: Consumer<MatchProvider>(
           builder: (context, provider, _) {
@@ -53,7 +53,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                         itemBuilder: (context, index) {
                           final profile = localProfiles[index];
                           return RefreshIndicator(
-                            color: AppColors.primary,
+                            color: Theme.of(context).primaryColor,
                             onRefresh: () async {
                               await context
                                   .read<MatchProvider>()
@@ -128,59 +128,25 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
   }
 
   Widget _buildLoading() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-          SizedBox(height: 16),
-          Text(
-            "Finding best matches for you...",
-            style: TextStyle(
-              color: AppColors.textSecondary,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildError(MatchProvider provider) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
+    return Container(
+      color: Theme.of(context).canvasColor,
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.error_outline_rounded,
-              size: 48,
-              color: Colors.grey,
+            CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Theme.of(context).primaryColor,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             Text(
-              'Oops! Connection Error',
+              "Finding best matches for you...",
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+                letterSpacing: 0.5,
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              provider.error ?? 'Something went wrong',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 32),
-            CustomButton(
-              text: 'Retry',
-              onPressed: () => provider.loadRecommendations().then(
-                (_) => syncWithProvider(),
-              ),
-              height: 48,
-              borderRadius: 24,
             ),
           ],
         ),
@@ -188,102 +154,165 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
     );
   }
 
+  Widget _buildError(MatchProvider provider) {
+    return Container(
+      color: Theme.of(context).canvasColor,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.error_outline_rounded,
+                size: 48,
+                color: Colors.grey,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Oops! Connection Error',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                provider.error ?? 'Something went wrong',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 32),
+              CustomButton(
+                text: 'Retry',
+                onPressed: () => provider.loadRecommendations().then(
+                  (_) => syncWithProvider(),
+                ),
+                height: 48,
+                borderRadius: 24,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildEmpty() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.05),
-                    shape: BoxShape.circle,
+    return Container(
+      color: Theme.of(context).canvasColor,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.05),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Image.asset(
+                      'assets/images/illustrations/empty_profile.png',
+                      height: 220,
+                      width: 220,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.favorite_border_rounded,
+                          size: 100,
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.5),
+                        );
+                      },
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(duration: 600.ms, curve: Curves.easeOut)
+                  .scale(
+                    begin: const Offset(0.8, 0.8),
+                    end: const Offset(1.0, 1.0),
+                    curve: Curves.easeOutBack,
+                    duration: 600.ms,
                   ),
-                  child: Image.asset(
-                    'assets/images/illustrations/empty_profile.png',
-                    height: 220,
+              const SizedBox(height: 40),
+              Text(
+                    'You\'re all caught up!',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                    textAlign: TextAlign.center,
+                  )
+                  .animate()
+                  .fadeIn(duration: 500.ms, delay: 200.ms)
+                  .slideY(
+                    begin: 0.1,
+                    end: 0,
+                    curve: Curves.easeOutCubic,
+                    duration: 500.ms,
+                  ),
+              const SizedBox(height: 16),
+              Text(
+                    'We are looking for more compatible profiles. Please check back in a bit for fresh recommendations.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
+                      height: 1.5,
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(duration: 500.ms, delay: 300.ms)
+                  .slideY(
+                    begin: 0.1,
+                    end: 0,
+                    curve: Curves.easeOutCubic,
+                    duration: 500.ms,
+                  ),
+              const SizedBox(height: 48),
+              SizedBox(
                     width: 220,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.favorite_border_rounded,
-                        size: 100,
-                        color: AppColors.primary.withValues(alpha: 0.5),
-                      );
-                    },
+                    child: CustomButton(
+                      onPressed: () {
+                        context
+                            .read<MatchProvider>()
+                            .loadRecommendations()
+                            .then((_) => syncWithProvider());
+                      },
+                      text: 'Refresh Profiles',
+                      borderRadius: 100,
+                      height: 52,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(duration: 500.ms, delay: 400.ms)
+                  .slideY(
+                    begin: 0.1,
+                    end: 0,
+                    curve: Curves.easeOutCubic,
+                    duration: 500.ms,
                   ),
-                )
-                .animate()
-                .fadeIn(duration: 600.ms, curve: Curves.easeOut)
-                .scale(
-                  begin: const Offset(0.8, 0.8),
-                  end: const Offset(1.0, 1.0),
-                  curve: Curves.easeOutBack,
-                  duration: 600.ms,
-                ),
-            const SizedBox(height: 40),
-            Text(
-                  'You\'re all caught up!',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                    letterSpacing: -0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 200.ms)
-                .slideY(
-                  begin: 0.1,
-                  end: 0,
-                  curve: Curves.easeOutCubic,
-                  duration: 500.ms,
-                ),
-            const SizedBox(height: 16),
-            Text(
-                  'We are looking for more compatible profiles. Please check back in a bit for fresh recommendations.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: AppColors.textSecondary,
-                    height: 1.5,
-                  ),
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 300.ms)
-                .slideY(
-                  begin: 0.1,
-                  end: 0,
-                  curve: Curves.easeOutCubic,
-                  duration: 500.ms,
-                ),
-            const SizedBox(height: 48),
-            SizedBox(
-                  width: 220,
-                  child: CustomButton(
-                    onPressed: () {
-                      context.read<MatchProvider>().loadRecommendations().then(
-                        (_) => syncWithProvider(),
-                      );
-                    },
-                    text: 'Refresh Profiles',
-                    borderRadius: 100,
-                    height: 52,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                )
-                .animate()
-                .fadeIn(duration: 500.ms, delay: 400.ms)
-                .slideY(
-                  begin: 0.1,
-                  end: 0,
-                  curve: Curves.easeOutCubic,
-                  duration: 500.ms,
-                ),
-          ],
+            ],
+          ),
         ),
       ),
     );

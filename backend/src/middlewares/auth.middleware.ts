@@ -1,4 +1,4 @@
-import { jwtService } from "@/composer/composer";
+import { jwtService, userService } from "@/composer/composer";
 import { ApiError } from "@/utils/ApiError";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { NextFunction, Request, Response } from "express";
@@ -13,9 +13,12 @@ export const verifyJWT = asyncHandler(async (req: Request, _res: Response, next:
    try {
       const decoded = jwtService.verifyAccess(token);
 
+      await userService.validateUserAccountStatus(decoded.id);
+
       req.user = decoded;
       next();
-   } catch {
+   } catch (error: any) {
+      if (error instanceof ApiError) throw error;
       throw new ApiError(401, "Invalid access token");
    }
 });

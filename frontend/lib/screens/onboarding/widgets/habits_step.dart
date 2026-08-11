@@ -27,7 +27,7 @@ class HabitsStep extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           "Help us understand your lifestyle better.",
-          style: TextStyle(fontSize: 15, color: AppColors.textSecondary),
+          style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
@@ -204,7 +204,7 @@ class HabitSelectionCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
-    final activeColor = AppColors.primary;
+    final activeColor = Theme.of(context).primaryColor;
     final inactiveBorderColor = isDarkMode
         ? theme.dividerColor
         : const Color(0xFFF0E6E6);
@@ -245,7 +245,7 @@ class HabitSelectionCard extends StatelessWidget {
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.w600,
-                      color: isDarkMode ? Colors.white : AppColors.textPrimary,
+                      color: isDarkMode ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -254,7 +254,7 @@ class HabitSelectionCard extends StatelessWidget {
                       subtitle!,
                       style: TextStyle(
                         fontSize: 11,
-                        color: AppColors.textSecondary,
+                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

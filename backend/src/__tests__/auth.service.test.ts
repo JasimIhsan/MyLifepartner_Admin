@@ -114,6 +114,35 @@ describe("AuthService", () => {
          const err = await authService.initiateAuth("", ip, purpose).catch(e => e);
          expect(err.statusCode).toBe(HTTP_STATUS.BAD_REQUEST);
       });
+
+      it("throws FORBIDDEN without sending OTP if account deletion is pending", async () => {
+         mockUserRepo.findByEmail.mockResolvedValue({
+            id: 1,
+            email: normalizedEmail,
+            isDeleteRequested: true,
+            deleteRequestStatus: "PENDING",
+         });
+
+         await expect(authService.initiateAuth(validEmail, ip, purpose)).rejects.toMatchObject({
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            message: "Your account deletion is pending approval.",
+         });
+         expect(mockOtpService.sendOtp).not.toHaveBeenCalled();
+      });
+
+      it("throws FORBIDDEN without sending OTP if account is deleted", async () => {
+         mockUserRepo.findByEmail.mockResolvedValue({
+            id: 1,
+            email: normalizedEmail,
+            isDeleted: true,
+         });
+
+         await expect(authService.initiateAuth(validEmail, ip, purpose)).rejects.toMatchObject({
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            message: "Your account has been deleted.",
+         });
+         expect(mockOtpService.sendOtp).not.toHaveBeenCalled();
+      });
    });
 
    // ── verifyOtp ─────────────────────────────────────────────────────────────
@@ -353,6 +382,7 @@ describe("AuthService", () => {
 
    describe("sendOtp", () => {
       it("sends OTP and returns it", async () => {
+         mockUserRepo.findByEmail.mockResolvedValue(null);
          mockOtpService.sendOtp.mockResolvedValue("654321");
          const result = await authService.sendOtp(validEmail, ip, purpose);
          
@@ -363,12 +393,28 @@ describe("AuthService", () => {
       it("throws BAD_REQUEST if email is empty", async () => {
          await expect(authService.sendOtp("", ip, purpose)).rejects.toThrow(ApiError);
       });
+
+      it("throws FORBIDDEN without sending OTP if account deletion is pending", async () => {
+         mockUserRepo.findByEmail.mockResolvedValue({
+            id: 1,
+            email: normalizedEmail,
+            isDeleteRequested: true,
+            deleteRequestStatus: "PENDING",
+         });
+
+         await expect(authService.sendOtp(validEmail, ip, purpose)).rejects.toMatchObject({
+            statusCode: HTTP_STATUS.FORBIDDEN,
+            message: "Your account deletion is pending approval.",
+         });
+         expect(mockOtpService.sendOtp).not.toHaveBeenCalled();
+      });
    });
 
    // ── resendOtp ─────────────────────────────────────────────────────────────
 
    describe("resendOtp", () => {
       it("resends OTP and returns it", async () => {
+         mockUserRepo.findByEmail.mockResolvedValue(null);
          mockOtpService.resendOtp.mockResolvedValue("654321");
          const result = await authService.resendOtp(validEmail, ip, purpose);
          

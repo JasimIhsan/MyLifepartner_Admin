@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 
 class OtpMethodSelector {
@@ -174,7 +173,9 @@ class _OtpMethodSelectionContentState
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.grey.shade300,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.grey.shade300,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -205,9 +206,9 @@ class _OtpMethodSelectionContentState
             ),
             const Spacer(),
             if (isSelected)
-              const Icon(
+              Icon(
                 Icons.check_circle,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
               ), // Or checkmark style from screenshot?
             // Screenshot shows a red checkmark for WhatsApp. Let's stick to standard verified check for selected.
             // Actually screenshot has a reddish checkmark circle.

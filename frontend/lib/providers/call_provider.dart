@@ -40,6 +40,20 @@ class OutgoingCall {
   });
 }
 
+enum CallState {
+  idle,
+  initiating,
+  ringing,
+  incoming,
+  connecting,
+  connected,
+  rejected,
+  cancelled,
+  missed,
+  ended,
+  failed,
+}
+
 /// Manages call signaling state – incoming/outgoing invitations.
 class CallProvider extends ChangeNotifier {
   StreamSubscription? _zimSubscription;
@@ -50,20 +64,21 @@ class CallProvider extends ChangeNotifier {
   String? _currentUserAvatar;
   Timer? _incomingCallTimer; // Auto-dismiss if caller never cancels
 
+  CallState _callState = CallState.idle;
+  CallState get callState => _callState;
+
   String? get currentUserId => _currentUserId;
   String? get currentUserName => _currentUserName;
   String? get currentUserAvatar => _currentUserAvatar;
 
   /// Whether the caller's invitation was declined by the callee.
-  bool _wasDeclined = false;
-  bool get wasDeclined => _wasDeclined;
+  bool get wasDeclined => _callState == CallState.rejected;
 
   /// Whether the callee accepted the call (caller should navigate).
-  bool _wasAccepted = false;
-  bool get wasAccepted => _wasAccepted;
+  bool get wasAccepted => _callState == CallState.connected || _callState == CallState.connecting;
 
   IncomingCall? get incomingCall => _incomingCall;
-  bool get hasIncomingCall => _incomingCall != null;
+  bool get hasIncomingCall => _incomingCall != null && _callState == CallState.incoming;
 
   OutgoingCall? get outgoingCall => _outgoingCall;
   bool get hasOutgoingCall => _outgoingCall != null;
@@ -89,12 +104,23 @@ class CallProvider extends ChangeNotifier {
     }
   }
 
-  /// Start listening to ZIM messages for call signaling.
-  void startListening() {
+  /// Initialize global ZIM listeners on app start
+  void initListeners() {
     _zimSubscription?.cancel();
     _zimSubscription = ZegoService.instance.onMessageReceived.listen(
       _handleMessage,
     );
+  }
+
+  /// Start listening to ZIM messages for call signaling. Kept for backward compatibility.
+  void startListening() {
+    initListeners();
+  }
+
+  void _updateState(CallState newState) {
+    if (_callState == newState) return;
+    _callState = newState;
+    notifyListeners();
   }
 
   void _handleMessage(ZegoZIMMessage msg) {
@@ -109,6 +135,15 @@ class CallProvider extends ChangeNotifier {
         case 'call_invite':
           // Dedup: ignore if the same callId is already ringing
           if (_incomingCall?.callId == data['callId'] as String?) break;
+          
+          // Check if message is stale (older than 45 seconds)
+          final now = DateTime.now().millisecondsSinceEpoch;
+          final msgTime = msg.timestamp; // msg.timestamp is in ms
+          if (now - msgTime > 45000) {
+            debugPrint('[CallProvider] Ignored stale call invite from ${msg.fromUserId}');
+            break;
+          }
+
           _incomingCall = IncomingCall(
             callId: data['callId'] as String,
             callerId: msg.fromUserId,
@@ -116,28 +151,32 @@ class CallProvider extends ChangeNotifier {
             callerAvatar: data['callerAvatar'] as String?,
             isVideo: data['isVideo'] as bool? ?? false,
           );
+          
+          _updateState(CallState.incoming);
+          
           // Auto-dismiss after 30 s if caller never sends call_cancel
           _incomingCallTimer?.cancel();
           _incomingCallTimer = Timer(const Duration(seconds: 30), () {
-            _incomingCall = null;
-            notifyListeners();
+            if (_callState == CallState.incoming) {
+              _incomingCall = null;
+              _updateState(CallState.missed);
+              Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
+            }
           });
-          notifyListeners();
           break;
 
         case 'call_decline':
           // Guard: only apply if callId matches our outgoing call
           if (data['callId'] != _outgoingCall?.callId) break;
-          _wasDeclined = true;
           _outgoingCall = null;
-          notifyListeners();
+          _updateState(CallState.rejected);
+          Future.delayed(const Duration(milliseconds: 1000), () => _updateState(CallState.idle));
           break;
 
         case 'call_accept':
           // Guard: only apply if callId matches our outgoing call
           if (data['callId'] != _outgoingCall?.callId) break;
-          _wasAccepted = true;
-          notifyListeners();
+          _updateState(CallState.connected);
           break;
 
         case 'call_cancel':
@@ -145,7 +184,8 @@ class CallProvider extends ChangeNotifier {
           if (data['callId'] != _incomingCall?.callId) break;
           _incomingCallTimer?.cancel();
           _incomingCall = null;
-          notifyListeners();
+          _updateState(CallState.cancelled);
+          Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
           break;
       }
     } catch (_) {
@@ -177,9 +217,8 @@ class CallProvider extends ChangeNotifier {
       calleeAvatar: calleeAvatar,
       isVideo: isVideo,
     );
-    _wasDeclined = false;
-    _wasAccepted = false;
-    notifyListeners();
+    
+    _updateState(CallState.ringing);
 
     await ZegoService.instance.sendCallInvitation(
       toUserId: otherUserId,
@@ -201,15 +240,14 @@ class CallProvider extends ChangeNotifier {
     );
 
     _outgoingCall = null;
-    notifyListeners();
+    _updateState(CallState.cancelled);
+    Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
   }
 
   /// Clear outgoing call state after navigating to call screen.
   void clearOutgoingCall() {
     _outgoingCall = null;
-    _wasAccepted = false;
-    _wasDeclined = false;
-    notifyListeners();
+    _updateState(CallState.idle);
   }
 
   /// Callee accepts the incoming call.
@@ -221,12 +259,14 @@ class CallProvider extends ChangeNotifier {
       callId: _incomingCall!.callId,
       responseType: 'call_accept',
     );
+    
+    _updateState(CallState.connecting);
   }
 
   /// Clear incoming call state (after navigation or dismissal).
   void clearIncomingCall() {
     _incomingCall = null;
-    notifyListeners();
+    _updateState(CallState.idle);
   }
 
   /// Callee declines the incoming call.
@@ -240,7 +280,8 @@ class CallProvider extends ChangeNotifier {
     );
 
     _incomingCall = null;
-    notifyListeners();
+    _updateState(CallState.rejected);
+    Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
   }
 
   @override

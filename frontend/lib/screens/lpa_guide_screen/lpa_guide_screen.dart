@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/guide_category.dart';
 import 'package:life_partner_again/models/guide_item.dart';
 import 'package:life_partner_again/services/guide_service.dart';
 
@@ -48,13 +49,7 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
   String? _errorMessage;
   int? _currentCategoryId;
   bool _isResponding = false;
-
-  final List<Map<String, dynamic>> _categories = [
-    {'id': 1, 'name': 'About LPA', 'icon': Icons.favorite_outline},
-    {'id': 2, 'name': 'Safety & Privacy', 'icon': Icons.security},
-    {'id': 3, 'name': 'Account & Trust', 'icon': Icons.verified_user_outlined},
-    {'id': 4, 'name': 'Membership', 'icon': Icons.card_membership_outlined},
-  ];
+  List<GuideCategory> _categories = [];
 
   @override
   void initState() {
@@ -64,32 +59,60 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
 
   Future<void> _loadInitialGuides() async {
     setState(() {
-      _isLoading = false;
+      _isLoading = true;
       _errorMessage = null;
     });
-    _initializeChat();
+
+    try {
+      final categories = await GuideService.getGuideCategories();
+
+      if (!mounted) return;
+
+      setState(() {
+        _categories = categories;
+        _isLoading = false;
+        _errorMessage = null;
+        _resetChatMessages();
+      });
+      _scrollToBottom();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage =
+            'Failed to load guide categories. Please check your connection and try again.';
+      });
+    }
   }
 
   void _initializeChat() {
+    setState(_resetChatMessages);
+    _scrollToBottom();
+  }
+
+  void _resetChatMessages() {
     _isResponding = false;
+    _currentCategoryId = null;
     _messages.clear();
     _messages.add(
       ChatMessage(
         sender: MessageSender.assistant,
-        text:
-            'Hi there! I am your LPA Guide Assistant. 🌟\n\nHow can I help you find your life partner with confidence and privacy today? Please select a category to get started:',
+        text: _categories.isEmpty
+            ? 'Welcome to Find Your Self! ✨\n\nOur guide is temporarily unavailable. Please check your connection and try again.'
+            : 'Welcome to Find Your Self! ✨\n\nI\'m here to help you navigate your journey to finding your life partner with confidence and clarity. Select a topic below to get started:',
         timestamp: DateTime.now(),
       ),
     );
-    _messages.add(
-      ChatMessage(
-        sender: MessageSender.assistant,
-        text: '',
-        type: MessageType.categories,
-        timestamp: DateTime.now(),
-      ),
-    );
-    _scrollToBottom();
+    if (_categories.isNotEmpty) {
+      _messages.add(
+        ChatMessage(
+          sender: MessageSender.assistant,
+          text: '',
+          type: MessageType.categories,
+          timestamp: DateTime.now(),
+        ),
+      );
+    }
   }
 
   void _scrollToBottom() {
@@ -342,14 +365,16 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
               timestamp: DateTime.now(),
             ),
           );
-          _messages.add(
-            ChatMessage(
-              sender: MessageSender.assistant,
-              text: '',
-              type: MessageType.categories,
-              timestamp: DateTime.now(),
-            ),
-          );
+          if (_categories.isNotEmpty) {
+            _messages.add(
+              ChatMessage(
+                sender: MessageSender.assistant,
+                text: '',
+                type: MessageType.categories,
+                timestamp: DateTime.now(),
+              ),
+            );
+          }
         }
       });
       _scrollToBottom();
@@ -374,10 +399,12 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
     if (_isResponding) return;
     if (action == 'another_question') {
       if (_currentCategoryId != null) {
-        final catName =
-            _categories.firstWhere((c) => c['id'] == _currentCategoryId)['name']
-                as String;
-        _selectCategory(_currentCategoryId!, catName);
+        final category = _findCategoryById(_currentCategoryId!);
+        if (category != null) {
+          _selectCategory(_currentCategoryId!, category.name);
+        } else {
+          _initializeChat();
+        }
       } else {
         _initializeChat();
       }
@@ -404,14 +431,16 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
               timestamp: DateTime.now(),
             ),
           );
-          _messages.add(
-            ChatMessage(
-              sender: MessageSender.assistant,
-              text: '',
-              type: MessageType.categories,
-              timestamp: DateTime.now(),
-            ),
-          );
+          if (_categories.isNotEmpty) {
+            _messages.add(
+              ChatMessage(
+                sender: MessageSender.assistant,
+                text: '',
+                type: MessageType.categories,
+                timestamp: DateTime.now(),
+              ),
+            );
+          }
         });
         _scrollToBottom();
       });
@@ -445,6 +474,16 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
     }
   }
 
+  GuideCategory? _findCategoryById(int categoryId) {
+    for (final category in _categories) {
+      if (category.id == categoryId) {
+        return category;
+      }
+    }
+
+    return null;
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -454,17 +493,23 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/chat_background.png'),
+          image: AssetImage(
+            isDark ? 'assets/images/wchat_dark.png' : 'assets/images/wchat.png',
+          ),
           fit: BoxFit.cover,
         ),
       ),
       child: Stack(
         children: [
           Positioned.fill(
-            child: Container(color: Colors.black.withValues(alpha: 0.06)),
+            child: Container(
+              color: Colors.black.withValues(alpha: isDark ? 0.85 : 0.00),
+            ),
           ),
           Column(
             children: [
@@ -490,8 +535,8 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
 
   Widget _buildChatBody() {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
+      return Center(
+        child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
       );
     }
 
@@ -502,19 +547,21 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
+              Icon(
                 Icons.error_outline_rounded,
                 size: 64,
-                color: AppColors.error,
+                color: Theme.of(context).colorScheme.error,
               ),
               const SizedBox(height: 16),
               Text(
                 _errorMessage!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 20),
@@ -523,7 +570,7 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Try Again'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -570,10 +617,12 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
           if (isAssistant) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: const Icon(
+              backgroundColor: Theme.of(
+                context,
+              ).primaryColor.withValues(alpha: 0.1),
+              child: Icon(
                 Icons.support_agent_rounded,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 18,
               ),
             ),
@@ -610,10 +659,12 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              child: const Icon(
+              backgroundColor: Theme.of(
+                context,
+              ).primaryColor.withValues(alpha: 0.1),
+              child: Icon(
                 Icons.person_outline_rounded,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 size: 18,
               ),
             ),

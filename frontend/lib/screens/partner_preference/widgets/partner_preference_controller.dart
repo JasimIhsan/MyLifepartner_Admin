@@ -134,7 +134,7 @@ mixin PartnerPreferenceControllerState<T extends StatefulWidget> on State<T> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.black87,
+            backgroundColor: Theme.of(context).colorScheme.inverseSurface,
           ),
         );
       }

@@ -1,7 +1,11 @@
+import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
 import { IUserFeatureService } from "@/interfaces/services/user.feature.service.interface";
 import { ChatRepository } from "@/repositories/chat.repository";
+import { notificationService } from "@/composer/composer";
+import { NotificationType } from "@/constants/notificationTypes";
 import { ApiError } from "@/utils/ApiError";
-import { ChatMessage, MessageType } from "@/interfaces/services/chat.service.interface";
+import logger from "@/utils/logger";
+import { prisma } from "@/config/prisma";
 
 const DEFAULT_MESSAGES_PAGE = 1;
 const DEFAULT_MESSAGES_LIMIT = 50;
@@ -9,7 +13,8 @@ const DEFAULT_MESSAGES_LIMIT = 50;
 export class ChatService {
    constructor(
       private readonly chatRepository: ChatRepository,
-      private readonly userFeatureService: IUserFeatureService
+      private readonly userFeatureService: IUserFeatureService,
+      private readonly blockService: import("./block.service").BlockService
    ) {}
 
    /**
@@ -27,6 +32,11 @@ export class ChatService {
          throw new ApiError(400, "You cannot send message to yourself");
       }
 
+      const excludedUserIds = await this.blockService.getExcludedUserIds(senderId);
+      if (excludedUserIds.includes(receiverId)) {
+         throw new ApiError(403, "You cannot send messages to this user");
+      }
+
       const messageContent = content.trim();
 
       if (!messageContent) {
@@ -41,7 +51,69 @@ export class ChatService {
 
       const conversation = await this.chatRepository.findOrCreateConversation(senderId, receiverId);
 
-      return this.chatRepository.saveMessage(conversation.id, senderId, messageContent, messageType, zegoMessageId);
+      const savedMessage = await this.chatRepository.saveMessage(conversation.id, senderId, messageContent, messageType, zegoMessageId);
+
+      this.handleChatMessageNotification(senderId, receiverId, conversation.id, messageContent, messageType).catch((error) => {
+         logger.error(`Failed to send chat push notification from ${senderId} to ${receiverId}:`, error);
+      });
+
+      return savedMessage;
+   }
+
+   /**
+    * Sends push notification for chat messages and missed calls.
+    */
+   private async handleChatMessageNotification(senderId: number, receiverId: number, conversationId: number, content: string, messageType: MessageType): Promise<void> {
+      const senderProfile = await prisma.profile.findFirst({
+         where: { userId: senderId },
+         select: { name: true },
+      });
+
+      const senderName = senderProfile?.name || "Someone";
+
+      if (messageType === MessageType.CALL_LOG) {
+         try {
+            const payload = JSON.parse(content) as { callType?: string; duration?: number };
+            if (payload.duration === 0) {
+               const callTypeLabel = payload.callType ? payload.callType.toLowerCase() : "voice";
+               await notificationService.sendToUser({
+                  userId: receiverId,
+                  type: NotificationType.MISSED_CALL,
+                  title: "Missed Call",
+                  body: `Missed ${callTypeLabel} call from ${senderName}`,
+                  data: {
+                     type: NotificationType.MISSED_CALL,
+                     conversationId: String(conversationId),
+                     senderId: String(senderId),
+                  },
+               });
+            }
+         } catch {
+            // Ignore call log parse errors for notification
+         }
+         return;
+      }
+
+      let body = content;
+      if (messageType === MessageType.IMAGE) {
+         body = "📷 Sent an image";
+      } else if (messageType === MessageType.AUDIO) {
+         body = "🎵 Sent a voice message";
+      } else if (messageType === MessageType.VIDEO) {
+         body = "🎥 Sent a video message";
+      }
+
+      await notificationService.sendToUser({
+         userId: receiverId,
+         type: NotificationType.NEW_MESSAGE,
+         title: senderName,
+         body,
+         data: {
+            type: NotificationType.NEW_MESSAGE,
+            conversationId: String(conversationId),
+            senderId: String(senderId),
+         },
+      });
    }
 
    /**

@@ -139,33 +139,33 @@ class _ProfessionStepState extends State<ProfessionStep> {
               : null,
           inputFormatters: [LengthLimitingTextInputFormatter(100)],
           onChanged: _onSearchChanged,
-          prefixIcon: const Icon(
+          prefixIcon: Icon(
             Icons.search,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
             size: 22,
           ),
           suffixIcon: _isLoading
-              ? const UnconstrainedBox(
+              ? UnconstrainedBox(
                   child: SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
-                      color: AppColors.primary,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
                 )
               : null,
         ),
         if (!_isSearching)
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: 8, bottom: 12, left: 4),
             child: Text(
               "Popular jobs",
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
             ),
           ),
@@ -191,10 +191,10 @@ class _ProfessionStepState extends State<ProfessionStep> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                trailing: const Icon(
+                trailing: Icon(
                   Icons.chevron_right,
                   size: 20,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
                 onTap: () {
                   widget.professionCtrl.text = job.name;
@@ -218,9 +218,9 @@ class _ProfessionStepState extends State<ProfessionStep> {
             child: Center(
               child: Text(
                 "Tap continue to use '${widget.professionCtrl.text.trim()}'",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                   fontStyle: FontStyle.italic,
                 ),
               ),

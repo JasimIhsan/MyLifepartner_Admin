@@ -5,7 +5,10 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
+import logger from "@/utils/logger";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 type CallType = "audio" | "video";
 
@@ -34,6 +37,7 @@ export class UserSubscriptionController {
       const userId = this.getAuthenticatedUserId(req);
 
       const subscription = await this.userSubscriptionService.getMySubscription(userId);
+      logger.debug(`Subscription: `, subscription);
       const subscriptionDto = subscription ? toUserSubscriptionDto(subscription) : null;
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscriptionDto, "Current subscription retrieved successfully"));
@@ -46,7 +50,7 @@ export class UserSubscriptionController {
    public getUserFeatures = asyncHandler(async (req: Request, res: Response) => {
       const userId = this.getAuthenticatedUserId(req);
 
-      const features = await this.userSubscriptionService.getUserFeatures(userId);
+      const features = await this.userFeatureService.getUserFeatures(userId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, features, "Current features retrieved successfully"));
    });
@@ -66,7 +70,72 @@ export class UserSubscriptionController {
       const subscription = await this.userSubscriptionService.subscribe(userId, planId);
       const subscriptionDto = toUserSubscriptionDto(subscription);
 
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.SUBSCRIPTION,
+         action: "SUBSCRIBE_TO_PLAN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User subscribed to plan ID: ${planId}`,
+         newValue: subscriptionDto as unknown as Record<string, any>,
+         entityType: "UserSubscription",
+         entityId: subscription.id.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, subscriptionDto, "Subscribed successfully"));
+   });
+
+   /**
+    * @route POST /api/v1/user/subscriptions/verify-purchase
+    * @purpose Verifies a RevenueCat purchase and immediately activates the plan.
+    *
+    * Called by the Flutter app right after Purchases.purchasePackage() succeeds.
+    * The backend verifies the transaction with the RC REST API and activates the
+    * subscription instantly — without waiting for a webhook.
+    */
+   public verifyPurchase = asyncHandler(async (req: Request, res: Response) => {
+      const userId = this.getAuthenticatedUserId(req);
+
+      const { originalTransactionId, productId, store, environment } = req.body;
+
+      if (!originalTransactionId || typeof originalTransactionId !== "string" || originalTransactionId.trim() === "") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "originalTransactionId is required");
+      }
+
+      if (!productId || typeof productId !== "string" || productId.trim() === "") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "productId is required");
+      }
+
+      if (!store || typeof store !== "string") {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "store is required");
+      }
+
+      const subscription = await this.userSubscriptionService.verifyAndActivatePurchase(userId, {
+         originalTransactionId: originalTransactionId.trim(),
+         productId: productId.trim(),
+         store: store.trim(),
+         environment: (environment ?? "PRODUCTION").trim(),
+      });
+
+      const subscriptionDto = toUserSubscriptionDto(subscription);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.SUBSCRIPTION,
+         action: "VERIFY_PURCHASE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User verified purchase for product: ${productId}`,
+         newValue: { productId, store, environment, originalTransactionId },
+         entityType: "UserSubscription",
+         entityId: subscription.id.toString(),
+         source: AuditSource.API,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscriptionDto, "Purchase verified and plan activated successfully"));
    });
 
    /**
@@ -93,8 +162,23 @@ export class UserSubscriptionController {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid target user ID");
       }
 
-
       await this.userFeatureService.checkCallAccess(userId, type as CallType, consumeSeconds, targetUserId);
+
+      if (consumeSeconds && consumeSeconds > 0) {
+         await auditService.log({
+            userId,
+            actorType: ActorType.USER,
+            module: AuditModule.CALL,
+            action: "CONSUME_CALL_MINUTES",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `User consumed ${consumeSeconds} seconds for ${type} call`,
+            newValue: { type, consumeSeconds, targetUserId },
+            entityType: "User",
+            entityId: userId.toString(),
+            source: AuditSource.API,
+         });
+      }
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Call allowed"));
    });
@@ -107,12 +191,12 @@ export class UserSubscriptionController {
       const userId = this.getAuthenticatedUserId(req);
 
       const subscription = await this.userSubscriptionService.syncSubscription(userId);
-      const features = await this.userSubscriptionService.getUserFeatures(userId);
+      const features = await this.userFeatureService.getUserFeatures(userId);
 
       const responseData = {
          subscription: subscription ? toUserSubscriptionDto(subscription) : null,
          features,
-         syncStatus: subscription?.plan?.name === "FREE" ? "DOWNGRADED" : "SYNCED"
+         syncStatus: subscription?.plan?.name === "FREE" ? "DOWNGRADED" : "SYNCED",
       };
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, responseData, "Subscription synced successfully"));

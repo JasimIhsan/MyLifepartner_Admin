@@ -12,6 +12,7 @@ const EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/otp/otp.html
 const WELCOME_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/welcome/welcome.html");
 const SUBSCRIPTION_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/subscription/subscription.html");
 const RECEIPT_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/subscription/receipt.html");
+const REPORT_STATUS_EMAIL_TEMPLATE_PATH = path.join(process.cwd(), "src/templates/report/report-status.html");
 
 const APP_NAME = "Life Partner Again";
 const OTP_EMAIL_SUBJECT = "Your OTP - Life Partner Again";
@@ -265,6 +266,65 @@ export class EmailService implements IEmailService {
       }
    }
 
+   /**
+    * Sends Report Status Update email.
+    */
+   async sendReportStatusUpdateEmail(to: string, userName: string, reportedUserName: string, reportId: number, status: string, notes?: string): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Report Status Update email to: ${to} for report: ${reportId}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         const title = "Update on Your Report";
+         let message = `<p>We wanted to let you know that the status of your report against <strong>${reportedUserName}</strong> has been updated to: <strong>${status.replace(/_/g, " ")}</strong>.</p>`;
+         if (notes) {
+            message += `<p><strong>Admin Note:</strong> ${notes}</p>`;
+         }
+         message += `<p>Thank you for helping us keep our community safe.</p>`;
+         
+         let textMessage = `We wanted to let you know that the status of your report against ${reportedUserName} has been updated to: ${status.replace(/_/g, " ")}.\n\n`;
+         if (notes) {
+            textMessage += `Admin Note: ${notes}\n\n`;
+         }
+         textMessage += `Thank you for helping us keep our community safe.`;
+
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Update on Your Report",
+            html: this.getReportStatusEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Report Status Update email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendReportStatusUpdateEmail", { error, to, reportId });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send Report Status Update email");
+      }
+   }
+
+   /**
+    * Sends Moderation Action email.
+    */
+   async sendModerationEmail(to: string, userName: string, title: string, message: string): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Moderation email to: ${to}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         
+         const textMessage = `${title}\n\nHi ${userName},\n\n${message}\n\nIf you need any help, our support team is always here for you.`;
+
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: title,
+            html: this.getReportStatusEmailHtml(title, message, userName, headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Moderation email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendModerationEmail", { error, to });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send moderation email");
+      }
+   }
 
    /**
     * Builds OTP email HTML.
@@ -316,6 +376,21 @@ export class EmailService implements IEmailService {
    }
 
    /**
+    * Builds Report Status Update email HTML.
+    */
+   private getReportStatusEmailHtml(title: string, message: string, userName: string, headerImageUrl: string): string {
+      const template = fs.readFileSync(REPORT_STATUS_EMAIL_TEMPLATE_PATH, "utf-8");
+      const currentYear = new Date().getFullYear().toString();
+
+      return template
+         .replace(/{{TITLE}}/g, title)
+         .replace(/{{MESSAGE}}/g, message)
+         .replace(/{{USER_NAME}}/g, userName)
+         .replace(/{{YEAR}}/g, currentYear)
+         .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);
+   }
+
+   /**
     * Builds Payment Receipt email HTML.
     */
    private getPaymentReceiptEmailHtml(title: string, planName: string, date: string, formattedPrice: string, userName: string, headerImageUrl: string): string {
@@ -330,5 +405,32 @@ export class EmailService implements IEmailService {
          .replace(/{{USER_NAME}}/g, userName)
          .replace(/{{YEAR}}/g, currentYear)
          .replace(/{{HEADER_IMAGE_URL}}/g, headerImageUrl);
+   }
+
+   /**
+    * Sends Account Deletion Verification email.
+    */
+   async sendAccountDeletionEmail(to: string, token: string): Promise<SentMessageInfo> {
+      try {
+         logger.info(`[EmailService] Preparing to send Account Deletion email to: ${to}`);
+         const headerImageUrl = await this.s3Service.getPresignedUrl("assets/email-headers/welcome-header.png", URL_EXPIRY_TIME);
+         
+         const verificationLink = `${env.BASE_URL}/api/user/account-deletion/verify?token=${token}`;
+         const textMessage = `You have requested to delete your account.\n\nPlease click the link below to verify your request:\n${verificationLink}\n\nIf you did not request this, please ignore this email.`;
+         const message = `<p>You have requested to delete your account.</p><p>Please click the button below to verify your request.</p><p><a href="${verificationLink}" style="padding: 10px 20px; background-color: #ff4b4b; color: white; text-decoration: none; border-radius: 5px;">Verify Deletion</a></p><p>If you did not request this, please ignore this email.</p>`;
+
+         const info = await this.transporter.sendMail({
+            from: `"${APP_NAME}" <${env.SMTP_FROM ?? env.SMTP_USER}>`,
+            to,
+            subject: "Verify Account Deletion Request",
+            html: this.getSubscriptionEmailHtml("Verify Account Deletion", message, "User", headerImageUrl),
+            text: textMessage,
+         });
+         logger.info(`[EmailService] Successfully sent Account Deletion email to: ${to}, Message ID: ${info.messageId}`);
+         return info;
+      } catch (error) {
+         logger.error("Error in sendAccountDeletionEmail", { error, to });
+         throw new ApiError(HTTP_STATUS.INTERNAL_SERVER_ERROR, "Failed to send account deletion email");
+      }
    }
 }

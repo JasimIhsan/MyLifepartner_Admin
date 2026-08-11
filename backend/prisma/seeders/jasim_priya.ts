@@ -135,7 +135,8 @@ export async function seedJasimAndPriya(prisma: PrismaClient) {
             password: p.password,
             isVerified: true,
             role: Role.USER,
-            isBlocked: false,
+            isBanned: false,
+            isSuspended: false,
             isDeleted: false,
          },
          create: {

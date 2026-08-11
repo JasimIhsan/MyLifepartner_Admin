@@ -7,10 +7,12 @@ import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscript
 import { FeatureFullPayload, FeatureLimitsOnlyPayload, ISubscriptionWebhookRepository, RevenueCatWebhookEventData } from "@/interfaces/repositories/subscription-webhook.repository.interface";
 import { ISyncTransactionContext, IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserFeatureRepository } from "@/interfaces/repositories/user.feature.repository.interface";
-import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
+import { IUserRepository, UserFeatureAccessStatus } from "@/interfaces/repositories/user.repository.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { UserFeature } from "@/interfaces/services/user.feature.service.interface";
-import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan } from "@/interfaces/services/user.subscription.service.interface";
+import { EnrichedPlanFeature, EnrichedSubscriptionPlan, EnrichedUserSubscription, IUserSubscriptionService, SubscriptionPlan, VerifyPurchaseParams } from "@/interfaces/services/user.subscription.service.interface";
+import { NotificationType } from "@/constants/notificationTypes";
+import { notificationService } from "@/composer/composer";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
 
@@ -40,6 +42,7 @@ const DEFAULT_SUBSCRIPTION_DURATION_DAYS = 30;
  */
 const FREE_PLAN_DURATION_DAYS = 365 * 100;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const UNLIMITED_FEATURE_LIMIT = Number.MAX_SAFE_INTEGER;
 /**
  * Minimum buffer applied to /sync before it can downgrade an active subscription
  * when RC shows no active product.  The check uses endDate (not createdAt) so a
@@ -92,6 +95,10 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    async getUserFeatures(userId: number): Promise<UserFeature | null> {
+      if (await this.isActiveFoundingMember(userId)) {
+         return this.buildFoundingMemberFeatures(userId);
+      }
+
       return this.userFeatureRepository.findByUserId(userId);
    }
 
@@ -104,6 +111,15 @@ export class UserSubscriptionService implements IUserSubscriptionService {
     * the store receipt is independently verified.
     */
    async subscribe(userId: number, planId: number): Promise<EnrichedUserSubscription> {
+      if (await this.isFoundingMember(userId)) {
+         const currentSubscription = await this.getMySubscription(userId);
+         if (currentSubscription) {
+            return currentSubscription;
+         }
+
+         throw new ApiError(403, "Founding members already have unlimited access without a subscription.");
+      }
+
       const plan = await this.getRequiredActivePlan(planId);
       const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
 
@@ -143,6 +159,8 @@ export class UserSubscriptionService implements IUserSubscriptionService {
     */
    async reconcileUserSubscription(userId: number): Promise<void> {
       try {
+         if (await this.isFoundingMember(userId)) return;
+
          const subscription = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
          if (!subscription) return;
 
@@ -260,6 +278,12 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
    async syncSubscription(userId: number): Promise<EnrichedUserSubscription | null> {
       logger.info(`[SYNC_SUBSCRIPTION] Starting sync for userId: ${userId}`);
+
+      if (await this.isFoundingMember(userId)) {
+         logger.info(`[SYNC_SUBSCRIPTION] Skipping RevenueCat sync for founding member userId: ${userId}`);
+         return this.getMySubscription(userId);
+      }
+
       const revenueCatData = await this.getRevenueCatSubscriberData(userId);
 
       const originalUserIdStr = revenueCatData.subscriber?.original_app_user_id;
@@ -439,6 +463,128 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    /**
+    * Verifies a purchase with the RevenueCat REST API and immediately activates
+    * the corresponding plan in the database.
+    *
+    * This is the preferred post-purchase path.  The Flutter app calls this
+    * endpoint right after Purchases.purchasePackage() succeeds, providing the
+    * originalTransactionId from CustomerInfo.  We look up that transaction
+    * in the RC subscriber data, confirm it is active and not expired, then
+    * activate the plan — all within a single request, without waiting for a
+    * webhook to arrive.
+    */
+   async verifyAndActivatePurchase(userId: number, params: VerifyPurchaseParams): Promise<EnrichedUserSubscription> {
+      logger.info(`[VERIFY_PURCHASE] Starting purchase verification for userId=${userId}, productId=${params.productId}, txnId=${params.originalTransactionId}`);
+
+      // Fetch current RC subscriber data (same helper used by /sync)
+      const revenueCatData = await this.getRevenueCatSubscriberData(userId);
+
+      const subscriptions = revenueCatData.subscriber?.subscriptions ?? {};
+
+      // Find the entry matching the provided originalTransactionId or productId.
+      // RC returns subscriptions keyed by productIdentifier.
+      let matchedProductIdentifier: string | null = null;
+      let matchedExpiry: Date | null = null;
+      let willRenew = true;
+
+      for (const [productIdentifier, subscription] of Object.entries(subscriptions)) {
+         const expiryTime = subscription.expires_date ? new Date(subscription.expires_date) : null;
+         const isExpired = expiryTime ? expiryTime <= new Date() : false;
+
+         // Match by productId OR by the fact that it is the only non-expired entry
+         const isTargetProduct = productIdentifier === params.productId ||
+            productIdentifier.startsWith(`${params.productId}:`);
+
+         if (isTargetProduct && !isExpired) {
+            matchedProductIdentifier = productIdentifier;
+            matchedExpiry = expiryTime;
+            willRenew = !subscription.unsubscribe_detected_at;
+            break;
+         }
+      }
+
+      if (!matchedProductIdentifier) {
+         // The RC API doesn't yet show the transaction — fall back to /sync logic
+         // which is more resilient to RC API propagation lag.
+         logger.warn(`[VERIFY_PURCHASE] RC API does not yet show active product '${params.productId}' for userId=${userId}. Falling back to syncSubscription.`);
+         const synced = await this.syncSubscription(userId);
+         if (synced) return synced;
+         throw new ApiError(404, `Purchase verification failed: product '${params.productId}' not found in RevenueCat. Please try again in a few seconds or restore purchases.`);
+      }
+
+      const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(matchedProductIdentifier)
+         ?? await this.subscriptionPlanRepository.findPlanByStoreProductId(params.productId);
+
+      if (!targetPlan) {
+         logger.error(`[VERIFY_PURCHASE] No backend plan mapped to product '${matchedProductIdentifier}'`);
+         throw new ApiError(404, `No plan mapped to product '${matchedProductIdentifier}'. Contact support.`);
+      }
+
+      const now = new Date();
+      const endDate = matchedExpiry ?? this.addDays(now, DEFAULT_SUBSCRIPTION_DURATION_DAYS);
+      const targetStatus = willRenew ? SubscriptionStatus.ACTIVE : SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
+      const shouldApplyFeaturePayload = !(await this.isFoundingMember(userId));
+
+      await this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
+         const currentSub = await ctx.findActiveSubscriptionByUserId(userId);
+         const previousPlanId = currentSub?.planId ?? null;
+         const previousStatus = currentSub?.status ?? undefined;
+
+         // Deactivate previous subscriptions
+         await ctx.deactivateUserSubscriptions(userId);
+
+         // Create the new subscription record
+         await ctx.createUserSubscription({
+            userId: userId as any,
+            planId: targetPlan.id as any,
+            status: targetStatus as any,
+            startDate: now,
+            endDate,
+            willRenew,
+            originalTransactionId: params.originalTransactionId,
+            store: params.store,
+            environment: params.environment,
+            lastEventTimestampMs: BigInt(now.getTime()) as any,
+            user: { connect: { id: userId } },
+            plan: { connect: { id: targetPlan.id } },
+         } as any);
+
+         if (shouldApplyFeaturePayload) {
+            // Apply features immediately
+            const enrichedPlan = this.enrichPlan(targetPlan);
+            const featurePayload = previousPlanId === null
+               ? this.buildFeatureFullPayload(enrichedPlan)   // first purchase — reset usage
+               : this.buildFeatureLimitsOnlyPayload(enrichedPlan); // upgrade — preserve usage
+
+            await ctx.applyFeatures(userId, featurePayload);
+         }
+
+         // Write audit log
+         await this.writeSyncAuditLog(ctx, {
+            userId,
+            previousPlanId,
+            newPlanId: targetPlan.id,
+            previousStatus,
+            newStatus: targetStatus,
+            reason: `Purchase verified and activated immediately via /verify-purchase (product: ${matchedProductIdentifier}, txn: ${params.originalTransactionId})`,
+            source: "VERIFY_PURCHASE",
+            eventType: "INITIAL_PURCHASE",
+            eventId: `verify_${params.originalTransactionId}_${now.getTime()}`,
+            productId: matchedProductIdentifier,
+            originalTransactionId: params.originalTransactionId,
+            store: params.store,
+            environment: params.environment,
+         });
+
+         logger.info(`[VERIFY_PURCHASE] Successfully activated plan '${targetPlan.name}' (id=${targetPlan.id}) for userId=${userId}. endDate=${endDate.toISOString()}, willRenew=${willRenew}`);
+      });
+
+      const result = await this.getMySubscription(userId);
+      if (!result) throw new ApiError(500, "Subscription activation failed. Please contact support.");
+      return result;
+   }
+
+   /**
     * Handles a RevenueCat webhook event.
     */
    async handleWebhook(payload: Record<string, unknown>, signatureHeader?: string): Promise<void> {
@@ -496,6 +642,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    private async handleRevenueCatEvent(userId: number, event: RevenueCatWebhookEventData): Promise<void> {
       const targetPlanId = await this.resolveTargetPlanId(event);
       const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
+      const shouldApplyFeaturePayload = !(await this.isFoundingMember(userId));
 
       const processed = await this.subscriptionWebhookRepository.processWebhookEvent({
          userId,
@@ -506,27 +653,27 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          defaultSubscriptionDurationDays: DEFAULT_SUBSCRIPTION_DURATION_DAYS,
          buildFeatureFullPayload: (plan) => this.buildFeatureFullPayload(this.enrichPlan(plan)),
          buildFeatureLimitsOnlyPayload: (plan) => this.buildFeatureLimitsOnlyPayload(this.enrichPlan(plan)),
+         shouldApplyFeaturePayload,
       });
 
-      // Email notification logic — all lifecycle events covered
+      // Email & Push notification logic — all lifecycle events covered
       if (processed) {
          try {
             const user = await this.userRepository.findById(userId);
-            if (user?.email) {
-               const userName = user.profile?.name || undefined;
-               let planName = "your plan";
-               if (targetPlanId) {
-                  const plan = await this.subscriptionPlanRepository.getPlanById(targetPlanId);
-                  if (plan) planName = plan.name;
-               } else if (!targetPlanId) {
-                  // For events without a target plan (e.g. cancellation of current plan), get current plan name
-                  const sub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
-                  if (sub?.plan) planName = sub.plan.name;
-               }
+            const userName = user?.profile?.name || undefined;
+            let planName = "your plan";
+            if (targetPlanId) {
+               const plan = await this.subscriptionPlanRepository.getPlanById(targetPlanId);
+               if (plan) planName = plan.name;
+            } else if (!targetPlanId) {
+               // For events without a target plan (e.g. cancellation of current plan), get current plan name
+               const sub = await this.userSubscriptionRepository.findActiveSubscriptionByUserId(userId);
+               if (sub?.plan) planName = sub.plan.name;
+            }
 
+            if (user?.email) {
                switch (event.type) {
                   case RevenueCatWebhookEvent.INITIAL_PURCHASE:
-                     // Activation email + receipt
                      await this.emailService.sendSubscriptionSuccessEmail(user.email, planName, userName);
                      if ((event.price ?? 0) > 0) {
                         await this.emailService.sendPaymentReceiptEmail(user.email, planName, event.price!, event.currency ?? "INR", userName);
@@ -534,7 +681,6 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                      break;
 
                   case RevenueCatWebhookEvent.RENEWAL:
-                     // Renewal confirmation + receipt
                      if (event.expiration_at_ms) {
                         const renewedUntil = new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
                         await this.emailService.sendSubscriptionRenewalEmail(user.email, planName, renewedUntil, userName);
@@ -568,8 +714,78 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                      break;
                }
             }
+
+            // Dispatch Push Notifications
+            switch (event.type) {
+               case RevenueCatWebhookEvent.INITIAL_PURCHASE:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_SUCCESS,
+                     title: "Subscription Activated! ⭐",
+                     body: `Welcome to ${planName}! Enjoy your premium privileges.`,
+                     data: { type: NotificationType.SUBSCRIPTION_SUCCESS, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.RENEWAL:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_SUCCESS,
+                     title: "Subscription Renewed",
+                     body: `Your ${planName} subscription has been renewed successfully.`,
+                     data: { type: NotificationType.SUBSCRIPTION_SUCCESS, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.CANCELLATION: {
+                  const expiresAt = event.expiration_at_ms
+                     ? new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })
+                     : "end of billing period";
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_EXPIRING,
+                     title: "Subscription Cancelled",
+                     body: `Your ${planName} subscription will end on ${expiresAt}.`,
+                     data: { type: NotificationType.SUBSCRIPTION_EXPIRING, planName },
+                  });
+                  break;
+               }
+
+               case RevenueCatWebhookEvent.UNCANCELLATION:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_SUCCESS,
+                     title: "Subscription Restored",
+                     body: `Your ${planName} subscription auto-renewal has been restored.`,
+                     data: { type: NotificationType.SUBSCRIPTION_SUCCESS, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.EXPIRATION:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.SUBSCRIPTION_EXPIRING,
+                     title: "Subscription Expired",
+                     body: `Your ${planName} subscription has expired. Renew now to unlock premium features!`,
+                     data: { type: NotificationType.SUBSCRIPTION_EXPIRING, planName },
+                  });
+                  break;
+
+               case RevenueCatWebhookEvent.BILLING_ISSUE:
+                  await notificationService.sendToUser({
+                     userId,
+                     type: NotificationType.PAYMENT_FAILED,
+                     title: "Payment Issue ⚠️",
+                     body: `There was an issue processing your subscription payment for ${planName}. Please update your payment method.`,
+                     data: { type: NotificationType.PAYMENT_FAILED, planName },
+                  });
+                  break;
+
+               default:
+                  break;
+            }
          } catch (error) {
-            logger.error(`Failed to send subscription email for event ${event.type} to user ${userId}`, { error });
+            logger.error(`Failed to dispatch notifications for event ${event.type} to user ${userId}`, { error });
          }
       }
 
@@ -589,6 +805,10 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    private async applyFeaturesForPlan(userId: number, plan: EnrichedSubscriptionPlan, resetUsage: boolean): Promise<void> {
+      if (await this.isFoundingMember(userId)) {
+         return;
+      }
+
       const featurePayload = resetUsage ? this.buildFeatureFullPayload(plan) : this.buildFeatureLimitsOnlyPayload(plan);
 
       const existingUserFeature = await this.userFeatureRepository.findByUserId(userId);
@@ -659,6 +879,44 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       return limits;
+   }
+
+   private async isFoundingMember(userId: number): Promise<boolean> {
+      const user = await this.userRepository.findFeatureAccessStatusById(userId);
+
+      return Boolean(user?.isFoundingMember);
+   }
+
+   private async isActiveFoundingMember(userId: number): Promise<boolean> {
+      const user = await this.userRepository.findFeatureAccessStatusById(userId);
+
+      return Boolean(user && user.isFoundingMember && this.isFeatureEligibleAccount(user));
+   }
+
+   private isFeatureEligibleAccount(user: UserFeatureAccessStatus): boolean {
+      return !user.isBanned && !user.isSuspended && !user.isDeleted && !(user.isDeleteRequested && user.deleteRequestStatus === "PENDING");
+   }
+
+   private buildFoundingMemberFeatures(userId: number): UserFeature {
+      const now = new Date();
+
+      return {
+         id: 0,
+         userId,
+         isProfileBlurEnabled: true,
+         maxInterests: UNLIMITED_FEATURE_LIMIT,
+         interests: 0,
+         maxVideoCallMinutes: UNLIMITED_FEATURE_LIMIT,
+         videoCallMinutes: 0,
+         maxAudioCallMinutes: UNLIMITED_FEATURE_LIMIT,
+         audioCallMinutes: 0,
+         maxMessages: UNLIMITED_FEATURE_LIMIT,
+         messages: 0,
+         createdAt: now,
+         updatedAt: now,
+         isFoundingMember: true,
+         isUnlimited: true,
+      };
    }
 
    /**
@@ -839,6 +1097,13 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          newStatus: string;
          reason: string;
          source: string;
+         eventType?: string;
+         eventId?: string;
+         productId?: string;
+         originalTransactionId?: string;
+         store?: string;
+         environment?: string;
+         eventTimestampMs?: bigint | number;
       }
    ): Promise<void> {
       try {
@@ -898,9 +1163,21 @@ export class UserSubscriptionService implements IUserSubscriptionService {
    }
 
    private enrichUserSubscription(subscription: EnrichedUserSubscription): EnrichedUserSubscription {
+      const now = new Date();
+      const isExpired = subscription.endDate ? new Date(subscription.endDate) < now : false;
+      const isGracePeriod = subscription.status === SubscriptionStatus.GRACE_PERIOD;
+      const isPaymentFailed = subscription.status === SubscriptionStatus.BILLING_ISSUE;
+      const isDowngradeScheduled = subscription.nextPlanId !== null;
+      const isCancelled = subscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY || subscription.status === SubscriptionStatus.CANCELLED;
+
       return {
          ...subscription,
          plan: this.enrichPlan(subscription.plan),
+         isExpired,
+         isGracePeriod,
+         isPaymentFailed,
+         isDowngradeScheduled,
+         isCancelled,
       };
    }
 

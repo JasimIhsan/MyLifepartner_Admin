@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
-import 'package:life_partner_again/core/app_colors.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -9,7 +8,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final List<Widget>? actions;
   final Widget? leading;
   final bool showLeading;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final double elevation;
   final TextStyle? titleStyle;
   final double toolbarHeight;
@@ -21,7 +20,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.leading,
     this.showLeading = true,
-    this.backgroundColor = Colors.white,
+    this.backgroundColor,
     this.elevation = 0,
     this.titleStyle,
     this.toolbarHeight = kToolbarHeight,
@@ -39,7 +38,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       titleStyle ??
                       TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: AppColors.textPrimary,
+                        color: Theme.of(context).appBarTheme.foregroundColor ?? Theme.of(context).textTheme.bodyLarge?.color,
                         fontSize: 20,
                       ),
                 )
@@ -51,9 +50,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: showLeading
           ? (leading ??
                 IconButton(
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.arrow_back,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).appBarTheme.iconTheme?.color ?? Theme.of(context).iconTheme.color,
                   ),
                   onPressed: () {
                     if (context.canPop()) {

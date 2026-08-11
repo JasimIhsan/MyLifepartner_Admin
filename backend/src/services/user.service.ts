@@ -1,10 +1,15 @@
-import { UserOnboardingStatusDto, ProfileStatusType, SelfieStatusType } from "@/dtos/auth.me.dto";
-import { toUserDto, UserDto, UserSelfieDataDto, UserImageDataDto } from "@/dtos/user.dto";
+import prisma from "@/config/prisma";
+import { ProfileStatusType, SelfieStatusType, UserOnboardingStatusDto } from "@/dtos/auth.me.dto";
+import { toUserDto, UserDto, UserImageDataDto, UserSelfieDataDto } from "@/dtos/user.dto";
 import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
-import { IUserRepository, ProfileImageDto, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
+import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
+import { ICacheService } from "@/interfaces/services/cache.service.interface";
+import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { S3Service } from "@/services/s3.service";
 import { ApiError } from "@/utils/ApiError";
+import { CACHE_KEYS } from "@/utils/constants";
+import crypto from "crypto";
 
 type PaginatedUsersDto = {
    data: UserDto[];
@@ -12,11 +17,19 @@ type PaginatedUsersDto = {
 };
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 60 * 60;
+const MAX_ACCOUNT_DELETION_REASON_LENGTH = 500;
+
+type AccountDeletionTokenPayload = {
+   userId: number;
+   reason: string | null;
+};
 
 export class UserService implements IUserService {
    constructor(
       private readonly userRepository: IUserRepository,
-      private readonly s3Service: S3Service
+      private readonly s3Service: S3Service,
+      private readonly emailService: IEmailService,
+      private readonly cacheService: ICacheService
    ) {}
 
    /**
@@ -103,7 +116,12 @@ export class UserService implements IUserService {
    async getUserById(userId: number): Promise<UserDto> {
       const user = await this.findActiveUserById(userId);
 
-      return toUserDto(user);
+      const dto = toUserDto(user);
+      if (dto.primaryImageUrl) {
+         dto.primaryImageUrl = await this.getPresignedUrlOrNull(dto.primaryImageUrl);
+      }
+
+      return dto;
    }
 
    /**
@@ -119,13 +137,21 @@ export class UserService implements IUserService {
          throw new ApiError(404, "User not found");
       }
 
+      const profile = user.profile;
+      const hasCompletedBasicDetails = profile?.hasCompletedBasicDetails ?? false;
+      const hasCompletedPartnerPreference = profile?.hasCompletedPartnerPreference ?? false;
+      const hasCompletedImageUpload = profile?.hasCompletedImageUpload ?? false;
+      const selfieStatus = (profile?.selfieStatus as SelfieStatusType) ?? null;
+      const hasFinishedOnboarding = hasCompletedBasicDetails && hasCompletedPartnerPreference && hasCompletedImageUpload && selfieStatus !== null;
+      const profileStatus: ProfileStatusType = hasFinishedOnboarding ? "COMPLETED" : ((profile?.profileStatus as ProfileStatusType) ?? "INCOMPLETE");
+
       return {
          id: user.id,
-         hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails ?? false,
-         hasCompletedPartnerPreference: user.profile?.hasCompletedPartnerPreference ?? false,
-         profileStatus: (user.profile?.profileStatus as ProfileStatusType) ?? "INCOMPLETE",
-         hasCompletedImageUpload: user.profile?.hasCompletedImageUpload ?? false,
-         selfieStatus: (user.profile?.selfieStatus as SelfieStatusType) ?? null,
+         hasCompletedBasicDetails,
+         hasCompletedPartnerPreference,
+         profileStatus,
+         hasCompletedImageUpload,
+         selfieStatus,
       };
    }
 
@@ -152,20 +178,68 @@ export class UserService implements IUserService {
       return toUserDto(updatedUser);
    }
 
-   /**
-    * Toggles user block status.
-    *
-    * @param userId - User ID.
-    * @returns Updated user.
-    */
-   async toggleBlockUser(userId: number): Promise<UserDto> {
+   async toggleFoundingMemberStatus(userId: number): Promise<{ user: UserDto; previousIsFoundingMember: boolean; previousFoundingMemberSince: Date | null }> {
       const user = await this.findActiveUserById(userId);
+      const previousIsFoundingMember = user.isFoundingMember;
+      const previousFoundingMemberSince = user.foundingMemberSince;
+      const isFoundingMember = !previousIsFoundingMember;
 
-      const updatedUser = await this.userRepository.update(userId, {
-         isBlocked: !user.isBlocked,
+      if (isFoundingMember && !user.isVerified) {
+         throw new ApiError(403, "Only verified users can be granted founding-member status");
+      }
+
+      const foundingMemberSince = isFoundingMember
+         ? (user.foundingMemberSince ?? new Date())
+         : null;
+
+      const updatedUser = await this.userRepository.updateFoundingMemberStatus(userId, isFoundingMember, foundingMemberSince);
+
+      return {
+         user: toUserDto(updatedUser),
+         previousIsFoundingMember,
+         previousFoundingMemberSince,
+      };
+   }
+
+   async toggleBanStatus(id: number): Promise<UserDto> {
+      const user = await this.userRepository.findById(id);
+
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      const updatedUser = await this.userRepository.update(id, {
+         isBanned: !user.isBanned,
+         bannedAt: !user.isBanned ? new Date() : null,
       });
 
       return toUserDto(updatedUser);
+   }
+
+   /**
+    * Lifts user suspension.
+    */
+   async liftSuspension(id: number): Promise<UserDto> {
+      const user = await this.userRepository.findById(id);
+
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      const updatedUser = await this.userRepository.update(id, {
+         isSuspended: false,
+         suspendedAt: null,
+      });
+
+      return toUserDto(updatedUser);
+   }
+
+   /**
+    * Gets all suspended users.
+    */
+   async getSuspendedUsers(): Promise<UserDto[]> {
+      const users = await this.userRepository.findSuspendedUsers();
+      return users.map(toUserDto);
    }
 
    /**
@@ -230,6 +304,35 @@ export class UserService implements IUserService {
    }
 
    /**
+    * Validates user account status.
+    *
+    * @param userId - User ID.
+    */
+   async validateUserAccountStatus(userId: number): Promise<void> {
+      const user = await this.userRepository.findById(userId);
+
+      if (!user) {
+         throw new ApiError(401, "User not found");
+      }
+
+      if (user.isBanned) {
+         throw new ApiError(403, "Your account has been permanently banned.");
+      }
+
+      if (user.isDeleted) {
+         throw new ApiError(403, "Your account has been deleted.");
+      }
+
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(403, "Your account deletion is pending approval.");
+      }
+
+      if (user.isSuspended) {
+         throw new ApiError(403, "Your account is temporarily suspended.");
+      }
+   }
+
+   /**
     * Finds an active user by ID.
     *
     * @param userId - User ID.
@@ -243,6 +346,27 @@ export class UserService implements IUserService {
       }
 
       return user;
+   }
+
+   private parseAccountDeletionTokenPayload(value: string): AccountDeletionTokenPayload {
+      try {
+         const parsed = JSON.parse(value) as Partial<AccountDeletionTokenPayload>;
+         const userId = Number(parsed.userId);
+
+         if (Number.isInteger(userId) && userId > 0) {
+            const reason = typeof parsed.reason === "string" ? parsed.reason.trim() : "";
+            return { userId, reason: reason || null };
+         }
+      } catch {
+         // Existing links cached only the user id; keep them valid until expiry.
+      }
+
+      const userId = Number(value);
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(400, "Invalid or expired verification token");
+      }
+
+      return { userId, reason: null };
    }
 
    /**
@@ -311,5 +435,244 @@ export class UserService implements IUserService {
       }
 
       return this.s3Service.getPresignedUrl(imageKey, PRESIGNED_URL_EXPIRY_SECONDS);
+   }
+
+   /**
+    * Requests account deletion by sending a verification email.
+    */
+   async requestAccountDeletion(userId: number, reason: string): Promise<void> {
+      const trimmedReason = reason.trim();
+      if (!trimmedReason) {
+         throw new ApiError(400, "Account deletion reason is required");
+      }
+
+      if (trimmedReason.length > MAX_ACCOUNT_DELETION_REASON_LENGTH) {
+         throw new ApiError(400, `Account deletion reason must be ${MAX_ACCOUNT_DELETION_REASON_LENGTH} characters or fewer`);
+      }
+
+      const user = await this.findActiveUserById(userId);
+      if (!user.email) {
+         throw new ApiError(400, "User email not found");
+      }
+
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(400, "Account deletion is already requested and pending approval");
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      const cacheKey = CACHE_KEYS.ACCOUNT_DELETION_TOKEN(token);
+
+      // Token valid for 1 hour (3600 seconds)
+      await this.cacheService.setCache(
+         cacheKey,
+         JSON.stringify({
+            userId,
+            reason: trimmedReason,
+         }),
+         3600
+      );
+      await this.emailService.sendAccountDeletionEmail(user.email, token);
+   }
+
+   /**
+    * Verifies account deletion token, marks request as pending, and clears session.
+    */
+   async verifyAccountDeletion(token: string): Promise<number> {
+      const cacheKey = CACHE_KEYS.ACCOUNT_DELETION_TOKEN(token);
+      const tokenValue = await this.cacheService.getCache(cacheKey);
+
+      if (!tokenValue) {
+         throw new ApiError(400, "Invalid or expired verification token");
+      }
+
+      const { userId, reason } = this.parseAccountDeletionTokenPayload(tokenValue);
+      const user = await this.userRepository.findById(userId);
+
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      await prisma.user.update({
+         where: { id: userId },
+         data: {
+            isDeleteRequested: true,
+            deleteRequestedAt: new Date(),
+            deleteRequestStatus: "PENDING",
+            deleteRequestReason: reason,
+         },
+      });
+
+      // Token used, remove from cache
+      await this.cacheService.deleteCache(cacheKey);
+
+      // Clear sessions from all devices
+      await this.userRepository.clearDeviceTokens(userId);
+
+      return userId;
+   }
+
+   /**
+    * Gets all pending deletion requests.
+    */
+   async getPendingDeletionRequests(page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }> {
+      const skip = page && limit ? (page - 1) * limit : undefined;
+      const take = limit;
+
+      const [users, total] = await prisma.$transaction([
+         prisma.user.findMany({
+            where: { deleteRequestStatus: "PENDING" },
+            include: {
+               profile: { include: { images: true } },
+               partnerPreference: true,
+               userFeature: true,
+               privacySettings: true,
+            },
+            orderBy: { deleteRequestedAt: "desc" },
+            skip,
+            take,
+         }),
+         prisma.user.count({ where: { deleteRequestStatus: "PENDING" } }),
+      ]);
+
+      return {
+         data: users.map(toUserDto),
+         total,
+      };
+   }
+
+   /**
+    * Rejects a deletion request.
+    */
+   async rejectDeletionRequest(userId: number, adminId: number): Promise<void> {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user || user.deleteRequestStatus !== "PENDING") {
+         throw new ApiError(400, "Invalid or already processed deletion request");
+      }
+
+      await prisma.user.update({
+         where: { id: userId },
+         data: {
+            deleteRequestStatus: "REJECTED",
+            deleteRequestReason: null,
+         },
+      });
+   }
+
+   /**
+    * Fetches paginated archived (deleted) users.
+    */
+   async getArchivedUsers(page: number = 1, limit: number = 10): Promise<{ data: any[]; total: number }> {
+      const skip = (page - 1) * limit;
+
+      const [data, total] = await Promise.all([
+         prisma.archivedUserData.findMany({
+            skip,
+            take: limit,
+            orderBy: { archivedAt: "desc" },
+         }),
+         prisma.archivedUserData.count(),
+      ]);
+
+      return { data, total };
+   }
+
+   /**
+    * Approves a deletion request, archives data, and scrubs PII.
+    */
+   async approveDeletionRequest(userId: number, adminId: number): Promise<void> {
+      const user = await prisma.user.findUnique({
+         where: { id: userId },
+         include: { profile: { include: { images: true } }, privacySettings: true },
+      });
+
+      if (!user || user.deleteRequestStatus !== "PENDING") {
+         throw new ApiError(400, "Invalid or already processed deletion request");
+      }
+
+      // We are retaining original data instead of hashing it for Admin viewing.
+
+      // Anonymize user
+      const anonymizedEmail = `deleted_${userId}_${crypto.randomUUID()}@premiumglobalcorp.com`;
+
+      await prisma.$transaction(async (tx) => {
+         // 1. Create archive
+         await tx.archivedUserData.create({
+            data: {
+               userId,
+               originalEmail: user.email,
+               originalPhone: user.mobileNumber,
+               originalName: user.profile?.name,
+               reasonForArchive: user.deleteRequestReason || `Admin ${adminId} approved account deletion`,
+            },
+         });
+
+         // 2. Anonymize user
+         await tx.user.update({
+            where: { id: userId },
+            data: {
+               email: anonymizedEmail,
+               mobileNumber: null,
+               password: null,
+               isDeleted: true,
+               deleteRequestStatus: "APPROVED",
+            },
+         });
+
+         // 3. Anonymize profile
+         if (user.profile) {
+            await tx.profile.update({
+               where: { userId },
+               data: {
+                  name: "Deleted User",
+                  dateOfBirth: null,
+                  city: null,
+                  state: null,
+                  country: null,
+                  highestEducation: null,
+                  bio: null,
+                  selfieUrl: null,
+                  leftSelfieUrl: null,
+                  rightSelfieUrl: null,
+                  lastLocationLat: null,
+                  lastLocationLng: null,
+               },
+            });
+
+            // Delete User Images
+            if (user.profile.images.length > 0) {
+               await tx.userImage.deleteMany({
+                  where: { profileId: user.profile.id },
+               });
+            }
+         }
+
+         // 4. Clear privacy image
+         if (user.privacySettings?.blurredImageUrl) {
+            await tx.privacySettings.update({
+               where: { userId },
+               data: { blurredImageUrl: null },
+            });
+         }
+
+         // 5. Delete device tokens and social accounts
+         await tx.deviceToken.deleteMany({ where: { userId } });
+         await tx.socialAccount.deleteMany({ where: { userId } });
+      });
+
+      // Cleanup files from S3 asynchronously
+      const filesToDelete = [];
+      if (user.profile?.selfieUrl) filesToDelete.push(user.profile.selfieUrl);
+      if (user.profile?.leftSelfieUrl) filesToDelete.push(user.profile.leftSelfieUrl);
+      if (user.profile?.rightSelfieUrl) filesToDelete.push(user.profile.rightSelfieUrl);
+      if (user.privacySettings?.blurredImageUrl) filesToDelete.push(user.privacySettings.blurredImageUrl);
+      user.profile?.images.forEach((img) => filesToDelete.push(img.imageUrl));
+
+      if (filesToDelete.length > 0) {
+         filesToDelete.forEach((file) => {
+            this.s3Service.deleteFromS3(file).catch((err: unknown) => {
+               console.error(`Failed to delete file ${file} from S3 during account deletion`, err);
+            });
+         });
+      }
    }
 }

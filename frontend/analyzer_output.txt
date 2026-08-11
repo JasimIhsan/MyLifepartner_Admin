@@ -1,0 +1,5 @@
+Analyzing frontend...                                           
+
+   info • Don't use 'BuildContext's across async gaps • lib/screens/likes_screen/widgets/matches_list.dart:132:39 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps • lib/screens/likes_screen/widgets/matches_list.dart:141:39 • use_build_context_synchronously
+

@@ -1,14 +1,27 @@
-import { CandidateProfile, IMatchRepository, UserAnswerData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
+import { notificationService } from "../composer/composer";
+import { NotificationType } from "../constants/notificationTypes";
+import { CandidateProfile, IMatchRepository, MatchProfileData, UserPreferenceData } from "../interfaces/repositories/match.repository.interface";
 import { IImageAccessRequestService } from "../interfaces/services/image-access-request.service.interface";
 import { IMatchService, InteractionState, MatchRecommendationItem, ProfileDetail, SwipeAction, SwipeInput } from "../interfaces/services/match.service.interface";
 import { IPrivacyImageMapperService } from "../interfaces/services/privacy-image-mapper.service.interface";
 import { IS3Service } from "../interfaces/services/s3.service.interface";
 import { IUserFeatureService } from "../interfaces/services/user.feature.service.interface";
 import { ApiError } from "../utils/ApiError";
+import logger from "../utils/logger";
 
 type CompatibilityScore = {
    totalScore: number;
    highlights: string[];
+};
+
+type WeightedScore = {
+   score: number;
+   comparableWeight: number;
+};
+
+type ScoredCandidate = {
+   candidate: CandidateProfile;
+   compatibility: CompatibilityScore;
 };
 
 type UserMatchContext = {
@@ -16,13 +29,38 @@ type UserMatchContext = {
    viewerPrivacyEnabled: boolean;
    approvedAccesses: Set<number>;
    preference: UserPreferenceData | null;
-   answers: UserAnswerData[];
+   viewerProfile: MatchProfileData | null;
+   preferredMaritalStatuses: Set<string>;
+   preferredMotherTongues: Set<string>;
+   viewerLanguages: Set<string>;
    sentRequestsMap: Map<number, string>;
 };
 
-const MINIMUM_MATCH_PERCENTAGE = 10;
+const MINIMUM_MATCH_PERCENTAGE = 60;
 const RECOMMENDATION_LIMIT = 20;
 const DEFAULT_PROFILE_NAME = "Unknown";
+const DEFAULT_NO_DATA_MATCH_PERCENTAGE = 50;
+
+const PREFERENCE_FIELD_WEIGHTS = {
+   age: 18,
+   maritalStatus: 27,
+   motherTongue: 20,
+} as const;
+
+const PROFILE_FIELD_WEIGHTS = {
+   city: 5,
+   state: 2,
+   country: 1,
+   highestEducation: 7,
+   childrenStatus: 6,
+   job: 5,
+   maritalStatus: 4,
+   lookingFor: 2,
+   emotionalReadiness: 1.5,
+   languages: 1,
+   smokingHabit: 0.25,
+   drinkingHabit: 0.25,
+} as const;
 
 export class MatchService implements IMatchService {
    constructor(
@@ -46,12 +84,9 @@ export class MatchService implements IMatchService {
 
       const candidates = await this.matchRepository.getCandidateProfiles(userId, excludedProfileIds);
 
-      const recommendations = await this.buildRecommendationItems(candidates, matchContext);
+      const topCandidates = this.selectTopScoredCandidates(candidates, matchContext);
 
-      return recommendations
-         .filter((recommendation) => recommendation.matchPercentage >= MINIMUM_MATCH_PERCENTAGE)
-         .sort((a, b) => b.matchPercentage - a.matchPercentage)
-         .slice(0, RECOMMENDATION_LIMIT);
+      return Promise.all(topCandidates.map(({ candidate, compatibility }) => this.mapCandidateToRecommendationItem(candidate, matchContext, compatibility)));
    }
 
    /**
@@ -76,6 +111,62 @@ export class MatchService implements IMatchService {
       await this.matchRepository.recordSwipe(input.userId, input.targetProfileId, input.action);
 
       await this.userFeatureService.consumeSwipe(input.userId, input.action);
+
+      if (action === SwipeAction.RIGHT) {
+         this.handleSwipeNotification(userId, targetProfileId).catch((error) => {
+            logger.error(`Failed to dispatch swipe notification for user ${userId}:`, error);
+         });
+      }
+   }
+
+   /**
+    * Handles sending push notifications for swipe right (interest sent / interest accepted).
+    */
+   private async handleSwipeNotification(userId: number, targetProfileId: number): Promise<void> {
+      const context = await this.matchRepository.getSwipeNotificationContext(userId, targetProfileId);
+      if (!context) {
+         return;
+      }
+
+      const { swiperUserId, swiperName, targetUserId, targetName, isMutualMatch } = context;
+
+      if (isMutualMatch) {
+         // Notify target user (who swiped right earlier) that a match is created
+         await notificationService.sendToUser({
+            userId: targetUserId,
+            type: NotificationType.NEW_MATCH,
+            title: "It's a Match! 🎉",
+            body: `You and ${swiperName} liked each other! Start chatting now.`,
+            data: {
+               type: NotificationType.NEW_MATCH,
+               profileId: String(swiperUserId),
+            },
+         });
+
+         // Notify swiper user that their interest was accepted / mutual match formed
+         await notificationService.sendToUser({
+            userId: swiperUserId,
+            type: NotificationType.INTEREST_ACCEPTED,
+            title: "Interest Accepted! 🎉",
+            body: `${targetName} accepted your interest! You can now start chatting.`,
+            data: {
+               type: NotificationType.INTEREST_ACCEPTED,
+               profileId: String(targetProfileId),
+            },
+         });
+      } else {
+         // Notify target user that someone showed interest in their profile
+         await notificationService.sendToUser({
+            userId: targetUserId,
+            type: NotificationType.NEW_LIKE,
+            title: "New Interest Received!",
+            body: `${swiperName} showed interest in your profile!`,
+            data: {
+               type: NotificationType.NEW_LIKE,
+               profileId: String(swiperUserId),
+            },
+         });
+      }
    }
 
    /**
@@ -93,7 +184,7 @@ export class MatchService implements IMatchService {
       }
 
       const matchContext = await this.getUserMatchContext(userId, [candidate.userId]);
-      const { totalScore, highlights } = this.calculateCompatibility(candidate, matchContext.preference, matchContext.answers);
+      const { totalScore, highlights } = this.calculateCompatibility(candidate, matchContext);
 
       const hasApprovedAccess = matchContext.approvedAccesses.has(candidate.userId);
       const isRestricted = (matchContext.viewerPrivacyEnabled || candidate.privacyEnabled) && !hasApprovedAccess;
@@ -114,6 +205,13 @@ export class MatchService implements IMatchService {
          highestEducation: isRestricted ? null : candidate.highestEducation,
          occupation: isRestricted ? null : candidate.occupation,
          bio: candidate.bio,
+         childrenStatus: isRestricted ? null : candidate.childrenStatus,
+         drinkingHabit: isRestricted ? null : candidate.drinkingHabit,
+         emotionalReadiness: isRestricted ? null : candidate.emotionalReadiness,
+         languages: isRestricted ? [] : candidate.languages,
+         lookingFor: isRestricted ? null : candidate.lookingFor,
+         relationshipTimeline: isRestricted ? null : candidate.relationshipTimeline,
+         smokingHabit: isRestricted ? null : candidate.smokingHabit,
          matchPercentage: Math.round(totalScore),
          compatibilityHighlights: isRestricted ? [] : highlights,
          images: await this.getPresignedImages(candidate, matchContext),
@@ -121,6 +219,7 @@ export class MatchService implements IMatchService {
          createdAt: candidate.createdAt,
          lastLoginAt: candidate.lastLoginAt,
          isVerified: candidate.isVerified,
+         isFoundingMember: candidate.isFoundingMember,
          viewerPrivacyEnabled: matchContext.viewerPrivacyEnabled,
          targetPrivacyEnabled: candidate.privacyEnabled,
          imageAccessRequestStatus: matchContext.sentRequestsMap.get(candidate.userId) ?? null,
@@ -191,14 +290,101 @@ export class MatchService implements IMatchService {
    }
 
    /**
+    * Keeps only the best recommendation candidates before image URL work is performed.
+    *
+    * @param candidates - Candidate profiles.
+    * @param matchContext - Current user's match context.
+    * @returns Top scored candidates.
+    */
+   private selectTopScoredCandidates(candidates: CandidateProfile[], matchContext: UserMatchContext): ScoredCandidate[] {
+      const heap: ScoredCandidate[] = [];
+
+      for (const candidate of candidates) {
+         const compatibility = this.calculateCompatibility(candidate, matchContext);
+
+         if (Math.round(compatibility.totalScore) < MINIMUM_MATCH_PERCENTAGE) {
+            continue;
+         }
+
+         const scoredCandidate = { candidate, compatibility };
+
+         if (heap.length < RECOMMENDATION_LIMIT) {
+            heap.push(scoredCandidate);
+            this.siftScoredCandidateUp(heap, heap.length - 1);
+            continue;
+         }
+
+         if (this.compareScoredCandidates(scoredCandidate, heap[0]) > 0) {
+            heap[0] = scoredCandidate;
+            this.siftScoredCandidateDown(heap, 0);
+         }
+      }
+
+      return heap.sort((a, b) => this.compareScoredCandidates(b, a));
+   }
+
+   /**
+    * Compares two scored candidates by recommendation priority.
+    */
+   private compareScoredCandidates(a: ScoredCandidate, b: ScoredCandidate): number {
+      const scoreDifference = a.compatibility.totalScore - b.compatibility.totalScore;
+
+      if (scoreDifference !== 0) {
+         return scoreDifference;
+      }
+
+      return b.candidate.id - a.candidate.id;
+   }
+
+   private siftScoredCandidateUp(heap: ScoredCandidate[], index: number): void {
+      let currentIndex = index;
+
+      while (currentIndex > 0) {
+         const parentIndex = Math.floor((currentIndex - 1) / 2);
+
+         if (this.compareScoredCandidates(heap[currentIndex], heap[parentIndex]) >= 0) {
+            break;
+         }
+
+         [heap[currentIndex], heap[parentIndex]] = [heap[parentIndex], heap[currentIndex]];
+         currentIndex = parentIndex;
+      }
+   }
+
+   private siftScoredCandidateDown(heap: ScoredCandidate[], index: number): void {
+      let currentIndex = index;
+
+      while (true) {
+         const leftIndex = currentIndex * 2 + 1;
+         const rightIndex = leftIndex + 1;
+         let smallestIndex = currentIndex;
+
+         if (leftIndex < heap.length && this.compareScoredCandidates(heap[leftIndex], heap[smallestIndex]) < 0) {
+            smallestIndex = leftIndex;
+         }
+
+         if (rightIndex < heap.length && this.compareScoredCandidates(heap[rightIndex], heap[smallestIndex]) < 0) {
+            smallestIndex = rightIndex;
+         }
+
+         if (smallestIndex === currentIndex) {
+            break;
+         }
+
+         [heap[currentIndex], heap[smallestIndex]] = [heap[smallestIndex], heap[currentIndex]];
+         currentIndex = smallestIndex;
+      }
+   }
+
+   /**
     * Maps candidate profile to recommendation item.
     *
     * @param candidate - Candidate profile.
     * @param matchContext - Current user's match context.
     * @returns Match recommendation item.
     */
-   private async mapCandidateToRecommendationItem(candidate: CandidateProfile, matchContext: UserMatchContext): Promise<MatchRecommendationItem> {
-      const { totalScore, highlights } = this.calculateCompatibility(candidate, matchContext.preference, matchContext.answers);
+   private async mapCandidateToRecommendationItem(candidate: CandidateProfile, matchContext: UserMatchContext, compatibility?: CompatibilityScore): Promise<MatchRecommendationItem> {
+      const { totalScore, highlights } = compatibility ?? this.calculateCompatibility(candidate, matchContext);
 
       const hasApprovedAccess = matchContext.approvedAccesses.has(candidate.userId);
       const isRestricted = (matchContext.viewerPrivacyEnabled || candidate.privacyEnabled) && !hasApprovedAccess;
@@ -213,6 +399,7 @@ export class MatchService implements IMatchService {
          city: candidate.city,
          country: candidate.country,
          isVerified: candidate.isVerified,
+         isFoundingMember: candidate.isFoundingMember,
          occupation: isRestricted ? null : candidate.occupation,
          maritalStatus: isRestricted ? null : candidate.maritalStatus,
          matchPercentage: Math.round(totalScore),
@@ -234,9 +421,9 @@ export class MatchService implements IMatchService {
     * @returns User match context.
     */
    private async getUserMatchContext(userId: number, candidateUserIds: number[] = []): Promise<UserMatchContext> {
-      const [preference, answers, viewerPrivacyEnabled, approvedAccessesList, sentRequestsList] = await Promise.all([
+      const [preference, viewerProfile, viewerPrivacyEnabled, approvedAccessesList, sentRequestsList] = await Promise.all([
          this.matchRepository.getUserPreference(userId),
-         this.matchRepository.getUserAnswers(userId),
+         this.matchRepository.getUserMatchProfile(userId),
          this.matchRepository.getViewerPrivacyStatus(userId),
          this.imageAccessRequestService.getApprovedAccessesForViewer(userId, candidateUserIds),
          this.imageAccessRequestService.getSentRequests(userId),
@@ -253,7 +440,10 @@ export class MatchService implements IMatchService {
          viewerPrivacyEnabled,
          approvedAccesses,
          preference,
-         answers,
+         viewerProfile,
+         preferredMaritalStatuses: this.toNormalizedSet(preference?.maritalStatus ?? []),
+         preferredMotherTongues: this.toNormalizedSet(preference?.motherTongue ?? []),
+         viewerLanguages: this.toNormalizedSet(viewerProfile?.languages ?? []),
          sentRequestsMap,
       };
    }
@@ -301,26 +491,18 @@ export class MatchService implements IMatchService {
     * Calculates compatibility score.
     *
     * @param candidate - Candidate profile.
-    * @param preference - User preference data.
-    * @param userAnswers - User answer data.
+    * @param matchContext - Current user's match context.
     * @returns Compatibility score.
     */
-   private calculateCompatibility(candidate: CandidateProfile, preference: UserPreferenceData | null, userAnswers: UserAnswerData[]): CompatibilityScore {
-      if (!preference) {
-         return {
-            totalScore: 70,
-            highlights: [],
-         };
-      }
-
-      const preferenceScore = this.calculatePreferenceScore(candidate, preference);
-      const personalityScore = this.calculatePersonalityScore(candidate.answers, userAnswers);
-
-      const totalScore = Math.min(preferenceScore + personalityScore, 100);
+   private calculateCompatibility(candidate: CandidateProfile, matchContext: UserMatchContext): CompatibilityScore {
+      const preferenceScore = this.calculatePreferenceScore(candidate, matchContext);
+      const profileScore = this.calculateProfileScore(candidate, matchContext);
+      const totalComparableWeight = preferenceScore.comparableWeight + profileScore.comparableWeight;
+      const totalScore = totalComparableWeight === 0 ? DEFAULT_NO_DATA_MATCH_PERCENTAGE : Math.min(preferenceScore.score + profileScore.score, 100);
 
       return {
          totalScore,
-         highlights: this.buildCompatibilityHighlights(candidate, preference),
+         highlights: this.buildCompatibilityHighlights(candidate, matchContext),
       };
    }
 
@@ -328,43 +510,102 @@ export class MatchService implements IMatchService {
     * Calculates preference score.
     *
     * @param candidate - Candidate profile.
-    * @param preference - User preference data.
+    * @param matchContext - Current user's match context.
     * @returns Preference score.
     */
-   private calculatePreferenceScore(candidate: CandidateProfile, preference: UserPreferenceData): number {
-      let score = 0;
+   private calculatePreferenceScore(candidate: CandidateProfile, matchContext: UserMatchContext): WeightedScore {
+      const score = this.createWeightedScore();
+      const preference = matchContext.preference;
 
-      if (this.isAgeMatched(candidate, preference)) {
-         score += 10;
+      if (!preference) {
+         return score;
       }
 
-      if (this.isHeightMatched(candidate, preference)) {
-         score += 10;
+      this.addWeightedMatch(score, PREFERENCE_FIELD_WEIGHTS.age, preference.ageFrom !== null && preference.ageTo !== null, this.isAgeMatched(candidate, preference));
+
+      this.addWeightedMatch(score, PREFERENCE_FIELD_WEIGHTS.maritalStatus, matchContext.preferredMaritalStatuses.size > 0, this.isPreferredMaritalStatusMatched(candidate, matchContext));
+
+      this.addWeightedMatch(score, PREFERENCE_FIELD_WEIGHTS.motherTongue, matchContext.preferredMotherTongues.size > 0, this.isMotherTongueMatched(candidate, matchContext));
+
+      return score;
+   }
+
+   /**
+    * Calculates profile similarity score.
+    *
+    * @param candidate - Candidate profile.
+    * @param matchContext - Current user's match context.
+    * @returns Profile similarity score.
+    */
+   private calculateProfileScore(candidate: CandidateProfile, matchContext: UserMatchContext): WeightedScore {
+      const score = this.createWeightedScore();
+      const viewerProfile = matchContext.viewerProfile;
+
+      if (!viewerProfile) {
+         return score;
       }
 
-      if (this.isMotherTongueMatched(candidate, preference)) {
-         score += 10;
-      }
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.city, viewerProfile.city, candidate.city);
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.state, viewerProfile.state, candidate.state);
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.country, viewerProfile.country, candidate.country);
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.highestEducation, viewerProfile.highestEducation, candidate.highestEducation);
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.childrenStatus, viewerProfile.childrenStatus, candidate.childrenStatus);
+      this.addWeightedMatch(score, PROFILE_FIELD_WEIGHTS.job, this.hasJobData(viewerProfile), this.isJobMatched(candidate, viewerProfile));
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.maritalStatus, viewerProfile.maritalStatus, candidate.maritalStatus);
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.lookingFor, viewerProfile.lookingFor, candidate.lookingFor);
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.emotionalReadiness, viewerProfile.emotionalReadiness, candidate.emotionalReadiness);
+      this.addWeightedMatch(score, PROFILE_FIELD_WEIGHTS.languages, matchContext.viewerLanguages.size > 0, this.hasSharedLanguage(candidate, matchContext.viewerLanguages));
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.smokingHabit, viewerProfile.smokingHabit, candidate.smokingHabit);
+      this.addTextMatch(score, PROFILE_FIELD_WEIGHTS.drinkingHabit, viewerProfile.drinkingHabit, candidate.drinkingHabit);
 
-      if (candidate.city) {
-         score += 10;
-      }
-
-      return Math.round((score / 40) * 90);
+      return score;
    }
 
    /**
     * Builds compatibility highlights.
     *
     * @param candidate - Candidate profile.
-    * @param preference - User preference data.
+    * @param matchContext - Current user's match context.
     * @returns Compatibility highlights.
     */
-   private buildCompatibilityHighlights(candidate: CandidateProfile, preference: UserPreferenceData): string[] {
+   private buildCompatibilityHighlights(candidate: CandidateProfile, matchContext: UserMatchContext): string[] {
       const highlights: string[] = [];
+      const viewerProfile = matchContext.viewerProfile;
 
-      if (this.isMotherTongueMatched(candidate, preference)) {
-         highlights.push("✔ Same Mother Tongue");
+      if (matchContext.preference && this.isAgeMatched(candidate, matchContext.preference)) {
+         highlights.push("Matches age preference");
+      }
+
+      if (this.isPreferredMaritalStatusMatched(candidate, matchContext)) {
+         highlights.push("Preferred marital status");
+      }
+
+      if (this.isMotherTongueMatched(candidate, matchContext)) {
+         highlights.push("Preferred mother tongue");
+      }
+
+      if (this.isSameText(viewerProfile?.city, candidate.city)) {
+         highlights.push("Same city");
+      }
+
+      if (this.isSameText(viewerProfile?.highestEducation, candidate.highestEducation)) {
+         highlights.push("Similar education");
+      }
+
+      if (this.isSameText(viewerProfile?.childrenStatus, candidate.childrenStatus)) {
+         highlights.push("Similar children status");
+      }
+
+      if (viewerProfile && this.isJobMatched(candidate, viewerProfile)) {
+         highlights.push("Same profession");
+      }
+
+      if (this.hasSharedLanguage(candidate, matchContext.viewerLanguages)) {
+         highlights.push("Shared language");
+      }
+
+      if (this.isSameText(viewerProfile?.lookingFor, candidate.lookingFor)) {
+         highlights.push("Similar relationship goal");
       }
 
       return highlights.slice(0, 3);
@@ -384,96 +625,106 @@ export class MatchService implements IMatchService {
    }
 
    /**
-    * Checks height match.
+    * Checks preferred marital status match.
     *
     * @param candidate - Candidate profile.
-    * @param preference - User preference data.
-    * @returns True if height matches.
+    * @param matchContext - Current user's match context.
+    * @returns True if marital status matches preferences.
     */
-   private isHeightMatched(candidate: CandidateProfile, preference: UserPreferenceData): boolean {
-      return true;
+   private isPreferredMaritalStatusMatched(candidate: CandidateProfile, matchContext: UserMatchContext): boolean {
+      const maritalStatus = this.normalizeText(candidate.maritalStatus);
+
+      return Boolean(maritalStatus && matchContext.preferredMaritalStatuses.has(maritalStatus));
    }
 
    /**
     * Checks mother tongue match.
     *
     * @param candidate - Candidate profile.
-    * @param preference - User preference data.
+    * @param matchContext - Current user's match context.
     * @returns True if mother tongue matches.
     */
-   private isMotherTongueMatched(candidate: CandidateProfile, preference: UserPreferenceData): boolean {
-      return Boolean(candidate.motherTongue && preference.motherTongue.length > 0 && preference.motherTongue.includes(candidate.motherTongue));
-   }
+   private isMotherTongueMatched(candidate: CandidateProfile, matchContext: UserMatchContext): boolean {
+      const motherTongue = this.normalizeText(candidate.motherTongue);
 
-
-
-   /**
-    * Calculates personality score.
-    *
-    * @param candidateAnswers - Candidate answers.
-    * @param userAnswers - Current user answers.
-    * @returns Personality score.
-    */
-   private calculatePersonalityScore(candidateAnswers: UserAnswerData[], userAnswers: UserAnswerData[]): number {
-      if (userAnswers.length === 0 || candidateAnswers.length === 0) {
-         return 0;
-      }
-
-      const userAnswerMap = new Map(userAnswers.map((answer) => [answer.questionId, answer]));
-
-      let matches = 0;
-      let compared = 0;
-
-      for (const candidateAnswer of candidateAnswers) {
-         const userAnswer = userAnswerMap.get(candidateAnswer.questionId);
-
-         if (!userAnswer) {
-            continue;
-         }
-
-         compared += 1;
-
-         if (this.areAnswersSame(candidateAnswer.answer, userAnswer.answer)) {
-            matches += 1;
-            continue;
-         }
-
-         if (this.areScoresClose(candidateAnswer.score, userAnswer.score)) {
-            matches += 0.5;
-         }
-      }
-
-      if (compared === 0) {
-         return 0;
-      }
-
-      return Math.round((matches / compared) * 10);
+      return Boolean(motherTongue && matchContext.preferredMotherTongues.has(motherTongue));
    }
 
    /**
-    * Checks if answers are same.
-    *
-    * @param candidateAnswer - Candidate answer.
-    * @param userAnswer - Current user answer.
-    * @returns True if answers are same.
+    * Creates a mutable weighted score accumulator.
     */
-   private areAnswersSame(candidateAnswer: unknown, userAnswer: unknown): boolean {
-      return JSON.stringify(candidateAnswer) === JSON.stringify(userAnswer);
+   private createWeightedScore(): WeightedScore {
+      return {
+         score: 0,
+         comparableWeight: 0,
+      };
    }
 
    /**
-    * Checks if scores are close.
-    *
-    * @param candidateScore - Candidate score.
-    * @param userScore - Current user score.
-    * @returns True if scores are close.
+    * Adds a weighted score when a field can be compared.
     */
-   private areScoresClose(candidateScore: number | null, userScore: number | null): boolean {
-      if (candidateScore === null || userScore === null) {
+   private addWeightedMatch(score: WeightedScore, weight: number, canCompare: boolean, isMatched: boolean): void {
+      if (!canCompare) {
+         return;
+      }
+
+      score.comparableWeight += weight;
+
+      if (isMatched) {
+         score.score += weight;
+      }
+   }
+
+   /**
+    * Adds a weighted exact text match.
+    */
+   private addTextMatch(score: WeightedScore, weight: number, viewerValue: string | null | undefined, candidateValue: string | null | undefined): void {
+      this.addWeightedMatch(score, weight, this.hasText(viewerValue), this.isSameText(viewerValue, candidateValue));
+   }
+
+   private hasJobData(profile: MatchProfileData): boolean {
+      return profile.jobId !== null || this.hasText(profile.occupation);
+   }
+
+   private isJobMatched(candidate: CandidateProfile, viewerProfile: MatchProfileData): boolean {
+      if (viewerProfile.jobId !== null && candidate.jobId !== null) {
+         return viewerProfile.jobId === candidate.jobId;
+      }
+
+      return this.isSameText(viewerProfile.occupation, candidate.occupation);
+   }
+
+   private hasSharedLanguage(candidate: CandidateProfile, viewerLanguages: Set<string>): boolean {
+      if (viewerLanguages.size === 0 || candidate.languages.length === 0) {
          return false;
       }
 
-      return Math.abs(candidateScore - userScore) <= 1;
+      return candidate.languages.some((language) => {
+         const normalizedLanguage = this.normalizeText(language);
+
+         return Boolean(normalizedLanguage && viewerLanguages.has(normalizedLanguage));
+      });
+   }
+
+   private toNormalizedSet(values: string[]): Set<string> {
+      return new Set(values.map((value) => this.normalizeText(value)).filter((value): value is string => Boolean(value)));
+   }
+
+   private isSameText(firstValue: string | null | undefined, secondValue: string | null | undefined): boolean {
+      const first = this.normalizeText(firstValue);
+      const second = this.normalizeText(secondValue);
+
+      return Boolean(first && second && first === second);
+   }
+
+   private hasText(value: string | null | undefined): boolean {
+      return Boolean(this.normalizeText(value));
+   }
+
+   private normalizeText(value: string | null | undefined): string | null {
+      const normalizedValue = value?.trim().toLowerCase();
+
+      return normalizedValue ? normalizedValue : null;
    }
 
    /**

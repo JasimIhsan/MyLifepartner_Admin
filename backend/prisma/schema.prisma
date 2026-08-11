@@ -12,9 +12,18 @@ model User {
   email                 String               @unique
   password              String?
   isVerified            Boolean              @default(false)
-  isBlocked             Boolean              @default(false)
-  isDeleted             Boolean              @default(false)
-  role                  Role                 @default(USER)
+  isBanned              Boolean              @default(false)
+  isSuspended           Boolean              @default(false)
+  isFoundingMember      Boolean              @default(false)
+  foundingMemberSince   DateTime?
+  bannedAt              DateTime?
+  suspendedAt           DateTime?
+  isDeleted             Boolean                @default(false)
+  isDeleteRequested     Boolean                @default(false)
+  deleteRequestedAt     DateTime?
+  deleteRequestStatus   DeletionRequestStatus?
+  deleteRequestReason   String?
+  role                  Role                   @default(USER)
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt
   chatMessages          ChatMessage[]
@@ -31,7 +40,30 @@ model User {
   transactionHistory    TransactionHistory[]
   socialAccounts        SocialAccount[]
 
+  reportsSubmitted UserReport[]          @relation("ReportedBy")
+  reportsReceived  UserReport[]          @relation("ReportTarget")
+  moderationLogs   ModerationActionLog[] @relation("UserModerationLogs")
+  blockedUsers     UserBlock[]           @relation("BlockerUser")
+  blockedBy        UserBlock[]           @relation("BlockedUser")
+  deviceTokens     DeviceToken[]
+  notifications    Notification[]
+  auditLogs        AuditLog[]
+  archivedData     ArchivedUserData?
+
   @@map("users")
+}
+
+model UserBlock {
+  id            Int      @id @default(autoincrement())
+  blockerUserId Int
+  blockedUserId Int
+  createdAt     DateTime @default(now())
+  blocker       User     @relation("BlockerUser", fields: [blockerUserId], references: [id])
+  blocked       User     @relation("BlockedUser", fields: [blockedUserId], references: [id])
+
+  @@unique([blockerUserId, blockedUserId])
+  @@index([blockedUserId], map: "user_blocks_blocked_user_id_idx")
+  @@map("user_blocks")
 }
 
 model Profile {
@@ -72,6 +104,14 @@ model Profile {
   answers                       UserAnswer[]
   images                        UserImage[]
 
+  @@index([gender, id(sort: Desc)], map: "profiles_discovery_gender_id_idx")
+  @@index([dateOfBirth], map: "profiles_discovery_date_of_birth_idx")
+  @@index([maritalStatus], map: "profiles_discovery_marital_status_idx")
+  @@index([childrenStatus], map: "profiles_discovery_children_status_idx")
+  @@index([smokingHabit], map: "profiles_discovery_smoking_habit_idx")
+  @@index([drinkingHabit], map: "profiles_discovery_drinking_habit_idx")
+  @@index([languages], type: Gin, map: "profiles_discovery_languages_gin_idx")
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin, map: "profiles_discovery_name_trgm_idx")
   @@map("profiles")
 }
 
@@ -192,6 +232,10 @@ model Admins {
   role      Role     @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  assignedReports UserReport[]          @relation("ReportAssignedAdmin")
+  moderationLogs  ModerationActionLog[] @relation("AdminModerationLogs")
+  auditLogs       AuditLog[]
 
   @@map("admins")
 }
@@ -393,16 +437,29 @@ model ChatMessage {
   @@map("chat_messages")
 }
 
-model Guide {
+model GuideCategory {
   id           Int      @id @default(autoincrement())
-  question     String   @unique
-  answer       String
-  categoryId   Int
-  bullets      String[] @default([])
+  name         String   @unique
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  guides       Guide[]
 
+  @@map("guide_categories")
+}
+
+model Guide {
+  id           Int           @id @default(autoincrement())
+  question     String        @unique
+  answer       String
+  categoryId   Int
+  bullets      String[]      @default([])
+  displayOrder Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  category     GuideCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([categoryId])
   @@map("guides")
 }
 
@@ -514,6 +571,7 @@ enum SubscriptionStatus {
 enum TransactionStatus {
   PAID
   FAILED
+  RENEWAL
   CANCELLED
   REFUNDED
 }
@@ -553,4 +611,253 @@ model SocialAccount {
 
   @@unique([provider, providerUserId])
   @@map("social_accounts")
+}
+
+model UserReport {
+  id                    Int                   @id @default(autoincrement())
+  reporterUserId        Int
+  reportedUserId        Int
+  reason                ReportReason
+  description           String?
+  evidenceScreenshots   String[]              @default([])
+  source                ReportSource          @default(OTHER)
+  relatedMessageId      Int?
+  relatedConversationId Int?
+  status                ReportStatus          @default(PENDING)
+  priority              ReportPriority        @default(MEDIUM)
+  assignedAdminId       Int?
+  adminNotes            String?
+  resolution            String?
+  actionTaken           ModerationActionType?
+  actionTakenAt         DateTime?
+  actionTakenBy         Int?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+
+  reporterUser   User                  @relation("ReportedBy", fields: [reporterUserId], references: [id])
+  reportedUser   User                  @relation("ReportTarget", fields: [reportedUserId], references: [id])
+  assignedAdmin  Admins?               @relation("ReportAssignedAdmin", fields: [assignedAdminId], references: [id])
+  moderationLogs ModerationActionLog[]
+
+  @@index([status])
+  @@index([reportedUserId])
+  @@map("user_reports")
+}
+
+model ModerationActionLog {
+  id        Int                  @id @default(autoincrement())
+  userId    Int
+  reportId  Int?
+  adminId   Int
+  action    ModerationActionType
+  reason    String?
+  notes     String?
+  expiresAt DateTime?
+  createdAt DateTime             @default(now())
+
+  user   User        @relation("UserModerationLogs", fields: [userId], references: [id])
+  admin  Admins      @relation("AdminModerationLogs", fields: [adminId], references: [id])
+  report UserReport? @relation(fields: [reportId], references: [id])
+
+  @@index([userId])
+  @@map("moderation_action_logs")
+}
+
+enum ReportReason {
+  FAKE_PROFILE
+  IMPERSONATION
+  INAPPROPRIATE_PHOTOS
+  INAPPROPRIATE_MESSAGES
+  HARASSMENT
+  SPAM
+  SCAM_OR_FRAUD
+  ASKING_FOR_MONEY
+  ABUSIVE_BEHAVIOR
+  SEXUAL_CONTENT
+  HATEFUL_CONTENT
+  THREATS
+  UNDERAGE_USER
+  MARRIED_OR_FALSE_RELATIONSHIP_STATUS
+  FALSE_INFORMATION
+  OFF_PLATFORM_SOLICITATION
+  OTHER
+}
+
+enum ReportSource {
+  PROFILE
+  CHAT
+  PHOTO
+  CALL
+  OTHER
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum ReportPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ModerationActionType {
+  NONE
+  WARNING
+  CONTENT_REMOVED
+  PROFILE_HIDDEN
+  CHAT_RESTRICTED
+  TEMPORARY_SUSPENSION
+  PERMANENT_BAN
+}
+
+model DeviceToken {
+  id         String         @id @default(uuid())
+  userId     Int
+  token      String         @unique
+  platform   DevicePlatform
+  deviceId   String?
+  isActive   Boolean        @default(true)
+  lastSeenAt DateTime       @default(now())
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("device_tokens")
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+}
+
+model Notification {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  type      String
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, isRead])
+  @@map("notifications")
+}
+
+enum ActorType {
+  USER
+  ADMIN
+  SYSTEM
+  WEBHOOK
+  SUPER_ADMIN
+}
+
+enum AuditModule {
+  AUTH
+  PROFILE
+  SUBSCRIPTION
+  PAYMENT
+  CHAT
+  CALL
+  MODERATION
+  NOTIFICATION
+  ACCOUNT
+  ADMIN
+  SYSTEM
+}
+
+enum AuditStatus {
+  SUCCESS
+  FAILED
+  PENDING
+  WARNING
+}
+
+enum AuditSeverity {
+  INFO
+  WARNING
+  ERROR
+  CRITICAL
+}
+
+enum AuditSource {
+  API
+  ADMIN
+  WEBHOOK
+  BACKGROUND_JOB
+  MOBILE
+  WEB
+  OTHER
+}
+
+model AuditLog {
+  id                Int           @id @default(autoincrement())
+  userId            Int?
+  adminId           Int?
+  actorType         ActorType
+  module            AuditModule
+  action            String
+  entityType        String?
+  entityId          String?
+  status            AuditStatus
+  severity          AuditSeverity
+  message           String
+  oldValue          Json?
+  newValue          Json?
+  metadata          Json?
+  requestId         String?
+  correlationId     String?
+  transactionId     String?
+  revenueCatEventId String?
+  source            AuditSource
+  route             String?
+  method            String?
+  statusCode        Int?
+  ipAddress         String?
+  userAgent         String?
+  device            String?
+  environment       String?
+  createdAt         DateTime      @default(now())
+
+  user  User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  admin Admins? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
+  @@index([correlationId])
+  @@index([entityType, entityId])
+  @@index([module, action])
+  @@map("audit_logs")
+}
+
+enum DeletionRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ArchivedUserData {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  originalEmail    String
+  originalPhone    String?
+  originalName     String?
+  archivedAt       DateTime @default(now())
+  reasonForArchive String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("archived_user_data")
 }

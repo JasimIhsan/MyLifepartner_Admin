@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 
 class ProfileNameRow extends StatelessWidget {
@@ -44,10 +45,13 @@ class ProfileNameRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textColor = isOverlay ? Colors.white : AppColors.textPrimary;
+    final textColor = isOverlay
+        ? Colors.white
+        : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
     final subTextColor = isOverlay
         ? Colors.white.withValues(alpha: 0.9)
-        : AppColors.textSecondary;
+        : Theme.of(context).textTheme.bodyMedium?.color ??
+              AppColors.textSecondary;
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -89,6 +93,32 @@ class ProfileNameRow extends StatelessWidget {
                         'assets/icons/verified_icon.png',
                         width: 20,
                         height: 20,
+                      ),
+                    ),
+                  ],
+                  if (profile['isFoundingMember'] == true) ...[
+                    const SizedBox(width: 6),
+                    FoundingMemberBadge(size: 20, isOverlay: isOverlay),
+                  ],
+                  if (profile['isBlocked'] == true) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.1),
+                        border: Border.all(color: Colors.red, width: 1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: const Text(
+                        'Blocked',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.red,
+                        ),
                       ),
                     ),
                   ],

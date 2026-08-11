@@ -6,8 +6,18 @@ export interface UserDto {
    name: string | null;
    email: string | null;
    role: string;
-   isBlocked: boolean;
+   isVerified: boolean;
+   isBanned: boolean;
+   isSuspended: boolean;
+   isFoundingMember: boolean;
+   foundingMemberSince: Date | null;
+   bannedAt: Date | null;
+   suspendedAt: Date | null;
    isDeleted: boolean;
+   isDeleteRequested: boolean;
+   deleteRequestedAt: Date | null;
+   deleteRequestStatus: string | null;
+   deleteRequestReason: string | null;
    profileStatus: ProfileStatus;
    hasCompletedBasicDetails: boolean;
    hasCompletedImageUpload: boolean;
@@ -28,6 +38,11 @@ export interface UserDto {
    highestEducation?: string | null;
    occupation?: string | null;
    bio?: string | null;
+   childrenStatus?: string | null;
+   lookingFor?: string | null;
+   smokingHabit?: string | null;
+   drinkingHabit?: string | null;
+   languages?: string[];
    profileCompletion?: number | null;
 
    createdAt: Date;
@@ -40,8 +55,18 @@ export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null
    name: user.profile?.name || null,
    email: user.email,
    role: user.role,
-   isBlocked: user.isBlocked,
+   isVerified: user.isVerified,
+   isBanned: user.isBanned,
+   isSuspended: user.isSuspended,
+   isFoundingMember: user.isFoundingMember,
+   foundingMemberSince: user.foundingMemberSince,
+   bannedAt: user.bannedAt,
+   suspendedAt: user.suspendedAt,
    isDeleted: user.isDeleted,
+   isDeleteRequested: user.isDeleteRequested,
+   deleteRequestedAt: user.deleteRequestedAt,
+   deleteRequestStatus: user.deleteRequestStatus,
+   deleteRequestReason: user.deleteRequestReason,
    profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,
    hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails || false,
    hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
@@ -61,6 +86,11 @@ export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null
    highestEducation: user.profile?.highestEducation || null,
    occupation: user.profile?.job?.name || null,
    bio: user.profile?.bio || null,
+   childrenStatus: user.profile?.childrenStatus || null,
+   lookingFor: user.profile?.lookingFor || null,
+   smokingHabit: user.profile?.smokingHabit || null,
+   drinkingHabit: user.profile?.drinkingHabit || null,
+   languages: user.profile?.languages || [],
    profileCompletion: user.profile?.profileCompletion || null,
 
    createdAt: user.createdAt,

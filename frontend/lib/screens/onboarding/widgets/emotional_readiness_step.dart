@@ -19,6 +19,14 @@ class EmotionalReadinessStep extends StatelessWidget {
           title: "Are you ready to find your life partner again?",
         ),
         const SizedBox(height: 20),
+        SizedBox(
+          height: 200,
+          child: Image.asset(
+            'assets/images/onboarding/emotional_readiness.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 20),
         OnboardingSelectionTile(
           label: "Yes, I'm ready",
           value: 'YES',

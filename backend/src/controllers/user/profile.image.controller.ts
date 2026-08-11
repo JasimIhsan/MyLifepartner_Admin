@@ -6,6 +6,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class ProfileImageController {
    constructor(
@@ -31,6 +33,20 @@ export class ProfileImageController {
       }
 
       const newImage = await this.profileService.uploadUserImage(userId, req.file);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "UPLOAD_PROFILE_IMAGE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User uploaded a new profile image`,
+         newValue: newImage,
+         entityType: "UserImage",
+         entityId: newImage.id.toString(),
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, newImage, "Image uploaded successfully"));
    });
@@ -60,6 +76,20 @@ export class ProfileImageController {
 
       const updatedImage = await this.profileService.replaceUserImage(userId, imageId, req.file);
 
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "REPLACE_PROFILE_IMAGE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User replaced profile image ID: ${imageId}`,
+         newValue: updatedImage,
+         entityType: "UserImage",
+         entityId: imageId.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedImage, "Image replaced successfully"));
    });
 
@@ -83,6 +113,20 @@ export class ProfileImageController {
       this.ensureUserOwnsResource(userId, authUserId);
 
       const updatedImage = await this.profileService.setPrimaryImage(userId, imageId);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "SET_PRIMARY_PROFILE_IMAGE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User set image ID: ${imageId} as primary`,
+         newValue: updatedImage,
+         entityType: "UserImage",
+         entityId: imageId.toString(),
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, updatedImage, "Primary image set successfully"));
    });
@@ -121,6 +165,17 @@ export class ProfileImageController {
       this.ensureUserOwnsResource(userId, authUserId);
 
       const result = await this.profileService.completeImageUpload(userId);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "COMPLETE_IMAGE_UPLOAD",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User completed image upload phase`,
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Image upload phase completed successfully"));
    });
@@ -162,7 +217,21 @@ export class ProfileImageController {
 
       const { user } = await this.profileService.uploadSelfie(userId, frontFile, leftFile, rightFile, latitude, longitude);
 
-      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, { selfieStatus: user.selfieStatus }, "Selfies uploaded successfully. Awaiting review."));
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "UPLOAD_SELFIE_VERIFICATION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User uploaded selfies for verification`,
+         newValue: { selfieStatus: user.selfieStatus, profileStatus: user.profileStatus },
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.API,
+      });
+
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, { selfieStatus: user.selfieStatus, profileStatus: user.profileStatus }, "Selfies uploaded successfully. Awaiting review."));
    });
 
    /**

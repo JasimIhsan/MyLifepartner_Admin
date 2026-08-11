@@ -106,18 +106,18 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: AppColors.primary, size: 20),
+          child: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
         ),
         const SizedBox(height: 8),
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: AppColors.textPrimary,
+            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
           ),
         ),
       ],
@@ -132,13 +132,13 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
       width: widget.isBottomSheet ? double.infinity : 400,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: widget.isBottomSheet
             ? const BorderRadius.vertical(top: Radius.circular(32))
             : BorderRadius.circular(32),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
             blurRadius: 30,
             spreadRadius: 10,
           ),
@@ -153,7 +153,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -166,12 +166,12 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
 
           const SizedBox(height: 24),
 
-          const Text(
+          Text(
             'Unwrapping amazing\nbenefits for you...',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               height: 1.2,
             ),
             textAlign: TextAlign.center,
@@ -203,7 +203,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: completed ? FontWeight.w700 : FontWeight.w500,
-                color: completed ? AppColors.primary : AppColors.textSecondary,
+                color: completed ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -223,9 +223,9 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
                         value: value,
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.15),
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          AppColors.primary,
+                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Theme.of(context).primaryColor,
                         ),
                         minHeight: 10,
                       ),
@@ -236,8 +236,8 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
                     width: 40,
                     child: Text(
                       '${(value * 100).toInt()}%',
-                      style: const TextStyle(
-                        color: AppColors.primary,
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -255,9 +255,9 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildStepItem(Icons.favorite_rounded, "Fetching perks"),
-              Container(width: 1, height: 24, color: Colors.grey.shade200),
+              Container(width: 1, height: 24, color: Theme.of(context).dividerColor),
               _buildStepItem(Icons.card_giftcard_rounded, "Almost there"),
-              Container(width: 1, height: 24, color: Colors.grey.shade200),
+              Container(width: 1, height: 24, color: Theme.of(context).dividerColor),
               _buildStepItem(
                 completed ? Icons.check_circle_rounded : Icons.star_rounded,
                 completed ? "All done!" : "Preparing magic",
@@ -270,17 +270,17 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.05),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Row(
               children: [
                 const Text('💖', style: TextStyle(fontSize: 22)),
                 const Spacer(),
-                const Text(
+                Text(
                   'Thanks for being awesome!',
                   style: TextStyle(
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),
@@ -288,7 +288,7 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
                 const Spacer(),
                 Icon(
                   Icons.favorite_rounded,
-                  color: AppColors.primary.withValues(alpha: 0.8),
+                  color: Theme.of(context).primaryColor.withValues(alpha: 0.8),
                   size: 16,
                 ),
               ],

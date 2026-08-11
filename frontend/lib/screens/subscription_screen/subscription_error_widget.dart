@@ -21,13 +21,13 @@ class SubscriptionErrorWidget extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.warning_amber_rounded,
                 size: 48,
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
               ),
             ).animate().fadeIn().scale(),
 
@@ -39,7 +39,7 @@ class SubscriptionErrorWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 100.ms),
@@ -51,7 +51,7 @@ class SubscriptionErrorWidget extends StatelessWidget {
               "We’re having trouble loading subscription plans right now.\nPlease try again in a moment.",
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

@@ -5,6 +5,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class ImageAccessRequestController {
    constructor(private readonly accessRequestService: IImageAccessRequestService) {}
@@ -22,6 +24,21 @@ export class ImageAccessRequestController {
       }
 
       const request = await this.accessRequestService.requestAccess(authUserId, targetUserId);
+
+      await auditService.log({
+         userId: authUserId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "REQUEST_IMAGE_ACCESS",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User requested image access from user ID: ${targetUserId}`,
+         newValue: { targetUserId, requestId: request.id },
+         entityType: "ImageAccessRequest",
+         entityId: request.id.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, request, "Image access requested successfully"));
    });
 
@@ -58,6 +75,21 @@ export class ImageAccessRequestController {
       this.validateRequestId(requestId);
 
       const request = await this.accessRequestService.approveRequest(authUserId, requestId);
+
+      await auditService.log({
+         userId: authUserId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "APPROVE_IMAGE_ACCESS",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User approved image access request ID: ${requestId}`,
+         newValue: { requestId },
+         entityType: "ImageAccessRequest",
+         entityId: requestId.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, request, "Image access request approved"));
    });
 
@@ -72,6 +104,21 @@ export class ImageAccessRequestController {
       this.validateRequestId(requestId);
 
       const request = await this.accessRequestService.rejectRequest(authUserId, requestId);
+
+      await auditService.log({
+         userId: authUserId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "REJECT_IMAGE_ACCESS",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User rejected image access request ID: ${requestId}`,
+         newValue: { requestId },
+         entityType: "ImageAccessRequest",
+         entityId: requestId.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, request, "Image access request rejected"));
    });
 
@@ -86,6 +133,21 @@ export class ImageAccessRequestController {
       this.validateRequestId(requestId);
 
       const request = await this.accessRequestService.cancelRequest(authUserId, requestId);
+
+      await auditService.log({
+         userId: authUserId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "CANCEL_IMAGE_ACCESS_REQUEST",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User cancelled image access request ID: ${requestId}`,
+         newValue: { requestId },
+         entityType: "ImageAccessRequest",
+         entityId: requestId.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, request, "Image access request cancelled"));
    });
 
@@ -100,6 +162,21 @@ export class ImageAccessRequestController {
       this.validateRequestId(requestId);
 
       const request = await this.accessRequestService.revokeRequest(authUserId, requestId);
+
+      await auditService.log({
+         userId: authUserId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "REVOKE_IMAGE_ACCESS",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User revoked image access request ID: ${requestId}`,
+         newValue: { requestId },
+         entityType: "ImageAccessRequest",
+         entityId: requestId.toString(),
+         source: AuditSource.API,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, request, "Image access revoked successfully"));
    });
 

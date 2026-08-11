@@ -43,29 +43,35 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               size: 20,
             ),
             onPressed: () => context.pop(),
           ),
-          const Text(
+          Text(
             'Choose Your Plan',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               fontWeight: FontWeight.w800,
               fontSize: 20,
               letterSpacing: 0.2,
             ),
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.receipt_long_rounded,
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               size: 24,
             ),
-            onPressed: () => context.push(AppRoutes.transactionHistory),
+            onPressed: () => context.push(AppRoutes.billingHistory),
           ),
         ],
       ),
@@ -78,7 +84,12 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
   ) {
     final List<String> displayFeatures;
     if (plan.price == 0) {
-      displayFeatures = ['Limited matches', 'Basic search'];
+      displayFeatures = [
+        'Basic profile access only',
+        'Upgrade to send interests',
+        'Upgrade to start chatting',
+        'Upgrade for video & audio calls',
+      ];
     } else if (plan.name.toLowerCase().contains('yearly') ||
         plan.name.toLowerCase().contains('annual')) {
       displayFeatures = [
@@ -88,16 +99,17 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
       ];
     } else {
       displayFeatures = [
-        'Unlimited likes',
-        'Chat without limits',
-        'See who liked you',
-        'Profile boost',
+        'Access All Premium Features',
+        'Send Interests to Any Profile',
+        'Chat with Interested Members',
+        'Unlimited Video Calls',
+        'Unlimited Audio Calls',
       ];
     }
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -114,10 +126,12 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                 children: [
                   Text(
                     "${plan.name} Plan Details",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
                     ),
                   ),
                   IconButton(
@@ -130,10 +144,22 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.05),
+                  color: provider.hasBillingIssue
+                      ? const Color(0xFFFEF2F2)
+                      : (provider.isInGracePeriod
+                            ? const Color(0xFFFFFBEB)
+                            : Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.05)),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: provider.hasBillingIssue
+                        ? const Color(0xFFFCA5A5)
+                        : (provider.isInGracePeriod
+                              ? const Color(0xFFFCD34D)
+                              : Theme.of(
+                                  context,
+                                ).primaryColor.withValues(alpha: 0.1)),
                   ),
                 ),
                 child: Column(
@@ -142,31 +168,39 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                     Text(
                       provider.currentSubscriptionMessage ??
                           'Your subscription is active.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: provider.hasBillingIssue
+                            ? const Color(0xFFDC2626)
+                            : (provider.isInGracePeriod
+                                  ? const Color(0xFFD97706)
+                                  : Theme.of(context).primaryColor),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Price: ${plan.displayPrice}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'Included Limits & Features:',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 10),
@@ -175,18 +209,20 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
                   child: Row(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.check_circle_outline_rounded,
                         size: 16,
-                        color: AppColors.primary,
+                        color: Theme.of(context).primaryColor,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         feat,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary,
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -201,17 +237,174 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
     );
   }
 
+  Widget _buildTermsAndPrivacy(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 12.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          TextButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Theme.of(context).colorScheme.surface,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                builder: (context) {
+                  return DraggableScrollableSheet(
+                    initialChildSize: 0.6,
+                    minChildSize: 0.4,
+                    maxChildSize: 0.9,
+                    expand: false,
+                    builder: (context, scrollController) {
+                      return Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Terms & Privacy Policy',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w800,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color ??
+                                        AppColors.textPrimary,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.close_rounded),
+                                  onPressed: () => context.pop(),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Expanded(
+                              child: ListView(
+                                controller: scrollController,
+                                children: [
+                                  Text(
+                                    'Terms of Service',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color ??
+                                          AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium?.color ??
+                                          AppColors.textSecondary,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Privacy Policy',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color ??
+                                          AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium?.color ??
+                                          AppColors.textSecondary,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Subscription Management',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color ??
+                                          AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium?.color ??
+                                          AppColors.textSecondary,
+                                      height: 1.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+            child: Text(
+              'Terms & Privacy',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFDFDFD),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<SubscriptionProvider>(
         builder: (context, provider, child) {
           if (provider.isLoading && provider.plans.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
                 padding: EdgeInsets.all(40.0),
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             );
           }
@@ -303,10 +496,13 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                     width: 110,
                                                     height: 110,
                                                     decoration: BoxDecoration(
-                                                      color: Colors.white,
+                                                      color: Theme.of(
+                                                        context,
+                                                      ).colorScheme.surface,
                                                       shape: BoxShape.circle,
                                                       border: Border.all(
-                                                        color: AppColors.primary
+                                                        color: Theme.of(context)
+                                                            .primaryColor
                                                             .withValues(
                                                               alpha: 0.08,
                                                             ),
@@ -333,7 +529,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                           18,
                                                         ),
                                                     child: Image.asset(
-                                                      'assets/icons/app_logo.png',
+                                                      Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                                                       fit: BoxFit.contain,
                                                       errorBuilder:
                                                           (
@@ -378,18 +574,23 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                               ),
                                             ),
                                             const SizedBox(height: 16),
-                                            const Text(
+                                            Text(
                                               'Unlock Premium Perks',
                                               textAlign: TextAlign.center,
                                               style: TextStyle(
                                                 fontSize: 24,
                                                 fontWeight: FontWeight.w900,
-                                                color: AppColors.textPrimary,
+                                                color:
+                                                    Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge
+                                                        ?.color ??
+                                                    AppColors.textPrimary,
                                                 height: 1.25,
                                               ),
                                             ),
                                             const SizedBox(height: 10),
-                                            const Padding(
+                                            Padding(
                                               padding: EdgeInsets.symmetric(
                                                 horizontal: 24.0,
                                               ),
@@ -399,6 +600,10 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   color:
+                                                      Theme.of(context)
+                                                          .textTheme
+                                                          .bodyMedium
+                                                          ?.color ??
                                                       AppColors.textSecondary,
                                                   fontWeight: FontWeight.w500,
                                                   height: 1.4,
@@ -459,9 +664,25 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                           ?.willRenew ??
                                                       true,
                                                   visuals: visuals,
-                                                  hasBillingIssue: isCurrentPlan ? provider.hasBillingIssue : false,
-                                                  isInGracePeriod: isCurrentPlan ? provider.isInGracePeriod : false,
-                                                  isCancelledButActive: isCurrentPlan ? provider.isCancelledButActive : false,
+                                                  hasBillingIssue: isCurrentPlan
+                                                      ? provider.hasBillingIssue
+                                                      : false,
+                                                  isInGracePeriod: isCurrentPlan
+                                                      ? provider.isInGracePeriod
+                                                      : false,
+                                                  isCancelledButActive:
+                                                      isCurrentPlan
+                                                      ? provider
+                                                            .isCancelledButActive
+                                                      : false,
+                                                  isDowngradeScheduled:
+                                                      isCurrentPlan
+                                                      ? provider
+                                                            .isDowngradeScheduled
+                                                      : false,
+                                                  isCancelled: isCurrentPlan
+                                                      ? provider.isCancelled
+                                                      : false,
                                                   onSubscribe: () {
                                                     if (isCurrentPlan &&
                                                         plan.price > 0) {
@@ -509,7 +730,9 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                 height: 8,
                                                 decoration: BoxDecoration(
                                                   color: isSelected
-                                                      ? AppColors.primary
+                                                      ? Theme.of(
+                                                          context,
+                                                        ).primaryColor
                                                       : const Color(0xFFE2E8F0),
                                                   borderRadius:
                                                       BorderRadius.circular(4),
@@ -519,195 +742,31 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                           ),
                                         ),
                                       ] else ...[
-                                        const Center(
+                                        Center(
                                           child: Padding(
                                             padding: EdgeInsets.all(40.0),
                                             child: Text(
                                               'No subscription plans available.',
                                               style: TextStyle(
-                                                color: AppColors.textLight,
+                                                color:
+                                                    Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.color ??
+                                                    AppColors.textLight,
                                               ),
                                             ),
                                           ),
                                         ),
                                       ],
                                       const SizedBox(height: 24),
+                                      _buildTermsAndPrivacy(context),
                                     ],
                                   ),
                                 ),
                               ),
                             );
                           },
-                        ),
-                      ),
-
-                      // Pinned Bottom Actions Row at the bottom of the viewport
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32.0,
-                          vertical: 12.0,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // TextButton(
-                            //   onPressed: () async {
-                            //     final provider = context.read<SubscriptionProvider>();
-                            //     await provider.fetchMySubscription();
-                            //     if (context.mounted) {
-                            //       ScaffoldMessenger.of(context).showSnackBar(
-                            //         const SnackBar(
-                            //           content: Text('Subscription status restored & synced.'),
-                            //           backgroundColor: Colors.black,
-                            //         ),
-                            //       );
-                            //     }
-                            //   },
-                            //   child: const Text(
-                            //     'Restore Subscription',
-                            //     style: TextStyle(
-                            //       color: AppColors.primary,
-                            //       fontSize: 13,
-                            //       fontWeight: FontWeight.w600,
-                            //     ),
-                            //   ),
-                            // ),
-                            TextButton(
-                              onPressed: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  backgroundColor: AppColors.surface,
-                                  isScrollControlled: true,
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(24),
-                                    ),
-                                  ),
-                                  builder: (context) {
-                                    return DraggableScrollableSheet(
-                                      initialChildSize: 0.6,
-                                      minChildSize: 0.4,
-                                      maxChildSize: 0.9,
-                                      expand: false,
-                                      builder: (context, scrollController) {
-                                        return Padding(
-                                          padding: const EdgeInsets.all(24.0),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  const Text(
-                                                    'Terms & Privacy Policy',
-                                                    style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                      color:
-                                                          AppColors.textPrimary,
-                                                    ),
-                                                  ),
-                                                  IconButton(
-                                                    icon: const Icon(
-                                                      Icons.close_rounded,
-                                                    ),
-                                                    onPressed: () =>
-                                                        context.pop(),
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 12),
-                                              Expanded(
-                                                child: ListView(
-                                                  controller: scrollController,
-                                                  children: const [
-                                                    Text(
-                                                      'Terms of Service',
-                                                      style: TextStyle(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: AppColors
-                                                            .textPrimary,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 6),
-                                                    Text(
-                                                      'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        height: 1.4,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 16),
-                                                    Text(
-                                                      'Privacy Policy',
-                                                      style: TextStyle(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: AppColors
-                                                            .textPrimary,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 6),
-                                                    Text(
-                                                      'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        height: 1.4,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 16),
-                                                    Text(
-                                                      'Subscription Management',
-                                                      style: TextStyle(
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.w700,
-                                                        color: AppColors
-                                                            .textPrimary,
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 6),
-                                                    Text(
-                                                      'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
-                                                      style: TextStyle(
-                                                        fontSize: 13,
-                                                        color: AppColors
-                                                            .textSecondary,
-                                                        height: 1.4,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    );
-                                  },
-                                );
-                              },
-                              child: const Text(
-                                'Terms & Privacy',
-                                style: TextStyle(
-                                  color: AppColors.primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
                     ],

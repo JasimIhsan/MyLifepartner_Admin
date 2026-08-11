@@ -59,7 +59,8 @@ export interface IProfileService {
    saveAnswer(userId: number, questionId: number, answer: unknown): Promise<UserAnswerDto>;
    completeProfile(userId: number): Promise<ProfileStatusDto>;
    getProfileCompletionStatus(userId: number): Promise<{ isCompleted: boolean; nextPendingSectionOrder: number }>;
-   updateBasicProfile(userId: number, data: UpdateProfileDto): Promise<Profile>;
+   updateProfile(userId: number, data: UpdateProfileDto): Promise<Profile>;
+   getPartnerPreference(userId: number): Promise<PartnerPreference | null>;
    updatePartnerPreference(userId: number, data: CreatePartnerPreferenceDto): Promise<PartnerPreference>;
    getUserImages(userId: number): Promise<UserImageDto[]>;
    uploadUserImage(userId: number, file: Express.Multer.File): Promise<UserImageDto>;

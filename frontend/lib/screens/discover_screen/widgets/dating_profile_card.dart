@@ -1,7 +1,9 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
+
+import 'profile_photo_fallback.dart';
 
 class DatingProfileCard extends StatelessWidget {
   final MatchRecommendation profile;
@@ -42,7 +44,7 @@ class DatingProfileCard extends StatelessWidget {
         margin: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24.0),
-          color: Colors.grey.shade900,
+          color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.2),
@@ -61,13 +63,13 @@ class DatingProfileCard extends StatelessWidget {
                 ? Image.network(
                     _imageUrl!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(),
+                    errorBuilder: (_, __, ___) => _placeholder(context),
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
-                      return _placeholder(); // or a shimmer
+                      return _placeholder(context); // or a shimmer
                     },
                   )
-                : _placeholder(),
+                : _placeholder(context),
 
             // Dim overlay if swiped
             if (isSwiped)
@@ -206,7 +208,7 @@ class DatingProfileCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: AppColors.primary,
+                            color: Theme.of(context).primaryColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Text(
@@ -218,6 +220,18 @@ class DatingProfileCard extends StatelessWidget {
                             ),
                           ),
                         ),
+                      if (profile.isVerified) ...[
+                        const SizedBox(width: 8),
+                        Image.asset(
+                          'assets/icons/verified_icon.png',
+                          width: 22,
+                          height: 22,
+                        ),
+                      ],
+                      if (profile.isFoundingMember) ...[
+                        const SizedBox(width: 8),
+                        const FoundingMemberBadge(size: 22, isOverlay: true),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -310,8 +324,9 @@ class DatingProfileCard extends StatelessWidget {
                       _ActionButton(
                         icon: Icons.favorite_rounded,
                         color: Colors.white,
-                        backgroundColor:
-                            AppColors.primary, // Using primary theme color
+                        backgroundColor: Theme.of(
+                          context,
+                        ).primaryColor, // Using primary theme color
                         borderColor: Colors.transparent,
                         label: "Interest",
                         onTap: isSwiped ? null : onInterest,
@@ -327,13 +342,8 @@ class DatingProfileCard extends StatelessWidget {
     );
   }
 
-  Widget _placeholder() {
-    return Container(
-      color: Colors.grey.shade200,
-      child: const Center(
-        child: Icon(Icons.person, size: 100, color: Colors.grey),
-      ),
-    );
+  Widget _placeholder(BuildContext context) {
+    return ProfilePhotoFallback(profileName: profile.name);
   }
 
   String _formatEnum(String value) {

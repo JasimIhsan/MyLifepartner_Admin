@@ -3,7 +3,8 @@ export interface CreateUserDto {
    mobileNumber?: string;
    password?: string;
    role?: "USER" | "ADMIN" | "SUPER_ADMIN";
-   isBlocked?: boolean;
+   isBanned?: boolean;
+   isSuspended?: boolean;
    isDeleted?: boolean;
 }
 
@@ -12,7 +13,10 @@ export interface UpdateUserDto {
    mobileNumber?: string;
    password?: string;
    role?: "USER" | "ADMIN" | "SUPER_ADMIN";
-   isBlocked?: boolean;
+   isBanned?: boolean;
+   bannedAt?: Date | null;
+   isSuspended?: boolean;
+   suspendedAt?: Date | null;
    isDeleted?: boolean;
    name?: string; // Sometimes used to update the associated profile
    isVerified?: boolean;

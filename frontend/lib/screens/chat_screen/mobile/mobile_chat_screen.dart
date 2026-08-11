@@ -1,12 +1,12 @@
-import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:life_partner_again/main.dart';
 
 import '../widgets/chat_controller.dart';
 import '../widgets/chat_list_tile.dart';
@@ -35,11 +35,11 @@ class _MobileChatScreenState extends State<MobileChatScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).canvasColor,
       body: CustomScrollView(
         slivers: [
-          const SliverAppBar(
-            backgroundColor: Colors.white,
+          SliverAppBar(
+            backgroundColor: Theme.of(context).canvasColor,
             elevation: 0,
             pinned: true,
             centerTitle: false,
@@ -51,7 +51,9 @@ class _MobileChatScreenState extends State<MobileChatScreen>
               title: Text(
                 'Messages',
                 style: TextStyle(
-                  color: AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   letterSpacing: -0.5,
@@ -65,9 +67,9 @@ class _MobileChatScreenState extends State<MobileChatScreen>
               builder: (context, provider, child) {
                 if (provider.state == MatchLoadState.loading &&
                     provider.mutualMatches.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: CircularProgressIndicator(
-                      color: AppColors.primary,
+                      color: Theme.of(context).primaryColor,
                       strokeWidth: 3,
                     ),
                   );
@@ -119,13 +121,13 @@ class _MobileChatScreenState extends State<MobileChatScreen>
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.05),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.forum_rounded,
               size: 48,
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
             ),
           ).animate().scale(
             delay: 200.ms,
@@ -133,22 +135,26 @@ class _MobileChatScreenState extends State<MobileChatScreen>
             curve: Curves.easeOutBack,
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'No messages yet',
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ).animate().fadeIn(delay: 400.ms),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'When you match with someone,\nyou can chat with them here.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               height: 1.5,
             ),
           ).animate().fadeIn(delay: 500.ms),

@@ -57,7 +57,7 @@ class _ChatListTileState extends State<ChatListTile> {
           AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 color: _isTapped || widget.isSelected
-                    ? AppColors.primary.withValues(alpha: 0.1)
+                    ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                     : Colors.transparent,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -78,10 +78,14 @@ class _ChatListTileState extends State<ChatListTile> {
                               Expanded(
                                 child: Text(
                                   widget.profile.name,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.w700,
-                                    color: AppColors.textPrimary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color ??
+                                        AppColors.textPrimary,
                                     letterSpacing: -0.3,
                                   ),
                                   maxLines: 1,
@@ -93,8 +97,8 @@ class _ChatListTileState extends State<ChatListTile> {
                                 Container(
                                   width: 12,
                                   height: 12,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).primaryColor,
                                     shape: BoxShape.circle,
                                   ),
                                 )
@@ -105,16 +109,16 @@ class _ChatListTileState extends State<ChatListTile> {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: Theme.of(
+                                      context,
+                                    ).primaryColor.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'NEW',
                                     style: TextStyle(
                                       fontSize: 10,
-                                      color: AppColors.primary,
+                                      color: Theme.of(context).primaryColor,
                                       fontWeight: FontWeight.w800,
                                       letterSpacing: 0.5,
                                     ),
@@ -144,8 +148,16 @@ class _ChatListTileState extends State<ChatListTile> {
                                   color: lastMessageStr.startsWith('Missed')
                                       ? Colors.red
                                       : (hasUnread
-                                            ? AppColors.textPrimary
-                                            : AppColors.textSecondary),
+                                            ? Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge
+                                                      ?.color ??
+                                                  AppColors.textPrimary
+                                            : Theme.of(context)
+                                                      .textTheme
+                                                      .bodyMedium
+                                                      ?.color ??
+                                                  AppColors.textSecondary),
                                 ),
                                 const SizedBox(width: 4),
                               ],
@@ -155,16 +167,31 @@ class _ChatListTileState extends State<ChatListTile> {
                                   style: TextStyle(
                                     fontSize: 15,
                                     color: isTyping
-                                        ? AppColors.primary
+                                        ? Theme.of(context).primaryColor
                                         : (lastMessageStr.startsWith('Missed')
-                                              ? Colors.red
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.error
                                               : (conversation == null
-                                                    ? AppColors.textSecondary
+                                                    ? Theme.of(context)
+                                                              .textTheme
+                                                              .bodyMedium
+                                                              ?.color ??
+                                                          AppColors
+                                                              .textSecondary
                                                     : (hasUnread
-                                                          ? AppColors
-                                                                .textPrimary
-                                                          : AppColors
-                                                                .textSecondary))),
+                                                          ? Theme.of(context)
+                                                                    .textTheme
+                                                                    .bodyLarge
+                                                                    ?.color ??
+                                                                AppColors
+                                                                    .textPrimary
+                                                          : Theme.of(context)
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.color ??
+                                                                AppColors
+                                                                    .textSecondary))),
                                     fontWeight: isTyping || hasUnread
                                         ? FontWeight.w600
                                         : (conversation == null
@@ -197,15 +224,18 @@ class _ChatListTileState extends State<ChatListTile> {
           height: 64,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: AppColors.surface,
+            color: Theme.of(context).colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
             ],
-            border: Border.all(color: Colors.white, width: 2),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.surface,
+              width: 2,
+            ),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
@@ -228,7 +258,10 @@ class _ChatListTileState extends State<ChatListTile> {
               decoration: BoxDecoration(
                 color: Colors.green,
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.surface,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -238,16 +271,16 @@ class _ChatListTileState extends State<ChatListTile> {
 
   Widget _buildFallbackAvatar() {
     return Container(
-      color: AppColors.primary.withValues(alpha: 0.1),
+      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
       child: Center(
         child: Text(
           widget.profile.name.isNotEmpty
               ? widget.profile.name[0].toUpperCase()
               : '?',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: AppColors.primary,
+            color: Theme.of(context).primaryColor,
           ),
         ),
       ),

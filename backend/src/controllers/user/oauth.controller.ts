@@ -6,6 +6,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class OAuthController {
    constructor(
@@ -24,6 +26,17 @@ export class OAuthController {
 
       // Lazily reconcile subscription state with RevenueCat upon login
       await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
+
+      await auditService.log({
+         userId: result.user.id,
+         actorType: ActorType.USER,
+         module: AuditModule.AUTH,
+         action: "USER_LOGIN_OAUTH_GOOGLE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User logged in via Google OAuth`,
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Google sign-in successful"));
    });
@@ -47,6 +60,17 @@ export class OAuthController {
 
       // Lazily reconcile subscription state with RevenueCat upon login
       await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
+
+      await auditService.log({
+         userId: result.user.id,
+         actorType: ActorType.USER,
+         module: AuditModule.AUTH,
+         action: "USER_LOGIN_OAUTH_APPLE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User logged in via Apple OAuth (${platform})`,
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Apple sign-in successful"));
    });

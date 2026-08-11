@@ -53,7 +53,7 @@ class _WebMainLayoutState extends State<WebMainLayout> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
           Column(
@@ -80,7 +80,9 @@ class _WebMainLayoutState extends State<WebMainLayout> {
               height: 600,
               child: Card(
                 elevation: 16,
-                shadowColor: Colors.black.withValues(alpha: 0.15),
+                shadowColor: Theme.of(
+                  context,
+                ).shadowColor.withValues(alpha: 0.15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -91,8 +93,8 @@ class _WebMainLayoutState extends State<WebMainLayout> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
+        backgroundColor: Theme.of(context).primaryColor,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         onPressed: () {
           setState(() {
@@ -113,16 +115,16 @@ class _WebMainLayoutState extends State<WebMainLayout> {
       height: 72,
       padding: const EdgeInsets.symmetric(horizontal: 40),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
         ],
         border: Border(
-          bottom: BorderSide(color: Colors.grey.shade200, width: 1),
+          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
         ),
       ),
       child: Row(
@@ -131,12 +133,14 @@ class _WebMainLayoutState extends State<WebMainLayout> {
           Row(
             children: [
               Image.asset(
-                'assets/icons/app_logo.png',
+                Theme.of(context).brightness == Brightness.dark
+                    ? 'assets/icons/app_logo_dark.png'
+                    : 'assets/icons/app_logo.png',
                 height: 36,
                 width: 36,
-                errorBuilder: (context, error, stackTrace) => const Icon(
+                errorBuilder: (context, error, stackTrace) => Icon(
                   Icons.favorite,
-                  color: AppColors.primary,
+                  color: Theme.of(context).primaryColor,
                   size: 24,
                 ),
               ),
@@ -144,7 +148,7 @@ class _WebMainLayoutState extends State<WebMainLayout> {
               Text(
                 "Life Partner Again",
                 style: GoogleFonts.outfit(
-                  color: AppColors.primary,
+                  color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
                   letterSpacing: -0.5,
@@ -193,8 +197,9 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                       ? Icons.notifications
                       : Icons.notifications_active_outlined,
                   color: _showNotifications
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                 ),
                 tooltip: 'Notifications',
                 onPressed: () {
@@ -220,14 +225,16 @@ class _WebMainLayoutState extends State<WebMainLayout> {
     final bool isSelected = selectedIndex == index && !_showNotifications;
     return InkWell(
       onTap: () => _onTabTapped(index),
-      hoverColor: AppColors.primary.withValues(alpha: 0.05),
+      hoverColor: Theme.of(context).primaryColor.withValues(alpha: 0.05),
       child: Container(
         height: 72,
         padding: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected ? AppColors.primary : Colors.transparent,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Colors.transparent,
               width: 3,
             ),
           ),
@@ -236,14 +243,20 @@ class _WebMainLayoutState extends State<WebMainLayout> {
           children: [
             Icon(
               icon,
-              color: isSelected ? AppColors.primary : Colors.grey.shade600,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 8),
             Text(
               label,
               style: GoogleFonts.outfit(
-                color: isSelected ? AppColors.primary : Colors.grey.shade700,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 fontSize: 15,
               ),

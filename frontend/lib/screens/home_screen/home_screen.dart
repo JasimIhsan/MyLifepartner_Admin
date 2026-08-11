@@ -7,6 +7,7 @@ import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/providers/notification_provider.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/discover_screen.dart';
 import 'package:life_partner_again/screens/likes_screen/likes_screen.dart';
@@ -38,6 +39,9 @@ class _HomePageState extends State<HomePage> {
     _selectedIndex = widget.initialIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initZegoAndChat();
+      if (mounted) {
+        context.read<NotificationProvider>().fetchUnreadCount();
+      }
     });
   }
 
@@ -111,6 +115,9 @@ class _HomePageState extends State<HomePage> {
       if (provider.profiles.isEmpty) {
         provider.loadRecommendations();
       }
+      if (mounted) {
+        context.read<NotificationProvider>().fetchUnreadCount();
+      }
     }
   }
 
@@ -119,12 +126,18 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _showNotifications = false;
       });
+      if (mounted) {
+        context.read<NotificationProvider>().fetchUnreadCount();
+      }
       return;
     }
     if (_selectedIndex != 0) {
       setState(() {
         _selectedIndex = 0;
       });
+      if (mounted) {
+        context.read<NotificationProvider>().fetchUnreadCount();
+      }
       return;
     }
 
@@ -158,7 +171,7 @@ class _HomePageState extends State<HomePage> {
         _handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: AppColors.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         extendBody: !isDesktop,
         appBar: isDesktop ? null : _buildAppBar(),
         body: _buildBody(),
@@ -170,27 +183,46 @@ class _HomePageState extends State<HomePage> {
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
       titleWidget: Image.asset(
-        'assets/icons/app_logo.png',
+        Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
         height: 40,
         fit: BoxFit.contain,
       ),
       showLeading: false,
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: AppColors.textPrimary),
+          icon: Icon(Icons.search, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
           onPressed: () {
             context.push(AppRoutes.browseProfiles);
           },
         ),
-        IconButton(
-          icon: const Icon(
-            Icons.notifications_active_outlined,
-            color: AppColors.textPrimary,
-          ),
-          onPressed: () {
-            setState(() {
-              _showNotifications = true;
-            });
+        Consumer<NotificationProvider>(
+          builder: (context, notificationProvider, child) {
+            final count = notificationProvider.unreadCount;
+            return Badge(
+              isLabelVisible: count > 0,
+              alignment: Alignment.topRight,
+              offset: const Offset(-4, 4),
+              backgroundColor: Theme.of(context).primaryColor,
+              label: Text(
+                count > 99 ? '99+' : count.toString(),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              child: IconButton(
+                icon: Icon(
+                  Icons.notifications_active_outlined,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _showNotifications = true;
+                  });
+                },
+              ),
+            );
           },
         ),
       ],

@@ -7,6 +7,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class AuthController {
    constructor(
@@ -40,6 +42,19 @@ export class AuthController {
 
       const result = await this.authService.verifyOtp(email, otp, purpose);
 
+      if ((result as any).user?.id) {
+         await auditService.log({
+            userId: (result as any).user.id,
+            actorType: ActorType.USER,
+            module: AuditModule.AUTH,
+            action: "OTP_VERIFIED",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `User verified OTP for purpose: ${purpose}`,
+            source: AuditSource.API,
+         });
+      }
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "OTP verified"));
    });
 
@@ -51,12 +66,36 @@ export class AuthController {
       const email = this.getRequiredString(req.body.email, "Email is required");
       const password = this.getRequiredString(req.body.password, "Password is required");
 
-      const result = await this.authService.login(email, password);
+      try {
+         const result = await this.authService.login(email, password);
 
-      // Lazily reconcile subscription state with RevenueCat upon login
-      await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
+         // Lazily reconcile subscription state with RevenueCat upon login
+         await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User login success"));
+         await auditService.log({
+            userId: (result as any).user.id,
+            actorType: ActorType.USER,
+            module: AuditModule.AUTH,
+            action: "USER_LOGIN",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `User logged in successfully`,
+            source: AuditSource.API,
+         });
+
+         return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User login success"));
+      } catch (error: any) {
+         await auditService.log({
+            actorType: ActorType.SYSTEM,
+            module: AuditModule.AUTH,
+            action: "USER_LOGIN_FAILED",
+            status: AuditStatus.FAILED,
+            severity: AuditSeverity.WARNING,
+            message: `Failed login attempt for email: ${email}. Reason: ${error.message || "Unknown"}`,
+            source: AuditSource.API,
+         });
+         throw error;
+      }
    });
 
    /**
@@ -68,6 +107,17 @@ export class AuthController {
       const password = this.getRequiredString(req.body.password, "Password is required");
 
       const result = await this.authService.register(email, password);
+
+      await auditService.log({
+         userId: (result as any).user.id,
+         actorType: ActorType.USER,
+         module: AuditModule.AUTH,
+         action: "USER_SIGNUP",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User registered successfully`,
+         source: AuditSource.API,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, result, "User registered successfully"));
    });

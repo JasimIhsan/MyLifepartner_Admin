@@ -30,11 +30,16 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
         showDiscardBottomSheet(context);
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: CustomAppBar(
           title: "Edit Profile",
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
+            icon: Icon(
+              Icons.arrow_back,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            ),
             onPressed: handleBackPress,
           ),
         ),
@@ -44,7 +49,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
             child: Container(
               constraints: const BoxConstraints(maxWidth: 800),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
@@ -54,7 +59,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                   ),
                 ],
                 border: Border.all(
-                  color: AppColors.borderColor.withValues(alpha: 0.5),
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                 ),
               ),
               child: Stack(
@@ -83,12 +88,14 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: AppColors.primary.withValues(
-                                            alpha: 0.2,
-                                          ),
+                                          color: Theme.of(
+                                            context,
+                                          ).primaryColor.withValues(alpha: 0.2),
                                           width: 4,
                                         ),
-                                        color: AppColors.surface,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.surface,
                                       ),
                                       child: CircleAvatar(
                                         radius: 64,
@@ -101,8 +108,10 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                               )
                                             : null,
                                         child: loadingImage
-                                            ? const CircularProgressIndicator(
-                                                color: AppColors.primary,
+                                            ? CircularProgressIndicator(
+                                                color: Theme.of(
+                                                  context,
+                                                ).primaryColor,
                                               )
                                             : (primaryImageUrl == null ||
                                                       primaryImageUrl!.isEmpty
@@ -118,16 +127,20 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     Container(
                                       padding: const EdgeInsets.all(10),
                                       decoration: BoxDecoration(
-                                        color: AppColors.primary,
+                                        color: Theme.of(context).primaryColor,
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color: Colors.white,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.surface,
                                           width: 3,
                                         ),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.camera_alt_rounded,
-                                        color: Colors.white,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimary,
                                         size: 20,
                                       ),
                                     ),
@@ -144,8 +157,10 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                   children: [
                                     Text(
                                       widget.user.name ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.black,
+                                      style: TextStyle(
+                                        color: Theme.of(
+                                          context,
+                                        ).textTheme.titleLarge?.color,
                                         fontSize: 28,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -153,8 +168,12 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     const SizedBox(height: 8),
                                     Text(
                                       widget.user.email ?? '',
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
+                                      style: TextStyle(
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.color ??
+                                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                                         fontSize: 16,
                                       ),
                                     ).animate().fadeIn(delay: 150.ms),
@@ -264,21 +283,28 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                     ? saveProfile
                                     : null,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  disabledBackgroundColor: AppColors.primary
-                                      .withValues(alpha: 0.5),
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor,
+                                  foregroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimary,
+                                  disabledBackgroundColor: Theme.of(
+                                    context,
+                                  ).primaryColor.withValues(alpha: 0.5),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(28),
                                   ),
                                   elevation: 0,
                                 ),
                                 child: isLoading
-                                    ? const SizedBox(
+                                    ? SizedBox(
                                         height: 24,
                                         width: 24,
                                         child: CircularProgressIndicator(
-                                          color: Colors.white,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimary,
                                           strokeWidth: 2.5,
                                         ),
                                       )

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 
 class LoginForm extends StatelessWidget {
@@ -114,7 +113,7 @@ class LoginForm extends StatelessWidget {
                 child: Text(
                   "Sign Up",
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
                   ),

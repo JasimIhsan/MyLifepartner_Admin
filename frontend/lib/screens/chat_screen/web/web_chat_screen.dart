@@ -57,7 +57,7 @@ class _WebChatScreenState extends State<WebChatScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1400),
@@ -69,7 +69,7 @@ class _WebChatScreenState extends State<WebChatScreen>
               Container(
                 width: 380,
                 decoration: BoxDecoration(
-                  color: AppColors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
@@ -79,7 +79,9 @@ class _WebChatScreenState extends State<WebChatScreen>
                     ),
                   ],
                   border: Border.all(
-                    color: AppColors.borderColor.withValues(alpha: 0.5),
+                    color: Theme.of(
+                      context,
+                    ).dividerColor.withValues(alpha: 0.5),
                     width: 1,
                   ),
                 ),
@@ -90,12 +92,16 @@ class _WebChatScreenState extends State<WebChatScreen>
                       padding: const EdgeInsets.all(24.0),
                       child: Row(
                         children: [
-                          const Text(
+                          Text(
                                 'Messages',
                                 style: TextStyle(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                   letterSpacing: -0.5,
                                 ),
                               )
@@ -105,19 +111,19 @@ class _WebChatScreenState extends State<WebChatScreen>
                         ],
                       ),
                     ),
-                    const Divider(
+                    Divider(
                       height: 1,
                       thickness: 1,
-                      color: AppColors.borderColor,
+                      color: Theme.of(context).dividerColor,
                     ),
                     Expanded(
                       child: Consumer<MatchProvider>(
                         builder: (context, provider, child) {
                           if (provider.state == MatchLoadState.loading &&
                               provider.mutualMatches.isEmpty) {
-                            return const Center(
+                            return Center(
                               child: CircularProgressIndicator(
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 strokeWidth: 3,
                               ),
                             );
@@ -135,9 +141,9 @@ class _WebChatScreenState extends State<WebChatScreen>
                             itemCount: mutualMatches.length,
                             separatorBuilder: (context, index) => Divider(
                               height: 1,
-                              color: AppColors.borderColor.withValues(
-                                alpha: 0.5,
-                              ),
+                              color: Theme.of(
+                                context,
+                              ).dividerColor.withValues(alpha: 0.5),
                               indent: 96,
                             ),
                             itemBuilder: (context, index) {
@@ -162,7 +168,7 @@ class _WebChatScreenState extends State<WebChatScreen>
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(32),
                     boxShadow: [
                       BoxShadow(
@@ -172,7 +178,9 @@ class _WebChatScreenState extends State<WebChatScreen>
                       ),
                     ],
                     border: Border.all(
-                      color: AppColors.borderColor.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.5),
                       width: 1,
                     ),
                   ),
@@ -204,13 +212,13 @@ class _WebChatScreenState extends State<WebChatScreen>
           Container(
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.05),
+              color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.forum_rounded,
               size: 48,
-              color: AppColors.primary,
+              color: Theme.of(context).primaryColor,
             ),
           ).animate().scale(
             delay: 200.ms,
@@ -218,12 +226,14 @@ class _WebChatScreenState extends State<WebChatScreen>
             curve: Curves.easeOutBack,
           ),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'No messages yet',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ).animate().fadeIn(delay: 400.ms),
@@ -241,33 +251,42 @@ class _WebChatScreenState extends State<WebChatScreen>
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: Theme.of(context).colorScheme.surface,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.borderColor, width: 2),
+              border: Border.all(
+                color: Theme.of(context).dividerColor,
+                width: 2,
+              ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.chat_bubble_outline_rounded,
               size: 48,
-              color: AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
             ),
           ).animate().fadeIn(duration: 400.ms).scale(),
           const SizedBox(height: 24),
-          const Text(
+          Text(
             'Select a conversation',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ).animate().fadeIn(delay: 200.ms),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Choose a match from the list\nto start messaging.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               height: 1.5,
             ),
           ).animate().fadeIn(delay: 300.ms),

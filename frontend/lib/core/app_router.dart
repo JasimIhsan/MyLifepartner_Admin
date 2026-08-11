@@ -4,10 +4,13 @@ import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/main.dart' show navigatorKey, routeObserver;
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
+import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/edit_partner_preference_screen/edit_partner_preference_screen.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/image_access_screen/image_access_screen.dart';
@@ -24,9 +27,8 @@ import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/billing_history_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
-import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
-import 'package:life_partner_again/screens/subscription_screen/transaction_history_screen.dart';
 import 'package:life_partner_again/widgets/web_main_layout.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
@@ -37,6 +39,15 @@ GoRouter createRouter(AuthProvider authProvider) {
     refreshListenable: authProvider,
     redirect: (context, state) {
       final auth = authProvider;
+
+      // 1. Initialization Guard
+      if (!auth.isInitialized) {
+        if (state.matchedLocation != AppRoutes.splash) {
+          return AppRoutes.splash;
+        }
+        return null;
+      }
+
       final isLoggedIn = auth.isLoggedIn;
       final onboarding = auth.onboardingStatus;
 
@@ -51,20 +62,22 @@ GoRouter createRouter(AuthProvider authProvider) {
 
       final isPublicRoute = publicRoutes.contains(state.matchedLocation);
 
-      // 1. Unauthenticated User Guard — redirect to landing for private routes
+      // 2. Unauthenticated User Guard
       if (!isLoggedIn) {
-        if (!isPublicRoute) {
+        // Redirect to landing if trying to access private route, OR if staying on splash after init
+        if (!isPublicRoute || state.matchedLocation == AppRoutes.splash) {
           return AppRoutes.landing;
         }
         return null;
       }
 
-      // 2. Authenticated User Guard — redirect away from public routes to home
+      // 3. Authenticated User Guard — redirect away from public routes to home
+      // (If onboarding is pending, the next evaluation will redirect from home to onboarding)
       if (isPublicRoute) {
         return AppRoutes.home;
       }
 
-      // 3. Onboarding Guard — redirect to pending onboarding step
+      // 4. Onboarding Guard — redirect to pending onboarding step
       if (onboarding != null) {
         if (!onboarding.hasCompletedBasicDetails) {
           if (state.matchedLocation != AppRoutes.onboarding) {
@@ -230,6 +243,10 @@ GoRouter createRouter(AuthProvider authProvider) {
             },
           ),
           GoRoute(
+            path: AppRoutes.editPartnerPreference,
+            builder: (context, state) => const EditPartnerPreferenceScreen(),
+          ),
+          GoRoute(
             path: AppRoutes.manageProfilePictures,
             builder: (context, state) => const ManageProfilePicturesScreen(),
           ),
@@ -246,8 +263,12 @@ GoRouter createRouter(AuthProvider authProvider) {
             builder: (context, state) => const BrowseProfilesScreen(),
           ),
           GoRoute(
-            path: AppRoutes.transactionHistory,
-            builder: (context, state) => const TransactionHistoryScreen(),
+            path: AppRoutes.billingHistory,
+            builder: (context, state) => const BillingHistoryScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.blockedUsers,
+            builder: (context, state) => const BlockedUsersScreen(),
           ),
         ],
       ),

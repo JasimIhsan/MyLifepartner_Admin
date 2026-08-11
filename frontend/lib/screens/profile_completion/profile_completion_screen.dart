@@ -98,7 +98,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
     try {
       final userName = '${_firstName?.trim() ?? ""} ${_lastName?.trim() ?? ""}'
           .trim();
-      await _profileRepo.updateBasicProfile({
+      await _profileRepo.updateProfile({
         'name': userName.isEmpty ? null : userName,
         'gender': _gender,
         'dateOfBirth': _dob != null ? '${_dob!.toIso8601String()}Z' : null,
@@ -166,7 +166,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                 context.go(AppRoutes.landing);
               }
             },
-            child: const Icon(Icons.logout, color: AppColors.textPrimary),
+            child: Icon(Icons.logout, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
           ),
         ],
       ),
@@ -482,7 +482,7 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                   text: 'Save and Continue',
                   isLoading: _isLoading,
                   onPressed: _submit,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
                 ),
               ],
             ),

@@ -1,5 +1,5 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 
 class EditProfileSection extends StatelessWidget {
@@ -19,9 +19,9 @@ class EditProfileSection extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.borderColor, width: 1.2),
+        border: Border.all(color: Theme.of(context).dividerColor, width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -37,20 +37,27 @@ class EditProfileSection extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
             child: Row(
               children: [
-                Icon(icon, size: 20, color: AppColors.primary),
+                Icon(icon, size: 20, color: Theme.of(context).primaryColor),
                 const SizedBox(width: 8),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1, thickness: 1, color: AppColors.divider),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).dividerColor,
+          ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -73,10 +80,13 @@ class EditProfileLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w600,
-        color: AppColors.textPrimary,
+        color:
+            Theme.of(context).textTheme.bodyLarge?.color ??
+            Theme.of(context).textTheme.bodyLarge?.color ??
+            AppColors.textPrimary,
       ),
     );
   }
@@ -107,13 +117,22 @@ class EditProfileReadOnlyField extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: AppColors.background.withValues(alpha: 0.5),
+            color: Theme.of(
+              context,
+            ).scaffoldBackgroundColor.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.borderColor),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
           child: Row(
             children: [
-              Icon(icon, size: 20, color: AppColors.textSecondary),
+              Icon(
+                icon,
+                size: 20,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -121,28 +140,37 @@ class EditProfileReadOnlyField extends StatelessWidget {
                   children: [
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       lockedReason,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 10,
-                        color: AppColors.textLight,
+                        color:
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                            AppColors.textLight,
                         fontStyle: FontStyle.italic,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.lock_outline_rounded,
                 size: 16,
-                color: AppColors.textLight,
+                color:
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
               ),
             ],
           ),
@@ -162,6 +190,8 @@ class EditProfileTextField extends StatelessWidget {
   final bool enabled;
   final bool readOnly;
   final VoidCallback? onTap;
+  final int? minLines;
+  final int? maxLines;
 
   const EditProfileTextField({
     super.key,
@@ -174,6 +204,8 @@ class EditProfileTextField extends StatelessWidget {
     this.enabled = true,
     this.readOnly = false,
     this.onTap,
+    this.minLines,
+    this.maxLines,
   });
 
   @override
@@ -187,16 +219,35 @@ class EditProfileTextField extends StatelessWidget {
       onTap: onTap,
       style: TextStyle(
         fontSize: 15,
-        color: enabled ? AppColors.textPrimary : AppColors.textSecondary,
+        color: enabled
+            ? Theme.of(context).textTheme.bodyLarge?.color ??
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary
+            : Theme.of(context).textTheme.bodyMedium?.color ??
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
       ),
       decoration: InputDecoration(
         hintText: hintText,
-        hintStyle: const TextStyle(color: AppColors.textLight, fontSize: 14),
+        hintStyle: TextStyle(
+          color:
+              Theme.of(context).textTheme.bodySmall?.color ??
+              Theme.of(context).textTheme.bodySmall?.color ??
+              AppColors.textLight,
+          fontSize: 14,
+        ),
         filled: true,
         fillColor: enabled
-            ? AppColors.surface
-            : AppColors.background.withValues(alpha: 0.5),
-        prefixIcon: Icon(prefixIcon, color: AppColors.textSecondary, size: 20),
+            ? Theme.of(context).colorScheme.surface
+            : Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.5),
+        prefixIcon: Icon(
+          prefixIcon,
+          color:
+              Theme.of(context).textTheme.bodyMedium?.color ??
+              Theme.of(context).textTheme.bodyMedium?.color ??
+              AppColors.textSecondary,
+          size: 20,
+        ),
         suffixIcon: suffixIcon,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -204,27 +255,45 @@ class EditProfileTextField extends StatelessWidget {
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.borderColor, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.borderColor, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.borderColor, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).dividerColor,
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+          borderSide: BorderSide(
+            color: Theme.of(context).primaryColor,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
+            width: 1,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.error,
+            width: 1.5,
+          ),
         ),
       ),
     );
@@ -264,18 +333,23 @@ class EditProfileCountryPicker extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: hasCountry ? AppColors.primary : AppColors.borderColor,
+            color: hasCountry
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).dividerColor,
             width: hasCountry ? 1.5 : 1,
           ),
         ),
         child: Row(
           children: [
-            const Icon(
+            Icon(
               Icons.public_outlined,
-              color: AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -285,14 +359,21 @@ class EditProfileCountryPicker extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 15,
                   color: hasCountry
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
+                      ? Theme.of(context).textTheme.bodyLarge?.color ??
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary
+                      : Theme.of(context).textTheme.bodyMedium?.color ??
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               size: 22,
             ),
           ],
@@ -352,17 +433,20 @@ class _EditProfileCountryPickerSheetState
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.borderColor,
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Select Country',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
@@ -373,33 +457,45 @@ class _EditProfileCountryPickerSheetState
                 style: const TextStyle(fontSize: 14),
                 decoration: InputDecoration(
                   hintText: 'Search country...',
-                  hintStyle: const TextStyle(
-                    color: AppColors.textLight,
+                  hintStyle: TextStyle(
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
                     fontSize: 14,
                   ),
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.search,
-                    color: AppColors.textSecondary,
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
                     size: 20,
                   ),
                   filled: true,
-                  fillColor: AppColors.background.withValues(alpha: 0.5),
+                  fillColor: Theme.of(
+                    context,
+                  ).scaffoldBackgroundColor.withValues(alpha: 0.5),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
                     vertical: 12,
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.borderColor),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: AppColors.borderColor),
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
                       width: 1.5,
                     ),
                   ),
@@ -417,7 +513,9 @@ class _EditProfileCountryPickerSheetState
                       margin: const EdgeInsets.symmetric(vertical: 2),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.05)
+                            ? Theme.of(
+                                context,
+                              ).primaryColor.withValues(alpha: 0.05)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -434,14 +532,20 @@ class _EditProfileCountryPickerSheetState
                                 ? FontWeight.w600
                                 : FontWeight.w400,
                             color: isSelected
-                                ? AppColors.primary
-                                : AppColors.textPrimary,
+                                ? Theme.of(context).primaryColor
+                                : Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                           ),
                         ),
                         trailing: isSelected
-                            ? const Icon(
+                            ? Icon(
                                 Icons.check_circle_rounded,
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 size: 20,
                               )
                             : null,
@@ -660,22 +764,30 @@ const List<String> _kCountries = [
 
 class MinimalTextField extends StatelessWidget {
   final TextEditingController controller;
-  final String label;
+  final String? label;
   final String hintText;
   final bool enabled;
   final bool readOnly;
   final VoidCallback? onTap;
+  final int? minLines;
+  final int? maxLines;
   final String? Function(String?)? validator;
+  final double fontSize;
+  final TextInputType? keyboardType;
 
   const MinimalTextField({
     super.key,
     required this.controller,
-    required this.label,
     required this.hintText,
+    this.label,
     this.enabled = true,
     this.readOnly = false,
     this.onTap,
+    this.minLines,
+    this.maxLines,
     this.validator,
+    this.fontSize = 16,
+    this.keyboardType,
   });
 
   @override
@@ -685,14 +797,18 @@ class MinimalTextField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: AppColors.textSecondary,
+          if (label != null)
+            Text(
+              label ?? "",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
             ),
-          ),
           const SizedBox(height: 2),
           TextFormField(
             controller: controller,
@@ -700,38 +816,99 @@ class MinimalTextField extends StatelessWidget {
             readOnly: readOnly,
             onTap: onTap,
             validator: validator,
+            minLines: minLines,
+            maxLines: (minLines == null && maxLines == null) ? 1 : maxLines,
+            keyboardType: keyboardType,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: fontSize,
               fontWeight: FontWeight.bold,
-              color: enabled ? AppColors.textPrimary : AppColors.textLight,
+              color: enabled
+                  ? Theme.of(context).textTheme.bodyLarge?.color ??
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary
+                  : Theme.of(context).textTheme.bodySmall?.color ??
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
             ),
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: const TextStyle(
-                color: AppColors.textLight,
+              hintStyle: TextStyle(
+                color:
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
                 fontSize: 14,
                 fontWeight: FontWeight.normal,
               ),
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(vertical: 6),
-              border: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.borderColor),
+              contentPadding: EdgeInsets.symmetric(
+                vertical: (minLines ?? 1) > 1 ? 12 : 6,
+                horizontal: (minLines ?? 1) > 1 ? 12 : 0,
               ),
-              enabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.borderColor),
-              ),
-              disabledBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.borderColor),
-              ),
-              focusedBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.primary, width: 1.5),
-              ),
-              errorBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.error),
-              ),
-              focusedErrorBorder: const UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.error, width: 1.5),
-              ),
+              border: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+              enabledBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+              disabledBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                    ),
+              focusedBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 1.5,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).primaryColor,
+                        width: 1.5,
+                      ),
+                    ),
+              errorBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
+                    ),
+              focusedErrorBorder: (minLines ?? 1) > 1
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                        width: 1.5,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.error,
+                        width: 1.5,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -764,39 +941,55 @@ class MinimalReadOnlyField extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.lock_outline_rounded,
                 size: 14,
-                color: AppColors.textLight,
+                color:
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    Theme.of(context).textTheme.bodySmall?.color ??
+                    AppColors.textLight,
               ),
             ],
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: AppColors.textLight,
+              color:
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  AppColors.textLight,
             ),
           ),
           const SizedBox(height: 2),
           Text(
             lockedReason,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
-              color: AppColors.textLight,
+              color:
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  Theme.of(context).textTheme.bodySmall?.color ??
+                  AppColors.textLight,
               fontStyle: FontStyle.italic,
             ),
           ),
           const SizedBox(height: 8),
-          const Divider(height: 1, thickness: 1, color: AppColors.divider),
+          Divider(
+            height: 1,
+            thickness: 1,
+            color: Theme.of(context).dividerColor,
+          ),
         ],
       ),
     );
@@ -820,6 +1013,7 @@ class MinimalCountryPicker extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: () async {
           final selected = await showModalBottomSheet<String>(
             context: context,
@@ -838,12 +1032,15 @@ class MinimalCountryPicker extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Country',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
@@ -856,19 +1053,30 @@ class MinimalCountryPicker extends StatelessWidget {
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: hasCountry
-                        ? AppColors.textPrimary
-                        : AppColors.textLight,
+                        ? Theme.of(context).textTheme.bodyLarge?.color ??
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary
+                        : Theme.of(context).textTheme.bodySmall?.color ??
+                              Theme.of(context).textTheme.bodySmall?.color ??
+                              AppColors.textLight,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
-                  color: AppColors.textLight,
+                  color:
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      AppColors.textLight,
                   size: 20,
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            const Divider(height: 1, thickness: 1, color: AppColors.divider),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: Theme.of(context).dividerColor,
+            ),
           ],
         ),
       ),

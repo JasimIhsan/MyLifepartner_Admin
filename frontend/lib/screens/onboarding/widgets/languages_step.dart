@@ -76,7 +76,7 @@ class _LanguagesStepState extends State<LanguagesStep> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.textLight,
+                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                 ),
               ),
               const SizedBox(height: 12),
@@ -91,7 +91,7 @@ class _LanguagesStepState extends State<LanguagesStep> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.08),
+                        color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Row(
@@ -99,8 +99,8 @@ class _LanguagesStepState extends State<LanguagesStep> {
                         children: [
                           Text(
                             lang,
-                            style: const TextStyle(
-                              color: AppColors.primary,
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
                               fontWeight: FontWeight.w500,
                               fontSize: 14,
                             ),
@@ -108,9 +108,9 @@ class _LanguagesStepState extends State<LanguagesStep> {
                           const SizedBox(width: 8),
                           GestureDetector(
                             onTap: () => widget.onLanguageToggled(lang),
-                            child: const Icon(
+                            child: Icon(
                               Icons.close,
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                               size: 14,
                             ),
                           ),
@@ -130,13 +130,13 @@ class _LanguagesStepState extends State<LanguagesStep> {
                 },
                 decoration: InputDecoration(
                   hintText: "Search languages",
-                  hintStyle: const TextStyle(
-                    color: AppColors.textLight,
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                     fontSize: 15,
                   ),
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.search,
-                    color: AppColors.textLight,
+                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                     size: 20,
                   ),
                   filled: true,
@@ -144,22 +144,22 @@ class _LanguagesStepState extends State<LanguagesStep> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 14),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(
-                      color: AppColors.borderColor,
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
                       width: 1,
                     ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(
-                      color: AppColors.borderColor,
+                    borderSide: BorderSide(
+                      color: Theme.of(context).dividerColor,
                       width: 1,
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
-                    borderSide: const BorderSide(
-                      color: AppColors.primary,
+                    borderSide: BorderSide(
+                      color: Theme.of(context).primaryColor,
                       width: 1,
                     ),
                   ),
@@ -179,10 +179,10 @@ class _LanguagesStepState extends State<LanguagesStep> {
                         ),
                         title: Text(
                           lang,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                           ),
                         ),
                         trailing: Container(
@@ -190,14 +190,14 @@ class _LanguagesStepState extends State<LanguagesStep> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.borderColor,
+                              color: Theme.of(context).dividerColor,
                               width: 1.5,
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.add,
                             size: 14,
-                            color: AppColors.textPrimary,
+                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                           ),
                         ),
                         onTap: () {
@@ -205,7 +205,7 @@ class _LanguagesStepState extends State<LanguagesStep> {
                         },
                       ),
                       if (index < filteredLangs.length - 1)
-                        const Divider(height: 1, color: AppColors.divider),
+                        Divider(height: 1, color: Theme.of(context).dividerColor),
                     ],
                   );
                 }).toList(),
@@ -217,7 +217,7 @@ class _LanguagesStepState extends State<LanguagesStep> {
                     child: Text(
                       "No matching languages found",
                       style: TextStyle(
-                        color: AppColors.textLight,
+                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
                         fontSize: 14,
                       ),
                     ),

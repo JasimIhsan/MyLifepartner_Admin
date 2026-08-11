@@ -1,5 +1,5 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/services/image_access_service.dart';
 
@@ -80,29 +80,35 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios_new_rounded,
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
             onPressed: () => context.pop(true),
           ),
-          title: const Text(
+          title: Text(
             'Image Access Requests',
             style: TextStyle(
-              color: AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-          bottom: const TabBar(
-            labelColor: AppColors.primary,
-            unselectedLabelColor: AppColors.textSecondary,
-            indicatorColor: AppColors.primary,
+          bottom: TabBar(
+            labelColor: Theme.of(context).primaryColor,
+            unselectedLabelColor:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
+            indicatorColor: Theme.of(context).primaryColor,
             indicatorWeight: 3,
             tabs: [
               Tab(text: 'Received'),
@@ -111,8 +117,10 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
           ),
         ),
         body: _isLoading
-            ? const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+            ? Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               )
             : TabBarView(children: [_buildReceivedTab(), _buildSentTab()]),
       ),
@@ -142,11 +150,11 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
 
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
-          color: Colors.white,
-          surfaceTintColor: Colors.white,
+          color: Theme.of(context).cardColor,
+          surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.borderColor, width: 1),
+            side: BorderSide(color: Theme.of(context).dividerColor, width: 1),
           ),
           elevation: 0,
           child: Padding(
@@ -156,12 +164,19 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.grey.shade100,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).dividerColor.withValues(alpha: 0.1),
                   backgroundImage: avatarUrl != null
                       ? NetworkImage(avatarUrl)
                       : null,
                   child: avatarUrl == null
-                      ? const Icon(Icons.person, color: Colors.grey, size: 28)
+                      ? Icon(
+                          Icons.person,
+                          color:
+                              Theme.of(context).iconTheme.color ?? Colors.grey,
+                          size: 28,
+                        )
                       : null,
                 ),
                 const SizedBox(width: 16),
@@ -171,10 +186,12 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
                     children: [
                       Text(
                         age != null ? '$name, $age' : name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -185,8 +202,9 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
                         style: TextStyle(
                           fontSize: 13,
                           color: status == 'PENDING'
-                              ? AppColors.primary
-                              : AppColors.textSecondary,
+                              ? Theme.of(context).primaryColor
+                              : Theme.of(context).textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
                           fontWeight: status == 'PENDING'
                               ? FontWeight.w500
                               : FontWeight.normal,
@@ -301,11 +319,11 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
 
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
-          color: Colors.white,
-          surfaceTintColor: Colors.white,
+          color: Theme.of(context).cardColor,
+          surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: AppColors.borderColor, width: 1),
+            side: BorderSide(color: Theme.of(context).dividerColor, width: 1),
           ),
           elevation: 0,
           child: Padding(
@@ -315,12 +333,19 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.grey.shade100,
+                  backgroundColor: Theme.of(
+                    context,
+                  ).dividerColor.withValues(alpha: 0.1),
                   backgroundImage: avatarUrl != null
                       ? NetworkImage(avatarUrl)
                       : null,
                   child: avatarUrl == null
-                      ? const Icon(Icons.person, color: Colors.grey, size: 28)
+                      ? Icon(
+                          Icons.person,
+                          color:
+                              Theme.of(context).iconTheme.color ?? Colors.grey,
+                          size: 28,
+                        )
                       : null,
                 ),
                 const SizedBox(width: 16),
@@ -330,10 +355,12 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
                     children: [
                       Text(
                         age != null ? '$name, $age' : name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -398,23 +425,33 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 64, color: Colors.grey.shade300),
+            Icon(
+              icon,
+              size: 64,
+              color:
+                  Theme.of(context).iconTheme.color?.withValues(alpha: 0.3) ??
+                  Colors.grey.shade300,
+            ),
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),

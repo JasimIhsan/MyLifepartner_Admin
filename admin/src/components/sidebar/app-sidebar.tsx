@@ -1,12 +1,15 @@
 "use client";
 
+import AppLogoLight from "@/assets/app_logo.png";
+import AppLogoDark from "@/assets/app_logo_dark.png";
 import { NavSecondary } from "@/components/sidebar/nav-secondary";
 import { NavUser } from "@/components/sidebar/nav-user";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import type { RootState } from "@/store";
-import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, ListChecks, Send, UserCheck2Icon, UsersIcon } from "lucide-react";
+import { BookOpen, Command, CreditCard, LayoutDashboard, LifeBuoy, Send, Trash2, UserCheck2Icon, UserX, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { NavMain } from "./nav-main";
 
 const data = {
@@ -16,21 +19,63 @@ const data = {
          url: "/",
          icon: LayoutDashboard,
       },
+
+      // User Management
       {
          title: "Users",
          url: "/users",
          icon: UsersIcon,
       },
       {
-         title: "Questionnaire",
-         url: "/questionnaire",
-         icon: ListChecks,
-      },
-      {
          title: "Profile Verification",
          url: "/profile-verification",
          icon: UserCheck2Icon,
       },
+      {
+         title: "Suspended Users",
+         url: "/suspended-users",
+         icon: UserX,
+      },
+      {
+         title: "Deletion Requests",
+         url: "/deletion-requests",
+         icon: Trash2,
+      },
+      // {
+      //    title: "Deleted Users Archive",
+      //    url: "/deleted-users",
+      //    icon: ArchiveX,
+      // },
+
+      // Trust & Safety
+      {
+         title: "Reports",
+         url: "/reports",
+         icon: Send,
+      },
+
+      // Payments & Subscriptions
+      {
+         title: "Subscriptions",
+         url: "#",
+         icon: CreditCard,
+         items: [
+            {
+               title: "Plans",
+               url: "/subscriptions/plans",
+            },
+            {
+               title: "Features",
+               url: "/subscriptions/features",
+            },
+            {
+               title: "Transactions",
+               url: "/transactions",
+            },
+         ],
+      },
+
+      // Content
       {
          title: "Image Assets",
          url: "/image-assets",
@@ -41,23 +86,15 @@ const data = {
          url: "/lpa-guide",
          icon: BookOpen,
       },
+
+      // System
       {
-         title: "Subscriptions",
-         url: "#",
-         icon: CreditCard,
-         isActive: true,
-         items: [
-            {
-               title: "Plans",
-               url: "/subscriptions/plans",
-            },
-            {
-               title: "Features",
-               url: "/subscriptions/features",
-            },
-         ],
+         title: "Audit Logs",
+         url: "/audit-logs",
+         icon: Command,
       },
    ],
+
    navSecondary: [
       {
          title: "Admins",
@@ -89,15 +126,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
                <SidebarMenuItem>
                   <SidebarMenuButton size="lg" asChild>
-                     <a href="#">
-                        <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                           <Command className="size-4" />
+                     <Link to="/">
+                        <div className="flex h-8 items-center justify-center">
+                           <img src={AppLogoLight} alt="App Logo" className="h-8 w-auto object-contain dark:hidden" />
+                           <img src={AppLogoDark} alt="App Logo" className="hidden h-8 w-auto object-contain dark:block" />
                         </div>
-                        <div className="grid flex-1 text-left text-sm leading-tight">
+                        {/* <div className="grid flex-1 text-left text-sm leading-tight">
                            <span className="truncate font-medium">Life Partner Again</span>
                            <span className="truncate text-xs">Admin Panel</span>
-                        </div>
-                     </a>
+                        </div> */}
+                     </Link>
                   </SidebarMenuButton>
                </SidebarMenuItem>
             </SidebarMenu>

@@ -6,6 +6,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class AdminUsersController {
    constructor(private readonly userService: IUserService) {}
@@ -35,6 +37,73 @@ export class AdminUsersController {
    });
 
    /**
+    * Toggles user ban status.
+    *
+    * @route PATCH /api/v1/admin/users/:id/ban
+    */
+   public toggleBanUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const result = await this.userService.toggleBanStatus(userId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.MODERATION,
+         action: "TOGGLE_USER_BAN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Toggled ban status for user ID: ${userId} to ${result.isBanned}`,
+         newValue: { isBanned: result.isBanned },
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User ban status updated successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/admin/users/suspended
+    * @purpose Fetches all suspended users.
+    */
+   public getSuspendedUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const users = await this.userService.getSuspendedUsers();
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, users, "Suspended users fetched successfully"));
+   });
+
+   /**
+    * @route PATCH /api/v1/admin/users/:id/lift-suspension
+    * @purpose Lifts a user's temporary suspension.
+    */
+   public liftSuspension = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const result = await this.userService.liftSuspension(userId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.MODERATION,
+         action: "LIFT_USER_SUSPENSION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `Lifted suspension for user ID: ${userId}`,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User suspension lifted successfully"));
+   });
+
+   /**
     * @route POST /api/v1/admin/users
     * @purpose Creates a new user.
     */
@@ -42,6 +111,17 @@ export class AdminUsersController {
       const createPayload: CreateUserDto = req.body;
 
       const result = await this.userService.createUser(createPayload);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action: "CREATE_USER_BY_ADMIN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Admin created user: ${result.email}`,
+         newValue: result,
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, result, "User created successfully"));
    });
@@ -60,24 +140,61 @@ export class AdminUsersController {
 
       const result = await this.userService.updateUser(userId, updatePayload);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action: "UPDATE_USER_BY_ADMIN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Admin updated user ID: ${userId}`,
+         newValue: updatePayload,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User updated successfully"));
    });
 
    /**
-    * @route PATCH /api/v1/admin/users/:id/block-status
-    * @purpose Blocks or unblocks a user.
+    * @route PATCH /api/v1/admin/users/:id/founding-member
+    * @purpose Toggles founding-member status.
     */
-   public toggleBlockUser = asyncHandler(async (req: AuthRequest, res: Response) => {
+   public toggleFoundingMemberStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
       const userId = Number(req.params.id);
+      const adminId = Number(req.user?.id);
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
       }
 
-      const result = await this.userService.toggleBlockUser(userId);
+      const { user: result, previousIsFoundingMember, previousFoundingMemberSince } = await this.userService.toggleFoundingMemberStatus(userId);
+      const action = result.isFoundingMember ? "GRANT_FOUNDING_MEMBER" : "REVOKE_FOUNDING_MEMBER";
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User block status toggled successfully"));
+      await auditService.log({
+         userId,
+         adminId: Number.isInteger(adminId) && adminId > 0 ? adminId : undefined,
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action,
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Admin ${result.isFoundingMember ? "granted" : "revoked"} founding-member status for user ID: ${userId}`,
+         oldValue: { isFoundingMember: previousIsFoundingMember, foundingMemberSince: previousFoundingMemberSince },
+         newValue: { isFoundingMember: result.isFoundingMember, foundingMemberSince: result.foundingMemberSince },
+         metadata: {
+            affectedUserId: userId,
+            actingAdminId: Number.isInteger(adminId) && adminId > 0 ? adminId : null,
+         },
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Founding-member status updated successfully"));
    });
+
+
 
    /**
     * @route DELETE /api/v1/admin/users/:id
@@ -91,6 +208,18 @@ export class AdminUsersController {
       }
 
       await this.userService.deleteUser(userId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action: "DELETE_USER_BY_ADMIN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Admin deleted user ID: ${userId}`,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "User deleted successfully"));
    });
@@ -143,6 +272,111 @@ export class AdminUsersController {
          selfieStatus: "APPROVED",
       });
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.PROFILE,
+         action: "VERIFY_USER_PROFILE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `Admin verified profile for user ID: ${userId}`,
+         newValue: { isVerified: true, selfieStatus: "APPROVED" },
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "User profile verified successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/admin/users/deletion-requests
+    * @purpose Fetches all pending deletion requests.
+    */
+   public getPendingDeletionRequests = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const pageNumber = req.query.page ? Number(req.query.page) : undefined;
+      const limitNumber = req.query.limit ? Number(req.query.limit) : undefined;
+
+      const { data, total } = await this.userService.getPendingDeletionRequests(pageNumber, limitNumber);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "Pending deletion requests fetched"));
+   });
+
+   /**
+    * @route POST /api/v1/admin/users/:id/approve-deletion
+    * @purpose Approves a deletion request.
+    */
+   public approveDeletionRequest = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+      const adminId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      await this.userService.approveDeletionRequest(userId, adminId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action: "APPROVE_ACCOUNT_DELETION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Admin approved account deletion for user ID: ${userId}`,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Deletion request approved and data anonymized"));
+   });
+
+   /**
+    * @route POST /api/v1/admin/users/:id/reject-deletion
+    * @purpose Rejects a deletion request.
+    */
+   public rejectDeletionRequest = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+      const adminId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      await this.userService.rejectDeletionRequest(userId, adminId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ACCOUNT,
+         action: "REJECT_ACCOUNT_DELETION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Admin rejected account deletion for user ID: ${userId}`,
+         entityType: "User",
+         entityId: userId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Deletion request rejected"));
+   });
+
+   /**
+    * @route GET /api/v1/admin/users/archived
+    * @purpose Fetches all archived (deleted) users
+    */
+   public getArchivedUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const pageNumber = req.query.page ? Number(req.query.page) : 1;
+      const limitNumber = req.query.limit ? Number(req.query.limit) : 10;
+
+      if (!Number.isInteger(pageNumber) || pageNumber <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid page number");
+      }
+
+      if (!Number.isInteger(limitNumber) || limitNumber <= 0 || limitNumber > 100) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid limit number");
+      }
+
+      const { data, total } = await this.userService.getArchivedUsers(pageNumber, limitNumber);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "Archived users fetched successfully"));
    });
 }

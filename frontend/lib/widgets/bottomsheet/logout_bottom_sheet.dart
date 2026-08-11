@@ -26,9 +26,9 @@ class LogoutBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(top: 16, bottom: 40, left: 24, right: 24),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -38,7 +38,7 @@ class LogoutBottomSheet extends StatelessWidget {
             width: 48,
             height: 5,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: Theme.of(context).dividerColor,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -60,24 +60,24 @@ class LogoutBottomSheet extends StatelessWidget {
           const SizedBox(height: 24),
 
           // Title
-          const Text(
+          Text(
             'Log Out',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
           const SizedBox(height: 12),
 
           // Subtitle
-          const Text(
+          Text(
             'Are you sure you want to log out of your account? You will need to sign in again to access your matches and chats.',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
               height: 1.5,
             ),
           ).animate().fadeIn(delay: 200.ms, duration: 300.ms),

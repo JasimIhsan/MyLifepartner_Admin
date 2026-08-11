@@ -107,7 +107,7 @@ export function VerificationTable({
                               </TableCell>
                               <TableCell>
                                  <div className="flex flex-col">
-                                    <span className="text-sm truncate max-w-45" title={user.email || ""}>
+                                    <span className="text-sm truncate max-w-37.5 sm:max-w-50 md:max-w-75 lg:max-w-100 xl:max-w-125" title={user.email || ""}>
                                        {user.email || "No email"}
                                     </span>
                                     <span className="text-xs text-muted-foreground">{user.mobileNumber}</span>

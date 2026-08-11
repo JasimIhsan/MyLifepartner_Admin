@@ -9,11 +9,18 @@ import { z } from "zod";
 const createGuideSchema = z.object({
    question: z.string().min(1, "Question is required"),
    answer: z.string().min(1, "Answer is required"),
-   categoryId: z.number().int().min(1).max(4),
+   categoryId: z.number().int().min(1),
    bullets: z.array(z.string()).default([]),
 });
 
 const updateGuideSchema = createGuideSchema.partial();
+
+const guideCategorySchema = z.object({
+   name: z.string().trim().min(1, "Category name is required"),
+   displayOrder: z.number().int().min(0).optional(),
+});
+
+const updateGuideCategorySchema = guideCategorySchema.partial();
 
 export class GuideController {
    constructor(private readonly guideService: IGuideService) {}
@@ -60,14 +67,26 @@ export class GuideController {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid category ID");
       }
 
-      const { guides, total } = await this.guideService.getAllGuides({
+      const { guides, total, categories } = await this.guideService.getAllGuides({
          categoryId,
          search,
          page,
          limit,
       });
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { guides, total, page, limit }, "All guides retrieved successfully"));
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { guides, total, categories, page, limit }, "All guides retrieved successfully"));
+   });
+
+   /**
+    * @route GET /api/v1/user/guide/categories
+    * @route GET /api/v1/admin/guides/categories
+    * @purpose Fetches all guide categories, optionally with nested Q&A.
+    */
+   public getGuideCategories = asyncHandler(async (req: Request, res: Response) => {
+      const includeGuides = req.query.includeGuides === "true";
+      const categories = await this.guideService.getGuideCategories(includeGuides);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, categories, "Guide categories retrieved successfully"));
    });
 
    /**
@@ -107,6 +126,22 @@ export class GuideController {
    });
 
    /**
+    * @route POST /api/v1/admin/guides/categories
+    * @purpose Creates a new guide category.
+    */
+   public createGuideCategory = asyncHandler(async (req: Request, res: Response) => {
+      const parsed = guideCategorySchema.safeParse(req.body);
+
+      if (!parsed.success) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, parsed.error.issues[0].message);
+      }
+
+      const category = await this.guideService.createGuideCategory(parsed.data);
+
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, category, "Guide category created successfully"));
+   });
+
+   /**
     * @route PUT /api/v1/admin/guides/:id
     * @purpose Updates a guide question by ID.
     */
@@ -129,6 +164,28 @@ export class GuideController {
    });
 
    /**
+    * @route PUT /api/v1/admin/guides/categories/:id
+    * @purpose Updates a guide category by ID.
+    */
+   public updateGuideCategory = asyncHandler(async (req: Request, res: Response) => {
+      const id = Number(req.params.id);
+
+      if (!Number.isInteger(id) || id <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid guide category ID");
+      }
+
+      const parsed = updateGuideCategorySchema.safeParse(req.body);
+
+      if (!parsed.success) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, parsed.error.issues[0].message);
+      }
+
+      const category = await this.guideService.updateGuideCategory(id, parsed.data);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, category, "Guide category updated successfully"));
+   });
+
+   /**
     * @route DELETE /api/v1/admin/guides/:id
     * @purpose Deletes a guide question by ID.
     */
@@ -142,5 +199,21 @@ export class GuideController {
       await this.guideService.deleteGuide(id);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Guide question deleted successfully"));
+   });
+
+   /**
+    * @route DELETE /api/v1/admin/guides/categories/:id
+    * @purpose Deletes a guide category by ID.
+    */
+   public deleteGuideCategory = asyncHandler(async (req: Request, res: Response) => {
+      const id = Number(req.params.id);
+
+      if (!Number.isInteger(id) || id <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid guide category ID");
+      }
+
+      await this.guideService.deleteGuideCategory(id);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Guide category deleted successfully"));
    });
 }

@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
 
-class TransactionHistoryScreen extends StatefulWidget {
-  const TransactionHistoryScreen({super.key});
+class BillingHistoryScreen extends StatefulWidget {
+  const BillingHistoryScreen({super.key});
 
   @override
-  State<TransactionHistoryScreen> createState() => _TransactionHistoryScreenState();
+  State<BillingHistoryScreen> createState() => _BillingHistoryScreenState();
 }
 
-class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
+class _BillingHistoryScreenState extends State<BillingHistoryScreen> {
   @override
   void initState() {
     super.initState();
@@ -23,10 +22,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
-        title: const Text('Transaction History'),
-        backgroundColor: Colors.white,
+        title: const Text('Billing History'),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         centerTitle: true,
       ),
@@ -43,19 +42,28 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Colors.red,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       provider.error!,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 16, color: Colors.black87),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () => provider.loadTransactions(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
+                        backgroundColor: Theme.of(context).primaryColor,
+                        foregroundColor: Theme.of(
+                          context,
+                        ).colorScheme.onPrimary,
                       ),
                       child: const Text('Retry'),
                     ),
@@ -70,14 +78,18 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.receipt_long, size: 80, color: Colors.grey[400]),
+                  Icon(
+                    Icons.receipt_long,
+                    size: 80,
+                    color: Theme.of(context).disabledColor,
+                  ),
                   const SizedBox(height: 16),
                   Text(
-                    'No transactions yet',
+                    'No billing history yet',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w500,
-                      color: Colors.grey[600],
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                 ],
@@ -95,10 +107,10 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                 final isFailed = transaction.status == 'FAILED';
                 final isCancelled = transaction.status == 'CANCELLED';
                 final isRefunded = transaction.status == 'REFUNDED';
-                
+
                 Color statusColor = Colors.green;
                 IconData statusIcon = Icons.check_circle;
-                
+
                 if (isFailed) {
                   statusColor = Colors.red;
                   statusIcon = Icons.cancel;
@@ -115,7 +127,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
-                    side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                    side: BorderSide(color: Theme.of(context).dividerColor),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -141,6 +153,17 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             ),
                           ],
                         ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Subscription Payment',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.color,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
@@ -156,9 +179,13 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                             ),
                             const Spacer(),
                             Text(
-                              DateFormat('MMM d, yyyy • h:mm a').format(transaction.createdAt.toLocal()),
+                              DateFormat(
+                                'MMM d, yyyy • h:mm a',
+                              ).format(transaction.createdAt.toLocal()),
                               style: TextStyle(
-                                color: Colors.grey[600],
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.color,
                                 fontSize: 13,
                               ),
                             ),
@@ -171,7 +198,9 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                           Text(
                             'Transaction ID: ${transaction.originalTransactionId}',
                             style: TextStyle(
-                              color: Colors.grey[500],
+                              color: Theme.of(
+                                context,
+                              ).textTheme.bodyMedium?.color,
                               fontSize: 12,
                             ),
                           ),

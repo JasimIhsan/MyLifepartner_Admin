@@ -16,17 +16,21 @@ class QuestionSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tileBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
+    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
+    final chevronColor = isDark ? AppColors.darkTextSecondary : AppColors.textLight;
+
     if (questions.isEmpty) {
-      return Card(
-        elevation: 0,
-        color: Colors.grey.shade50,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Text(
-            'No questions found in this category.',
-            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-          ),
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: tileBg,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          'No questions found in this category.',
+          style: TextStyle(fontSize: 13, color: chevronColor),
         ),
       );
     }
@@ -37,44 +41,51 @@ class QuestionSelector extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: questions.map((q) {
-          return Card(
-            elevation: 1,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+          return Container(
             margin: const EdgeInsets.symmetric(vertical: 4),
-            child: InkWell(
+            decoration: BoxDecoration(
+              color: tileBg,
               borderRadius: BorderRadius.circular(12),
-              onTap: enabled ? () => onSelectQuestion(q) : null,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.help_outline_rounded,
-                      color: AppColors.primary,
-                      size: 18,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        q.question,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: enabled ? () => onSelectQuestion(q) : null,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.help_outline_rounded,
+                        color: AppColors.primary,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          q.question,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
                         ),
                       ),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: AppColors.textLight,
-                      size: 20,
-                    ),
-                  ],
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: chevronColor,
+                        size: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -218,7 +218,7 @@ export class ProfileRepository implements IProfileRepository {
     * @param data - Profile update data.
     * @returns Updated profile.
     */
-   async updateBasicProfile(userId: number, data: UpdateProfileDto) {
+   async updateProfile(userId: number, data: UpdateProfileDto) {
       await this.findOrCreateProfile(userId);
 
       const updateData: Prisma.ProfileUpdateInput = {
@@ -280,6 +280,20 @@ export class ProfileRepository implements IProfileRepository {
          data: updateData,
          include: {
             job: true,
+         },
+      });
+   }
+
+   /**
+    * Gets partner preference.
+    *
+    * @param userId - User ID.
+    * @returns Partner preference, if saved.
+    */
+   async getPartnerPreference(userId: number) {
+      return prisma.partnerPreference.findUnique({
+         where: {
+            userId,
          },
       });
    }
@@ -510,6 +524,8 @@ export class ProfileRepository implements IProfileRepository {
          leftSelfieUrl: leftUrl,
          rightSelfieUrl: rightUrl,
          selfieStatus: "PENDING",
+         profileStatus: ProfileStatus.COMPLETED,
+         profileCompletion: 100,
          ...(latitude !== undefined && {
             lastLocationLat: latitude,
          }),

@@ -14,7 +14,7 @@ class CustomEmptySlot extends StatelessWidget {
       onTap: onTap,
       child: CustomPaint(
         painter: DashedBorderPainter(
-          color: AppColors.primary.withValues(alpha: 0.3),
+          color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
           borderRadius: 16,
           strokeWidth: 1.5,
           dashLength: 6,
@@ -22,11 +22,15 @@ class CustomEmptySlot extends StatelessWidget {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.04),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.04),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Center(
-            child: Icon(Icons.add, color: AppColors.primary, size: 24),
+          child: Center(
+            child: Icon(
+              Icons.add,
+              color: Theme.of(context).primaryColor,
+              size: 24,
+            ),
           ),
         ),
       ),
@@ -59,29 +63,31 @@ class PrimaryImageSlot extends StatelessWidget {
               imageUrl: image.imageUrl,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
-                color: AppColors.primary.withValues(alpha: 0.05),
-                child: const Center(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.primary,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
-                color: AppColors.primary.withValues(alpha: 0.05),
-                child: const Icon(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                child: Icon(
                   Icons.broken_image_outlined,
-                  color: AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
             ),
             if (isProcessing)
               Container(
                 color: Colors.black.withValues(alpha: 0.3),
-                child: const Center(
+                child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    color: AppColors.primary,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),
@@ -96,7 +102,7 @@ class PrimaryImageSlot extends StatelessWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary,
+                    color: Theme.of(context).primaryColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -123,8 +129,8 @@ class PrimaryImageSlot extends StatelessWidget {
               child: Container(
                 width: 24,
                 height: 24,
-                decoration: const BoxDecoration(
-                  color: AppColors.primary,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.done, color: Colors.white, size: 16),
@@ -164,29 +170,31 @@ class SmallImageSlot extends StatelessWidget {
               imageUrl: image.imageUrl,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
-                color: AppColors.primary.withValues(alpha: 0.05),
-                child: const Center(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.primary,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
-                color: AppColors.primary.withValues(alpha: 0.05),
-                child: const Icon(
+                color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
+                child: Icon(
                   Icons.broken_image_outlined,
-                  color: AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                 ),
               ),
             ),
             if (isProcessing)
               Container(
                 color: Colors.black.withValues(alpha: 0.3),
-                child: const Center(
+                child: Center(
                   child: CircularProgressIndicator(
                     strokeWidth: 2.5,
-                    color: AppColors.primary,
+                    color: Theme.of(context).primaryColor,
                   ),
                 ),
               ),
@@ -348,12 +356,14 @@ class EmptyStateIllustration extends StatelessWidget {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: AppColors.primary,
+                color: Theme.of(context).primaryColor,
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.3),
                     blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),

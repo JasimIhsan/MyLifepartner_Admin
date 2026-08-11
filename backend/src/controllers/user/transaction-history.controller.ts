@@ -3,12 +3,11 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
+import logger from "@/utils/logger";
 import { Request, Response } from "express";
 
 export class TransactionHistoryController {
-   constructor(
-      private readonly transactionHistoryService: ITransactionHistoryService
-   ) {}
+   constructor(private readonly transactionHistoryService: ITransactionHistoryService) {}
 
    /**
     * @route GET /api/v1/user/transactions
@@ -18,6 +17,8 @@ export class TransactionHistoryController {
       const userId = this.getAuthenticatedUserId(req);
 
       const transactions = await this.transactionHistoryService.getUserTransactions(userId);
+
+      logger.debug("Transaction history: ", transactions);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, transactions, "Transaction history retrieved successfully"));
    });

@@ -12,13 +12,15 @@ import 'package:life_partner_again/screens/partner_preference/partner_preference
 import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/screens/profile_completion/profile_completion_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
+import 'package:life_partner_again/screens/edit_partner_preference_screen/edit_partner_preference_screen.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
-import 'package:life_partner_again/screens/subscription_screen/transaction_history_screen.dart';
+import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/billing_history_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -39,8 +41,10 @@ class AppRoutes {
   static const String profileDetail = '/profile/:profileId';
   static String profileDetailPath(Object profileId) => '/profile/$profileId';
   static const String lpaGuide = '/lpa-guide';
+  static const String blockedUsers = '/blocked-users';
   static const String chatDetail = '/chat-detail/:profileId';
   static const String editProfile = '/edit-profile';
+  static const String editPartnerPreference = '/edit-partner-preference';
   static const String manageProfilePictures = '/manage-profile-pictures';
   static const String subscription = '/subscription';
   static const String imageAccessRequests = '/image-access-requests';
@@ -48,7 +52,7 @@ class AppRoutes {
   static const String call = '/call/:callId';
   static const String outgoingCall = '/outgoing-call/:userId';
   static const String browseProfiles = '/browse-profiles';
-  static const String transactionHistory = '/transaction-history';
+  static const String billingHistory = '/billing-history';
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case splash:
@@ -146,6 +150,11 @@ class AppRoutes {
           builder: (_) => EditProfileScreen(user: user),
           settings: settings,
         );
+      case editPartnerPreference:
+        return MaterialPageRoute(
+          builder: (_) => const EditPartnerPreferenceScreen(),
+          settings: settings,
+        );
       case manageProfilePictures:
         return MaterialPageRoute(
           builder: (_) => const ManageProfilePicturesScreen(),
@@ -161,9 +170,14 @@ class AppRoutes {
           builder: (_) => const BrowseProfilesScreen(),
           settings: settings,
         );
-      case transactionHistory:
+      case billingHistory:
         return MaterialPageRoute(
-          builder: (_) => const TransactionHistoryScreen(),
+          builder: (_) => const BillingHistoryScreen(),
+          settings: settings,
+        );
+      case blockedUsers:
+        return MaterialPageRoute(
+          builder: (_) => const BlockedUsersScreen(),
           settings: settings,
         );
       default:

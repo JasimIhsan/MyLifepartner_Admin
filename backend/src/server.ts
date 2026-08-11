@@ -2,6 +2,7 @@ import env from "@/config/env";
 import prisma from "@/config/prisma";
 import logger from "@/utils/logger";
 import app from "./app";
+import { initializeScheduler } from "./jobs/scheduler";
 
 const validateDatabaseConnection = async () => {
    try {
@@ -15,6 +16,9 @@ const validateDatabaseConnection = async () => {
 
 const startServer = async () => {
    await validateDatabaseConnection();
+
+   // Initialize scheduled background jobs
+   initializeScheduler();
 
    app.listen(env.PORT, () => {
       logger.info(`=================================`);

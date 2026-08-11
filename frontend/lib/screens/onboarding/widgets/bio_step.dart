@@ -73,11 +73,11 @@ class BioStep extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 12, bottom: 8),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isSelected
-                          ? AppColors.primary
+                          ? Theme.of(context).primaryColor
                           : const Color(0xFFF0E6E6),
                       width: isSelected ? 1.5 : 1,
                     ),
@@ -94,10 +94,10 @@ class BioStep extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.primary,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
                       const SizedBox(height: 6),
@@ -106,10 +106,12 @@ class BioStep extends StatelessWidget {
                           text,
                           maxLines: 4,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             height: 1.4,
-                            color: AppColors.textSecondary,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color ??
+                                AppColors.textSecondary,
                           ),
                         ),
                       ),

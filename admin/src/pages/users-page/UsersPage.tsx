@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { UserModal } from "./(componets)/UserModal";
 import { UsersTable } from "./(componets)/UsersTable";
+import { UserAuditHistoryModal } from "./(componets)/UserAuditHistoryModal";
 
 const UsersPage = () => {
    const [searchParams, setSearchParams] = useSearchParams();
@@ -18,7 +19,9 @@ const UsersPage = () => {
    const [totalCount, setTotalCount] = useState(0);
    const [isFetching, setIsFetching] = useState(true);
    const [isModalOpen, setIsModalOpen] = useState(false);
+   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
    const [selectedUser, setSelectedUser] = useState<UserInterface | null>(null);
+   const [auditUser, setAuditUser] = useState<UserInterface | null>(null);
    const [searchQuery, setSearchQuery] = useState(initialSearch);
    const [pageIndex, setPageIndex] = useState(initialPage - 1);
    const [pageSize, setPageSize] = useState(initialLimit);
@@ -85,6 +88,11 @@ const UsersPage = () => {
       setIsModalOpen(true);
    };
 
+   const handleViewAuditHistory = (user: UserInterface) => {
+      setAuditUser(user);
+      setIsAuditModalOpen(true);
+   };
+
    const handleDeleteUser = async (id: number) => {
       try {
          await axiosInstance.delete(`/admin/users/${id}`);
@@ -96,14 +104,37 @@ const UsersPage = () => {
       }
    };
 
-   const handleToggleBlock = async (id: number, currentStatus: boolean) => {
+   const handleToggleBan = async (id: number, currentStatus: boolean) => {
       try {
-         await axiosInstance.patch(`/admin/users/${id}/block-status`);
-         toast.success(`User ${currentStatus ? "unblocked" : "blocked"} successfully`);
-         fetchUsers();
+         await axiosInstance.patch(`/admin/users/${id}/ban`);
+         setUsers(users.map((user) => (user.id === id ? { ...user, isBanned: !currentStatus } : user)));
+         toast.success(`User ${currentStatus ? "unbanned" : "banned"} successfully`);
       } catch (error) {
-         console.error("Error toggling block status:", error);
+         console.error("Error toggling ban status:", error);
          toast.error("Failed to update user status");
+      }
+   };
+
+   const handleToggleFoundingMember = async (id: number, currentStatus: boolean) => {
+      try {
+         const response = await axiosInstance.patch(`/admin/users/${id}/founding-member`);
+         const updatedUser = response.data.data as UserInterface | undefined;
+         setUsers((currentUsers) =>
+            currentUsers.map((user) =>
+               user.id === id
+                  ? {
+                       ...user,
+                       isFoundingMember: updatedUser?.isFoundingMember ?? !currentStatus,
+                       foundingMemberSince: updatedUser?.foundingMemberSince ?? (!currentStatus ? new Date() : null),
+                    }
+                  : user
+            )
+         );
+         toast.success(`Founding Member status ${currentStatus ? "revoked" : "granted"} successfully`);
+      } catch (error) {
+         console.error("Error toggling founding member status:", error);
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "Failed to update Founding Member status");
       }
    };
 
@@ -145,9 +176,17 @@ const UsersPage = () => {
                onAdd={handleAddUser}
                onEdit={handleEditUser}
                onDelete={handleDeleteUser}
-               onToggleBlock={handleToggleBlock}
+               onToggleBan={handleToggleBan}
+               onToggleFoundingMember={handleToggleFoundingMember}
+               onViewAuditHistory={handleViewAuditHistory}
             />
             <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={selectedUser} />
+            <UserAuditHistoryModal 
+               isOpen={isAuditModalOpen} 
+               onClose={() => setIsAuditModalOpen(false)} 
+               userId={auditUser?.id} 
+               userName={auditUser?.name} 
+            />
          </>
       </div>
    );

@@ -3,6 +3,32 @@ import { PrismaClient } from "@prisma/client";
 export async function seedGuide(prisma: PrismaClient) {
    console.log("Seeding guide questions...");
 
+   const categories = [
+      { id: 1, name: "About LPA", displayOrder: 1 },
+      { id: 2, name: "Safety & Privacy", displayOrder: 2 },
+      { id: 3, name: "Account & Trust", displayOrder: 3 },
+      { id: 4, name: "Membership", displayOrder: 4 },
+   ];
+
+   for (const category of categories) {
+      await prisma.guideCategory.upsert({
+         where: { id: category.id },
+         update: {
+            name: category.name,
+            displayOrder: category.displayOrder,
+         },
+         create: category,
+      });
+   }
+
+   await prisma.$executeRaw`
+      SELECT setval(
+         pg_get_serial_sequence('"guide_categories"', 'id'),
+         (SELECT COALESCE(MAX("id"), 1) FROM "guide_categories"),
+         true
+      )
+   `;
+
    const guides = [
       {
          categoryId: 1,

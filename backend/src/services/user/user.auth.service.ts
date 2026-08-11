@@ -2,7 +2,7 @@ import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { toUserDto } from "@/dtos/user.dto";
 import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscription-plan.repository.interface";
 import { IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
-import { IUserRepository } from "@/interfaces/repositories/user.repository.interface";
+import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
 import { IOtpService } from "@/interfaces/services/otp.service.interface";
@@ -48,6 +48,11 @@ export class AuthService implements IUserAuthService {
       const normalizedEmail = this.normalizeEmail(email);
 
       const user = await this.userRepository.findByEmail(normalizedEmail);
+
+      if (user) {
+         this.assertUserCanAuthenticate(user);
+      }
+
       const otp = await this.otpService.sendOtp(normalizedEmail, ip, purpose);
 
       return {
@@ -105,6 +110,8 @@ export class AuthService implements IUserAuthService {
       if (!user.password) {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Password not set for this account");
       }
+
+      this.assertUserCanAuthenticate(user);
 
       const isPasswordValid = await bcrypt.compare(passwordPlain, user.password);
 
@@ -218,6 +225,8 @@ export class AuthService implements IUserAuthService {
             throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User not found");
          }
 
+         this.assertUserCanAuthenticate(user);
+
          return this.generateAuthTokens(user.id, user.email, user.role);
       } catch {
          throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "Invalid or expired refresh token");
@@ -234,6 +243,12 @@ export class AuthService implements IUserAuthService {
     */
    async sendOtp(email: string, ip: string, purpose: string = DEFAULT_AUTH_PURPOSE) {
       const normalizedEmail = this.normalizeEmail(email);
+
+      const existingUser = await this.userRepository.findByEmail(normalizedEmail);
+      if (existingUser) {
+         this.assertUserCanAuthenticate(existingUser);
+      }
+
       const otp = await this.otpService.sendOtp(normalizedEmail, ip, purpose);
 
       return {
@@ -251,6 +266,12 @@ export class AuthService implements IUserAuthService {
     */
    async resendOtp(email: string, ip: string, purpose: string = DEFAULT_AUTH_PURPOSE) {
       const normalizedEmail = this.normalizeEmail(email);
+
+      const existingUser = await this.userRepository.findByEmail(normalizedEmail);
+      if (existingUser) {
+         this.assertUserCanAuthenticate(existingUser);
+      }
+
       const otp = await this.otpService.resendOtp(normalizedEmail, ip, purpose);
 
       return {
@@ -270,6 +291,24 @@ export class AuthService implements IUserAuthService {
 
       if (!isVerified) {
          throw new ApiError(HTTP_STATUS.FORBIDDEN, "Please verify OTP before proceeding");
+      }
+   }
+
+   private assertUserCanAuthenticate(user: UserWithProfile): void {
+      if (user.isBanned) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been permanently banned.");
+      }
+
+      if (user.isDeleted) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account has been deleted.");
+      }
+
+      if (user.isDeleteRequested && user.deleteRequestStatus === "PENDING") {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account deletion is pending approval.");
+      }
+
+      if (user.isSuspended) {
+         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Your account is temporarily suspended.");
       }
    }
 

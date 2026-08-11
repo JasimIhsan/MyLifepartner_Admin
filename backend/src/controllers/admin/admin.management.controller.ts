@@ -6,6 +6,8 @@ import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
 import { Request, Response } from "express";
+import { auditService } from "@/services/audit.service";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class AdminManagementController {
    constructor(private readonly adminManagementService: IAdminManagementService) {}
@@ -45,6 +47,17 @@ export class AdminManagementController {
 
       const admin = await this.adminManagementService.createAdmin(data);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ADMIN,
+         action: "CREATE_ADMIN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Created new admin: ${admin.username}`,
+         newValue: admin,
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, { admin }, "Admin created successfully"));
    });
 
@@ -62,6 +75,19 @@ export class AdminManagementController {
 
       const admin = await this.adminManagementService.updateAdmin(adminId, data);
 
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ADMIN,
+         action: "UPDATE_ADMIN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Updated admin profile: ${admin.username}`,
+         newValue: data,
+         entityType: "Admins",
+         entityId: adminId.toString(),
+         source: AuditSource.ADMIN,
+      });
+
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { admin }, "Admin updated successfully"));
    });
 
@@ -78,6 +104,18 @@ export class AdminManagementController {
       }
 
       const result = await this.adminManagementService.deleteAdmin(adminId, currentAdminId);
+
+      await auditService.log({
+         actorType: ActorType.ADMIN,
+         module: AuditModule.ADMIN,
+         action: "DELETE_ADMIN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.CRITICAL,
+         message: `Deleted admin ID: ${adminId}`,
+         entityType: "Admins",
+         entityId: adminId.toString(),
+         source: AuditSource.ADMIN,
+      });
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Admin deleted successfully"));
    });

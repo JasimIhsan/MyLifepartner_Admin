@@ -48,6 +48,7 @@ export interface ProcessWebhookParams {
    defaultSubscriptionDurationDays: number;
    buildFeatureFullPayload: (plan: SubscriptionPlan) => FeatureFullPayload;
    buildFeatureLimitsOnlyPayload: (plan: SubscriptionPlan) => FeatureLimitsOnlyPayload;
+   shouldApplyFeaturePayload?: boolean;
 }
 
 export interface ISubscriptionWebhookRepository {

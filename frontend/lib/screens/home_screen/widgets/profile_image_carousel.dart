@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 
 class ProfileImageCarousel extends StatefulWidget {
@@ -70,8 +69,8 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 color: Colors.black,
-                child: const Center(
-                  child: CircularProgressIndicator(color: AppColors.surface),
+                child: Center(
+                  child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
@@ -100,8 +99,8 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(2),
                       color: i <= _currentIndex
-                          ? AppColors.surface
-                          : AppColors.surface.withValues(alpha: 0.35),
+                          ? Theme.of(context).colorScheme.surface
+                          : Theme.of(context).colorScheme.surface.withValues(alpha: 0.35),
                     ),
                   ).animate().fadeIn(duration: 200.ms),
                 ),

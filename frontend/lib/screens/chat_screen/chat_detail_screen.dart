@@ -4,13 +4,14 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/chat_message.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
+import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/attachment_bottom_sheet.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_detail_app_bar.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/chat_empty_state.dart';
@@ -60,6 +61,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     _scrollController.addListener(_onScroll);
     _msgController.addListener(_onTextChanged);
     _chatProvider = context.read<ChatProvider>();
+
+    // Synchronously assign conversation ID if we already know about it
+    final existingConvo = _chatProvider.conversations.where((c) {
+      return c.otherUserId == widget.profile.userId;
+    }).firstOrNull;
+    if (existingConvo != null) {
+      _conversationId = existingConvo.id;
+    }
+
     _initChat();
   }
 
@@ -119,9 +129,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _initChat() {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
+
+      // Safety net: in case hot reload skipped bootstrap() or Zego dropped
+      await context.read<AuthProvider>().ensureZegoLogin();
+
+      if (!mounted) return;
       final chatProvider = context.read<ChatProvider>();
       chatProvider.setCurrentUserId(widget.currentUserId);
-      await chatProvider.ensureZegoLogin(widget.currentUserId);
 
       if (!mounted) return;
       chatProvider.setActiveUserId(widget.profile.userId);
@@ -131,16 +145,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       // Ensure features are loaded for limit checks
       context.read<SubscriptionProvider>().fetchMySubscription();
 
-      // Find the existing conversation if it exists
-      final existingConvo = chatProvider.conversations.where((c) {
-        return c.otherUserId == widget.profile.userId;
-      }).firstOrNull;
-
-      if (existingConvo != null) {
-        setState(() {
-          _conversationId = existingConvo.id;
-        });
-        chatProvider.loadMessages(existingConvo.id);
+      if (_conversationId != null) {
+        // Only trigger network load if we don't have messages yet
+        if (chatProvider.getMessages(_conversationId!).isEmpty) {
+          chatProvider.loadMessages(_conversationId!);
+        }
       }
     });
   }
@@ -333,6 +342,28 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     }
   }
 
+  void _stopAndSendRecording() async {
+    final path = await _audioRecorder.stop();
+    _recordingTimer?.cancel();
+    _recordingTimer = null;
+
+    if (mounted) {
+      setState(() {
+        _isRecording = false;
+        if (path != null && _recordingDuration.inSeconds > 0) {
+          _sendMediaMsg(path, 'AUDIO', duration: _recordingDuration.inSeconds);
+        } else if (path != null) {
+          final file = File(path);
+          if (file.existsSync()) file.deleteSync();
+        }
+
+        _isRecordingFinished = false;
+        _recordingPath = null;
+        _recordingDuration = Duration.zero;
+      });
+    }
+  }
+
   void _cancelRecording() async {
     if (_isRecording) {
       await _audioRecorder.stop();
@@ -398,6 +429,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _startCall({required bool isVideo}) async {
     final otherUserId = widget.profile.userId.toString();
     final callType = isVideo ? 'video' : 'audio';
+
+    // Actively update the user's online status in the background, but DO NOT block the call.
+    // ZEGOCLOUD offline push notifications will wake up the receiver even if they show offline.
+    _chatProvider
+        .queryUserStatusNow(widget.profile.userId)
+        .catchError((_) => false);
 
     // Check with the backend directly if caller has access
     try {
@@ -489,7 +526,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final isTyping = chatProvider.isUserTyping(widget.profile.userId);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: ChatDetailAppBar(
         profileName: widget.profile.name,
         profileImageUrl: _profileImageUrl,
@@ -499,6 +536,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         isTyping: isTyping,
       ),
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             Expanded(
@@ -536,14 +574,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       final msgIndex = showTypingIndicator ? index - 1 : index;
 
                       if (msgIndex == messages.length) {
-                        return const Padding(
+                        return Padding(
                           padding: EdgeInsets.symmetric(vertical: 16),
                           child: Center(
                             child: SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
-                                color: AppColors.primary,
+                                color: Theme.of(context).primaryColor,
                                 strokeWidth: 2,
                               ),
                             ),
@@ -591,6 +629,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               onSendRecordedAudio: _sendRecordedAudio,
               onStartRecording: _startRecordingUI,
               onStopRecording: _stopAndPreviewRecording,
+              onStopAndSendRecording: _stopAndSendRecording,
             ),
           ],
         ),
@@ -656,7 +695,9 @@ class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
         margin: const EdgeInsets.only(bottom: 8, top: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFECECEC),
+          color: Theme.of(context).brightness == Brightness.light
+              ? AppColors.background
+              : Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(16),
             topRight: Radius.circular(16),
@@ -679,8 +720,10 @@ class _BouncingDotsIndicatorState extends State<BouncingDotsIndicator>
                 margin: const EdgeInsets.symmetric(horizontal: 2.5),
                 width: 7,
                 height: 7,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF9E9E9E),
+                decoration: BoxDecoration(
+                  color:
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      const Color(0xFF9E9E9E),
                   shape: BoxShape.circle,
                 ),
               ),

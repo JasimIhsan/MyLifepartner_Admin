@@ -1,9 +1,8 @@
-import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
-import 'package:life_partner_again/core/country_helper.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/body_photo_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_action_bar.dart';
@@ -11,7 +10,9 @@ import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_details_grid.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
-import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/report_user_dialog.dart';
+import 'package:life_partner_again/services/block_service.dart';
+import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom_sheet.dart';
 
 class MobileProfileDetailScreen extends StatefulWidget {
   const MobileProfileDetailScreen({super.key});
@@ -23,15 +24,20 @@ class MobileProfileDetailScreen extends StatefulWidget {
 
 class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
     with ProfileDetailControllerState<MobileProfileDetailScreen> {
+  final BlockService _blockService = BlockService();
+
   @override
   Widget build(BuildContext context) {
     if (!hasApiData) {
-      return const Scaffold(
-        backgroundColor: AppColors.textWhite,
-        body: ProfileSkeleton(),
+      return Scaffold(
+        backgroundColor: Theme.of(context).canvasColor,
+        body: const ProfileSkeleton(),
       );
     }
-    return Scaffold(backgroundColor: AppColors.textWhite, body: _buildBody());
+    return Scaffold(
+      backgroundColor: Theme.of(context).canvasColor,
+      body: _buildBody(),
+    );
   }
 
   Widget _buildBody() {
@@ -55,7 +61,7 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                     Positioned.fill(
                       child: images.isEmpty
                           ? Container(
-                              color: AppColors.primaryLight,
+                              color: AppColors.black,
                               child: const Center(
                                 child: Icon(
                                   Icons.person_rounded,
@@ -150,12 +156,14 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                     const SizedBox(height: 25),
                     if (p['bio'] != null &&
                         (p['bio'] as String).isNotEmpty) ...[
-                      const Text(
+                      Text(
                         'About',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -163,14 +171,20 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: AppColors.inputBackground,
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor,
+                            width: 0.6,
+                          ),
                         ),
                         child: Text(
                           p['bio'],
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                             height: 1.6,
                           ),
                         ),
@@ -181,11 +195,13 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                     const SizedBox(height: 20),
                     if (images.isNotEmpty) ...[
                       Text(
-                        'Photos (\${images.length})',
-                        style: const TextStyle(
+                        'Photos (${images.length})',
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -215,49 +231,118 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.95),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.1),
+                    color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                     spreadRadius: 1,
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.arrow_back_ios_new_rounded,
                 size: 18,
-                color: AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
           ),
         ),
-        if (p['country'] != null && CountryHelper.getCode(p['country']) != null)
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            right: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: CountryFlag.fromCountryCode(
-                  CountryHelper.getCode(p['country'])!,
-                  width: 38,
-                  height: 38,
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8,
+          right: 12,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Theme.of(
+                context,
+              ).colorScheme.surface.withValues(alpha: 0.95),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                  spreadRadius: 1,
                 ),
+              ],
+            ),
+            child: PopupMenuButton<String>(
+              icon: Icon(
+                Icons.more_vert_rounded,
+                size: 20,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
+              padding: EdgeInsets.zero,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              onSelected: (value) {
+                if (value == 'report') {
+                  ReportUserDialog.show(context, p);
+                } else if (value == 'block') {
+                  BlockConfirmationBottomSheet.show(
+                    context: context,
+                    isBlocking: true,
+                    userName: p['name'] ?? 'this user',
+                    onConfirm: () async {
+                      await _blockService.blockUser(p['userId']);
+                    },
+                    onSuccess: () {
+                      setState(() {
+                        resolvedProfile['isBlocked'] = true;
+                      });
+                    },
+                  );
+                }
+              },
+              itemBuilder: (BuildContext context) => [
+                PopupMenuItem<String>(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.flag_outlined,
+                        size: 20,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
+                      ),
+                      SizedBox(width: 12),
+                      Text('Report user'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'block',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.block_outlined,
+                        size: 20,
+                        color: Colors.redAccent,
+                      ),
+                      SizedBox(width: 12),
+                      Text(
+                        'Block user',
+                        style: TextStyle(color: Colors.redAccent),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
+        ),
         Positioned(
           bottom: 0,
           left: 0,

@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/core/responsive/adaptive_screen.dart';
 import 'package:life_partner_again/providers/image_asset_provider.dart';
@@ -62,9 +61,9 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
                   child: state == ImageAssetLoadState.loading
                       ? Container(
                           color: Colors.black,
-                          child: const Center(
+                          child: Center(
                             child: CircularProgressIndicator(
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                               strokeWidth: 2,
                             ),
                           ),
@@ -153,12 +152,12 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
         ],
       ),
       child: Image.asset(
-        'assets/icons/app_logo.png',
+        Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
         height: 100,
         width: 100,
-        errorBuilder: (context, error, stackTrace) => const Icon(
+        errorBuilder: (context, error, stackTrace) => Icon(
           Icons.favorite_rounded,
-          color: AppColors.primary,
+          color: Theme.of(context).primaryColor,
           size: 80,
         ),
       ),
@@ -230,7 +229,7 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, color: AppColors.primary, size: 18),
+              Icon(icon, color: Theme.of(context).primaryColor, size: 18),
               const SizedBox(width: 8),
               Text(
                 label,
@@ -304,9 +303,9 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
                       child: state == ImageAssetLoadState.loading
                           ? Container(
                               color: Colors.grey[200],
-                              child: const Center(
+                              child: Center(
                                 child: CircularProgressIndicator(
-                                  color: AppColors.primary,
+                                  color: Theme.of(context).primaryColor,
                                   strokeWidth: 2,
                                 ),
                               ),
@@ -391,13 +390,13 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
                       Center(
                         child:
                             Image.asset(
-                                  'assets/icons/app_logo.png',
+                                  Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
                                   height: 120,
                                   width: 120,
                                   errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(
+                                      Icon(
                                         Icons.favorite_rounded,
-                                        color: AppColors.primary,
+                                        color: Theme.of(context).primaryColor,
                                         size: 80,
                                       ),
                                 )
@@ -487,10 +486,10 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
+            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: AppColors.primary, size: 22),
+          child: Icon(icon, color: Theme.of(context).primaryColor, size: 22),
         ),
         const SizedBox(width: 16),
         Expanded(

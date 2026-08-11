@@ -67,7 +67,7 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.borderColor,
+                  color: Theme.of(context).dividerColor,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -75,12 +75,12 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
               const SizedBox(height: 16),
 
               // title
-              const Text(
+              Text(
                 'Select Country',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                 ),
               ),
 
@@ -97,15 +97,15 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
                   onChanged: _onSearch,
                   autofocus: true,
                   style: const TextStyle(fontSize: 15),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Search your country…',
                     hintStyle: TextStyle(
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       fontSize: 15,
                     ),
                     prefixIcon: Icon(
                       Icons.search,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                       size: 20,
                     ),
                     border: InputBorder.none,
@@ -151,8 +151,8 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
                                     ? FontWeight.w600
                                     : FontWeight.w400,
                                 color: isSelected
-                                    ? AppColors.primary
-                                    : AppColors.textPrimary,
+                                    ? Theme.of(context).primaryColor
+                                    : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
                               ),
                             ),
                           ),
@@ -161,9 +161,9 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
 
                       // ✔ selected indicator
                       trailing: isSelected
-                          ? const Icon(
+                          ? Icon(
                               Icons.check,
-                              color: AppColors.primary,
+                              color: Theme.of(context).primaryColor,
                               size: 20,
                             )
                           : null,

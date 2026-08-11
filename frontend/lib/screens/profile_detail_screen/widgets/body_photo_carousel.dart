@@ -62,7 +62,7 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
                           url,
                           fit: BoxFit.cover,
                           errorBuilder: (_, __, ___) => Container(
-                            color: AppColors.primaryLight,
+                            color: Theme.of(context).primaryColorLight,
                             child: const Center(
                               child: Icon(
                                 Icons.image_rounded,
@@ -73,7 +73,7 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
                           ),
                         )
                       : Container(
-                          color: AppColors.primaryLight,
+                          color: Theme.of(context).primaryColorLight,
                           child: const Center(
                             child: Icon(
                               Icons.image_rounded,
@@ -101,8 +101,8 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
                     color: _page == i
-                        ? AppColors.primary
-                        : AppColors.primary.withValues(alpha: 0.25),
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).primaryColor.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 );
@@ -110,9 +110,9 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
               const SizedBox(width: 10),
               Text(
                 '${_page + 1} / ${widget.images.length}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
