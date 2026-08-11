@@ -493,17 +493,23 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('assets/images/chat_background.png'),
+          image: AssetImage(
+            isDark ? 'assets/images/wchat_dark.png' : 'assets/images/wchat.png',
+          ),
           fit: BoxFit.cover,
         ),
       ),
       child: Stack(
         children: [
           Positioned.fill(
-            child: Container(color: Colors.black.withValues(alpha: 0.06)),
+            child: Container(
+              color: Colors.black.withValues(alpha: isDark ? 0.85 : 0.00),
+            ),
           ),
           Column(
             children: [

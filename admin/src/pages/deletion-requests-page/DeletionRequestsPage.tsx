@@ -1,4 +1,4 @@
-import { Activity, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RefreshCw, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, RefreshCw, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import axiosInstance from "../../api/api.config";
 import { toast } from "sonner";
@@ -13,12 +13,21 @@ export default function DeletionRequestsPage() {
    const [loading, setLoading] = useState(false);
    const [page, setPage] = useState(1);
    const [totalPages, setTotalPages] = useState(1);
-   const [pageSize, setPageSize] = useState(20);
+   const pageSize = 20;
    const [totalCount, setTotalCount] = useState(0);
 
    const [actionModalOpen, setActionModalOpen] = useState(false);
    const [actionType, setActionType] = useState<"approve" | "reject" | null>(null);
    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+
+   const formatDateTime = (date?: string | Date | null) => {
+      if (!date) return "N/A";
+
+      const parsedDate = new Date(date);
+      if (Number.isNaN(parsedDate.getTime())) return "N/A";
+
+      return parsedDate.toLocaleString();
+   };
 
    const fetchRequests = async () => {
       setLoading(true);
@@ -95,6 +104,7 @@ export default function DeletionRequestsPage() {
                      <TableRow className="bg-muted/50">
                         <TableHead>User ID</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Reason</TableHead>
                         <TableHead>Requested At</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -103,13 +113,13 @@ export default function DeletionRequestsPage() {
                   <TableBody>
                      {loading ? (
                         <TableRow>
-                           <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                           <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                               Loading requests...
                            </TableCell>
                         </TableRow>
                      ) : requests.length === 0 ? (
                         <TableRow>
-                           <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                           <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                               No pending deletion requests found.
                            </TableCell>
                         </TableRow>
@@ -118,7 +128,12 @@ export default function DeletionRequestsPage() {
                            <TableRow key={request.id}>
                               <TableCell className="font-medium">#{request.id}</TableCell>
                               <TableCell>{request.email}</TableCell>
-                              <TableCell>{new Date(request.deleteRequestedAt).toLocaleString()}</TableCell>
+                              <TableCell>
+                                 <span className="text-sm truncate block max-w-64" title={request.deleteRequestReason || "N/A"}>
+                                    {request.deleteRequestReason || "N/A"}
+                                 </span>
+                              </TableCell>
+                              <TableCell>{formatDateTime(request.deleteRequestedAt)}</TableCell>
                               <TableCell>
                                  <Badge variant="outline" className="text-amber-600 bg-amber-50 border-amber-200">
                                     PENDING
@@ -176,7 +191,7 @@ export default function DeletionRequestsPage() {
                   : "Are you sure you want to reject this request? The user's account suspension will be lifted."
             }
             confirmText={actionType === "approve" ? "Approve & Delete" : "Reject"}
-            confirmVariant={actionType === "approve" ? "destructive" : "default"}
+            variant={actionType === "approve" ? "destructive" : "default"}
          />
       </div>
    );

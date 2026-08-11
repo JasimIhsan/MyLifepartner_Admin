@@ -118,8 +118,17 @@ export class UserController {
     */
    public requestAccountDeletion = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
+      const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
 
-      await this.userService.requestAccountDeletion(authUserId);
+      if (!reason) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Account deletion reason is required");
+      }
+
+      if (reason.length > 500) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Account deletion reason must be 500 characters or fewer");
+      }
+
+      await this.userService.requestAccountDeletion(authUserId, reason);
 
       await auditService.log({
          userId: authUserId,
@@ -129,6 +138,7 @@ export class UserController {
          status: AuditStatus.SUCCESS,
          severity: AuditSeverity.WARNING,
          message: `User requested account deletion.`,
+         newValue: { reason },
          entityType: "User",
          entityId: authUserId.toString(),
          source: AuditSource.API,

@@ -17,6 +17,12 @@ type PaginatedUsersDto = {
 };
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 60 * 60;
+const MAX_ACCOUNT_DELETION_REASON_LENGTH = 500;
+
+type AccountDeletionTokenPayload = {
+   userId: number;
+   reason: string | null;
+};
 
 export class UserService implements IUserService {
    constructor(
@@ -334,6 +340,27 @@ export class UserService implements IUserService {
       return user;
    }
 
+   private parseAccountDeletionTokenPayload(value: string): AccountDeletionTokenPayload {
+      try {
+         const parsed = JSON.parse(value) as Partial<AccountDeletionTokenPayload>;
+         const userId = Number(parsed.userId);
+
+         if (Number.isInteger(userId) && userId > 0) {
+            const reason = typeof parsed.reason === "string" ? parsed.reason.trim() : "";
+            return { userId, reason: reason || null };
+         }
+      } catch {
+         // Existing links cached only the user id; keep them valid until expiry.
+      }
+
+      const userId = Number(value);
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(400, "Invalid or expired verification token");
+      }
+
+      return { userId, reason: null };
+   }
+
    /**
     * Finds an active user with profile.
     *
@@ -405,7 +432,16 @@ export class UserService implements IUserService {
    /**
     * Requests account deletion by sending a verification email.
     */
-   async requestAccountDeletion(userId: number): Promise<void> {
+   async requestAccountDeletion(userId: number, reason: string): Promise<void> {
+      const trimmedReason = reason.trim();
+      if (!trimmedReason) {
+         throw new ApiError(400, "Account deletion reason is required");
+      }
+
+      if (trimmedReason.length > MAX_ACCOUNT_DELETION_REASON_LENGTH) {
+         throw new ApiError(400, `Account deletion reason must be ${MAX_ACCOUNT_DELETION_REASON_LENGTH} characters or fewer`);
+      }
+
       const user = await this.findActiveUserById(userId);
       if (!user.email) {
          throw new ApiError(400, "User email not found");
@@ -419,7 +455,14 @@ export class UserService implements IUserService {
       const cacheKey = CACHE_KEYS.ACCOUNT_DELETION_TOKEN(token);
 
       // Token valid for 1 hour (3600 seconds)
-      await this.cacheService.setCache(cacheKey, userId.toString(), 3600);
+      await this.cacheService.setCache(
+         cacheKey,
+         JSON.stringify({
+            userId,
+            reason: trimmedReason,
+         }),
+         3600
+      );
       await this.emailService.sendAccountDeletionEmail(user.email, token);
    }
 
@@ -428,13 +471,13 @@ export class UserService implements IUserService {
     */
    async verifyAccountDeletion(token: string): Promise<number> {
       const cacheKey = CACHE_KEYS.ACCOUNT_DELETION_TOKEN(token);
-      const userIdStr = await this.cacheService.getCache(cacheKey);
+      const tokenValue = await this.cacheService.getCache(cacheKey);
 
-      if (!userIdStr) {
+      if (!tokenValue) {
          throw new ApiError(400, "Invalid or expired verification token");
       }
 
-      const userId = parseInt(userIdStr, 10);
+      const { userId, reason } = this.parseAccountDeletionTokenPayload(tokenValue);
       const user = await this.userRepository.findById(userId);
 
       if (!user) {
@@ -447,6 +490,7 @@ export class UserService implements IUserService {
             isDeleteRequested: true,
             deleteRequestedAt: new Date(),
             deleteRequestStatus: "PENDING",
+            deleteRequestReason: reason,
             isSuspended: true,
          },
       });
@@ -503,6 +547,7 @@ export class UserService implements IUserService {
          data: {
             deleteRequestStatus: "REJECTED",
             isSuspended: false,
+            deleteRequestReason: null,
          },
       });
    }
@@ -551,7 +596,7 @@ export class UserService implements IUserService {
                originalEmail: user.email,
                originalPhone: user.mobileNumber,
                originalName: user.profile?.name,
-               reasonForArchive: `Admin ${adminId} approved account deletion`,
+               reasonForArchive: user.deleteRequestReason || `Admin ${adminId} approved account deletion`,
             },
          });
 

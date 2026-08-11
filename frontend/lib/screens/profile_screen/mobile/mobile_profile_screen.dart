@@ -703,102 +703,299 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
   }
 
   void _showDeleteAccountBottomSheet(BuildContext context) {
+    final reasonController = TextEditingController();
+    const deletionReasons = [
+      'Found my partner',
+      'Privacy concerns',
+      'Not useful for me',
+      'Too many notifications',
+      'Taking a break',
+      'Other',
+    ];
+
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      enableDrag: true,
       builder: (BuildContext sheetContext) {
         bool isLoading = false;
         bool isSent = false;
+        String? reasonError;
+        String? selectedReason;
 
         return StatefulBuilder(
           builder: (context, setState) {
-            return Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    isSent ? 'Check Your Email' : 'Delete Account',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isSent ? Colors.green : Colors.red,
+            final theme = Theme.of(context);
+            final textColor =
+                theme.textTheme.bodyLarge?.color ?? AppColors.textPrimary;
+            final mutedTextColor =
+                theme.textTheme.bodyMedium?.color ?? AppColors.textSecondary;
+            final dangerColor = AppColors.error;
+            final successColor = AppColors.success;
+            return SafeArea(
+              top: false,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(28),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.18),
+                      blurRadius: 24,
+                      offset: const Offset(0, -8),
                     ),
-                    textAlign: TextAlign.center,
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 14,
+                    bottom: 24 + MediaQuery.of(context).viewInsets.bottom,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    isSent
-                        ? 'We have sent a confirmation link to your email. Please click the link to verify your request.'
-                        : 'Are you sure you want to delete your account?\n\nThis action cannot be undone. We will send a verification email to confirm this request.',
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  if (isSent)
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 46,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: theme.dividerColor,
+                            borderRadius: BorderRadius.circular(99),
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
-                      onPressed: () async {
-                        Navigator.of(sheetContext).pop();
-                        await ApiService.logoutAndRedirect();
-                      },
-                      child: Text(
-                        'OK',
+                      const SizedBox(height: 24),
+                      Center(
+                        child: Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: (isSent ? successColor : dangerColor)
+                                .withValues(alpha: 0.12),
+                          ),
+                          child: Icon(
+                            isSent
+                                ? Icons.mark_email_read_rounded
+                                : Icons.delete_forever_rounded,
+                            color: isSent ? successColor : dangerColor,
+                            size: 34,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        isSent ? 'Check your email' : 'Delete account?',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          fontSize: 16,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: textColor,
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                    )
-                  else
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                      const SizedBox(height: 10),
+                      Text(
+                        isSent
+                            ? 'We sent a confirmation link to your email. Open it to verify your deletion request.'
+                            : 'Tell us why you are leaving before we send the verification email.',
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 1.45,
+                          color: mutedTextColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      if (isSent)
+                        CustomButton(
+                          text: 'OK',
+                          height: 52,
+                          borderRadius: 16,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          backgroundColor: theme.primaryColor,
+                          onPressed: () async {
+                            Navigator.of(sheetContext).pop();
+                            await ApiService.logoutAndRedirect();
+                          },
+                        )
+                      else ...[
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: dangerColor.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: dangerColor.withValues(alpha: 0.16),
                             ),
-                            onPressed: isLoading
-                                ? null
-                                : () => Navigator.of(sheetContext).pop(),
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 16,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: dangerColor,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'This action cannot be undone. Your account will be reviewed after email verification.',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 13.5,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                        Text(
+                          'Reason',
+                          style: TextStyle(
+                            color: textColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: deletionReasons.map((reason) {
+                            final isSelected = selectedReason == reason;
+
+                            return ChoiceChip(
+                              label: Text(reason),
+                              selected: isSelected,
+                              onSelected: isLoading
+                                  ? null
+                                  : (selected) {
+                                      setState(() {
+                                        selectedReason = selected
+                                            ? reason
+                                            : null;
+                                        reasonError = null;
+                                      });
+                                    },
+                              labelStyle: TextStyle(
+                                color: isSelected ? dangerColor : textColor,
+                                fontWeight: isSelected
+                                    ? FontWeight.w700
+                                    : FontWeight.w500,
+                                fontSize: 13,
+                              ),
+                              selectedColor: dangerColor.withValues(
+                                alpha: 0.12,
+                              ),
+                              backgroundColor: theme.colorScheme.surface,
+                              side: BorderSide(
+                                color: isSelected
+                                    ? dangerColor.withValues(alpha: 0.55)
+                                    : theme.dividerColor,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                              showCheckmark: false,
+                            );
+                          }).toList(),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: reasonController,
+                          enabled: !isLoading,
+                          minLines: 3,
+                          maxLines: 5,
+                          maxLength: 500,
+                          textInputAction: TextInputAction.newline,
+                          decoration: InputDecoration(
+                            labelText: selectedReason == null
+                                ? 'Tell us more'
+                                : 'Add details (optional)',
+                            hintText:
+                                'A short note helps us understand what to improve',
+                            errorText: reasonError,
+                            alignLabelWithHint: true,
+                            filled: true,
+                            fillColor: theme.canvasColor.withValues(
+                              alpha: theme.brightness == Brightness.dark
+                                  ? 0.2
+                                  : 0.7,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(color: theme.dividerColor),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                color: dangerColor,
+                                width: 1.4,
                               ),
                             ),
                           ),
+                          onChanged: (_) {
+                            setState(() => reasonError = null);
+                          },
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 52,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              backgroundColor: dangerColor,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: dangerColor.withValues(
+                                alpha: 0.45,
+                              ),
+                              elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                             onPressed: isLoading
                                 ? null
                                 : () async {
+                                    final reason = _composeDeletionReason(
+                                      selectedReason: selectedReason,
+                                      details: reasonController.text,
+                                    );
+
+                                    if (reason.isEmpty) {
+                                      setState(() {
+                                        reasonError =
+                                            'Please select or enter a reason';
+                                      });
+                                      return;
+                                    }
+
+                                    if (reason.length > 500) {
+                                      setState(() {
+                                        reasonError =
+                                            'Please keep the reason under 500 characters';
+                                      });
+                                      return;
+                                    }
+
                                     setState(() => isLoading = true);
                                     try {
                                       await UserRepository()
-                                          .requestAccountDeletion();
+                                          .requestAccountDeletion(
+                                            reason: reason,
+                                          );
                                       if (context.mounted) {
                                         setState(() {
                                           isLoading = false;
@@ -817,36 +1014,85 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                     }
                                   },
                             child: isLoading
-                                ? SizedBox(
+                                ? const SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       valueColor: AlwaysStoppedAnimation<Color>(
-                                        Theme.of(context).colorScheme.onPrimary,
+                                        Colors.white,
                                       ),
                                     ),
                                   )
-                                : Text(
-                                    'Confirm',
-                                    style: TextStyle(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onPrimary,
-                                      fontSize: 16,
-                                    ),
+                                : const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.mail_outline_rounded,
+                                        size: 19,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Send verification email',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                           ),
                         ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          height: 50,
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: theme.dividerColor),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            onPressed: isLoading
+                                ? null
+                                : () => Navigator.of(sheetContext).pop(),
+                            child: Text(
+                              'Keep my account',
+                              style: TextStyle(
+                                color: mutedTextColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
-                    ),
-                  const SizedBox(height: 16),
-                ],
+                    ],
+                  ),
+                ),
               ),
             );
           },
         );
       },
-    );
+    ).whenComplete(reasonController.dispose);
+  }
+
+  String _composeDeletionReason({
+    required String? selectedReason,
+    required String details,
+  }) {
+    final trimmedDetails = details.trim();
+
+    if (selectedReason == null) {
+      return trimmedDetails;
+    }
+
+    if (trimmedDetails.isEmpty) {
+      return selectedReason;
+    }
+
+    return '$selectedReason: $trimmedDetails';
   }
 }

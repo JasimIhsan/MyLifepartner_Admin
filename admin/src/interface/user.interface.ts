@@ -8,6 +8,10 @@ export interface UserInterface {
    isFoundingMember: boolean;
    foundingMemberSince?: string | Date | null;
    isDeleted: boolean;
+   isDeleteRequested?: boolean;
+   deleteRequestedAt?: string | Date | null;
+   deleteRequestStatus?: "PENDING" | "APPROVED" | "REJECTED" | null;
+   deleteRequestReason?: string | null;
    profileStatus: "INCOMPLETE" | "ONBOARDING_COMPLETED" | "COMPLETED";
    hasCompletedImageUpload: boolean;
    selfieStatus: SelfieStatus | null;

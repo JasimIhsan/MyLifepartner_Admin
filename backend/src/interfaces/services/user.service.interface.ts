@@ -19,7 +19,7 @@ export interface IUserService {
    getUserSelfieData(userId: number): Promise<UserSelfieDataDto>;
    getUserImagesData(userId: number): Promise<UserImageDataDto[]>;
    validateUserAccountStatus(userId: number): Promise<void>;
-   requestAccountDeletion(userId: number): Promise<void>;
+   requestAccountDeletion(userId: number, reason: string): Promise<void>;
    verifyAccountDeletion(token: string): Promise<number>;
    getPendingDeletionRequests(page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }>;
    approveDeletionRequest(userId: number, adminId: number): Promise<void>;

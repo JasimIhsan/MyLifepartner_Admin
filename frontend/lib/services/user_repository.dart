@@ -44,7 +44,7 @@ class UserRepository {
     }
   }
 
-  Future<void> requestAccountDeletion() async {
+  Future<void> requestAccountDeletion({required String reason}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userId = prefs.getInt('userId');
@@ -54,7 +54,7 @@ class UserRepository {
         throw Exception('User not logged in');
       }
 
-      await _client.post('/account-deletion/request');
+      await _client.post('/account-deletion/request', data: {'reason': reason});
     } catch (e) {
       rethrow;
     }

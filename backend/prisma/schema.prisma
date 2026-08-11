@@ -22,6 +22,7 @@ model User {
   isDeleteRequested     Boolean                @default(false)
   deleteRequestedAt     DateTime?
   deleteRequestStatus   DeletionRequestStatus?
+  deleteRequestReason   String?
   role                  Role                   @default(USER)
   createdAt             DateTime             @default(now())
   updatedAt             DateTime             @updatedAt

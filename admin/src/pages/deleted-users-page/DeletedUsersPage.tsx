@@ -62,8 +62,13 @@ export const DeletedUsersPage = () => {
 
    const pageCount = Math.ceil(totalCount / pageSize);
 
-   const formatDate = (date: string | Date) => {
-      return new Date(date).toLocaleDateString("en-US", {
+   const formatDate = (date?: string | Date | null) => {
+      if (!date) return "N/A";
+
+      const parsedDate = new Date(date);
+      if (Number.isNaN(parsedDate.getTime())) return "N/A";
+
+      return parsedDate.toLocaleDateString("en-US", {
          year: "numeric",
          month: "short",
          day: "numeric",

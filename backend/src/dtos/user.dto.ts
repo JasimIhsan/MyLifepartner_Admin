@@ -14,6 +14,10 @@ export interface UserDto {
    bannedAt: Date | null;
    suspendedAt: Date | null;
    isDeleted: boolean;
+   isDeleteRequested: boolean;
+   deleteRequestedAt: Date | null;
+   deleteRequestStatus: string | null;
+   deleteRequestReason: string | null;
    profileStatus: ProfileStatus;
    hasCompletedBasicDetails: boolean;
    hasCompletedImageUpload: boolean;
@@ -59,6 +63,10 @@ export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null
    bannedAt: user.bannedAt,
    suspendedAt: user.suspendedAt,
    isDeleted: user.isDeleted,
+   isDeleteRequested: user.isDeleteRequested,
+   deleteRequestedAt: user.deleteRequestedAt,
+   deleteRequestStatus: user.deleteRequestStatus,
+   deleteRequestReason: user.deleteRequestReason,
    profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,
    hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails || false,
    hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
