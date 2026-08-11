@@ -524,6 +524,8 @@ export class ProfileRepository implements IProfileRepository {
          leftSelfieUrl: leftUrl,
          rightSelfieUrl: rightUrl,
          selfieStatus: "PENDING",
+         profileStatus: ProfileStatus.COMPLETED,
+         profileCompletion: 100,
          ...(latitude !== undefined && {
             lastLocationLat: latitude,
          }),

@@ -131,13 +131,21 @@ export class UserService implements IUserService {
          throw new ApiError(404, "User not found");
       }
 
+      const profile = user.profile;
+      const hasCompletedBasicDetails = profile?.hasCompletedBasicDetails ?? false;
+      const hasCompletedPartnerPreference = profile?.hasCompletedPartnerPreference ?? false;
+      const hasCompletedImageUpload = profile?.hasCompletedImageUpload ?? false;
+      const selfieStatus = (profile?.selfieStatus as SelfieStatusType) ?? null;
+      const hasFinishedOnboarding = hasCompletedBasicDetails && hasCompletedPartnerPreference && hasCompletedImageUpload && selfieStatus !== null;
+      const profileStatus: ProfileStatusType = hasFinishedOnboarding ? "COMPLETED" : ((profile?.profileStatus as ProfileStatusType) ?? "INCOMPLETE");
+
       return {
          id: user.id,
-         hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails ?? false,
-         hasCompletedPartnerPreference: user.profile?.hasCompletedPartnerPreference ?? false,
-         profileStatus: (user.profile?.profileStatus as ProfileStatusType) ?? "INCOMPLETE",
-         hasCompletedImageUpload: user.profile?.hasCompletedImageUpload ?? false,
-         selfieStatus: (user.profile?.selfieStatus as SelfieStatusType) ?? null,
+         hasCompletedBasicDetails,
+         hasCompletedPartnerPreference,
+         profileStatus,
+         hasCompletedImageUpload,
+         selfieStatus,
       };
    }
 

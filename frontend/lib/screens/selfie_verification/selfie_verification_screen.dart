@@ -224,6 +224,7 @@ class _SelfieVerificationScreenState extends State<SelfieVerificationScreen>
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('selfieStatus', 'PENDING');
+      await prefs.setString('profileStatus', 'COMPLETED');
       await prefs.setBool('locationVerified', true);
 
       if (mounted) {

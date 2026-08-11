@@ -225,13 +225,13 @@ export class ProfileImageController {
          status: AuditStatus.SUCCESS,
          severity: AuditSeverity.INFO,
          message: `User uploaded selfies for verification`,
-         newValue: { selfieStatus: user.selfieStatus },
+         newValue: { selfieStatus: user.selfieStatus, profileStatus: user.profileStatus },
          entityType: "User",
          entityId: userId.toString(),
          source: AuditSource.API,
       });
 
-      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, { selfieStatus: user.selfieStatus }, "Selfies uploaded successfully. Awaiting review."));
+      return res.status(HTTP_STATUS.CREATED).json(new ApiResponse(HTTP_STATUS.CREATED, { selfieStatus: user.selfieStatus, profileStatus: user.profileStatus }, "Selfies uploaded successfully. Awaiting review."));
    });
 
    /**
