@@ -39,6 +39,13 @@ adminUsersRoute.get("/archived", adminUsersController.getArchivedUsers);
 adminUsersRoute.post("/", adminUsersController.createUser);
 
 /**
+ * @route   GET /api/v1/admin/users/:id
+ * @desc    Get complete user details by ID
+ * @access  Admin
+ */
+adminUsersRoute.get("/:id", adminUsersController.getUserById);
+
+/**
  * @route   PUT /api/v1/admin/users/:id
  * @desc    Update user by ID
  * @access  Admin

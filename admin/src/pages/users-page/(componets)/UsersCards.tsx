@@ -6,14 +6,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserInterface } from "@/interface/user.interface";
-import { CheckCircle2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreVertical, Search, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreVertical, Search, Mail, Phone, CalendarDays } from "lucide-react";
 import * as React from "react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 type UserActionType = "delete" | "ban" | "unban" | "grantFoundingMember" | "revokeFoundingMember";
 
-export function UsersTable({
+export function UsersCards({
    data: initialData = [],
    searchQuery,
    onSearchChange,
@@ -143,6 +144,9 @@ export function UsersTable({
       <div className="w-full space-y-4">
          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex flex-1 items-center space-x-2">
+               <div className="flex items-center space-x-2 mr-2">
+                  <Checkbox checked={data.length > 0 && selectedIds.size === data.length ? true : selectedIds.size > 0 ? "indeterminate" : false} onCheckedChange={toggleSelectAll} aria-label="Select all" />
+               </div>
                <div className="relative w-full max-w-sm">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -166,87 +170,89 @@ export function UsersTable({
             </div>
          </div>
 
-         <div className="rounded-md border bg-card text-card-foreground shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-               <Table>
-                  <TableHeader className="bg-muted/50">
-                     <TableRow>
-                        <TableHead className="w-12 text-center">
-                           <Checkbox checked={data.length > 0 && selectedIds.size === data.length ? true : selectedIds.size > 0 ? "indeterminate" : false} onCheckedChange={toggleSelectAll} aria-label="Select all" />
-                        </TableHead>
-                        <TableHead className="w-62.5">User</TableHead>
-                        <TableHead className="w-50">Contact</TableHead>
-                        <TableHead className="w-37.5">Status</TableHead>
-                        <TableHead className="w-37.5">Joined</TableHead>
-                        <TableHead className="w-12.5"></TableHead>
-                     </TableRow>
-                  </TableHeader>
-                  <TableBody className={isFetching ? "opacity-50 pointer-events-none" : ""}>
-                     {data.length === 0 ? (
-                        <TableRow>
-                           <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                              {isFetching ? "Loading..." : "No users found matching your criteria."}
-                           </TableCell>
-                        </TableRow>
-                     ) : (
-                        data.map((user) => (
-                           <TableRow key={user.id} data-state={selectedIds.has(user.id) ? "selected" : undefined} className="group">
-                              <TableCell className="text-center align-middle">
-                                 <Checkbox checked={selectedIds.has(user.id)} onCheckedChange={() => toggleSelectRow(user.id)} aria-label="Select row" />
-                              </TableCell>
-                              <TableCell>
-                                 <div className="flex flex-col">
-                                    <span className="font-medium">{user.name || "Unknown"}</span>
-                                    {user.isBanned && <span className="text-xs text-destructive font-semibold">Banned</span>}
-                                    {user.isSuspended && <span className="text-xs text-orange-500 font-semibold">Suspended</span>}
-                                    {user.isFoundingMember && <span className="text-xs text-amber-600 font-semibold">Founding Member{user.foundingMemberSince ? ` since ${formatDate(user.foundingMemberSince)}` : ""}</span>}
-                                    <span className="text-xs text-muted-foreground">ID: {user.id}</span>
-                                 </div>
-                              </TableCell>
-                              <TableCell>
-                                 <div className="flex flex-col">
-                                    <span className="text-sm truncate max-w-37.5 sm:max-w-50 md:max-w-75 lg:max-w-100 xl:max-w-125" title={user.email || ""}>
-                                       {user.email || "No email"}
-                                    </span>
-                                    <span className="text-xs text-muted-foreground">{user.mobileNumber}</span>
-                                 </div>
-                              </TableCell>
-                              <TableCell>
-                                 <div className="flex flex-col gap-1.5">
-                                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                       {user.profileStatus === "COMPLETED" ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500" /> : user.profileStatus === "ONBOARDING_COMPLETED" ? <CheckCircle2 className="h-3.5 w-3.5 text-yellow-500" /> : <XCircle className="h-3.5 w-3.5" />}
-                                       <span className="capitalize">{user.profileStatus?.replace("_", " ").toLowerCase() || "Incomplete"}</span>
-                                    </div>
-                                 </div>
-                              </TableCell>
-                              <TableCell className="text-sm text-muted-foreground">{formatDate(user.createdAt)}</TableCell>
-                              <TableCell>
-                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                       <Button variant="ghost" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity focus:opacity-100 data-[state=open]:opacity-100">
-                                          <span className="sr-only">Open menu</span>
-                                          <MoreVertical className="h-4 w-4" />
-                                       </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-40">
-                                       <DropdownMenuItem onClick={() => onViewDetails?.(user)}>View Details</DropdownMenuItem>
-                                       <DropdownMenuItem onClick={() => onEdit?.(user)}>Edit User</DropdownMenuItem>
-                                       <DropdownMenuItem onClick={() => onViewAuditHistory?.(user)}>View Audit History</DropdownMenuItem>
-                                       <DropdownMenuItem onClick={() => handleActionClick(user, user.isBanned ? "unban" : "ban")}>{user.isBanned ? "Unban User" : "Ban User"}</DropdownMenuItem>
-                                       <DropdownMenuItem onClick={() => handleActionClick(user, user.isFoundingMember ? "revokeFoundingMember" : "grantFoundingMember")}>{user.isFoundingMember ? "Revoke Founding Member" : "Grant Founding Member"}</DropdownMenuItem>
-                                       <DropdownMenuSeparator />
-                                       <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>
-                                          Delete User
-                                       </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                 </DropdownMenu>
-                              </TableCell>
-                           </TableRow>
-                        ))
-                     )}
-                  </TableBody>
-               </Table>
-            </div>
+         <div className={isFetching ? "opacity-50 pointer-events-none" : ""}>
+            {data.length === 0 ? (
+               <div className="flex items-center justify-center h-40 border rounded-md bg-card text-muted-foreground">{isFetching ? "Loading..." : "No users found matching your criteria."}</div>
+            ) : (
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {data.map((user) => (
+                     <Card key={user.id} className={`relative group ${selectedIds.has(user.id) ? "border-primary" : ""}`}>
+                        <div className="absolute top-4 left-4 z-10">
+                           <Checkbox checked={selectedIds.has(user.id)} onCheckedChange={() => toggleSelectRow(user.id)} aria-label="Select row" />
+                        </div>
+                        <div className="absolute top-3 right-3 z-10">
+                           <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                 <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreVertical className="h-4 w-4" />
+                                 </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-40">
+                                 <DropdownMenuItem onClick={() => onViewDetails?.(user)}>View Details</DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => onEdit?.(user)}>Edit User</DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => onViewAuditHistory?.(user)}>View Audit History</DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => handleActionClick(user, user.isBanned ? "unban" : "ban")}>{user.isBanned ? "Unban User" : "Ban User"}</DropdownMenuItem>
+                                 <DropdownMenuItem onClick={() => handleActionClick(user, user.isFoundingMember ? "revokeFoundingMember" : "grantFoundingMember")}>{user.isFoundingMember ? "Revoke Founding Member" : "Grant Founding Member"}</DropdownMenuItem>
+                                 <DropdownMenuSeparator />
+                                 <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>
+                                    Delete User
+                                 </DropdownMenuItem>
+                              </DropdownMenuContent>
+                           </DropdownMenu>
+                        </div>
+
+                        <CardHeader className="text-center pt-8 pb-4 cursor-pointer" onClick={() => onViewDetails?.(user)}>
+                           <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 text-2xl font-bold">{user.name ? user.name.charAt(0).toUpperCase() : "U"}</div>
+                           <CardTitle className="truncate">{user.name || "Unknown"}</CardTitle>
+                           <CardDescription>ID: {user.id}</CardDescription>
+
+                           <div className="flex flex-wrap gap-1 mt-2 justify-center">
+                              {user.isBanned && <Badge variant="destructive">Banned</Badge>}
+                              {user.isSuspended && (
+                                 <Badge variant="outline" className="text-orange-500 border-orange-500">
+                                    Suspended
+                                 </Badge>
+                              )}
+                              {user.isFoundingMember && (
+                                 <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+                                    Founding Member
+                                 </Badge>
+                              )}
+                              {user.profileStatus === "COMPLETED" && (
+                                 <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
+                                    Completed
+                                 </Badge>
+                              )}
+                              {user.profileStatus !== "COMPLETED" && <Badge variant="secondary">{user.profileStatus?.replace("_", " ").toLowerCase() || "Incomplete"}</Badge>}
+                           </div>
+                        </CardHeader>
+
+                        <CardContent className="pb-4 pt-0">
+                           <div className="space-y-2 text-sm px-2">
+                              <div className="flex items-center text-muted-foreground overflow-hidden">
+                                 <Mail className="h-4 w-4 mr-2 shrink-0" />
+                                 <span className="truncate">{user.email || "No email"}</span>
+                              </div>
+                              <div className="flex items-center text-muted-foreground overflow-hidden">
+                                 <Phone className="h-4 w-4 mr-2 shrink-0" />
+                                 <span className="truncate">{user.mobileNumber || "No phone"}</span>
+                              </div>
+                              <div className="flex items-center text-muted-foreground">
+                                 <CalendarDays className="h-4 w-4 mr-2 shrink-0" />
+                                 <span className="truncate">Joined {formatDate(user.createdAt)}</span>
+                              </div>
+                           </div>
+                        </CardContent>
+                        <CardFooter className="pt-0 justify-center">
+                           <Button variant="secondary" className="w-full mx-2" onClick={() => onViewDetails?.(user)}>
+                              View Details
+                           </Button>
+                        </CardFooter>
+                     </Card>
+                  ))}
+               </div>
+            )}
          </div>
 
          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
@@ -261,7 +267,7 @@ export function UsersTable({
             </div>
             <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 lg:space-x-8">
                <div className="flex items-center space-x-2">
-                  <p className="text-sm font-medium">Rows per page</p>
+                  <p className="text-sm font-medium">Cards per page</p>
                   <Select
                      value={`${pageSize}`}
                      onValueChange={(value) => {
@@ -272,7 +278,7 @@ export function UsersTable({
                         <SelectValue placeholder={pageSize} />
                      </SelectTrigger>
                      <SelectContent side="top">
-                        {[10, 20, 30, 40, 50].map((size) => (
+                        {[12, 24, 36, 48].map((size) => (
                            <SelectItem key={size} value={`${size}`}>
                               {size}
                            </SelectItem>
@@ -306,15 +312,7 @@ export function UsersTable({
             </div>
          </div>
 
-         <ConfirmationModal
-            isOpen={actionModalOpen}
-            onClose={() => setActionModalOpen(false)}
-            onConfirm={handleConfirmAction}
-            title={getActionTitle()}
-            description={getActionDescription()}
-            confirmText={getConfirmText()}
-            variant={actionType === "delete" || actionType === "ban" || actionType === "revokeFoundingMember" ? "destructive" : "default"}
-         />
+         <ConfirmationModal isOpen={actionModalOpen} onClose={() => setActionModalOpen(false)} onConfirm={handleConfirmAction} title={getActionTitle()} description={getActionDescription()} confirmText={getConfirmText()} variant={actionType === "delete" || actionType === "ban" || actionType === "revokeFoundingMember" ? "destructive" : "default"} />
       </div>
    );
 }

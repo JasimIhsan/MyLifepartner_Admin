@@ -9,6 +9,7 @@ export interface IUserService {
    findUserByEmail(email: string): Promise<UserDto | null>;
    getUsers(searchQuery?: string, page?: number, limit?: number, selfieStatus?: string): Promise<{ data: UserDto[]; total: number }>;
    getUserById(userId: number): Promise<UserDto>;
+   getCompleteUserDetailsForAdmin(userId: number): Promise<any>;
    getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto>;
    updateUser(userId: number, updateData: UpdateUserDto): Promise<UserDto>;
    toggleFoundingMemberStatus(userId: number): Promise<{ user: UserDto; previousIsFoundingMember: boolean; previousFoundingMemberSince: Date | null }>;

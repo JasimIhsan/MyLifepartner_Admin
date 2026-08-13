@@ -12,6 +12,7 @@ import ProfileVerificationPage from "./pages/profile-verification-page/ProfileVe
 import QuestionnairePage from "./pages/questionnaire-page/QuestionnairePage";
 import SubscriptionPage from "./pages/subscription-page/SubscriptionPage";
 import UsersPage from "./pages/users-page/UsersPage";
+import UserDetailPage from "./pages/users-page/UserDetailPage";
 import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
 
 import { FeaturesPage } from "./pages/features-page/FeaturesPage"; // New
@@ -59,6 +60,7 @@ function App() {
                   <Route path="/" element={<DashboardPage />} />
                   <Route path="/admins" element={<AdminsPage />} />
                   <Route path="/users" element={<UsersPage />} />
+                  <Route path="/users/:id" element={<UserDetailPage />} />
                   <Route path="/suspended-users" element={<SuspendedUsersPage />} />
                   <Route path="/deletion-requests" element={<DeletionRequestsPage />} />
                   <Route path="/deleted-users" element={<DeletedUsersPage />} />

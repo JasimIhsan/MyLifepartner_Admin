@@ -36,7 +36,7 @@ type UserMatchContext = {
    sentRequestsMap: Map<number, string>;
 };
 
-const MINIMUM_MATCH_PERCENTAGE = 60;
+const MINIMUM_MATCH_PERCENTAGE = 10;
 const RECOMMENDATION_LIMIT = 20;
 const DEFAULT_PROFILE_NAME = "Unknown";
 const DEFAULT_NO_DATA_MATCH_PERCENTAGE = 50;
