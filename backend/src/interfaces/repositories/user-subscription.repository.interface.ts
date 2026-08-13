@@ -28,6 +28,7 @@ export interface ISyncTransactionContext {
    findActiveSubscriptionByUserId(userId: number): Promise<UserSubscriptionWithPlan | null>;
    deactivateUserSubscriptions(userId: number): Promise<void>;
    createUserSubscription(data: Prisma.UserSubscriptionCreateInput): Promise<UserSubscriptionWithPlan>;
+   upsertUserSubscriptionByOriginalTransactionId(originalTransactionId: string, createData: Prisma.UserSubscriptionCreateInput, updateData: Prisma.UserSubscriptionUpdateInput): Promise<UserSubscriptionWithPlan>;
    updateUserSubscription(id: number, data: Prisma.UserSubscriptionUpdateInput): Promise<UserSubscriptionWithPlan>;
    applyFeatures(userId: number, featurePayload: Prisma.UserFeatureCreateInput | Prisma.UserFeatureUpdateInput): Promise<void>;
    writeAuditLog(params: {

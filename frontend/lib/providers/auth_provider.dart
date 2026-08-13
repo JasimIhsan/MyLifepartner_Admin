@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:life_partner_again/providers/subscription_provider.dart';
 import 'package:life_partner_again/services/auth_service.dart';
 import 'package:life_partner_again/services/chat_service.dart';
 import 'package:life_partner_again/services/notification/firebase_notification_service.dart';
@@ -78,29 +79,36 @@ class AuthProvider extends ChangeNotifier {
     _isLoggingOut = true;
 
     try {
-      await FirebaseNotificationService().tearDownOnLogout();
-    } catch (e) {
-      debugPrint('FCM tearDownOnLogout failed: $e');
+      try {
+        await FirebaseNotificationService().tearDownOnLogout();
+      } catch (e) {
+        debugPrint('FCM tearDownOnLogout failed: $e');
+      }
+
+      try {
+        await ZegoService.instance.logout();
+      } catch (e) {
+        debugPrint('Zego logout failed: $e');
+      }
+
+      // Reset theme and clear subscription purchaser state.
+      final context = navigatorKey.currentContext;
+      if (context != null && context.mounted) {
+        context.read<ThemeProvider>().setThemeMode(ThemeMode.light);
+        try {
+          await context.read<SubscriptionProvider>().logout();
+        } catch (e) {
+          debugPrint('Subscription logout failed: $e');
+        }
+      }
+
+      await _authService.logoutLocal();
+      _isLoggedIn = false;
+      _onboardingStatus = null;
+      notifyListeners();
+    } finally {
+      _isLoggingOut = false;
     }
-
-    try {
-      await ZegoService.instance.logout();
-    } catch (e) {
-      debugPrint('Zego logout failed: $e');
-    }
-
-    // Reset theme to light mode
-    final context = navigatorKey.currentContext;
-    if (context != null && context.mounted) {
-      context.read<ThemeProvider>().setThemeMode(ThemeMode.light);
-    }
-
-    await _authService.logoutLocal();
-    _isLoggedIn = false;
-    _onboardingStatus = null;
-    notifyListeners();
-
-    _isLoggingOut = false;
   }
 
   Future<void> _setupZego(OnboardingStatus status) async {

@@ -74,7 +74,7 @@ class PlanCardWidget extends StatelessWidget {
       } else if (plan.durationDays == 365) {
         durationText = 'per year';
       } else {
-        durationText = 'for \${plan.durationDays} days';
+        durationText = 'for ${plan.durationDays} days';
       }
     }
 

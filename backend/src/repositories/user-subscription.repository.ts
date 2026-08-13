@@ -16,12 +16,7 @@ const userSubscriptionIncludePlanAndFeatures = {
  * included so /my-subscription returns their subscription and so that a new
  * purchase correctly expires/replaces the old record.
  */
-const ACTIVE_STATUSES: PrismaSubscriptionStatus[] = [
-   PrismaSubscriptionStatus.ACTIVE,
-   PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY,
-   PrismaSubscriptionStatus.BILLING_ISSUE,
-   PrismaSubscriptionStatus.GRACE_PERIOD,
-];
+const ACTIVE_STATUSES: PrismaSubscriptionStatus[] = [PrismaSubscriptionStatus.ACTIVE, PrismaSubscriptionStatus.CANCELLED_PENDING_EXPIRY, PrismaSubscriptionStatus.BILLING_ISSUE, PrismaSubscriptionStatus.GRACE_PERIOD];
 
 export class UserSubscriptionRepository implements IUserSubscriptionRepository {
    /**
@@ -129,6 +124,14 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
                      include: userSubscriptionIncludePlanAndFeatures,
                   }) as Promise<UserSubscriptionWithPlan>;
                },
+               upsertUserSubscriptionByOriginalTransactionId: async (originalTransactionId: string, createData: Prisma.UserSubscriptionCreateInput, updateData: Prisma.UserSubscriptionUpdateInput) => {
+                  return tx.userSubscription.upsert({
+                     where: { originalTransactionId },
+                     create: createData,
+                     update: updateData,
+                     include: userSubscriptionIncludePlanAndFeatures,
+                  }) as Promise<UserSubscriptionWithPlan>;
+               },
                updateUserSubscription: async (id: number, data: Prisma.UserSubscriptionUpdateInput) => {
                   return tx.userSubscription.update({
                      where: { id },
@@ -167,21 +170,24 @@ export class UserSubscriptionRepository implements IUserSubscriptionRepository {
                      },
                   });
 
-                  await auditService.log({
-                     userId: params.userId,
-                     actorType: ActorType.SYSTEM,
-                     module: AuditModule.SUBSCRIPTION,
-                     action: 'SUBSCRIPTION_SYNC',
-                     status: AuditStatus.SUCCESS,
-                     severity: AuditSeverity.INFO,
-                     message: `Subscription sync: ${params.reason}`,
-                     oldValue: { planId: params.previousPlanId, status: params.previousStatus },
-                     newValue: { planId: params.newPlanId, status: params.newStatus },
-                     metadata: { eventType: params.eventType, productId: params.productId },
-                     transactionId: params.originalTransactionId ?? undefined,
-                     revenueCatEventId: params.eventId ?? undefined,
-                     source: AuditSource.API
-                  }, tx as any);
+                  await auditService.log(
+                     {
+                        userId: params.userId,
+                        actorType: ActorType.SYSTEM,
+                        module: AuditModule.SUBSCRIPTION,
+                        action: "SUBSCRIPTION_SYNC",
+                        status: AuditStatus.SUCCESS,
+                        severity: AuditSeverity.INFO,
+                        message: `Subscription sync: ${params.reason}`,
+                        oldValue: { planId: params.previousPlanId, status: params.previousStatus },
+                        newValue: { planId: params.newPlanId, status: params.newStatus },
+                        metadata: { eventType: params.eventType, productId: params.productId },
+                        transactionId: params.originalTransactionId ?? undefined,
+                        revenueCatEventId: params.eventId ?? undefined,
+                        source: AuditSource.API,
+                     },
+                     tx as any
+                  );
                },
             };
 

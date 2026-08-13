@@ -8,6 +8,20 @@ import 'package:life_partner_again/services/subscription_service.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const String _androidPackageName = 'com.premiumglobalcorp.lifepartneragain';
+const String _revenueCatUuidPrefix = '00000000-0000-4000-8000-';
+
+String _revenueCatAppUserIdForUserId(String userId) {
+  final trimmed = userId.trim();
+  final parsed = BigInt.tryParse(trimmed);
+  if (parsed == null || parsed.isNegative) return trimmed;
+
+  final hexUserId = parsed.toRadixString(16);
+  if (hexUserId.length > 12) return trimmed;
+
+  return '$_revenueCatUuidPrefix${hexUserId.padLeft(12, '0')}';
+}
+
 /// Architecture contract
 /// ─────────────────────────────────────────────────────────────────────
 /// SOURCE OF TRUTH          │ USED FOR
@@ -18,7 +32,7 @@ import 'package:url_launcher/url_launcher.dart';
 /// Flutter NEVER reads RC entitlement state for authorization.
 /// [currentSubscription] and [mySubscription] always come from the backend.
 /// RC is only used for:
-///   - purchasePackage()
+///   - purchase(PurchaseParams)
 ///   - restorePurchases()
 ///   - getOfferings() (for live store pricing display)
 ///
@@ -33,7 +47,8 @@ class SubscriptionProvider extends ChangeNotifier {
   UserSubscription? _mySubscription;
 
   bool _isPurchasing = false;
-  bool _isInitialized = false;
+  bool _isRevenueCatConfigured = false;
+  bool _customerInfoListenerAttached = false;
   final SubscriptionService _subscriptionService = SubscriptionService();
   String? _authenticatedUserId;
 
@@ -44,19 +59,27 @@ class SubscriptionProvider extends ChangeNotifier {
   Future<void> init(String userId) async {
     _authenticatedUserId = userId;
 
-    if (_isInitialized) return;
-
     try {
-      await Purchases.configure(PurchasesConfiguration(Env.revenueCatApiKey));
-      await Purchases.logIn(userId);
+      final isConfigured =
+          _isRevenueCatConfigured || await Purchases.isConfigured;
+      if (!isConfigured) {
+        final configuration = PurchasesConfiguration(Env.revenueCatApiKey)
+          ..appUserID = _revenueCatAppUserIdForUserId(userId);
+        await Purchases.configure(configuration);
+      }
+
+      _isRevenueCatConfigured = true;
 
       // RC listener is kept for purchase-flow UI responsiveness only.
       // It does NOT update authorization state — that comes from the backend.
-      Purchases.addCustomerInfoUpdateListener((_) {
-        // No-op: backend is source of truth; no auth state updated here.
-      });
+      if (!_customerInfoListenerAttached) {
+        Purchases.addCustomerInfoUpdateListener((_) {
+          // No-op: backend is source of truth; no auth state updated here.
+        });
+        _customerInfoListenerAttached = true;
+      }
 
-      _isInitialized = true;
+      await _ensureRevenueCatIdentity(userId);
     } catch (e) {
       error = _getReadableError(e);
       notifyListeners();
@@ -69,16 +92,17 @@ class SubscriptionProvider extends ChangeNotifier {
 
   Future<bool> _ensureRevenueCatIdentity(String userId) async {
     try {
+      final expectedAppUserId = _revenueCatAppUserIdForUserId(userId);
       final appUserID = await Purchases.appUserID;
-      if (appUserID != userId) {
+      if (appUserID != expectedAppUserId) {
         debugPrint(
           '⚠️ RevenueCat identity mismatch! Current RC ID: $appUserID, '
-          'Authenticated User ID: $userId. Syncing identity...',
+          'Expected RC ID: $expectedAppUserId. Syncing identity...',
         );
-        final logInResult = await Purchases.logIn(userId);
+        final logInResult = await Purchases.logIn(expectedAppUserId);
         final newAppUserId = logInResult.customerInfo.originalAppUserId;
         debugPrint(
-          '✅ RevenueCat logged in successfully for user $userId '
+          '✅ RevenueCat logged in successfully for user $expectedAppUserId '
           '(RC original app user ID: $newAppUserId)',
         );
       }
@@ -95,10 +119,9 @@ class SubscriptionProvider extends ChangeNotifier {
 
   Future<void> logout() async {
     try {
-      if (_isInitialized) {
+      if (_isRevenueCatConfigured || await Purchases.isConfigured) {
         await Purchases.logOut();
       }
-      _isInitialized = false;
       _authenticatedUserId = null;
       plans = [];
       currentSubscription = null;
@@ -393,8 +416,12 @@ class SubscriptionProvider extends ChangeNotifier {
 
       debugPrint('🎯 Package: ${package.storeProduct}');
 
-      // ignore: deprecated_member_use
-      final result = await Purchases.purchasePackage(package);
+      final result = await Purchases.purchase(
+        PurchaseParams.package(
+          package,
+          productChangeInfo: _buildAndroidProductChangeInfo(backendPlan),
+        ),
+      );
 
       onPurchaseCompleted?.call();
 
@@ -405,10 +432,27 @@ class SubscriptionProvider extends ChangeNotifier {
       try {
         final customerInfo = result.customerInfo;
 
-        // Get the originalTransactionId for the purchased product.
-        // RC stores it in activeSubscriptions → but the most reliable source
-        // is the transaction info inside the customer info object.
-        final purchasedProductId = package.storeProduct.identifier;
+        final purchasedProductId =
+            result.storeTransaction.productIdentifier.isNotEmpty
+            ? result.storeTransaction.productIdentifier
+            : package.storeProduct.identifier;
+        final subscriptionInfo =
+            _subscriptionInfoForProduct(customerInfo, purchasedProductId) ??
+            _subscriptionInfoForProduct(
+              customerInfo,
+              package.storeProduct.identifier,
+            );
+
+        final storeTransactionId = _firstNonEmpty([
+          subscriptionInfo?.storeTransactionId,
+          result.storeTransaction.transactionIdentifier,
+        ]);
+
+        if (storeTransactionId == null) {
+          throw Exception(
+            'Store transaction identifier was not returned. Please restore purchases or try again in a few seconds.',
+          );
+        }
 
         // Determine store string expected by the backend.
         String store = 'PLAY_STORE';
@@ -416,19 +460,13 @@ class SubscriptionProvider extends ChangeNotifier {
           store = 'APP_STORE';
         }
 
-        // originalApplicationVersion / originalPurchaseDate is available on
-        // the CustomerInfo but the originalTransactionId is best read from
-        // nonSubscriptions or activeSubscriptions. We use productIdentifier
-        // as the fallback key and pass the customerInfo.originalAppUserId
-        // as the transaction ID when the store doesn't return it directly.
-        final originalTxnId =
-            customerInfo.originalAppUserId; // RC's stable transaction anchor
-
         final verified = await _subscriptionService.verifyPurchase(
-          originalTransactionId: originalTxnId,
+          storeTransactionId: storeTransactionId,
           productId: purchasedProductId,
           store: store,
-          environment: kDebugMode ? 'SANDBOX' : 'PRODUCTION',
+          environment: (subscriptionInfo?.isSandbox ?? kDebugMode)
+              ? 'SANDBOX'
+              : 'PRODUCTION',
         );
 
         _mySubscription = verified;
@@ -471,9 +509,7 @@ class SubscriptionProvider extends ChangeNotifier {
               'ℹ️ Product already purchased. Triggering restore/sync...',
             );
             onPurchaseCompleted?.call();
-            await fetchMySubscription();
-            error = null;
-            return true;
+            return restorePurchases();
           }
         } catch (_) {}
       }
@@ -488,6 +524,57 @@ class SubscriptionProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════
   // FETCH / REFRESH
   // ═══════════════════════════════════════════════════════════════════════
+
+  Future<bool> restorePurchases() async {
+    if (_authenticatedUserId == null) {
+      error = 'Unable to restore purchases because you are not logged in.';
+      notifyListeners();
+      return false;
+    }
+
+    try {
+      isLoading = true;
+      error = null;
+      notifyListeners();
+
+      final identityOk = await _ensureRevenueCatIdentity(_authenticatedUserId!);
+      if (!identityOk) {
+        error = 'Unable to verify user session. Please try logging in again.';
+        return false;
+      }
+
+      await Purchases.restorePurchases();
+      await Purchases.invalidateCustomerInfoCache();
+
+      final syncedSub = await _syncFromBackend();
+      if (syncedSub != null) {
+        _mySubscription = syncedSub;
+      } else {
+        _mySubscription = await _subscriptionService.getMySubscription();
+      }
+
+      _applyCurrentSubscription();
+
+      final restoredPaidSubscription =
+          _mySubscription?.isActive == true &&
+          (currentSubscription?.price ?? 0) > 0;
+
+      if (!restoredPaidSubscription) {
+        error =
+            'No active subscription purchases were found for this store account.';
+        return false;
+      }
+
+      error = null;
+      return true;
+    } catch (e) {
+      error = _getReadableError(e);
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 
   /// Refreshes the current subscription state from the backend.
   ///
@@ -535,13 +622,6 @@ class SubscriptionProvider extends ChangeNotifier {
     for (int i = 0; i < maxRetries; i++) {
       debugPrint('🔄 Subscription refresh retry ${i + 1}/$maxRetries...');
       await fetchMySubscription();
-
-      // Stop early if we see the expected state change.
-      final sub = _mySubscription;
-      if (sub != null && !sub.willRenew) {
-        debugPrint('✅ Detected updated cancellation state (willRenew=false).');
-        break;
-      }
       if (i < maxRetries - 1) {
         await Future.delayed(delay);
       }
@@ -553,6 +633,10 @@ class SubscriptionProvider extends ChangeNotifier {
   // ═══════════════════════════════════════════════════════════════════════
 
   Future<void> openGooglePlaySubscription() async {
+    return openStoreSubscriptionManagement();
+  }
+
+  Future<void> openStoreSubscriptionManagement() async {
     try {
       final info = await Purchases.getCustomerInfo();
 
@@ -577,7 +661,7 @@ class SubscriptionProvider extends ChangeNotifier {
         if (sku != null && sku.isNotEmpty) {
           uri = Uri.parse(
             'https://play.google.com/store/account/subscriptions'
-            '?sku=$sku&package=com.ciltriq.lifepartneragain',
+            '?sku=$sku&package=$_androidPackageName',
           );
         } else {
           uri = Uri.parse(
@@ -623,13 +707,77 @@ class SubscriptionProvider extends ChangeNotifier {
   String? get currentSubscriptionMessage => _mySubscription?.message;
   UserSubscription? get mySubscription => _mySubscription;
 
-  bool get hasBillingIssue => _mySubscription?.isPaymentFailed ?? false;
-  bool get isInGracePeriod => _mySubscription?.isGracePeriod ?? false;
-  bool get isCancelledButActive => _mySubscription?.isCancelled ?? false;
+  bool get hasBillingIssue => _mySubscription?.hasBillingIssue ?? false;
+  bool get isInGracePeriod => _mySubscription?.isInGracePeriod ?? false;
+  bool get isCancelledButActive =>
+      _mySubscription?.isCancelledButActive ?? false;
   bool get isDowngradeScheduled =>
       _mySubscription?.isDowngradeScheduled ?? false;
   bool get isExpired => _mySubscription?.isExpired ?? false;
   bool get isCancelled => _mySubscription?.isCancelled ?? false;
+
+  StoreProductChangeInfo? _buildAndroidProductChangeInfo(
+    SubscriptionPlan targetPlan,
+  ) {
+    if (!Platform.isAndroid) return null;
+
+    final currentPlan = currentSubscription;
+    if (currentPlan == null || currentPlan.price == 0) return null;
+
+    final oldProductIdentifier = currentPlan.identifier;
+    final targetIdentifier = targetPlan.identifier ?? targetPlan.id.toString();
+    if (oldProductIdentifier == null ||
+        oldProductIdentifier.isEmpty ||
+        oldProductIdentifier == targetIdentifier) {
+      return null;
+    }
+
+    final replacementMode = targetPlan.price >= currentPlan.price
+        ? StoreReplacementMode.chargeProratedPrice
+        : StoreReplacementMode.deferred;
+
+    return StoreProductChangeInfo(
+      oldProductIdentifier,
+      replacementMode: replacementMode,
+    );
+  }
+
+  SubscriptionInfo? _subscriptionInfoForProduct(
+    CustomerInfo customerInfo,
+    String productId,
+  ) {
+    final matches = customerInfo.subscriptionsByProductIdentifier.entries
+        .where((entry) {
+          final key = entry.key;
+          return key == productId ||
+              key.startsWith('$productId:') ||
+              productId.startsWith('$key:');
+        })
+        .map((entry) => entry.value)
+        .toList();
+
+    if (matches.isEmpty) return null;
+
+    matches.sort((a, b) {
+      if (a.isActive != b.isActive) return a.isActive ? -1 : 1;
+      final aPurchase = DateTime.tryParse(a.purchaseDate);
+      final bPurchase = DateTime.tryParse(b.purchaseDate);
+      if (aPurchase != null && bPurchase != null) {
+        return bPurchase.compareTo(aPurchase);
+      }
+      return 0;
+    });
+
+    return matches.first;
+  }
+
+  String? _firstNonEmpty(List<String?> values) {
+    for (final value in values) {
+      final trimmed = value?.trim();
+      if (trimmed != null && trimmed.isNotEmpty) return trimmed;
+    }
+    return null;
+  }
 
   // ═══════════════════════════════════════════════════════════════════════
   // ERROR FORMATTING

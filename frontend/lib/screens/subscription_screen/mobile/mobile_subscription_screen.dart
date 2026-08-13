@@ -63,15 +63,36 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
               letterSpacing: 0.2,
             ),
           ),
-          IconButton(
-            icon: Icon(
-              Icons.receipt_long_rounded,
-              color:
-                  Theme.of(context).textTheme.bodyLarge?.color ??
-                  AppColors.textPrimary,
-              size: 24,
-            ),
-            onPressed: () => context.push(AppRoutes.billingHistory),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Tooltip(
+                message: 'Restore purchases',
+                child: IconButton(
+                  icon: Icon(
+                    Icons.restore_rounded,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
+                    size: 24,
+                  ),
+                  onPressed: handleRestorePurchases,
+                ),
+              ),
+              Tooltip(
+                message: 'Billing history',
+                child: IconButton(
+                  icon: Icon(
+                    Icons.receipt_long_rounded,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
+                    size: 24,
+                  ),
+                  onPressed: () => context.push(AppRoutes.billingHistory),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -529,7 +550,12 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                                           18,
                                                         ),
                                                     child: Image.asset(
-                                                      Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+                                                      Theme.of(
+                                                                context,
+                                                              ).brightness ==
+                                                              Brightness.dark
+                                                          ? 'assets/icons/app_logo_dark.png'
+                                                          : 'assets/icons/app_logo.png',
                                                       fit: BoxFit.contain,
                                                       errorBuilder:
                                                           (

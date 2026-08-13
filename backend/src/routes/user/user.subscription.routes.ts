@@ -73,8 +73,8 @@ router.post("/subscribe", subscriptionActionLimiter, userSubscriptionController.
 /**
  * @route POST /user/subscription/verify-purchase
  * @desc Verifies a RevenueCat purchase and immediately activates the plan in the DB.
- *       Call this right after Purchases.purchasePackage() succeeds in Flutter.
- *       Body: { originalTransactionId, productId, store, environment }
+ *       Call this right after RevenueCat purchase succeeds in Flutter.
+ *       Body: { storeTransactionId, productId, store, environment }
  * @access Private
  */
 router.post("/verify-purchase", subscriptionActionLimiter, userSubscriptionController.verifyPurchase);

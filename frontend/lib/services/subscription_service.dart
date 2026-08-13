@@ -87,10 +87,10 @@ class SubscriptionService {
   /// Verifies a completed RevenueCat purchase with the backend and immediately
   /// activates the subscription in the database — no webhook latency.
   ///
-  /// Call this right after [Purchases.purchasePackage] succeeds, passing the
-  /// [originalTransactionId] and [productIdentifier] from CustomerInfo.
+  /// Call this right after RevenueCat purchase succeeds, passing the store
+  /// transaction identifier returned by RevenueCat and the purchased product ID.
   Future<UserSubscription> verifyPurchase({
-    required String originalTransactionId,
+    required String storeTransactionId,
     required String productId,
     required String store,
     String environment = 'PRODUCTION',
@@ -99,7 +99,7 @@ class SubscriptionService {
       final response = await _client.post(
         '/subscription/verify-purchase',
         data: {
-          'originalTransactionId': originalTransactionId,
+          'storeTransactionId': storeTransactionId,
           'productId': productId,
           'store': store,
           'environment': environment,
