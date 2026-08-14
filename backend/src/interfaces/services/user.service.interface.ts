@@ -8,6 +8,8 @@ export interface IUserService {
    findOrCreateUser(email: string): Promise<UserDto>;
    findUserByEmail(email: string): Promise<UserDto | null>;
    getUsers(searchQuery?: string, page?: number, limit?: number, selfieStatus?: string): Promise<{ data: UserDto[]; total: number }>;
+   getGracePeriodSubscriptionUsers(searchQuery?: string, page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }>;
+   getSubscriptionUsers(query: { search?: string; page?: number; limit?: number; status?: string; planId?: number }): Promise<{ data: UserDto[]; total: number }>;
    getUserById(userId: number): Promise<UserDto>;
    getCompleteUserDetailsForAdmin(userId: number): Promise<any>;
    getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto>;

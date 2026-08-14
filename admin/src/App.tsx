@@ -11,6 +11,7 @@ import NotFoundPage from "./pages/not-found-page/NotFoundPage";
 import ProfileVerificationPage from "./pages/profile-verification-page/ProfileVerificationPage";
 import QuestionnairePage from "./pages/questionnaire-page/QuestionnairePage";
 import SubscriptionPage from "./pages/subscription-page/SubscriptionPage";
+import UserSubscriptionsPage from "./pages/user-subscriptions-page/UserSubscriptionsPage";
 import UsersPage from "./pages/users-page/UsersPage";
 import UserDetailPage from "./pages/users-page/UserDetailPage";
 import { setAuthenticated, setLoading, setUser } from "./store/authSlice";
@@ -68,6 +69,7 @@ function App() {
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
                   <Route path="/image-assets" element={<ImageAssetsPage />} />
                   <Route path="/lpa-guide" element={<LpaGuidePage />} />
+                  <Route path="/subscriptions/users" element={<UserSubscriptionsPage />} />
                   <Route path="/subscriptions/plans" element={<SubscriptionPage />} />
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />
                   <Route path="/transactions" element={<TransactionsPage />} />

@@ -13,9 +13,10 @@ export interface ConfirmationModalProps {
    cancelText?: string;
    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
    isLoading?: boolean;
+   confirmDisabled?: boolean;
 }
 
-export function ConfirmationModal({ isOpen, onClose, onConfirm, title, description, confirmText = "Confirm", cancelText = "Cancel", variant = "default", isLoading = false }: ConfirmationModalProps) {
+export function ConfirmationModal({ isOpen, onClose, onConfirm, title, description, confirmText = "Confirm", cancelText = "Cancel", variant = "default", isLoading = false, confirmDisabled = false }: ConfirmationModalProps) {
    return (
       <Dialog
          open={isOpen}
@@ -28,13 +29,13 @@ export function ConfirmationModal({ isOpen, onClose, onConfirm, title, descripti
          <DialogContent className="sm:max-w-106.25" showCloseButton={!isLoading}>
             <DialogHeader>
                <DialogTitle>{title}</DialogTitle>
-               {description && <DialogDescription className="pt-2">{description}</DialogDescription>}
+               {description && (typeof description === "string" ? <DialogDescription className="pt-2">{description}</DialogDescription> : <div className="pt-2 text-sm text-muted-foreground">{description}</div>)}
             </DialogHeader>
             <DialogFooter className="mt-4 flex gap-2">
                <Button variant="outline" onClick={onClose} disabled={isLoading}>
                   {cancelText}
                </Button>
-               <Button variant={variant} onClick={onConfirm} disabled={isLoading}>
+               <Button variant={variant} onClick={onConfirm} disabled={isLoading || confirmDisabled}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {confirmText}
                </Button>

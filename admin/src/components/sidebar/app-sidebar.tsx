@@ -61,6 +61,10 @@ const data = {
          icon: CreditCard,
          items: [
             {
+               title: "User Subscriptions",
+               url: "/subscriptions/users",
+            },
+            {
                title: "Plans",
                url: "/subscriptions/plans",
             },

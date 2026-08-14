@@ -1,7 +1,9 @@
 import prisma from "@/config/prisma";
 import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
 import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
-import { Prisma, SelfieStatus, User } from "@prisma/client";
+import { Prisma, SelfieStatus, SubscriptionStatus, User } from "@prisma/client";
+
+const ACCESS_GRANTING_SUBSCRIPTION_STATUSES = [SubscriptionStatus.ACTIVE, SubscriptionStatus.CANCELLED_PENDING_EXPIRY, SubscriptionStatus.BILLING_ISSUE, SubscriptionStatus.GRACE_PERIOD];
 
 type UserFilters = {
    searchQuery?: string;
@@ -23,6 +25,26 @@ export class UserRepository implements IUserRepository {
       partnerPreference: true,
       userFeature: true,
       privacySettings: true,
+      subscriptions: {
+         where: {
+            status: {
+               in: ACCESS_GRANTING_SUBSCRIPTION_STATUSES,
+            },
+         },
+         include: {
+            plan: {
+               select: {
+                  id: true,
+                  name: true,
+                  price: true,
+               },
+            },
+         },
+         orderBy: {
+            createdAt: "desc",
+         },
+         take: 1,
+      },
    } satisfies Prisma.UserInclude;
 
    /**

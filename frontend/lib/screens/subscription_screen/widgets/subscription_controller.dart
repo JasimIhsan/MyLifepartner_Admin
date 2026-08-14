@@ -10,6 +10,8 @@ import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:life_partner_again/models/auth_response.dart' as auth_model;
+import 'package:life_partner_again/services/user_repository.dart';
 
 class PlanVisuals {
   final Color themeColor;
@@ -32,6 +34,9 @@ class PlanVisuals {
 mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
   bool _awaitingStoreReturn = false;
   late final _SubscriptionLifecycleObserver _lifecycleObserver;
+
+  auth_model.User? user;
+  bool isUserLoading = true;
 
   @override
   void initState() {
@@ -65,6 +70,23 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
     if (userId == 0) {
       debugPrint("Invalid userId");
       return;
+    }
+
+    try {
+      final fetchedUser = await UserRepository().getUser();
+      if (mounted) {
+        setState(() {
+          user = fetchedUser;
+          isUserLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error fetching user in SubscriptionControllerState: $e");
+      if (mounted) {
+        setState(() {
+          isUserLoading = false;
+        });
+      }
     }
 
     if (!mounted) return;
@@ -138,6 +160,59 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
 
   void handleSubscribe(model.SubscriptionPlan plan) async {
     final provider = context.read<SubscriptionProvider>();
+
+    if (user?.isFoundingMember == true) {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        builder: (context) => Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.star_rounded, color: Colors.amber, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                'Founding Member',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'You are a founding member and already have complete free premium access to the application. Thank you for your support!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: CustomButton(
+                  onPressed: () => context.pop(),
+                  text: 'Got it',
+                  type: CustomButtonType.primary,
+                  backgroundColor: Theme.of(context).primaryColor,
+                  textColor: Colors.white,
+                  height: 52,
+                  borderRadius: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+      return;
+    }
 
     if (plan.price == 0 &&
         provider.currentSubscription != null &&

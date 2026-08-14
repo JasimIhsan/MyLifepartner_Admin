@@ -192,10 +192,10 @@ export const notificationService = new NotificationService(notificationRepositor
 export const adminAuthController = new AdminAuthController(adminAuthService);
 export const adminManagementController = new AdminManagementController(adminManagementService);
 export const adminQuestionnaireController = new AdminQuestionnaireController(adminQuestionnaireService);
-export const adminSubscriptionController = new AdminSubscriptionController(adminSubscriptionService);
+export const adminSubscriptionController = new AdminSubscriptionController(adminSubscriptionService, userService, userSubscriptionService);
 export const adminFeatureController = new AdminFeatureController(adminFeatureService);
 export const imageAssetController = new ImageAssetController(imageAssetService);
-export const adminUsersController = new AdminUsersController(userService);
+export const adminUsersController = new AdminUsersController(userService, userSubscriptionService);
 export const adminReportController = new AdminReportController(reportService);
 
 // Shared controllers

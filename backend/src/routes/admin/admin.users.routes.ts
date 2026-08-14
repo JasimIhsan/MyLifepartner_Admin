@@ -32,6 +32,13 @@ adminUsersRoute.get("/deletion-requests", adminUsersController.getPendingDeletio
 adminUsersRoute.get("/archived", adminUsersController.getArchivedUsers);
 
 /**
+ * @route   GET /api/admin/users/subscriptions/grace-period
+ * @desc    Get users whose current subscription is in grace period
+ * @access  Admin
+ */
+adminUsersRoute.get("/subscriptions/grace-period", adminUsersController.getGracePeriodSubscriptionUsers);
+
+/**
  * @route   POST /api/v1/admin/users
  * @desc    Create a new user
  * @access  Admin
@@ -86,6 +93,13 @@ adminUsersRoute.patch("/:id/ban", adminUsersController.toggleBanUser);
  * @access  Admin
  */
 adminUsersRoute.patch("/:id/founding-member", adminUsersController.toggleFoundingMemberStatus);
+
+/**
+ * @route   PATCH /api/admin/users/:id/downgrade-grace-period
+ * @desc    Manually downgrade a grace-period user to the base plan
+ * @access  Admin
+ */
+adminUsersRoute.patch("/:id/downgrade-grace-period", adminUsersController.downgradeGracePeriodUserToBasePlan);
 
 /**
  * @route   PATCH /api/v1/admin/users/:id/lift-suspension

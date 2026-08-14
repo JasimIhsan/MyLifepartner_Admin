@@ -8,6 +8,7 @@ import 'package:life_partner_again/screens/subscription_screen/subscription_back
 import 'package:life_partner_again/screens/subscription_screen/subscription_error_widget.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_controller.dart';
 import 'package:life_partner_again/screens/subscription_screen/widgets/subscription_ui_helpers.dart';
+import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
 
 class MobileSubscriptionScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
     with SubscriptionControllerState<MobileSubscriptionScreen> {
   late PageController _pageController;
   int _currentPage = 0;
+  bool _showPricing = false;
 
   @override
   void initState() {
@@ -419,14 +421,82 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Consumer<SubscriptionProvider>(
         builder: (context, provider, child) {
-          if (provider.isLoading && provider.plans.isEmpty) {
+          if (isUserLoading || (provider.isLoading && provider.plans.isEmpty)) {
             return Center(
               child: Padding(
-                padding: EdgeInsets.all(40.0),
+                padding: const EdgeInsets.all(40.0),
                 child: CircularProgressIndicator(
                   color: Theme.of(context).primaryColor,
                 ),
               ),
+            );
+          }
+
+          if (user?.isFoundingMember == true && !_showPricing) {
+            return Stack(
+              children: [
+                const Positioned.fill(child: SubscriptionBackground()),
+                Positioned.fill(
+                  child: SafeArea(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildCustomAppBar(context),
+                        Expanded(
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 80),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    'Founding Member',
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w800,
+                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'You have complete free premium access to the application because you are a founding member. Thank you for your support!',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      height: 1.5,
+                                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 48),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: CustomButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          _showPricing = true;
+                                        });
+                                      },
+                                      text: 'View Pricing',
+                                      type: CustomButtonType.outline,
+                                      textColor: Theme.of(context).primaryColor,
+                                      height: 56,
+                                      borderRadius: 16,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             );
           }
 

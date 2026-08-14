@@ -1,4 +1,21 @@
-import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, Job, PrivacySettings } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, Job, PrivacySettings, SubscriptionPlan, UserSubscription } from "@prisma/client";
+
+const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"]);
+
+export type UserSubscriptionSummaryDto = {
+   id: number;
+   planId: number;
+   status: string;
+   startDate: Date;
+   endDate: Date;
+   gracePeriodEndsAt: Date | null;
+   willRenew: boolean;
+   plan: {
+      id: number;
+      name: string;
+      price: number;
+   } | null;
+};
 
 export interface UserDto {
    id: number;
@@ -26,6 +43,7 @@ export interface UserDto {
    selfieUrl: string | null;
    primaryImageUrl?: string | null;
    privacyEnabled?: boolean;
+   activeSubscription?: UserSubscriptionSummaryDto | null;
 
    // Profile demographics
    gender?: string | null;
@@ -49,53 +67,82 @@ export interface UserDto {
    updatedAt: Date;
 }
 
-export const toUserDto = (user: User & { profile?: (Profile & { job?: Job | null; images?: { isPrimary: boolean; imageUrl: string }[] }) | null; partnerPreference?: PartnerPreference | null; privacySettings?: PrivacySettings | null }): UserDto => ({
-   id: user.id,
-   mobileNumber: user.mobileNumber,
-   name: user.profile?.name || null,
-   email: user.email,
-   role: user.role,
-   isVerified: user.isVerified,
-   isBanned: user.isBanned,
-   isSuspended: user.isSuspended,
-   isFoundingMember: user.isFoundingMember,
-   foundingMemberSince: user.foundingMemberSince,
-   bannedAt: user.bannedAt,
-   suspendedAt: user.suspendedAt,
-   isDeleted: user.isDeleted,
-   isDeleteRequested: user.isDeleteRequested,
-   deleteRequestedAt: user.deleteRequestedAt,
-   deleteRequestStatus: user.deleteRequestStatus,
-   deleteRequestReason: user.deleteRequestReason,
-   profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,
-   hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails || false,
-   hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
-   hasCompletedPartnerPreference: user.profile?.hasCompletedPartnerPreference || false,
-   selfieStatus: user.profile?.selfieStatus || null,
-   selfieUrl: user.profile?.selfieUrl || null,
-   primaryImageUrl: user.profile?.images?.find((img) => img.isPrimary)?.imageUrl || null,
-   privacyEnabled: user.privacySettings?.privacyEnabled ?? false,
+export const toUserDto = (
+   user: User & {
+      profile?: (Profile & { job?: Job | null; images?: { isPrimary: boolean; imageUrl: string }[] }) | null;
+      partnerPreference?: PartnerPreference | null;
+      privacySettings?: PrivacySettings | null;
+      subscriptions?: (UserSubscription & { plan?: Pick<SubscriptionPlan, "id" | "name" | "price"> | null })[];
+   }
+): UserDto => {
+   const activeSubscription = user.subscriptions?.find((subscription) => ACTIVE_SUBSCRIPTION_STATUSES.has(subscription.status)) ?? null;
 
-   gender: user.profile?.gender || null,
-   dateOfBirth: user.profile?.dateOfBirth || null,
-   maritalStatus: user.profile?.maritalStatus || null,
-   motherTongue: user.profile?.motherTongue || null,
-   city: user.profile?.city || null,
-   state: user.profile?.state || null,
-   country: user.profile?.country || null,
-   highestEducation: user.profile?.highestEducation || null,
-   occupation: user.profile?.job?.name || null,
-   bio: user.profile?.bio || null,
-   childrenStatus: user.profile?.childrenStatus || null,
-   lookingFor: user.profile?.lookingFor || null,
-   smokingHabit: user.profile?.smokingHabit || null,
-   drinkingHabit: user.profile?.drinkingHabit || null,
-   languages: user.profile?.languages || [],
-   profileCompletion: user.profile?.profileCompletion || null,
+   return {
+      id: user.id,
+      mobileNumber: user.mobileNumber,
+      name: user.profile?.name || null,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+      isBanned: user.isBanned,
+      isSuspended: user.isSuspended,
+      isFoundingMember: user.isFoundingMember,
+      foundingMemberSince: user.foundingMemberSince,
+      bannedAt: user.bannedAt,
+      suspendedAt: user.suspendedAt,
+      isDeleted: user.isDeleted,
+      isDeleteRequested: user.isDeleteRequested,
+      deleteRequestedAt: user.deleteRequestedAt,
+      deleteRequestStatus: user.deleteRequestStatus,
+      deleteRequestReason: user.deleteRequestReason,
+      profileStatus: user.profile?.profileStatus || ProfileStatus.INCOMPLETE,
+      hasCompletedBasicDetails: user.profile?.hasCompletedBasicDetails || false,
+      hasCompletedImageUpload: user.profile?.hasCompletedImageUpload || false,
+      hasCompletedPartnerPreference: user.profile?.hasCompletedPartnerPreference || false,
+      selfieStatus: user.profile?.selfieStatus || null,
+      selfieUrl: user.profile?.selfieUrl || null,
+      primaryImageUrl: user.profile?.images?.find((img) => img.isPrimary)?.imageUrl || null,
+      privacyEnabled: user.privacySettings?.privacyEnabled ?? false,
+      activeSubscription: activeSubscription
+         ? {
+              id: activeSubscription.id,
+              planId: activeSubscription.planId,
+              status: activeSubscription.status,
+              startDate: activeSubscription.startDate,
+              endDate: activeSubscription.endDate,
+              gracePeriodEndsAt: activeSubscription.gracePeriodEndsAt,
+              willRenew: activeSubscription.willRenew,
+              plan: activeSubscription.plan
+                 ? {
+                      id: activeSubscription.plan.id,
+                      name: activeSubscription.plan.name,
+                      price: activeSubscription.plan.price,
+                   }
+                 : null,
+           }
+         : null,
 
-   createdAt: user.createdAt,
-   updatedAt: user.updatedAt,
-});
+      gender: user.profile?.gender || null,
+      dateOfBirth: user.profile?.dateOfBirth || null,
+      maritalStatus: user.profile?.maritalStatus || null,
+      motherTongue: user.profile?.motherTongue || null,
+      city: user.profile?.city || null,
+      state: user.profile?.state || null,
+      country: user.profile?.country || null,
+      highestEducation: user.profile?.highestEducation || null,
+      occupation: user.profile?.job?.name || null,
+      bio: user.profile?.bio || null,
+      childrenStatus: user.profile?.childrenStatus || null,
+      lookingFor: user.profile?.lookingFor || null,
+      smokingHabit: user.profile?.smokingHabit || null,
+      drinkingHabit: user.profile?.drinkingHabit || null,
+      languages: user.profile?.languages || [],
+      profileCompletion: user.profile?.profileCompletion || null,
+
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+   };
+};
 
 export type UserSelfieDataDto = {
    url: string | null;

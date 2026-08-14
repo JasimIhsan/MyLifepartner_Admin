@@ -9,6 +9,7 @@ import { IUserService } from "@/interfaces/services/user.service.interface";
 import { S3Service } from "@/services/s3.service";
 import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS } from "@/utils/constants";
+import { Prisma, SubscriptionStatus } from "@prisma/client";
 import crypto from "crypto";
 
 type PaginatedUsersDto = {
@@ -18,6 +19,8 @@ type PaginatedUsersDto = {
 
 const PRESIGNED_URL_EXPIRY_SECONDS = 60 * 60;
 const MAX_ACCOUNT_DELETION_REASON_LENGTH = 500;
+const ACTIVE_SUBSCRIPTION_STATUSES = [SubscriptionStatus.ACTIVE, SubscriptionStatus.CANCELLED_PENDING_EXPIRY, SubscriptionStatus.BILLING_ISSUE, SubscriptionStatus.GRACE_PERIOD];
+const NO_ACTIVE_SUBSCRIPTION_FILTER = "NO_ACTIVE_SUBSCRIPTION";
 
 type AccountDeletionTokenPayload = {
    userId: number;
@@ -107,6 +110,206 @@ export class UserService implements IUserService {
       };
    }
 
+   async getGracePeriodSubscriptionUsers(searchQuery?: string, page?: number, limit?: number): Promise<PaginatedUsersDto> {
+      const skip = page && limit ? (page - 1) * limit : undefined;
+      const take = limit;
+      const trimmedSearch = searchQuery?.trim();
+
+      const where: Prisma.UserWhereInput = {
+         isDeleted: false,
+         subscriptions: {
+            some: {
+               status: SubscriptionStatus.GRACE_PERIOD,
+            },
+         },
+      };
+
+      if (trimmedSearch) {
+         where.OR = [
+            {
+               profile: {
+                  name: {
+                     contains: trimmedSearch,
+                     mode: "insensitive",
+                  },
+               },
+            },
+            {
+               email: {
+                  contains: trimmedSearch,
+                  mode: "insensitive",
+               },
+            },
+            {
+               mobileNumber: {
+                  contains: trimmedSearch,
+                  mode: "insensitive",
+               },
+            },
+         ];
+      }
+
+      const [users, total] = await prisma.$transaction([
+         prisma.user.findMany({
+            where,
+            include: {
+               profile: {
+                  include: {
+                     images: true,
+                     job: true,
+                  },
+               },
+               partnerPreference: true,
+               privacySettings: true,
+               userFeature: true,
+               subscriptions: {
+                  where: {
+                     status: SubscriptionStatus.GRACE_PERIOD,
+                  },
+                  include: {
+                     plan: {
+                        select: {
+                           id: true,
+                           name: true,
+                           price: true,
+                        },
+                     },
+                  },
+                  orderBy: {
+                     createdAt: "desc",
+                  },
+                  take: 1,
+               },
+            },
+            orderBy: {
+               updatedAt: "desc",
+            },
+            skip,
+            take,
+         }),
+         prisma.user.count({ where }),
+      ]);
+
+      return {
+         data: users.map(toUserDto),
+         total,
+      };
+   }
+
+   async getSubscriptionUsers(query: { search?: string; page?: number; limit?: number; status?: string; planId?: number }): Promise<PaginatedUsersDto> {
+      const skip = query.page && query.limit ? (query.page - 1) * query.limit : undefined;
+      const take = query.limit;
+      const trimmedSearch = query.search?.trim();
+      const status = query.status?.trim();
+
+      const activeSubscriptionFilter: Prisma.UserSubscriptionWhereInput = {
+         status: {
+            in: ACTIVE_SUBSCRIPTION_STATUSES,
+         },
+      };
+
+      if (status && status !== "ALL" && status !== NO_ACTIVE_SUBSCRIPTION_FILTER) {
+         activeSubscriptionFilter.status = status as SubscriptionStatus;
+      }
+
+      if (query.planId) {
+         activeSubscriptionFilter.planId = query.planId;
+      }
+
+      const shouldFilterByActiveSubscription = Boolean((status && status !== "ALL" && status !== NO_ACTIVE_SUBSCRIPTION_FILTER) || query.planId);
+
+      const where: Prisma.UserWhereInput = {
+         isDeleted: false,
+      };
+
+      if (status === NO_ACTIVE_SUBSCRIPTION_FILTER) {
+         where.subscriptions = {
+            none: {
+               status: {
+                  in: ACTIVE_SUBSCRIPTION_STATUSES,
+               },
+            },
+         };
+      } else if (shouldFilterByActiveSubscription) {
+         where.subscriptions = {
+            some: activeSubscriptionFilter,
+         };
+      }
+
+      if (trimmedSearch) {
+         where.OR = [
+            {
+               profile: {
+                  name: {
+                     contains: trimmedSearch,
+                     mode: "insensitive",
+                  },
+               },
+            },
+            {
+               email: {
+                  contains: trimmedSearch,
+                  mode: "insensitive",
+               },
+            },
+            {
+               mobileNumber: {
+                  contains: trimmedSearch,
+                  mode: "insensitive",
+               },
+            },
+         ];
+      }
+
+      const [users, total] = await prisma.$transaction([
+         prisma.user.findMany({
+            where,
+            include: {
+               profile: {
+                  include: {
+                     images: true,
+                     job: true,
+                  },
+               },
+               partnerPreference: true,
+               privacySettings: true,
+               userFeature: true,
+               subscriptions: {
+                  where: {
+                     status: {
+                        in: ACTIVE_SUBSCRIPTION_STATUSES,
+                     },
+                  },
+                  include: {
+                     plan: {
+                        select: {
+                           id: true,
+                           name: true,
+                           price: true,
+                        },
+                     },
+                  },
+                  orderBy: {
+                     createdAt: "desc",
+                  },
+                  take: 1,
+               },
+            },
+            orderBy: {
+               updatedAt: "desc",
+            },
+            skip,
+            take,
+         }),
+         prisma.user.count({ where }),
+      ]);
+
+      return {
+         data: users.map(toUserDto),
+         total,
+      };
+   }
+
    /**
     * Gets a user by ID.
     *
@@ -143,7 +346,21 @@ export class UserService implements IUserService {
             partnerPreference: true,
             privacySettings: true,
             userFeature: true,
-            subscriptions: true,
+            subscriptions: {
+               include: {
+                  plan: {
+                     select: {
+                        id: true,
+                        name: true,
+                        price: true,
+                        durationDays: true,
+                     },
+                  },
+               },
+               orderBy: {
+                  createdAt: "desc",
+               },
+            },
             archivedData: true,
             deviceTokens: true,
          },

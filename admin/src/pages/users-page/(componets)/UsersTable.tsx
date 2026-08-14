@@ -8,10 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { UserInterface } from "@/interface/user.interface";
-import { CheckCircle2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreVertical, Search, XCircle } from "lucide-react";
+import { CheckCircle2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CircleMinus, MoreVertical, Search, XCircle } from "lucide-react";
 import * as React from "react";
 
-type UserActionType = "delete" | "ban" | "unban" | "grantFoundingMember" | "revokeFoundingMember";
+type UserActionType = "delete" | "ban" | "unban" | "grantFoundingMember" | "revokeFoundingMember" | "downgradeGracePeriod";
 
 export function UsersTable({
    data: initialData = [],
@@ -27,6 +27,7 @@ export function UsersTable({
    onEdit,
    onToggleBan,
    onToggleFoundingMember,
+   onDowngradeGracePeriod,
    onDelete,
    onViewAuditHistory,
    onViewDetails,
@@ -44,6 +45,7 @@ export function UsersTable({
    onEdit?: (user: UserInterface) => void;
    onToggleBan?: (id: number, currentStatus: boolean) => void;
    onToggleFoundingMember?: (id: number, currentStatus: boolean) => void;
+   onDowngradeGracePeriod?: (id: number) => void;
    onDelete?: (id: number) => void;
    onViewAuditHistory?: (user: UserInterface) => void;
    onViewDetails?: (user: UserInterface) => void;
@@ -88,6 +90,8 @@ export function UsersTable({
       });
    };
 
+   const canDowngradeToBasePlan = (user: UserInterface) => user.activeSubscription?.status === "GRACE_PERIOD";
+
    const handleActionClick = (user: UserInterface, type: UserActionType) => {
       setSelectedUser(user);
       setActionType(type);
@@ -103,6 +107,8 @@ export function UsersTable({
          onToggleBan(selectedUser.id, selectedUser.isBanned);
       } else if ((actionType === "grantFoundingMember" || actionType === "revokeFoundingMember") && onToggleFoundingMember) {
          onToggleFoundingMember(selectedUser.id, selectedUser.isFoundingMember);
+      } else if (actionType === "downgradeGracePeriod" && onDowngradeGracePeriod) {
+         onDowngradeGracePeriod(selectedUser.id);
       }
       setActionModalOpen(false);
    };
@@ -112,7 +118,8 @@ export function UsersTable({
       if (actionType === "ban") return "Ban User";
       if (actionType === "unban") return "Unban User";
       if (actionType === "grantFoundingMember") return "Grant Founding Member";
-      return "Revoke Founding Member";
+      if (actionType === "revokeFoundingMember") return "Revoke Founding Member";
+      return "Downgrade to Base Plan";
    };
 
    const getActionDescription = () => {
@@ -128,7 +135,10 @@ export function UsersTable({
       if (actionType === "grantFoundingMember") {
          return `Grant Founding Member status to ${selectedUser?.name || "this user"}? They will receive all application features for free with unlimited usage.`;
       }
-      return `Revoke Founding Member status from ${selectedUser?.name || "this user"}? They will immediately use their normal subscription and feature limits again.`;
+      if (actionType === "revokeFoundingMember") {
+         return `Revoke Founding Member status from ${selectedUser?.name || "this user"}? They will immediately use their normal subscription and feature limits again.`;
+      }
+      return `Downgrade ${selectedUser?.name || "this user"} from grace period access to the base plan now? Their premium access and feature limits will be reset immediately.`;
    };
 
    const getConfirmText = () => {
@@ -136,7 +146,8 @@ export function UsersTable({
       if (actionType === "ban") return "Ban User";
       if (actionType === "unban") return "Unban User";
       if (actionType === "grantFoundingMember") return "Grant";
-      return "Revoke";
+      if (actionType === "revokeFoundingMember") return "Revoke";
+      return "Downgrade";
    };
 
    return (
@@ -200,6 +211,12 @@ export function UsersTable({
                                     {user.isBanned && <span className="text-xs text-destructive font-semibold">Banned</span>}
                                     {user.isSuspended && <span className="text-xs text-orange-500 font-semibold">Suspended</span>}
                                     {user.isFoundingMember && <span className="text-xs text-amber-600 font-semibold">Founding Member{user.foundingMemberSince ? ` since ${formatDate(user.foundingMemberSince)}` : ""}</span>}
+                                    {canDowngradeToBasePlan(user) && (
+                                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-orange-600">
+                                          <CircleMinus className="h-3 w-3" />
+                                          Grace Period
+                                       </span>
+                                    )}
                                     <span className="text-xs text-muted-foreground">ID: {user.id}</span>
                                  </div>
                               </TableCell>
@@ -234,6 +251,7 @@ export function UsersTable({
                                        <DropdownMenuItem onClick={() => onViewAuditHistory?.(user)}>View Audit History</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => handleActionClick(user, user.isBanned ? "unban" : "ban")}>{user.isBanned ? "Unban User" : "Ban User"}</DropdownMenuItem>
                                        <DropdownMenuItem onClick={() => handleActionClick(user, user.isFoundingMember ? "revokeFoundingMember" : "grantFoundingMember")}>{user.isFoundingMember ? "Revoke Founding Member" : "Grant Founding Member"}</DropdownMenuItem>
+                                       {canDowngradeToBasePlan(user) && <DropdownMenuItem onClick={() => handleActionClick(user, "downgradeGracePeriod")}>Downgrade to Base Plan</DropdownMenuItem>}
                                        <DropdownMenuSeparator />
                                        <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>
                                           Delete User
@@ -313,7 +331,7 @@ export function UsersTable({
             title={getActionTitle()}
             description={getActionDescription()}
             confirmText={getConfirmText()}
-            variant={actionType === "delete" || actionType === "ban" || actionType === "revokeFoundingMember" ? "destructive" : "default"}
+            variant={actionType === "delete" || actionType === "ban" || actionType === "revokeFoundingMember" || actionType === "downgradeGracePeriod" ? "destructive" : "default"}
          />
       </div>
    );

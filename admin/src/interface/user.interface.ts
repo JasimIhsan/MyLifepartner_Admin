@@ -21,6 +21,7 @@ export interface UserInterface {
    lastLocationLat?: number | null;
    lastLocationLng?: number | null;
    primaryImageUrl?: string | null;
+   activeSubscription?: UserSubscriptionSummary | null;
 
    // Profile demographics
    gender?: string | null;
@@ -42,6 +43,23 @@ export interface UserInterface {
 }
 
 export type SelfieStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+export type SubscriptionStatus = "ACTIVE" | "INACTIVE" | "CANCELLED" | "CANCELLED_PENDING_EXPIRY" | "BILLING_ISSUE" | "GRACE_PERIOD" | "EXPIRED";
+
+export interface UserSubscriptionSummary {
+   id: number;
+   planId: number;
+   status: SubscriptionStatus;
+   startDate: string | Date;
+   endDate: string | Date;
+   gracePeriodEndsAt?: string | Date | null;
+   willRenew: boolean;
+   plan?: {
+      id: number;
+      name: string;
+      price: number;
+   } | null;
+}
 
 export interface ArchivedUserInterface {
    id: number;

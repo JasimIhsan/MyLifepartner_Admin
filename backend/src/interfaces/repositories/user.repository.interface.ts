@@ -1,4 +1,4 @@
-import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, UserFeature, PrivacySettings } from "@prisma/client";
+import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, UserFeature, PrivacySettings, SubscriptionPlan, UserSubscription } from "@prisma/client";
 
 import { CreateUserDto, UpdateUserDto } from "@/dtos/user.input.dto";
 
@@ -17,6 +17,7 @@ export type UserWithProfile = User & {
    partnerPreference?: PartnerPreference | null;
    userFeature?: UserFeature | null;
    privacySettings?: PrivacySettings | null;
+   subscriptions?: (UserSubscription & { plan?: Pick<SubscriptionPlan, "id" | "name" | "price"> | null })[];
 };
 
 export type UserListFilters = {
@@ -25,7 +26,7 @@ export type UserListFilters = {
 };
 
 export type PaginatedUsersResult = {
-   users: User[];
+   users: UserWithProfile[];
    total: number;
 };
 
@@ -46,7 +47,7 @@ export type UserFeatureAccessStatus = Pick<User, "id" | "isFoundingMember" | "is
 export interface IUserRepository {
    create(data: CreateUserDto): Promise<UserWithProfile>;
    findAll(filters?: UserListFilters, skip?: number, take?: number): Promise<PaginatedUsersResult>;
-   findSuspendedUsers(): Promise<User[]>;
+   findSuspendedUsers(): Promise<UserWithProfile[]>;
    findById(id: number): Promise<UserWithProfile | null>;
    findFeatureAccessStatusById(id: number): Promise<UserFeatureAccessStatus | null>;
    findOnboardingStatusById(id: number): Promise<UserOnboardingStatus | null>;

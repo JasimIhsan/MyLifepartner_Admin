@@ -232,8 +232,8 @@ const mockSubRepo = {
                   newStatus: params.newStatus,
                   reason: params.reason,
                   source: params.source,
-                  eventType: "SYNC",
-                  eventId: `sync_mock`,
+                  eventType: params.eventType ?? "SYNC",
+                  eventId: params.eventId ?? `sync_mock`,
                },
             })
          ),
@@ -377,6 +377,142 @@ describe("UserSubscriptionService", () => {
          const svc = makeService();
          const result = await svc.subscribe(42, FREE_PLAN.id);
          expect(result.planId).toBe(FREE_PLAN.id);
+      });
+   });
+
+   describe("admin manual grace-period downgrade", () => {
+      it("downgrades a GRACE_PERIOD subscription to the FREE plan", async () => {
+         const gracePeriodSub = makeActiveSub({
+            status: "GRACE_PERIOD",
+            gracePeriodEndsAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
+         });
+
+         mockTx.userSubscription.findFirst.mockResolvedValue(gracePeriodSub);
+         mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
+         mockTx.userSubscription.create.mockResolvedValue({
+            ...makeActiveSub({ planId: FREE_PLAN.id, plan: FREE_PLAN, status: "ACTIVE", willRenew: false }),
+            gracePeriodEndsAt: null,
+         });
+
+         const svc = makeService();
+         const result = await svc.downgradeGracePeriodUserToBasePlan(42);
+
+         expect(result.planId).toBe(FREE_PLAN.id);
+         expect(result.status).toBe("ACTIVE");
+         expect(mockTx.userSubscription.updateMany).toHaveBeenCalled();
+         expect(mockTx.userSubscription.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+               data: expect.objectContaining({
+                  planId: FREE_PLAN.id,
+                  status: "ACTIVE",
+                  willRenew: false,
+               }),
+            })
+         );
+         expect(mockTx.userSubscriptionLog.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+               data: expect.objectContaining({
+                  previousStatus: "GRACE_PERIOD",
+                  newStatus: "ACTIVE",
+                  source: "ADMIN",
+                  eventType: "ADMIN_MANUAL_DOWNGRADE",
+               }),
+            })
+         );
+      });
+
+      it("rejects manual downgrade when the current subscription is not in GRACE_PERIOD", async () => {
+         mockTx.userSubscription.findFirst.mockResolvedValue(makeActiveSub({ status: "ACTIVE" }));
+
+         const svc = makeService();
+         await expect(svc.downgradeGracePeriodUserToBasePlan(42)).rejects.toThrow(ApiError);
+
+         expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
+         expect(mockTx.userSubscription.create).not.toHaveBeenCalled();
+      });
+   });
+
+   describe("admin subscription plan override", () => {
+      it("moves a user to a selected paid plan and writes an admin override log", async () => {
+         const currentSub = makeActiveSub({ planId: PREMIUM_PLAN.id, plan: PREMIUM_PLAN, status: "ACTIVE" });
+         const targetSub = makeActiveSub({ id: 101, planId: MEDIUM_PLAN.id, plan: MEDIUM_PLAN, status: "ACTIVE", willRenew: false });
+
+         mockSubPlanRepo.getPlanById.mockResolvedValue(MEDIUM_PLAN);
+         mockTx.userSubscription.findFirst.mockResolvedValue(currentSub);
+         mockTx.userSubscription.create.mockResolvedValue(targetSub);
+
+         const svc = makeService();
+         const result = await svc.adminChangeUserSubscriptionPlan(42, MEDIUM_PLAN.id);
+
+         expect(result.planId).toBe(MEDIUM_PLAN.id);
+         expect(result.status).toBe("ACTIVE");
+         expect(mockTx.userSubscription.updateMany).toHaveBeenCalled();
+         expect(mockTx.userSubscription.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+               data: expect.objectContaining({
+                  planId: MEDIUM_PLAN.id,
+                  status: "ACTIVE",
+                  willRenew: false,
+                  endDate: expect.any(Date),
+               }),
+            })
+         );
+         expect(mockTx.userSubscriptionLog.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+               data: expect.objectContaining({
+                  previousPlanId: PREMIUM_PLAN.id,
+                  newPlanId: MEDIUM_PLAN.id,
+                  previousStatus: "ACTIVE",
+                  newStatus: "ACTIVE",
+                  source: "ADMIN",
+                  eventType: "ADMIN_PLAN_OVERRIDE",
+               }),
+            })
+         );
+      });
+
+      it("downgrades any active user to the FREE plan through the admin override path", async () => {
+         mockSubPlanRepo.getPlanById.mockResolvedValue(FREE_PLAN);
+         mockTx.userSubscription.findFirst.mockResolvedValue(makeActiveSub({ planId: PREMIUM_PLAN.id, plan: PREMIUM_PLAN, status: "ACTIVE" }));
+         mockTx.userSubscription.create.mockResolvedValue({
+            ...makeActiveSub({ planId: FREE_PLAN.id, plan: FREE_PLAN, status: "ACTIVE", willRenew: false }),
+            gracePeriodEndsAt: null,
+         });
+
+         const svc = makeService();
+         const result = await svc.adminChangeUserSubscriptionPlan(42, FREE_PLAN.id);
+
+         expect(result.planId).toBe(FREE_PLAN.id);
+         expect(mockTx.userSubscription.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+               data: expect.objectContaining({
+                  planId: FREE_PLAN.id,
+                  status: "ACTIVE",
+                  willRenew: false,
+               }),
+            })
+         );
+         expect(mockTx.userSubscriptionLog.create).toHaveBeenCalledWith(
+            expect.objectContaining({
+               data: expect.objectContaining({
+                  previousPlanId: PREMIUM_PLAN.id,
+                  newPlanId: FREE_PLAN.id,
+                  source: "ADMIN",
+                  eventType: "ADMIN_PLAN_OVERRIDE",
+               }),
+            })
+         );
+      });
+
+      it("rejects changing a user to the same active plan", async () => {
+         mockSubPlanRepo.getPlanById.mockResolvedValue(PREMIUM_PLAN);
+         mockTx.userSubscription.findFirst.mockResolvedValue(makeActiveSub({ planId: PREMIUM_PLAN.id, plan: PREMIUM_PLAN, status: "ACTIVE" }));
+
+         const svc = makeService();
+         await expect(svc.adminChangeUserSubscriptionPlan(42, PREMIUM_PLAN.id)).rejects.toThrow(ApiError);
+
+         expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();
+         expect(mockTx.userSubscription.create).not.toHaveBeenCalled();
       });
    });
 

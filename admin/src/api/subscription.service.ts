@@ -1,4 +1,5 @@
 import axiosInstance from "./api.config";
+import type { UserInterface } from "@/interface/user.interface";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,6 +35,16 @@ export interface SubscriptionPlan {
    updatedAt: string;
 }
 
+export type UserSubscriptionStatusFilter = "ALL" | "ACTIVE" | "CANCELLED_PENDING_EXPIRY" | "BILLING_ISSUE" | "GRACE_PERIOD" | "NO_ACTIVE_SUBSCRIPTION";
+
+export type UserSubscriptionsQuery = {
+   search?: string;
+   page?: number;
+   limit?: number;
+   status?: UserSubscriptionStatusFilter;
+   planId?: number;
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /** Convert ₹ (rupees) to paise */
@@ -62,6 +73,20 @@ export const updatePlan = async (planId: number, data: { description?: string; p
 
 export const deletePlan = async (planId: number) => {
    const res = await axiosInstance.delete(`/admin/subscriptions/${planId}`);
+   return res.data;
+};
+
+// ─── User Subscription Management APIs ───────────────────────────────────────
+
+export const getUserSubscriptions = async (query: UserSubscriptionsQuery) => {
+   const res = await axiosInstance.get("/admin/subscriptions/users", {
+      params: query,
+   });
+   return res.data as { data: { data: UserInterface[]; total: number }; message: string };
+};
+
+export const updateUserSubscriptionPlan = async (userId: number, planId: number) => {
+   const res = await axiosInstance.patch(`/admin/subscriptions/users/${userId}/plan`, { planId });
    return res.data;
 };
 

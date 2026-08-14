@@ -1,14 +1,34 @@
 import axiosInstance from "@/api/api.config";
+import { ConfirmationModal } from "@/components/confirmation-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, CheckCircle2, CircleMinus, Crown, ShieldAlert, Trash2 } from "lucide-react";
+import type { AxiosError } from "axios";
 import { type ReactNode, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
 type BadgeTone = "success" | "warning" | "danger" | "neutral" | "accent";
+
+type AdminUserSubscription = {
+   id: number;
+   planId: number;
+   status: string;
+   startDate?: string | null;
+   endDate?: string | null;
+   gracePeriodEndsAt?: string | null;
+   willRenew?: boolean;
+   plan?: {
+      id: number;
+      name: string;
+      price: number;
+      durationDays?: number;
+   } | null;
+};
+
+const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"]);
 
 const badgeToneClass: Record<BadgeTone, string> = {
    success: "border-chart-2/30 bg-chart-2/10 text-chart-2",
@@ -91,11 +111,20 @@ function formatStatusText(value: string | null | undefined) {
       .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function getSubscriptionStatusTone(status: string | null | undefined): BadgeTone {
+   if (status === "ACTIVE") return "success";
+   if (status === "GRACE_PERIOD" || status === "BILLING_ISSUE") return "warning";
+   if (status === "EXPIRED" || status === "CANCELLED") return "danger";
+   return "neutral";
+}
+
 export default function UserDetailPage() {
    const { id } = useParams<{ id: string }>();
    const navigate = useNavigate();
    const [user, setUser] = useState<any>(null);
    const [isLoading, setIsLoading] = useState(true);
+   const [isDowngradeModalOpen, setIsDowngradeModalOpen] = useState(false);
+   const [isDowngrading, setIsDowngrading] = useState(false);
 
    useEffect(() => {
       const fetchUser = async () => {
@@ -155,6 +184,44 @@ export default function UserDetailPage() {
       return new Date(date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
    };
 
+   const subscriptions = (Array.isArray(user.subscriptions) ? user.subscriptions : []) as AdminUserSubscription[];
+   const currentSubscription = subscriptions.find((subscription) => ACTIVE_SUBSCRIPTION_STATUSES.has(subscription.status)) ?? null;
+   const canDowngradeToBasePlan = currentSubscription?.status === "GRACE_PERIOD";
+
+   const handleDowngradeGracePeriod = async () => {
+      if (!id || !currentSubscription) return;
+
+      setIsDowngrading(true);
+      try {
+         const response = await axiosInstance.patch(`/admin/users/${id}/downgrade-grace-period`);
+         const downgradedSubscription = response.data.data as AdminUserSubscription;
+         const previousSubscriptionId = currentSubscription.id;
+
+         setUser((currentUser: any) => {
+            if (!currentUser) return currentUser;
+
+            const existingSubscriptions = Array.isArray(currentUser.subscriptions) ? currentUser.subscriptions : [];
+            const updatedSubscriptions = existingSubscriptions
+               .filter((subscription: AdminUserSubscription) => subscription.id !== downgradedSubscription.id)
+               .map((subscription: AdminUserSubscription) => (subscription.id === previousSubscriptionId ? { ...subscription, status: "EXPIRED" } : subscription));
+
+            return {
+               ...currentUser,
+               subscriptions: [downgradedSubscription, ...updatedSubscriptions],
+            };
+         });
+
+         setIsDowngradeModalOpen(false);
+         toast.success("User downgraded to base plan successfully");
+      } catch (error) {
+         console.error("Failed to downgrade grace period user", error);
+         const axiosError = error as AxiosError<{ message: string }>;
+         toast.error(axiosError.response?.data?.message || "Failed to downgrade user to base plan");
+      } finally {
+         setIsDowngrading(false);
+      }
+   };
+
    return (
       <div className="flex w-full flex-col gap-5 pb-8">
          <div className="flex flex-col gap-4 border-b border-border/70 pb-5 md:flex-row md:items-start md:justify-between">
@@ -196,11 +263,17 @@ export default function UserDetailPage() {
                   </div>
                </div>
             </div>
+            {canDowngradeToBasePlan && (
+               <Button variant="destructive" size="sm" className="w-full gap-2 sm:w-auto" onClick={() => setIsDowngradeModalOpen(true)}>
+                  <CircleMinus className="h-4 w-4" />
+                  Downgrade to Base Plan
+               </Button>
+            )}
          </div>
 
          <div className="space-y-6">
             <Section title="Overview">
-               <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-2">
+               <div className="grid grid-cols-1 items-stretch gap-4 xl:grid-cols-3">
                   <OverviewCard title="Account Information">
                      <DetailRow label="Email">
                         <span className="block truncate" title={user.email || "N/A"}>
@@ -230,6 +303,18 @@ export default function UserDetailPage() {
                      </DetailRow>
                      <DetailRow label="Deletion Requested">
                         <StatusBadge active={user.isDeleteRequested} activeLabel="Requested" inactiveLabel="None" tone="accent" />
+                     </DetailRow>
+                  </OverviewCard>
+
+                  <OverviewCard title="Subscription">
+                     <DetailRow label="Current Plan">{currentSubscription?.plan?.name || "N/A"}</DetailRow>
+                     <DetailRow label="Status">
+                        <ToneBadge tone={getSubscriptionStatusTone(currentSubscription?.status)}>{formatStatusText(currentSubscription?.status)}</ToneBadge>
+                     </DetailRow>
+                     <DetailRow label="Ends On">{formatDate(currentSubscription?.endDate ?? null)}</DetailRow>
+                     <DetailRow label="Grace Ends">{formatDate(currentSubscription?.gracePeriodEndsAt ?? null)}</DetailRow>
+                     <DetailRow label="Renews">
+                        <StatusBadge active={Boolean(currentSubscription?.willRenew)} activeLabel="Yes" inactiveLabel="No" tone="success" />
                      </DetailRow>
                   </OverviewCard>
                </div>
@@ -320,6 +405,16 @@ export default function UserDetailPage() {
                </div>
             </Section>
          </div>
+         <ConfirmationModal
+            isOpen={isDowngradeModalOpen}
+            onClose={() => setIsDowngradeModalOpen(false)}
+            onConfirm={handleDowngradeGracePeriod}
+            title="Downgrade to Base Plan"
+            description={`Downgrade ${profile.name || "this user"} from grace period access to the base plan now? Their premium access and feature limits will be reset immediately.`}
+            confirmText="Downgrade"
+            variant="destructive"
+            isLoading={isDowngrading}
+         />
       </div>
    );
 }

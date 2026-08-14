@@ -509,6 +509,81 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       return this.getMySubscription(userId);
    }
 
+   async downgradeGracePeriodUserToBasePlan(userId: number): Promise<EnrichedUserSubscription> {
+      return this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
+         const currentSub = await ctx.findActiveSubscriptionByUserId(userId);
+
+         if (!currentSub) {
+            throw new ApiError(404, "No active subscription found for this user");
+         }
+
+         if (currentSub.status !== SubscriptionStatus.GRACE_PERIOD) {
+            throw new ApiError(400, "Only grace period users can be manually downgraded to the base plan");
+         }
+
+         const freePlan = await this.subscriptionPlanRepository.getPlanByName(FREE_PLAN_NAME);
+         const subscription = await this.syncDowngradeToFree(ctx, userId, freePlan?.id, {
+            reason: "Manually downgraded grace-period subscription to FREE plan by admin",
+            source: "ADMIN",
+            eventType: "ADMIN_MANUAL_DOWNGRADE",
+         });
+
+         return this.enrichUserSubscription(subscription);
+      });
+   }
+
+   async adminChangeUserSubscriptionPlan(userId: number, planId: number): Promise<EnrichedUserSubscription> {
+      const user = await this.userRepository.findFeatureAccessStatusById(userId);
+
+      if (!user || user.isDeleted) {
+         throw new ApiError(404, "User not found");
+      }
+
+      const targetPlan = await this.getRequiredActivePlan(planId);
+      const isFreePlan = targetPlan.name === FREE_PLAN_NAME;
+
+      return this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
+         const currentSub = await ctx.findActiveSubscriptionByUserId(userId);
+
+         if (currentSub?.planId === targetPlan.id && currentSub.status === SubscriptionStatus.ACTIVE) {
+            throw new ApiError(400, "User is already on this subscription plan");
+         }
+
+         const shouldApplyFeaturePayload = !user.isFoundingMember;
+
+         if (isFreePlan) {
+            const subscription = await this.syncDowngradeToFree(ctx, userId, targetPlan.id, {
+               reason: "Manually changed user subscription to FREE plan by admin",
+               source: "ADMIN",
+               eventType: "ADMIN_PLAN_OVERRIDE",
+               shouldApplyFeaturePayload,
+            });
+
+            return this.enrichUserSubscription(subscription);
+         }
+
+         const now = new Date();
+         const endDate = this.addDays(now, targetPlan.durationDays || DEFAULT_SUBSCRIPTION_DURATION_DAYS);
+         const previousPlanId = currentSub?.planId ?? null;
+         const previousStatus = currentSub?.status ?? undefined;
+
+         const subscription = await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, false, true, SubscriptionStatus.ACTIVE, null, shouldApplyFeaturePayload);
+
+         await this.writeSyncAuditLog(ctx, {
+            userId,
+            previousPlanId,
+            newPlanId: targetPlan.id,
+            previousStatus,
+            newStatus: SubscriptionStatus.ACTIVE,
+            reason: `Manually changed user subscription to ${targetPlan.name} plan by admin`,
+            source: "ADMIN",
+            eventType: "ADMIN_PLAN_OVERRIDE",
+         });
+
+         return this.enrichUserSubscription(subscription);
+      });
+   }
+
    /**
     * Verifies a purchase with the RevenueCat REST API and immediately activates
     * the corresponding plan in the database.
@@ -1169,7 +1244,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       await this.applyFeaturesForPlan(userId, subscription.plan, resetUsage);
    }
 
-   private async syncActivatePlan(ctx: ISyncTransactionContext, userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean, status: SubscriptionStatus = SubscriptionStatus.ACTIVE, revenueCatProduct?: ActiveRevenueCatProduct | null, shouldApplyFeaturePayload = true): Promise<void> {
+   private async syncActivatePlan(ctx: ISyncTransactionContext, userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean, status: SubscriptionStatus = SubscriptionStatus.ACTIVE, revenueCatProduct?: ActiveRevenueCatProduct | null, shouldApplyFeaturePayload = true): Promise<EnrichedUserSubscription> {
       await ctx.deactivateUserSubscriptions(userId);
 
       const now = new Date();
@@ -1210,9 +1285,21 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       if (shouldApplyFeaturePayload) {
          await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), resetUsage);
       }
+
+      return subscription;
    }
 
-   private async syncDowngradeToFree(ctx: ISyncTransactionContext, userId: number, freePlanId?: number): Promise<void> {
+   private async syncDowngradeToFree(
+      ctx: ISyncTransactionContext,
+      userId: number,
+      freePlanId?: number,
+      options: {
+         reason?: string;
+         source?: string;
+         eventType?: string;
+         shouldApplyFeaturePayload?: boolean;
+      } = {}
+   ): Promise<EnrichedUserSubscription> {
       if (!freePlanId) {
          throw new ApiError(500, "FREE plan not found in database");
       }
@@ -1236,11 +1323,16 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          newPlanId: freePlanId,
          previousStatus: currentSub?.status ?? undefined,
          newStatus: "ACTIVE",
-         reason: "Downgraded to FREE plan via /sync",
-         source: "SYNC",
+         reason: options.reason ?? "Downgraded to FREE plan via /sync",
+         source: options.source ?? "SYNC",
+         eventType: options.eventType,
       });
 
-      await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), true);
+      if (options.shouldApplyFeaturePayload !== false) {
+         await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), true);
+      }
+
+      return subscription;
    }
 
    private async applyFeaturesInTx(ctx: ISyncTransactionContext, userId: number, plan: EnrichedSubscriptionPlan, resetUsage: boolean): Promise<void> {

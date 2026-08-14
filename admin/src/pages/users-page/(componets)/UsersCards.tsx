@@ -7,12 +7,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { UserInterface } from "@/interface/user.interface";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreVertical, Search, Mail, Phone, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CircleMinus, MoreVertical, Search, Mail, Phone, CalendarDays } from "lucide-react";
 import * as React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-type UserActionType = "delete" | "ban" | "unban" | "grantFoundingMember" | "revokeFoundingMember";
+type UserActionType = "delete" | "ban" | "unban" | "grantFoundingMember" | "revokeFoundingMember" | "downgradeGracePeriod";
 
 export function UsersCards({
    data: initialData = [],
@@ -28,6 +28,7 @@ export function UsersCards({
    onEdit,
    onToggleBan,
    onToggleFoundingMember,
+   onDowngradeGracePeriod,
    onDelete,
    onViewAuditHistory,
    onViewDetails,
@@ -45,6 +46,7 @@ export function UsersCards({
    onEdit?: (user: UserInterface) => void;
    onToggleBan?: (id: number, currentStatus: boolean) => void;
    onToggleFoundingMember?: (id: number, currentStatus: boolean) => void;
+   onDowngradeGracePeriod?: (id: number) => void;
    onDelete?: (id: number) => void;
    onViewAuditHistory?: (user: UserInterface) => void;
    onViewDetails?: (user: UserInterface) => void;
@@ -89,6 +91,8 @@ export function UsersCards({
       });
    };
 
+   const canDowngradeToBasePlan = (user: UserInterface) => user.activeSubscription?.status === "GRACE_PERIOD";
+
    const handleActionClick = (user: UserInterface, type: UserActionType) => {
       setSelectedUser(user);
       setActionType(type);
@@ -104,6 +108,8 @@ export function UsersCards({
          onToggleBan(selectedUser.id, selectedUser.isBanned);
       } else if ((actionType === "grantFoundingMember" || actionType === "revokeFoundingMember") && onToggleFoundingMember) {
          onToggleFoundingMember(selectedUser.id, selectedUser.isFoundingMember);
+      } else if (actionType === "downgradeGracePeriod" && onDowngradeGracePeriod) {
+         onDowngradeGracePeriod(selectedUser.id);
       }
       setActionModalOpen(false);
    };
@@ -113,7 +119,8 @@ export function UsersCards({
       if (actionType === "ban") return "Ban User";
       if (actionType === "unban") return "Unban User";
       if (actionType === "grantFoundingMember") return "Grant Founding Member";
-      return "Revoke Founding Member";
+      if (actionType === "revokeFoundingMember") return "Revoke Founding Member";
+      return "Downgrade to Base Plan";
    };
 
    const getActionDescription = () => {
@@ -129,7 +136,10 @@ export function UsersCards({
       if (actionType === "grantFoundingMember") {
          return `Grant Founding Member status to ${selectedUser?.name || "this user"}? They will receive all application features for free with unlimited usage.`;
       }
-      return `Revoke Founding Member status from ${selectedUser?.name || "this user"}? They will immediately use their normal subscription and feature limits again.`;
+      if (actionType === "revokeFoundingMember") {
+         return `Revoke Founding Member status from ${selectedUser?.name || "this user"}? They will immediately use their normal subscription and feature limits again.`;
+      }
+      return `Downgrade ${selectedUser?.name || "this user"} from grace period access to the base plan now? Their premium access and feature limits will be reset immediately.`;
    };
 
    const getConfirmText = () => {
@@ -137,7 +147,8 @@ export function UsersCards({
       if (actionType === "ban") return "Ban User";
       if (actionType === "unban") return "Unban User";
       if (actionType === "grantFoundingMember") return "Grant";
-      return "Revoke";
+      if (actionType === "revokeFoundingMember") return "Revoke";
+      return "Downgrade";
    };
 
    return (
@@ -194,6 +205,7 @@ export function UsersCards({
                                  <DropdownMenuItem onClick={() => onViewAuditHistory?.(user)}>View Audit History</DropdownMenuItem>
                                  <DropdownMenuItem onClick={() => handleActionClick(user, user.isBanned ? "unban" : "ban")}>{user.isBanned ? "Unban User" : "Ban User"}</DropdownMenuItem>
                                  <DropdownMenuItem onClick={() => handleActionClick(user, user.isFoundingMember ? "revokeFoundingMember" : "grantFoundingMember")}>{user.isFoundingMember ? "Revoke Founding Member" : "Grant Founding Member"}</DropdownMenuItem>
+                                 {canDowngradeToBasePlan(user) && <DropdownMenuItem onClick={() => handleActionClick(user, "downgradeGracePeriod")}>Downgrade to Base Plan</DropdownMenuItem>}
                                  <DropdownMenuSeparator />
                                  <DropdownMenuItem className="text-destructive" onClick={() => handleActionClick(user, "delete")}>
                                     Delete User
@@ -217,6 +229,12 @@ export function UsersCards({
                               {user.isFoundingMember && (
                                  <Badge variant="secondary" className="bg-amber-100 text-amber-700 hover:bg-amber-100">
                                     Founding Member
+                                 </Badge>
+                              )}
+                              {canDowngradeToBasePlan(user) && (
+                                 <Badge variant="outline" className="gap-1 border-orange-500 bg-orange-50 text-orange-600">
+                                    <CircleMinus className="h-3 w-3" />
+                                    Grace Period
                                  </Badge>
                               )}
                               {user.profileStatus === "COMPLETED" && (
@@ -312,7 +330,7 @@ export function UsersCards({
             </div>
          </div>
 
-         <ConfirmationModal isOpen={actionModalOpen} onClose={() => setActionModalOpen(false)} onConfirm={handleConfirmAction} title={getActionTitle()} description={getActionDescription()} confirmText={getConfirmText()} variant={actionType === "delete" || actionType === "ban" || actionType === "revokeFoundingMember" ? "destructive" : "default"} />
+         <ConfirmationModal isOpen={actionModalOpen} onClose={() => setActionModalOpen(false)} onConfirm={handleConfirmAction} title={getActionTitle()} description={getActionDescription()} confirmText={getConfirmText()} variant={actionType === "delete" || actionType === "ban" || actionType === "revokeFoundingMember" || actionType === "downgradeGracePeriod" ? "destructive" : "default"} />
       </div>
    );
 }

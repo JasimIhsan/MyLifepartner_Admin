@@ -22,6 +22,20 @@ adminSubscriptionRoute.post("/", adminSubscriptionController.createPlan);
 adminSubscriptionRoute.get("/", adminSubscriptionController.getPlans);
 
 /**
+ * @route   GET /api/admin/subscriptions/users
+ * @desc    Get users with current subscription state
+ * @access  Admin
+ */
+adminSubscriptionRoute.get("/users", adminSubscriptionController.getUserSubscriptions);
+
+/**
+ * @route   PATCH /api/admin/subscriptions/users/:userId/plan
+ * @desc    Manually change a user's subscription plan
+ * @access  Admin
+ */
+adminSubscriptionRoute.patch("/users/:userId/plan", adminSubscriptionController.updateUserSubscriptionPlan);
+
+/**
  * @route   GET /api/v1/admin/subscriptions/:planId
  * @desc    Get subscription plan details by ID
  * @access  Admin

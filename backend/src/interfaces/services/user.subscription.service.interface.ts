@@ -66,6 +66,8 @@ export interface IUserSubscriptionService {
    getUserFeatures(userId: number): Promise<UserFeature | null>;
    reconcileUserSubscription(userId: number): Promise<void>;
    syncSubscription(userId: number): Promise<EnrichedUserSubscription | null>;
+   downgradeGracePeriodUserToBasePlan(userId: number): Promise<EnrichedUserSubscription>;
+   adminChangeUserSubscriptionPlan(userId: number, planId: number): Promise<EnrichedUserSubscription>;
    handleWebhook(payload: Record<string, unknown>, signatureHeader?: string): Promise<void>;
    /**
     * Verifies a purchase with the RevenueCat REST API and immediately activates

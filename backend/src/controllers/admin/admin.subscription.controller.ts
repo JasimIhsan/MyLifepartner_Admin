@@ -1,4 +1,7 @@
 import { IAdminSubscriptionService } from "@/interfaces/services/admin.subscription.service.interface";
+import { IUserSubscriptionService } from "@/interfaces/services/user.subscription.service.interface";
+import { IUserService } from "@/interfaces/services/user.service.interface";
+import { AuthRequest } from "@/types/AuthRequest";
 import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
@@ -6,10 +9,14 @@ import { HTTP_STATUS } from "@/utils/constants";
 import { addFeaturesSchema, createPlanSchema, updateFeatureSchema, updatePlanSchema } from "@/validators/subscription.validator";
 import { Request, Response } from "express";
 import { auditService } from "@/services/audit.service";
-import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
+import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource, SubscriptionStatus } from "@prisma/client";
 
 export class AdminSubscriptionController {
-   constructor(private readonly adminSubscriptionService: IAdminSubscriptionService) {}
+   constructor(
+      private readonly adminSubscriptionService: IAdminSubscriptionService,
+      private readonly userService: IUserService,
+      private readonly userSubscriptionService: IUserSubscriptionService
+   ) {}
 
    /**
     * @route POST /api/v1/admin/subscriptions
@@ -46,6 +53,88 @@ export class AdminSubscriptionController {
       const plans = await this.adminSubscriptionService.getPlans();
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, plans, "Subscription plans retrieved successfully"));
+   });
+
+   /**
+    * @route GET /api/admin/subscriptions/users
+    * @purpose Fetches users with their current subscription state for admin management.
+    */
+   public getUserSubscriptions = asyncHandler(async (req: Request, res: Response) => {
+      const search = typeof req.query.search === "string" ? req.query.search.trim() : undefined;
+      const status = typeof req.query.status === "string" ? req.query.status.trim() : undefined;
+      const pageNumber = req.query.page ? Number(req.query.page) : undefined;
+      const limitNumber = req.query.limit ? Number(req.query.limit) : undefined;
+      const planId = req.query.planId ? Number(req.query.planId) : undefined;
+
+      if (pageNumber !== undefined && (!Number.isInteger(pageNumber) || pageNumber <= 0)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid page number");
+      }
+
+      if (limitNumber !== undefined && (!Number.isInteger(limitNumber) || limitNumber <= 0 || limitNumber > 100)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid limit number");
+      }
+
+      if (planId !== undefined && (!Number.isInteger(planId) || planId <= 0)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid plan ID");
+      }
+
+      const allowedStatuses = new Set(["ALL", "NO_ACTIVE_SUBSCRIPTION", ...Object.values(SubscriptionStatus)]);
+      if (status && !allowedStatuses.has(status)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid subscription status");
+      }
+
+      const { data, total } = await this.userService.getSubscriptionUsers({
+         search,
+         page: pageNumber,
+         limit: limitNumber,
+         status,
+         planId,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "User subscriptions retrieved successfully"));
+   });
+
+   /**
+    * @route PATCH /api/admin/subscriptions/users/:userId/plan
+    * @purpose Manually changes a user's subscription plan.
+    */
+   public updateUserSubscriptionPlan = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.userId);
+      const planId = Number(req.body?.planId);
+      const adminId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      if (!Number.isInteger(planId) || planId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid plan ID");
+      }
+
+      const subscription = await this.userSubscriptionService.adminChangeUserSubscriptionPlan(userId, planId);
+
+      await auditService.log({
+         userId,
+         adminId: Number.isInteger(adminId) && adminId > 0 ? adminId : undefined,
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "ADMIN_CHANGE_USER_SUBSCRIPTION_PLAN",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.WARNING,
+         message: `Admin changed user ID: ${userId} subscription to ${subscription.plan?.name ?? "selected"} plan`,
+         newValue: {
+            subscriptionId: subscription.id,
+            planId: subscription.planId,
+            planName: subscription.plan?.name,
+            status: subscription.status,
+            endDate: subscription.endDate,
+         },
+         entityType: "UserSubscription",
+         entityId: subscription.id.toString(),
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscription, "User subscription plan updated successfully"));
    });
 
    /**
