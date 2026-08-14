@@ -37,6 +37,7 @@ class DatingProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () {
         context.push('/profile/${profile.id}');
       },

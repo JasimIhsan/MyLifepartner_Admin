@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
@@ -73,6 +74,36 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     }
   }
 
+  Future<XFile?> _cropImage(XFile image) async {
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Theme.of(context).primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+          ),
+          WebUiSettings(
+            context: context,
+            presentStyle: WebPresentStyle.dialog,
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        return XFile(croppedFile.path);
+      }
+    } catch (e) {
+      debugPrint("Error cropping image: $e");
+    }
+    return null;
+  }
+
   Future<void> _pickAndUploadImage() async {
     if (_images.length >= _maxImages) return;
     try {
@@ -81,10 +112,13 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         imageQuality: 75,
       );
       if (image != null) {
-        setState(() => _isUploading = true);
-        await _profileRepository.uploadImage(image);
-        await _fetchImages();
-        setState(() => _isUploading = false);
+        final croppedImage = await _cropImage(image);
+        if (croppedImage != null) {
+          setState(() => _isUploading = true);
+          await _profileRepository.uploadImage(croppedImage);
+          await _fetchImages();
+          setState(() => _isUploading = false);
+        }
       }
     } catch (e) {
       setState(() => _isUploading = false);
@@ -120,10 +154,29 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
       );
 
       if (image != null) {
-        setState(() => _processingImageId = imageId);
-        await _profileRepository.replaceImage(imageId, image);
-        await _fetchImages();
+        final croppedImage = await _cropImage(image);
+        if (croppedImage != null) {
+          setState(() => _processingImageId = imageId);
+          await _profileRepository.replaceImage(imageId, croppedImage);
+          await _fetchImages();
+        }
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _processingImageId = null);
+    }
+  }
+
+  Future<void> _deleteImage(int imageId) async {
+    setState(() => _processingImageId = imageId);
+    try {
+      await _profileRepository.deleteImage(imageId);
+      await _fetchImages();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -181,6 +234,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         image: image,
         onSetPrimary: _setPrimaryImage,
         onReplace: _replaceImage,
+        onDelete: _deleteImage,
       ),
     );
   }

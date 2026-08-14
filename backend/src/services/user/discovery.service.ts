@@ -2,8 +2,8 @@ import prisma from "@/config/prisma";
 import { Prisma } from "@prisma/client";
 import { DiscoveryQueryOptions } from "../../types/discovery.types";
 import { ApiError } from "../../utils/ApiError";
-
-import { IS3Service } from "@/interfaces/services/s3.service.interface";
+import { IPrivacyImageMapperService } from "@/interfaces/services/privacy-image-mapper.service.interface";
+import { IImageAccessRequestService } from "@/interfaces/services/image-access-request.service.interface";
 
 const DEFAULT_DISCOVERY_PAGE = 1;
 const DEFAULT_DISCOVERY_LIMIT = 20;
@@ -45,6 +45,12 @@ const discoveryProfileSelect = {
          isFoundingMember: true,
          createdAt: true,
          updatedAt: true,
+         privacySettings: {
+            select: {
+               privacyEnabled: true,
+               blurredImageUrl: true,
+            },
+         },
       },
    },
 } satisfies Prisma.ProfileSelect;
@@ -54,7 +60,10 @@ type DiscoveryProfile = Prisma.ProfileGetPayload<{
 }>;
 
 export class DiscoveryService {
-   constructor(private readonly s3Service: IS3Service) {}
+   constructor(
+      private readonly privacyImageMapperService: IPrivacyImageMapperService,
+      private readonly imageAccessRequestService: IImageAccessRequestService
+   ) {}
    /**
     * Discovers profiles based on filter criteria.
     *
@@ -69,7 +78,7 @@ export class DiscoveryService {
       const searchTerm = search?.trim();
       const languageFilters = this.normalizeStringArray(languages);
 
-      const [currentUser, excludedUserIds] = await Promise.all([
+      const [currentUser, excludedUserIds, sentRequestsList] = await Promise.all([
          prisma.user.findUnique({
             where: { id: currentUserId },
             select: {
@@ -78,14 +87,26 @@ export class DiscoveryService {
                      gender: true,
                   },
                },
+               privacySettings: {
+                  select: {
+                     privacyEnabled: true,
+                  },
+               },
             },
          }),
          this.getExcludedUserIds(currentUserId),
+         this.imageAccessRequestService.getSentRequests(currentUserId),
       ]);
 
       // Ensure the user exists and we know their gender to potentially filter by opposite gender if required.
       if (!currentUser || !currentUser.profile) {
          throw new ApiError(404, "Current user profile not found");
+      }
+
+      const viewerPrivacyEnabled = currentUser.privacySettings?.privacyEnabled ?? false;
+      const sentRequestsMap = new Map<number, string>();
+      for (const req of sentRequestsList) {
+         sentRequestsMap.set(req.ownerUserId, req.status);
       }
 
       const userFilter: Prisma.UserWhereInput = {
@@ -162,12 +183,27 @@ export class DiscoveryService {
          }),
       ]);
 
+      const candidateUserIds = profiles.map((p) => p.userId);
+      const approvedAccessesList =
+         candidateUserIds.length > 0
+            ? await this.imageAccessRequestService.getApprovedAccessesForViewer(currentUserId, candidateUserIds)
+            : [];
+      const approvedAccesses = new Set(approvedAccessesList.map((a) => a.ownerUserId));
+
       const totalPages = Math.ceil(totalCount / safeLimit);
       const hasNextPage = safePage < totalPages;
       const today = new Date();
-      const presignedImageUrls = await this.getPresignedImageUrlMap(profiles);
 
-      const mappedProfiles = profiles.map((profile) => this.mapProfile(profile, today, presignedImageUrls));
+      const mappedProfiles = await Promise.all(
+         profiles.map((profile) =>
+            this.mapProfile(profile, today, {
+               currentUserId,
+               viewerPrivacyEnabled,
+               approvedAccesses,
+               sentRequestsMap,
+            })
+         )
+      );
 
       return {
          profiles: mappedProfiles,
@@ -230,27 +266,44 @@ export class DiscoveryService {
       return dateFilters;
    }
 
-   private async getPresignedImageUrlMap(profiles: DiscoveryProfile[]): Promise<Map<string, string>> {
-      const imageUrls = new Set<string>();
-
-      for (const profile of profiles) {
-         for (const image of profile.images) {
-            imageUrls.add(image.imageUrl);
-         }
+   private async mapProfile(
+      profile: DiscoveryProfile,
+      today: Date,
+      context: {
+         currentUserId: number;
+         viewerPrivacyEnabled: boolean;
+         approvedAccesses: Set<number>;
+         sentRequestsMap: Map<number, string>;
       }
+   ) {
+      const targetPrivacyEnabled = profile.user.privacySettings?.privacyEnabled ?? false;
+      const targetBlurredImageUrl = profile.user.privacySettings?.blurredImageUrl ?? null;
+      const hasApprovedAccess = context.approvedAccesses.has(profile.userId);
 
-      const presignedUrls = await Promise.all(
-         Array.from(imageUrls).map(async (imageUrl) => [imageUrl, await this.s3Service.getPresignedUrl(imageUrl)] as const)
-      );
+      const isRestricted = (context.viewerPrivacyEnabled || targetPrivacyEnabled) && !hasApprovedAccess;
 
-      return new Map(presignedUrls);
-   }
+      const name = isRestricted
+         ? (profile.name ? profile.name.split(" ")[0] : "Unknown")
+         : (profile.name ?? "Unknown");
 
-   private mapProfile(profile: DiscoveryProfile, today: Date, presignedImageUrls: Map<string, string>) {
+      const mappedImages = await this.privacyImageMapperService.mapImages({
+         viewerUserId: context.currentUserId,
+         viewerPrivacyEnabled: context.viewerPrivacyEnabled,
+         targetUserId: profile.userId,
+         targetPrivacyEnabled,
+         targetBlurredImageUrl,
+         targetImages: profile.images.map((img) => ({
+            id: img.id,
+            imageUrl: img.imageUrl,
+            isPrimary: img.isPrimary,
+         })),
+         hasApprovedAccess,
+      });
+
       return {
          id: profile.id,
          userId: profile.userId,
-         name: profile.name,
+         name,
          age: this.calculateAge(profile.dateOfBirth, today),
          gender: profile.gender,
          city: profile.city,
@@ -258,15 +311,16 @@ export class DiscoveryService {
          country: profile.country,
          isVerified: profile.user.isVerified,
          isFoundingMember: profile.user.isFoundingMember,
-         maritalStatus: profile.maritalStatus,
+         maritalStatus: isRestricted ? null : profile.maritalStatus,
          motherTongue: profile.motherTongue,
          highestEducation: profile.highestEducation,
-         occupation: profile.job?.name || null,
+         occupation: isRestricted ? null : (profile.job?.name || null),
          bio: profile.bio,
-         images: profile.images.map((img) => ({
+         images: mappedImages.map((img) => ({
             id: img.id,
-            imageUrl: presignedImageUrls.get(img.imageUrl) ?? img.imageUrl,
+            imageUrl: img.imageUrl ?? "",
             isPrimary: img.isPrimary,
+            isBlurred: img.isBlurred ?? false,
          })),
          languages: profile.languages,
          childrenStatus: profile.childrenStatus,
@@ -277,6 +331,9 @@ export class DiscoveryService {
          interactionState: "NONE",
          createdAt: profile.user.createdAt.toISOString(),
          lastLoginAt: profile.user.updatedAt.toISOString(),
+         viewerPrivacyEnabled: context.viewerPrivacyEnabled,
+         targetPrivacyEnabled,
+         imageAccessRequestStatus: context.sentRequestsMap.get(profile.userId) ?? null,
       };
    }
 

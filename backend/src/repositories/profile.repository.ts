@@ -548,6 +548,20 @@ export class ProfileRepository implements IProfileRepository {
    }
 
    /**
+    * Deletes a user image.
+    *
+    * @param imageId - Image ID.
+    * @returns Deleted user image.
+    */
+   async deleteUserImage(imageId: number) {
+      return prisma.userImage.delete({
+         where: {
+            id: imageId,
+         },
+      });
+   }
+
+   /**
     * Finds or creates a profile.
     *
     * @param userId - User ID.

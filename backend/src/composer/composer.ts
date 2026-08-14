@@ -173,7 +173,6 @@ export const transactionHistoryService = new TransactionHistoryService(transacti
 export const userSubscriptionService = new UserSubscriptionService(subscriptionPlanRepository, userSubscriptionRepository, processedRevenueCatEventRepository, userFeatureRepository, subscriptionWebhookRepository, userRepository, emailService);
 export const oauthService = new OAuthService(userRepository, jwtService, subscriptionPlanRepository, userSubscriptionRepository);
 export const blockService = new BlockService(blockRepository);
-export const discoveryService = new DiscoveryService(s3Service);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);
@@ -181,6 +180,7 @@ export const chatService = new ChatService(chatRepository, userFeatureService, b
 export const privacyPolicyService = new PrivacyPolicyService();
 export const privacyImageMapperService = new PrivacyImageMapperService(privacyPolicyService, s3Service);
 export const imageAccessRequestService = new ImageAccessRequestService(imageAccessRequestRepository, s3Service);
+export const discoveryService = new DiscoveryService(privacyImageMapperService, imageAccessRequestService);
 export const matchService = new MatchService(matchRepository, s3Service, userFeatureService, privacyImageMapperService, imageAccessRequestService);
 export const notificationService = new NotificationService(notificationRepository);
 

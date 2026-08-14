@@ -82,6 +82,7 @@ dependencies:
    flutter_web_plugins:
       sdk: flutter
    flutter_lucide: ^1.11.0
+   image_cropper: ^12.2.1
 dependency_overrides:
    zego_zim: ^2.21.1
 

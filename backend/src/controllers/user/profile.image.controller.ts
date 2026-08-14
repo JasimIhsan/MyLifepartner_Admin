@@ -235,6 +235,43 @@ export class ProfileImageController {
    });
 
    /**
+    * @route DELETE /api/v1/user/profile/delete-image/:userId/:imageId
+    * @purpose Deletes a profile image for the authenticated user.
+    */
+   public deleteImage = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const authUserId = this.getAuthenticatedUserId(req);
+      const userId = Number(req.params.userId);
+      const imageId = Number(req.params.imageId);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      if (!Number.isInteger(imageId) || imageId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid image ID");
+      }
+
+      this.ensureUserOwnsResource(userId, authUserId);
+
+      const result = await this.profileService.deleteUserImage(userId, imageId);
+
+      await auditService.log({
+         userId,
+         actorType: ActorType.USER,
+         module: AuditModule.PROFILE,
+         action: "DELETE_PROFILE_IMAGE",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User deleted profile image ID: ${imageId}`,
+         entityType: "UserImage",
+         entityId: imageId.toString(),
+         source: AuditSource.API,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Image deleted successfully"));
+   });
+
+   /**
     * Extracts and validates authenticated user ID.
     */
    private getAuthenticatedUserId(req: AuthRequest): number {

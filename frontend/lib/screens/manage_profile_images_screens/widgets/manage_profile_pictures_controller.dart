@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/screens/profile_image_upload/widgets/image_options_sheet.dart';
@@ -61,6 +62,36 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
     }
   }
 
+  Future<XFile?> cropImage(XFile image) async {
+    try {
+      final croppedFile = await ImageCropper().cropImage(
+        sourcePath: image.path,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: Theme.of(context).primaryColor,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+          ),
+          WebUiSettings(
+            context: context,
+            presentStyle: WebPresentStyle.dialog,
+          ),
+        ],
+      );
+      if (croppedFile != null) {
+        return XFile(croppedFile.path);
+      }
+    } catch (e) {
+      debugPrint("Error cropping image: $e");
+    }
+    return null;
+  }
+
   Future<void> pickAndUploadImage() async {
     if (images.length >= maxImages) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -76,10 +107,13 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
       );
 
       if (image != null) {
-        setState(() => isUploading = true);
-        await profileRepository.uploadImage(image);
-        await fetchImages();
-        setState(() => isUploading = false);
+        final croppedImage = await cropImage(image);
+        if (croppedImage != null) {
+          setState(() => isUploading = true);
+          await profileRepository.uploadImage(croppedImage);
+          await fetchImages();
+          setState(() => isUploading = false);
+        }
       }
     } catch (e) {
       setState(() {
@@ -118,10 +152,29 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
       );
 
       if (image != null) {
-        setState(() => processingImageId = imageId);
-        await profileRepository.replaceImage(imageId, image);
-        await fetchImages();
+        final croppedImage = await cropImage(image);
+        if (croppedImage != null) {
+          setState(() => processingImageId = imageId);
+          await profileRepository.replaceImage(imageId, croppedImage);
+          await fetchImages();
+        }
       }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString().replaceAll('Exception: ', ''))),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => processingImageId = null);
+    }
+  }
+
+  Future<void> deleteImage(int imageId) async {
+    setState(() => processingImageId = imageId);
+    try {
+      await profileRepository.deleteImage(imageId);
+      await fetchImages();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -144,6 +197,7 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
           image: image,
           onSetPrimary: setPrimaryImage,
           onReplace: replaceImage,
+          onDelete: deleteImage,
         );
       },
     );

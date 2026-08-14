@@ -69,4 +69,5 @@ export interface IProfileService {
    completeImageUpload(userId: number): Promise<ImageUploadStatusDto>;
    uploadSelfie(userId: number, frontFile: Express.Multer.File, leftFile: Express.Multer.File, rightFile: Express.Multer.File, latitude?: number, longitude?: number): Promise<{ user: Profile }>;
    updatePrivacySettings(userId: number, privacyEnabled: boolean): Promise<{ privacyEnabled: boolean }>;
+   deleteUserImage(userId: number, imageId: number): Promise<{ success: boolean }>;
 }

@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/widgets/body_photo_carousel.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_image_gallery.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_action_bar.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_detail_controller.dart';
@@ -205,7 +205,7 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                         ),
                       ),
                       const SizedBox(height: 12),
-                      BodyPhotoCarousel(images: images),
+                      ProfileImageGallery(images: images),
                       const SizedBox(height: 20),
                     ],
                     const SizedBox(height: 100),

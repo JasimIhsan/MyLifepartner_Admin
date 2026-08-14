@@ -8,12 +8,14 @@ class ImageOptionsBottomSheet extends StatelessWidget {
   final UserImage image;
   final Function(int) onSetPrimary;
   final Function(int) onReplace;
+  final Function(int) onDelete;
 
   const ImageOptionsBottomSheet({
     super.key,
     required this.image,
     required this.onSetPrimary,
     required this.onReplace,
+    required this.onDelete,
   });
 
   @override
@@ -142,6 +144,50 @@ class ImageOptionsBottomSheet extends StatelessWidget {
                       onReplace(image.id);
                     },
                   ),
+                  if (!isPrimary) ...[
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Divider(color: Theme.of(context).dividerColor, height: 1),
+                    ),
+                    ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 6,
+                      ),
+                      leading: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: Colors.red.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.red,
+                          size: 22,
+                        ),
+                      ),
+                      title: Text(
+                        'Delete Photo',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red,
+                        ),
+                      ),
+                      subtitle: Text(
+                        'Remove this photo from your profile',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        ),
+                      ),
+                      onTap: () {
+                        context.pop();
+                        onDelete(image.id);
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),

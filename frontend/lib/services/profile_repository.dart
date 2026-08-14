@@ -358,6 +358,25 @@ class ProfileRepository {
     }
   }
 
+  Future<void> deleteImage(int imageId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getInt('userId');
+
+      final response = await _client.delete(
+        '/profile/delete-image/$userId/$imageId',
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to delete image');
+      }
+    } on DioException catch (e) {
+      throw Exception(getDioErrorMessage(e, fallback: 'Error deleting image'));
+    } catch (e) {
+      throw Exception('Error deleting image: $e');
+    }
+  }
+
   Future<void> updatePrivacySettings(bool enabled) async {
     try {
       final prefs = await SharedPreferences.getInstance();
