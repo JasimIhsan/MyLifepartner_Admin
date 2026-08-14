@@ -182,22 +182,38 @@ const mockSubRepo = {
    updateUserSubscription: jest.fn(),
    executeSyncTransaction: jest.fn(async (userId, cb) => {
       const mockCtx = {
-         findActiveSubscriptionByUserId: jest.fn(async (uid) => mockTx.userSubscription.findFirst({
-            where: { userId: uid, status: "ACTIVE" },
-            orderBy: { createdAt: "desc" },
-         })),
-         deactivateUserSubscriptions: jest.fn(async (uid) => mockTx.userSubscription.updateMany({
-            where: { userId: uid, status: "ACTIVE" },
-            data: { status: "EXPIRED" },
-         })),
-         createUserSubscription: jest.fn(async (data) => mockTx.userSubscription.create({
-            data,
-            include: { plan: { include: { features: true } } }
-         })),
-         updateUserSubscription: jest.fn(async (id, data) => mockTx.userSubscription.update({
-            where: { id },
-            data,
-         })),
+         findActiveSubscriptionByUserId: jest.fn(async (uid) =>
+            mockTx.userSubscription.findFirst({
+               where: { userId: uid, status: "ACTIVE" },
+               orderBy: { createdAt: "desc" },
+            })
+         ),
+         deactivateUserSubscriptions: jest.fn(async (uid) =>
+            mockTx.userSubscription.updateMany({
+               where: { userId: uid, status: "ACTIVE" },
+               data: { status: "EXPIRED" },
+            })
+         ),
+         createUserSubscription: jest.fn(async (data) =>
+            mockTx.userSubscription.create({
+               data,
+               include: { plan: { include: { features: true } } },
+            })
+         ),
+         upsertUserSubscriptionByOriginalTransactionId: jest.fn(async (originalTransactionId, createData, updateData) =>
+            mockTx.userSubscription.upsert({
+               where: { originalTransactionId },
+               create: createData,
+               update: updateData,
+               include: { plan: { include: { features: true } } },
+            })
+         ),
+         updateUserSubscription: jest.fn(async (id, data) =>
+            mockTx.userSubscription.update({
+               where: { id },
+               data,
+            })
+         ),
          applyFeatures: jest.fn(async (uid, payload) => {
             const existing = await mockTx.userFeature.findUnique({ where: { userId: uid } });
             if (existing) {
@@ -206,19 +222,21 @@ const mockSubRepo = {
                await mockTx.userFeature.create({ data: { user: { connect: { id: uid } }, ...payload } });
             }
          }),
-         writeAuditLog: jest.fn(async (params) => mockTx.userSubscriptionLog.create({
-            data: {
-               userId: params.userId,
-               previousPlanId: params.previousPlanId ?? null,
-               newPlanId: params.newPlanId ?? null,
-               previousStatus: params.previousStatus ?? null,
-               newStatus: params.newStatus,
-               reason: params.reason,
-               source: params.source,
-               eventType: "SYNC",
-               eventId: `sync_mock`,
-            }
-         })),
+         writeAuditLog: jest.fn(async (params) =>
+            mockTx.userSubscriptionLog.create({
+               data: {
+                  userId: params.userId,
+                  previousPlanId: params.previousPlanId ?? null,
+                  newPlanId: params.newPlanId ?? null,
+                  previousStatus: params.previousStatus ?? null,
+                  newStatus: params.newStatus,
+                  reason: params.reason,
+                  source: params.source,
+                  eventType: "SYNC",
+                  eventId: `sync_mock`,
+               },
+            })
+         ),
       };
       // For tests that assert on the lock
       await mockTx.$executeRaw`SELECT pg_advisory_xact_lock(${userId})`;
@@ -294,6 +312,7 @@ describe("UserSubscriptionService", () => {
       mockTx.userFeature.create.mockResolvedValue({});
       mockTx.userFeature.update.mockResolvedValue({});
       mockTx.userSubscription.updateMany.mockResolvedValue({ count: 1 });
+      mockTx.userSubscription.upsert.mockResolvedValue(makeActiveSub());
       mockTx.userSubscriptionLog.create.mockResolvedValue({ id: 1 });
    });
 
@@ -465,7 +484,7 @@ describe("UserSubscriptionService", () => {
                   nextPlanId: MEDIUM_PLAN.id,
                   willRenew: false,
                   endDate: expect.any(Date), // C-5: endDate is updated
-               })
+               }),
             })
          );
       });
@@ -672,8 +691,7 @@ describe("UserSubscriptionService", () => {
 
    describe("M-6: FREE plan subscriptions use a 100-year endDate", () => {
       it("creates FREE plan subscription with endDate ~100 years in the future", async () => {
-         mockTx.userSubscription.findFirst.mockResolvedValueOnce(makeActiveSub())
-                                       .mockResolvedValueOnce(null); // No remaining active sub
+         mockTx.userSubscription.findFirst.mockResolvedValueOnce(makeActiveSub()).mockResolvedValueOnce(null); // No remaining active sub
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
          mockTx.userSubscription.create.mockImplementation(async ({ data }: { data: { endDate: Date } }) => ({
             ...makeActiveSub({ planId: 1 }),
@@ -737,12 +755,12 @@ describe("UserSubscriptionService", () => {
             ok: true,
             json: async () => ({ subscriber: { original_app_user_id: "42", aliases: [], subscriptions: {} } }),
          });
-         
+
          const currentSub = makeActiveSub({ planId: FREE_PLAN.id, plan: FREE_PLAN, createdAt: new Date(Date.now() - 5 * 60 * 1000) });
          mockTx.userSubscription.findFirst.mockResolvedValue(currentSub);
-         
+
          mockTx.userSubscription.create.mockResolvedValue({ ...makeActiveSub({ planId: 1 }), plan: { ...FREE_PLAN, features: [] } });
-         
+
          const svc = makeService();
          // Should not throw — falls back gracefully to sync
          await expect(svc.handleWebhook(makeWebhookPayload({ product_id: "unknown_plan_xyz" }), "test-webhook-secret")).resolves.not.toThrow();
@@ -823,9 +841,7 @@ describe("UserSubscriptionService", () => {
          const svc = makeService();
          mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
-         mockTx.userSubscription.findFirst
-            .mockResolvedValueOnce(makeActiveSub())
-            .mockResolvedValueOnce(null);
+         mockTx.userSubscription.findFirst.mockResolvedValueOnce(makeActiveSub()).mockResolvedValueOnce(null);
 
          await svc.handleWebhook(makeWebhookPayload({ type: RevenueCatWebhookEvent.REFUND }), "test-webhook-secret");
 
@@ -872,6 +888,64 @@ describe("UserSubscriptionService", () => {
    // ── RC-1: activatePlan stores event metadata ──────────────────────────────
 
    describe("RC-1: activatePlan stores event metadata", () => {
+      it("verifyAndActivatePurchase stores RevenueCat store_transaction_id, not a legacy app user id", async () => {
+         const expiresDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+         (global.fetch as jest.Mock).mockResolvedValue({
+            ok: true,
+            json: async () => ({
+               subscriber: {
+                  original_app_user_id: "00000000-0000-4000-8000-00000000002a",
+                  aliases: ["42"],
+                  subscriptions: {
+                     premium_monthly: {
+                        expires_date: expiresDate,
+                        purchase_date: new Date().toISOString(),
+                        store_transaction_id: "1000000123456789",
+                        store: "app_store",
+                        is_sandbox: true,
+                     },
+                  },
+               },
+            }),
+         });
+
+         mockTx.userSubscription.findFirst.mockResolvedValue(null);
+         mockSubPlanRepo.findPlanByStoreProductId.mockResolvedValue(PREMIUM_PLAN);
+         mockTx.userSubscription.upsert.mockResolvedValue(
+            makeActiveSub({
+               originalTransactionId: "1000000123456789",
+               store: "app_store",
+               environment: "SANDBOX",
+            })
+         );
+         mockSubRepo.findActiveSubscriptionByUserId.mockResolvedValue(
+            makeActiveSub({
+               originalTransactionId: "1000000123456789",
+               store: "app_store",
+               environment: "SANDBOX",
+            })
+         );
+
+         const svc = makeService();
+         await svc.verifyAndActivatePurchase(42, {
+            originalTransactionId: "00000000-0000-4000-8000-00000000002a",
+            productId: "premium_monthly",
+            store: "APP_STORE",
+            environment: "SANDBOX",
+         });
+
+         expect(mockTx.userSubscription.upsert).toHaveBeenCalledWith(
+            expect.objectContaining({
+               where: { originalTransactionId: "1000000123456789" },
+               create: expect.objectContaining({
+                  originalTransactionId: "1000000123456789",
+                  store: "app_store",
+                  environment: "SANDBOX",
+               }),
+            })
+         );
+      });
+
       it("syncSubscription stores lastEventTimestampMs when creating a new paid subscription", async () => {
          (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
@@ -915,12 +989,15 @@ describe("UserSubscriptionService", () => {
          mockTx.userSubscription.updateMany.mockResolvedValue({ count: 1 }); // Orphan expired
 
          const svc = makeService();
-         await svc.handleWebhook(makeWebhookPayload({ 
-            type: RevenueCatWebhookEvent.EXPIRATION,
-            original_transaction_id: "txn_old",
-            product_id: "premium_monthly",
-            event_timestamp_ms: 9999999 // newer than current sub so it passes stale guard
-         }), "test-webhook-secret");
+         await svc.handleWebhook(
+            makeWebhookPayload({
+               type: RevenueCatWebhookEvent.EXPIRATION,
+               original_transaction_id: "txn_old",
+               product_id: "premium_monthly",
+               event_timestamp_ms: 9999999, // newer than current sub so it passes stale guard
+            }),
+            "test-webhook-secret"
+         );
 
          // Only the orphaned transaction should be targeted
          expect(mockTx.userSubscription.updateMany).toHaveBeenCalledWith(
@@ -939,12 +1016,15 @@ describe("UserSubscriptionService", () => {
          mockTx.userSubscription.updateMany.mockResolvedValue({ count: 1 }); // Orphan expired
 
          const svc = makeService();
-         await svc.handleWebhook(makeWebhookPayload({ 
-            type: RevenueCatWebhookEvent.REFUND,
-            original_transaction_id: "txn_old",
-            product_id: "premium_monthly",
-            event_timestamp_ms: 9999999
-         }), "test-webhook-secret");
+         await svc.handleWebhook(
+            makeWebhookPayload({
+               type: RevenueCatWebhookEvent.REFUND,
+               original_transaction_id: "txn_old",
+               product_id: "premium_monthly",
+               event_timestamp_ms: 9999999,
+            }),
+            "test-webhook-secret"
+         );
 
          expect(mockTx.userSubscription.updateMany).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -1002,27 +1082,28 @@ describe("UserSubscriptionService", () => {
       });
    });
 
-
-
    // ── Enhanced Stale Guard ──────────────────────────────────────────────────
 
    describe("Enhanced stale guard (createdAt fallback)", () => {
       it("rejects downgrade event if event_timestamp_ms < createdAt when lastEventTimestampMs is null", async () => {
          // Subscription created exactly 1 minute ago, without lastEventTimestampMs (legacy)
          const createdAtMs = Date.now() - 60000;
-         const currentSub = makeActiveSub({ 
-            lastEventTimestampMs: null, 
-            createdAt: new Date(createdAtMs) 
+         const currentSub = makeActiveSub({
+            lastEventTimestampMs: null,
+            createdAt: new Date(createdAtMs),
          });
          mockTx.userSubscription.findFirst.mockResolvedValue(currentSub);
          mockSubPlanRepo.getPlanByName.mockResolvedValue(FREE_PLAN);
 
          const svc = makeService();
          // Send EXPIRATION from 2 minutes ago
-         await svc.handleWebhook(makeWebhookPayload({ 
-            type: RevenueCatWebhookEvent.EXPIRATION,
-            event_timestamp_ms: createdAtMs - 60000 
-         }), "test-webhook-secret");
+         await svc.handleWebhook(
+            makeWebhookPayload({
+               type: RevenueCatWebhookEvent.EXPIRATION,
+               event_timestamp_ms: createdAtMs - 60000,
+            }),
+            "test-webhook-secret"
+         );
 
          // Should be rejected as stale, no mutations
          expect(mockTx.userSubscription.updateMany).not.toHaveBeenCalled();

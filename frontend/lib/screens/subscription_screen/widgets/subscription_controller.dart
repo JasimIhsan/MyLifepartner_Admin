@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
@@ -10,7 +9,6 @@ import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription
 import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_success_ui.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:provider/provider.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PlanVisuals {
@@ -104,9 +102,37 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         if (mounted) {
           await context
               .read<SubscriptionProvider>()
-              .openGooglePlaySubscription();
+              .openStoreSubscriptionManagement();
         }
       }
+    }
+  }
+
+  Future<void> handleRestorePurchases() async {
+    final provider = context.read<SubscriptionProvider>();
+    final ValueNotifier<bool> isCompleted = ValueNotifier(false);
+    final dialogFuture = showDynamicLoadingUI(context, isCompleted);
+
+    final success = await provider.restorePurchases();
+
+    if (!mounted) return;
+
+    isCompleted.value = true;
+    await dialogFuture;
+
+    if (!mounted) return;
+
+    if (success) {
+      final restoredPlan = provider.currentSubscription;
+      if (restoredPlan != null) {
+        await showSubscriptionSuccessUI(context, restoredPlan);
+      }
+
+      if (mounted) {
+        initSubscriptions();
+      }
+    } else {
+      await showSubscriptionFailureUI(context, provider.error);
     }
   }
 
@@ -117,10 +143,16 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         provider.currentSubscription != null &&
         provider.currentSubscription!.price > 0) {
       final mySub = provider.mySubscription;
-      if (mySub != null && (!mySub.willRenew || mySub.isCancelledButActive || mySub.isDowngradeScheduled || mySub.isCancelled || mySub.isInGracePeriod || mySub.isPaymentFailed)) {
+      if (mySub != null &&
+          (!mySub.willRenew ||
+              mySub.isCancelledButActive ||
+              mySub.isDowngradeScheduled ||
+              mySub.isCancelled ||
+              mySub.isInGracePeriod ||
+              mySub.isPaymentFailed)) {
         _awaitingStoreReturn = true;
         if (mounted) {
-          await provider.openGooglePlaySubscription();
+          await provider.openStoreSubscriptionManagement();
         }
         return;
       }
@@ -176,7 +208,9 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -185,7 +219,9 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 32),
@@ -197,7 +233,9 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
                   text: 'Yes, Cancel',
                   type: CustomButtonType.outline,
                   backgroundColor: Theme.of(context).colorScheme.surface,
-                  textColor: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  textColor:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                   height: 52,
                   borderRadius: 16,
                 ),
@@ -222,14 +260,11 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
     );
   }
 
-  Future<void> initRevenueCat() async {
-    await Purchases.configure(PurchasesConfiguration(Env.revenueCatApiKey));
-  }
-
   PlanVisuals getPlanVisuals(model.SubscriptionPlan plan) {
     if (plan.price == 0) {
       return PlanVisuals(
-        themeColor: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+        themeColor:
+            Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
         borderColor: Theme.of(context).dividerColor,
         bgColor: Theme.of(context).scaffoldBackgroundColor,
         gradientColors: const [Color(0xFF94A3B8), Color(0xFF64748B)],
@@ -244,7 +279,10 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         themeColor: Theme.of(context).primaryColor,
         borderColor: Theme.of(context).primaryColorLight,
         bgColor: Color(0xFFF8FAFC),
-        gradientColors: [Theme.of(context).primaryColorLight, Theme.of(context).primaryColor],
+        gradientColors: [
+          Theme.of(context).primaryColorLight,
+          Theme.of(context).primaryColor,
+        ],
         isPopular: true,
         badgeText: 'Most Popular',
       );
@@ -253,7 +291,10 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         themeColor: Theme.of(context).primaryColor,
         borderColor: Theme.of(context).primaryColorLight,
         bgColor: Color(0xFFF8FAFC),
-        gradientColors: [Theme.of(context).primaryColorLight, Theme.of(context).primaryColorDark],
+        gradientColors: [
+          Theme.of(context).primaryColorLight,
+          Theme.of(context).primaryColorDark,
+        ],
         isPopular: false,
         badgeText: '40% OFF',
       );

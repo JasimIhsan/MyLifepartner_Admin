@@ -21,7 +21,13 @@ import logger from "@/utils/logger";
 type RevenueCatSubscription = {
    expires_date?: string;
    purchase_date?: string;
+   store_transaction_id?: string | number | null;
+   store?: string | null;
+   is_sandbox?: boolean | null;
    unsubscribe_detected_at?: string;
+   billing_issues_detected_at?: string | null;
+   grace_period_expires_date?: string | null;
+   refunded_at?: string | null;
 };
 
 type RevenueCatSubscriberResponse = {
@@ -30,6 +36,18 @@ type RevenueCatSubscriberResponse = {
       aliases?: string[];
       subscriptions?: Record<string, RevenueCatSubscription>;
    };
+};
+
+type ActiveRevenueCatProduct = {
+   productIdentifier: string;
+   expiryTime: Date | null;
+   purchaseTime: Date | null;
+   willRenew: boolean;
+   storeTransactionId: string | null;
+   store: string | null;
+   environment: string | null;
+   billingIssueDetectedAt: Date | null;
+   gracePeriodEndsAt: Date | null;
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -51,6 +69,41 @@ const UNLIMITED_FEATURE_LIMIT = Number.MAX_SAFE_INTEGER;
  */
 const PURCHASE_SYNC_GRACE_PERIOD_MIN_MS = 5 * 60 * 1000; // 5 minutes
 const REVENUECAT_API_TIMEOUT_MS = 10_000; // 10 seconds
+const REVENUECAT_APP_USER_ID_PREFIX = "00000000-0000-4000-8000-";
+
+function toRevenueCatAppUserId(userId: number): string {
+   const hexUserId = userId.toString(16);
+   if (hexUserId.length > 12) return String(userId);
+   return `${REVENUECAT_APP_USER_ID_PREFIX}${hexUserId.padStart(12, "0")}`;
+}
+
+function parseUserIdFromRevenueCatAppUserId(appUserId: string): number | undefined {
+   const trimmed = appUserId.trim();
+   if (/^[1-9]\d*$/.test(trimmed)) {
+      const numericId = Number.parseInt(trimmed, 10);
+      return Number.isSafeInteger(numericId) ? numericId : undefined;
+   }
+
+   if (!trimmed.startsWith(REVENUECAT_APP_USER_ID_PREFIX)) return undefined;
+
+   const hexUserId = trimmed.slice(REVENUECAT_APP_USER_ID_PREFIX.length);
+   if (!/^[0-9a-fA-F]{12}$/.test(hexUserId)) return undefined;
+
+   const parsed = Number.parseInt(hexUserId, 16);
+   return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
+
+function optionalString(value: unknown): string | null {
+   if (value === null || value === undefined) return null;
+   const trimmed = String(value).trim();
+   return trimmed.length > 0 ? trimmed : null;
+}
+
+function optionalDate(value: string | null | undefined): Date | null {
+   if (!value) return null;
+   const parsed = new Date(value);
+   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
 
 // ─── Service ──────────────────────────────────────────────────────────────────
 
@@ -194,7 +247,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                   const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
                   if (targetPlan) {
                      logger.info(`[RECONCILIATION] RC confirms active product. Restoring GRACE_PERIOD -> ACTIVE for userId ${userId}.`);
-                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, SubscriptionStatus.ACTIVE);
+                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, this.statusForActiveRevenueCatProduct(activeProduct), activeProduct);
                      await this.writeSyncAuditLog(ctx, {
                         userId,
                         previousPlanId: currentSub.planId,
@@ -217,7 +270,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                   const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
                   if (targetPlan) {
                      logger.info(`[RECONCILIATION] RC confirms active product. Restoring BILLING_ISSUE -> ACTIVE for userId ${userId}.`);
-                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, SubscriptionStatus.ACTIVE);
+                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, this.statusForActiveRevenueCatProduct(activeProduct), activeProduct);
                      await this.writeSyncAuditLog(ctx, {
                         userId,
                         previousPlanId: currentSub.planId,
@@ -253,7 +306,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                   const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(activeProduct.productIdentifier);
                   if (targetPlan) {
                      logger.info(`[RECONCILIATION] RC confirms active product. Renewing userId ${userId} to ACTIVE.`);
-                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, SubscriptionStatus.ACTIVE);
+                     await this.syncActivatePlan(ctx, userId, targetPlan.id, activeProduct.expiryTime || this.addDays(now, 30), activeProduct.willRenew, false, this.statusForActiveRevenueCatProduct(activeProduct), activeProduct);
                      await this.writeSyncAuditLog(ctx, {
                         userId,
                         previousPlanId: currentSub.planId,
@@ -347,11 +400,11 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
          const endDate = activeProduct.expiryTime ?? this.addDays(new Date(), DEFAULT_SUBSCRIPTION_DURATION_DAYS);
 
-         const targetStatus = activeProduct.willRenew ? SubscriptionStatus.ACTIVE : SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
+         const targetStatus = this.statusForActiveRevenueCatProduct(activeProduct);
 
          if (!currentSubscription || currentSubscription.planId === freePlan?.id) {
             logger.info(`[SYNC_SUBSCRIPTION] Activating new paid plan ${targetPlan.name} (id: ${targetPlan.id}) for userId ${userId}. endDate=${endDate.toISOString()}, willRenew=${activeProduct.willRenew}, status=${targetStatus}`);
-            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */, targetStatus);
+            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, true /* resetUsage */, targetStatus, activeProduct);
             await this.writeSyncAuditLog(ctx, {
                userId,
                previousPlanId: currentSubscription?.planId,
@@ -372,22 +425,14 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             // RC genuinely still shows the subscription as cancelled (unsubscribe_detected_at
             // is present). If RC shows willRenew=true with no unsubscribe_detected_at, the
             // user has re-enabled auto-renewal (UNCANCELLATION) and we must restore ACTIVE.
-            if (
-               currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY &&
-               targetStatus === SubscriptionStatus.ACTIVE &&
-               activeProduct.willRenew === true
-            ) {
+            if (currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY && targetStatus === SubscriptionStatus.ACTIVE && activeProduct.willRenew === true) {
                // Check if the UNCANCELLATION was confirmed by RC (willRenew=true means unsubscribe_detected_at is null in the RC response)
                // RC's findActiveRevenueCatProduct already strips products with unsubscribe_detected_at, so willRenew=true here
                // means the user has genuinely re-enabled auto-renewal.
                logger.info(`[SYNC_SUBSCRIPTION] DB shows CANCELLED_PENDING_EXPIRY but RevenueCat confirms willRenew=true (genuine UNCANCELLATION). Restoring to ACTIVE.`);
                finalStatus = SubscriptionStatus.ACTIVE;
                finalWillRenew = true;
-            } else if (
-               currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY &&
-               targetStatus === SubscriptionStatus.ACTIVE &&
-               !activeProduct.willRenew
-            ) {
+            } else if (currentSubscription.status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY && targetStatus === SubscriptionStatus.ACTIVE && !activeProduct.willRenew) {
                // RC still shows willRenew=false (unsubscribe_detected_at present) — trust DB cancellation
                logger.warn(`[SYNC_SUBSCRIPTION] DB shows CANCELLED_PENDING_EXPIRY and RevenueCat also shows willRenew=false. Trusting DB cancellation.`);
                finalStatus = SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
@@ -395,11 +440,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             }
 
             // Also restore BILLING_ISSUE → ACTIVE when RC shows active product
-            if (
-               (currentSubscription.status === SubscriptionStatus.BILLING_ISSUE ||
-                currentSubscription.status === SubscriptionStatus.GRACE_PERIOD) &&
-               targetStatus === SubscriptionStatus.ACTIVE
-            ) {
+            if ((currentSubscription.status === SubscriptionStatus.BILLING_ISSUE || currentSubscription.status === SubscriptionStatus.GRACE_PERIOD) && targetStatus === SubscriptionStatus.ACTIVE) {
                logger.info(`[SYNC_SUBSCRIPTION] RC confirms active product. Restoring ${currentSubscription.status} → ACTIVE.`);
                finalStatus = SubscriptionStatus.ACTIVE;
                finalWillRenew = activeProduct.willRenew;
@@ -411,6 +452,12 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                willRenew: finalWillRenew,
                status: finalStatus as unknown as any,
                nextPlanId: null,
+               originalTransactionId: activeProduct.storeTransactionId ?? currentSubscription.originalTransactionId,
+               store: activeProduct.store ?? currentSubscription.store,
+               environment: activeProduct.environment ?? currentSubscription.environment,
+               billingIssueDetectedAt: finalStatus === SubscriptionStatus.BILLING_ISSUE ? (activeProduct.billingIssueDetectedAt ?? new Date()) : null,
+               gracePeriodEndsAt: activeProduct.gracePeriodEndsAt,
+               cancelledAt: finalStatus === SubscriptionStatus.CANCELLED_PENDING_EXPIRY ? (currentSubscription.cancelledAt ?? new Date()) : null,
                lastSyncedAt: new Date(),
             });
             await this.writeSyncAuditLog(ctx, {
@@ -430,13 +477,13 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
          if (targetPlan.price >= currentPlan.price) {
             logger.info(`[SYNC_SUBSCRIPTION] Upgrading userId ${userId} from plan ${currentPlan.name} to ${targetPlan.name}`);
-            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, false /* preserve usage */);
+            await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, activeProduct.willRenew, false /* preserve usage */, targetStatus, activeProduct);
             await this.writeSyncAuditLog(ctx, {
                userId,
                previousPlanId: currentSubscription.planId,
                newPlanId: targetPlan.id,
-               previousStatus: "ACTIVE",
-               newStatus: "ACTIVE",
+               previousStatus: currentSubscription.status,
+               newStatus: targetStatus,
                reason: "Immediate upgrade via /sync",
                source: "SYNC",
             });
@@ -451,8 +498,8 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                userId,
                previousPlanId: currentSubscription.planId,
                newPlanId: targetPlan.id,
-               previousStatus: "ACTIVE",
-               newStatus: "ACTIVE",
+               previousStatus: currentSubscription.status,
+               newStatus: currentSubscription.status,
                reason: "Deferred downgrade scheduled via /sync",
                source: "SYNC",
             });
@@ -467,43 +514,68 @@ export class UserSubscriptionService implements IUserSubscriptionService {
     * the corresponding plan in the database.
     *
     * This is the preferred post-purchase path.  The Flutter app calls this
-    * endpoint right after Purchases.purchasePackage() succeeds, providing the
-    * originalTransactionId from CustomerInfo.  We look up that transaction
-    * in the RC subscriber data, confirm it is active and not expired, then
-    * activate the plan — all within a single request, without waiting for a
-    * webhook to arrive.
+    * endpoint right after RevenueCat purchase succeeds, providing the store
+    * transaction id when available. We verify the product against RevenueCat
+    * subscriber data and activate the plan without waiting for a webhook.
     */
    async verifyAndActivatePurchase(userId: number, params: VerifyPurchaseParams): Promise<EnrichedUserSubscription> {
-      logger.info(`[VERIFY_PURCHASE] Starting purchase verification for userId=${userId}, productId=${params.productId}, txnId=${params.originalTransactionId}`);
+      const requestedTransactionId = optionalString(params.storeTransactionId) ?? optionalString(params.originalTransactionId);
+      const appUserIds = new Set([String(userId), toRevenueCatAppUserId(userId)]);
+      const safeRequestedTransactionId = requestedTransactionId && !appUserIds.has(requestedTransactionId) ? requestedTransactionId : null;
+
+      logger.info("[VERIFY_PURCHASE] Starting purchase verification", {
+         userId,
+         productId: params.productId,
+         hasStoreTransactionId: Boolean(params.storeTransactionId),
+         ignoredLegacyAppUserId: Boolean(requestedTransactionId && !safeRequestedTransactionId),
+      });
 
       // Fetch current RC subscriber data (same helper used by /sync)
       const revenueCatData = await this.getRevenueCatSubscriberData(userId);
 
       const subscriptions = revenueCatData.subscriber?.subscriptions ?? {};
 
-      // Find the entry matching the provided originalTransactionId or productId.
-      // RC returns subscriptions keyed by productIdentifier.
-      let matchedProductIdentifier: string | null = null;
-      let matchedExpiry: Date | null = null;
-      let willRenew = true;
+      const candidates: ActiveRevenueCatProduct[] = [];
 
       for (const [productIdentifier, subscription] of Object.entries(subscriptions)) {
-         const expiryTime = subscription.expires_date ? new Date(subscription.expires_date) : null;
+         const expiryTime = optionalDate(subscription.expires_date);
+         const purchaseTime = optionalDate(subscription.purchase_date);
          const isExpired = expiryTime ? expiryTime <= new Date() : false;
+         if (isExpired || subscription.refunded_at) continue;
 
-         // Match by productId OR by the fact that it is the only non-expired entry
-         const isTargetProduct = productIdentifier === params.productId ||
-            productIdentifier.startsWith(`${params.productId}:`);
+         const storeTransactionId = optionalString(subscription.store_transaction_id);
 
-         if (isTargetProduct && !isExpired) {
-            matchedProductIdentifier = productIdentifier;
-            matchedExpiry = expiryTime;
-            willRenew = !subscription.unsubscribe_detected_at;
-            break;
+         const isTargetProduct = productIdentifier === params.productId || productIdentifier.startsWith(`${params.productId}:`) || params.productId.startsWith(`${productIdentifier}:`);
+         const isTargetTransaction = Boolean(safeRequestedTransactionId && storeTransactionId && storeTransactionId === safeRequestedTransactionId);
+
+         if (isTargetProduct || isTargetTransaction) {
+            candidates.push({
+               productIdentifier,
+               expiryTime,
+               purchaseTime,
+               willRenew: !subscription.unsubscribe_detected_at,
+               storeTransactionId: storeTransactionId ?? safeRequestedTransactionId,
+               store: optionalString(subscription.store) ?? params.store,
+               environment: subscription.is_sandbox === true ? "SANDBOX" : params.environment,
+               billingIssueDetectedAt: optionalDate(subscription.billing_issues_detected_at),
+               gracePeriodEndsAt: optionalDate(subscription.grace_period_expires_date),
+            });
          }
       }
 
-      if (!matchedProductIdentifier) {
+      candidates.sort((first, second) => {
+         const purchaseDiff = (second.purchaseTime?.getTime() ?? 0) - (first.purchaseTime?.getTime() ?? 0);
+         if (purchaseDiff !== 0) return purchaseDiff;
+
+         const expiryDiff = (second.expiryTime?.getTime() ?? Number.MAX_SAFE_INTEGER) - (first.expiryTime?.getTime() ?? Number.MAX_SAFE_INTEGER);
+         if (expiryDiff !== 0) return expiryDiff;
+
+         return first.productIdentifier.localeCompare(second.productIdentifier);
+      });
+
+      const matchedProduct = candidates[0] ?? null;
+
+      if (!matchedProduct) {
          // The RC API doesn't yet show the transaction — fall back to /sync logic
          // which is more resilient to RC API propagation lag.
          logger.warn(`[VERIFY_PURCHASE] RC API does not yet show active product '${params.productId}' for userId=${userId}. Falling back to syncSubscription.`);
@@ -512,52 +584,25 @@ export class UserSubscriptionService implements IUserSubscriptionService {
          throw new ApiError(404, `Purchase verification failed: product '${params.productId}' not found in RevenueCat. Please try again in a few seconds or restore purchases.`);
       }
 
-      const targetPlan = await this.subscriptionPlanRepository.findPlanByStoreProductId(matchedProductIdentifier)
-         ?? await this.subscriptionPlanRepository.findPlanByStoreProductId(params.productId);
+      const targetPlan = (await this.subscriptionPlanRepository.findPlanByStoreProductId(matchedProduct.productIdentifier)) ?? (await this.subscriptionPlanRepository.findPlanByStoreProductId(params.productId));
 
       if (!targetPlan) {
-         logger.error(`[VERIFY_PURCHASE] No backend plan mapped to product '${matchedProductIdentifier}'`);
-         throw new ApiError(404, `No plan mapped to product '${matchedProductIdentifier}'. Contact support.`);
+         logger.error(`[VERIFY_PURCHASE] No backend plan mapped to product '${matchedProduct.productIdentifier}'`);
+         throw new ApiError(404, `No plan mapped to product '${matchedProduct.productIdentifier}'. Contact support.`);
       }
 
       const now = new Date();
-      const endDate = matchedExpiry ?? this.addDays(now, DEFAULT_SUBSCRIPTION_DURATION_DAYS);
-      const targetStatus = willRenew ? SubscriptionStatus.ACTIVE : SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
+      const endDate = matchedProduct.expiryTime ?? this.addDays(now, DEFAULT_SUBSCRIPTION_DURATION_DAYS);
+      const targetStatus = this.statusForActiveRevenueCatProduct(matchedProduct);
       const shouldApplyFeaturePayload = !(await this.isFoundingMember(userId));
+      const verifiedTransactionId = matchedProduct.storeTransactionId ?? safeRequestedTransactionId;
 
       await this.userSubscriptionRepository.executeSyncTransaction(userId, async (ctx) => {
          const currentSub = await ctx.findActiveSubscriptionByUserId(userId);
          const previousPlanId = currentSub?.planId ?? null;
          const previousStatus = currentSub?.status ?? undefined;
 
-         // Deactivate previous subscriptions
-         await ctx.deactivateUserSubscriptions(userId);
-
-         // Create the new subscription record
-         await ctx.createUserSubscription({
-            userId: userId as any,
-            planId: targetPlan.id as any,
-            status: targetStatus as any,
-            startDate: now,
-            endDate,
-            willRenew,
-            originalTransactionId: params.originalTransactionId,
-            store: params.store,
-            environment: params.environment,
-            lastEventTimestampMs: BigInt(now.getTime()) as any,
-            user: { connect: { id: userId } },
-            plan: { connect: { id: targetPlan.id } },
-         } as any);
-
-         if (shouldApplyFeaturePayload) {
-            // Apply features immediately
-            const enrichedPlan = this.enrichPlan(targetPlan);
-            const featurePayload = previousPlanId === null
-               ? this.buildFeatureFullPayload(enrichedPlan)   // first purchase — reset usage
-               : this.buildFeatureLimitsOnlyPayload(enrichedPlan); // upgrade — preserve usage
-
-            await ctx.applyFeatures(userId, featurePayload);
-         }
+         await this.syncActivatePlan(ctx, userId, targetPlan.id, endDate, matchedProduct.willRenew, previousPlanId === null, targetStatus, { ...matchedProduct, storeTransactionId: verifiedTransactionId }, shouldApplyFeaturePayload);
 
          // Write audit log
          await this.writeSyncAuditLog(ctx, {
@@ -566,17 +611,17 @@ export class UserSubscriptionService implements IUserSubscriptionService {
             newPlanId: targetPlan.id,
             previousStatus,
             newStatus: targetStatus,
-            reason: `Purchase verified and activated immediately via /verify-purchase (product: ${matchedProductIdentifier}, txn: ${params.originalTransactionId})`,
+            reason: `Purchase verified and activated immediately via /verify-purchase (product: ${matchedProduct.productIdentifier}, txn: ${verifiedTransactionId ?? "unavailable"})`,
             source: "VERIFY_PURCHASE",
             eventType: "INITIAL_PURCHASE",
-            eventId: `verify_${params.originalTransactionId}_${now.getTime()}`,
-            productId: matchedProductIdentifier,
-            originalTransactionId: params.originalTransactionId,
-            store: params.store,
-            environment: params.environment,
+            eventId: `verify_${verifiedTransactionId ?? params.productId}_${now.getTime()}`,
+            productId: matchedProduct.productIdentifier,
+            originalTransactionId: verifiedTransactionId ?? undefined,
+            store: matchedProduct.store ?? params.store,
+            environment: matchedProduct.environment ?? params.environment,
          });
 
-         logger.info(`[VERIFY_PURCHASE] Successfully activated plan '${targetPlan.name}' (id=${targetPlan.id}) for userId=${userId}. endDate=${endDate.toISOString()}, willRenew=${willRenew}`);
+         logger.info(`[VERIFY_PURCHASE] Successfully activated plan '${targetPlan.name}' (id=${targetPlan.id}) for userId=${userId}. endDate=${endDate.toISOString()}, willRenew=${matchedProduct.willRenew}`);
       });
 
       const result = await this.getMySubscription(userId);
@@ -618,8 +663,8 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       for (const idStr of potentialIds) {
          if (!idStr) continue;
-         const parsed = Number.parseInt(idStr, 10);
-         if (!Number.isNaN(parsed) && parsed > 0) {
+         const parsed = parseUserIdFromRevenueCatAppUserId(idStr);
+         if (parsed !== undefined) {
             userId = parsed;
             break;
          }
@@ -691,9 +736,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                      break;
 
                   case RevenueCatWebhookEvent.CANCELLATION: {
-                     const expiresAt = event.expiration_at_ms
-                        ? new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })
-                        : "end of billing period";
+                     const expiresAt = event.expiration_at_ms ? new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "end of billing period";
                      await this.emailService.sendSubscriptionCancelledEmail(user.email, planName, expiresAt, userName);
                      break;
                   }
@@ -738,9 +781,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
                   break;
 
                case RevenueCatWebhookEvent.CANCELLATION: {
-                  const expiresAt = event.expiration_at_ms
-                     ? new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" })
-                     : "end of billing period";
+                  const expiresAt = event.expiration_at_ms ? new Date(event.expiration_at_ms).toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" }) : "end of billing period";
                   await notificationService.sendToUser({
                      userId,
                      type: NotificationType.SUBSCRIPTION_EXPIRING,
@@ -919,10 +960,46 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       };
    }
 
+   private async getRevenueCatSubscriberData(userId: number): Promise<RevenueCatSubscriberResponse> {
+      const primaryAppUserId = toRevenueCatAppUserId(userId);
+      const legacyAppUserId = String(userId);
+
+      let primaryData: RevenueCatSubscriberResponse;
+      try {
+         primaryData = await this.fetchRevenueCatSubscriberData(primaryAppUserId);
+      } catch (primaryError: unknown) {
+         if (primaryAppUserId !== legacyAppUserId) {
+            logger.warn("[REVENUECAT_API] Primary UUID lookup failed; trying legacy numeric app user id", {
+               userId,
+               primaryAppUserId,
+               err: primaryError,
+            });
+            return this.fetchRevenueCatSubscriberData(legacyAppUserId);
+         }
+         throw primaryError;
+      }
+
+      if (primaryAppUserId === legacyAppUserId || this.findActiveRevenueCatProduct(primaryData, false)) {
+         return primaryData;
+      }
+
+      try {
+         const legacyData = await this.fetchRevenueCatSubscriberData(legacyAppUserId);
+         return this.mergeRevenueCatSubscriberData(primaryData, legacyData);
+      } catch (legacyError: unknown) {
+         logger.warn("[REVENUECAT_API] Legacy numeric lookup failed; using primary UUID subscriber data", {
+            userId,
+            legacyAppUserId,
+            err: legacyError,
+         });
+         return primaryData;
+      }
+   }
+
    /**
     * Calls the RevenueCat subscriber API with a 10-second timeout (M-12).
     */
-   private async getRevenueCatSubscriberData(userId: number): Promise<RevenueCatSubscriberResponse> {
+   private async fetchRevenueCatSubscriberData(appUserId: string): Promise<RevenueCatSubscriberResponse> {
       const apiKey = env.REVENUECAT_SECRET_API_KEY;
 
       const controller = new AbortController();
@@ -930,7 +1007,7 @@ export class UserSubscriptionService implements IUserSubscriptionService {
 
       let response: Response;
       try {
-         response = await fetch(`https://api.revenuecat.com/v1/subscribers/${userId}`, {
+         response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(appUserId)}`, {
             method: "GET",
             headers: {
                Authorization: `Bearer ${apiKey}`,
@@ -952,7 +1029,12 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       }
 
       const data = (await response.json()) as RevenueCatSubscriberResponse;
-      logger.info(`[REVENUECAT_API] Fetched subscriber data for userId ${userId}: ${JSON.stringify(data)}`);
+      logger.info("[REVENUECAT_API] Fetched subscriber data", {
+         appUserId,
+         originalAppUserId: data.subscriber?.original_app_user_id,
+         aliasesCount: data.subscriber?.aliases?.length ?? 0,
+         subscriptionIds: Object.keys(data.subscriber?.subscriptions ?? {}),
+      });
 
       if (!data.subscriber) {
          throw new ApiError(500, "Subscriber data not found in RevenueCat response");
@@ -961,35 +1043,89 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       return data;
    }
 
-   private findActiveRevenueCatProduct(data: RevenueCatSubscriberResponse): {
-      productIdentifier: string;
-      expiryTime: Date | null;
-      willRenew: boolean;
-   } | null {
+   private mergeRevenueCatSubscriberData(primaryData: RevenueCatSubscriberResponse, legacyData: RevenueCatSubscriberResponse): RevenueCatSubscriberResponse {
+      return {
+         subscriber: {
+            original_app_user_id: primaryData.subscriber?.original_app_user_id ?? legacyData.subscriber?.original_app_user_id,
+            aliases: [...(legacyData.subscriber?.aliases ?? []), ...(primaryData.subscriber?.aliases ?? [])],
+            subscriptions: {
+               ...(legacyData.subscriber?.subscriptions ?? {}),
+               ...(primaryData.subscriber?.subscriptions ?? {}),
+            },
+         },
+      };
+   }
+
+   private findActiveRevenueCatProduct(data: RevenueCatSubscriberResponse, shouldLog = true): ActiveRevenueCatProduct | null {
       const subscriptions = data.subscriber?.subscriptions ?? {};
-      logger.info(`[REVENUECAT_API] Subscriptions object entries: ${JSON.stringify(subscriptions)}`);
-
-      for (const [productIdentifier, subscription] of Object.entries(subscriptions)) {
-         const expiryTime = subscription.expires_date ? new Date(subscription.expires_date) : null;
-         const isExpired = expiryTime ? expiryTime <= new Date() : false;
-
-         logger.info(`[REVENUECAT_API] Evaluating product '${productIdentifier}': expires_date=${subscription.expires_date}, expiryTime=${expiryTime?.toISOString()}, isExpired=${isExpired}, unsubscribe_detected_at=${subscription.unsubscribe_detected_at}`);
-
-         if (isExpired) {
-            continue;
-         }
-
-         const result = {
-            productIdentifier,
-            expiryTime,
-            willRenew: !subscription.unsubscribe_detected_at,
-         };
-         logger.info(`[REVENUECAT_API] Active product selected: ${JSON.stringify(result)}`);
-         return result;
+      if (shouldLog) {
+         logger.info("[REVENUECAT_API] Evaluating subscriptions", {
+            productIdentifiers: Object.keys(subscriptions),
+         });
       }
 
-      logger.warn(`[REVENUECAT_API] No active product found among ${Object.keys(subscriptions).length} subscriptions.`);
-      return null;
+      const candidates: ActiveRevenueCatProduct[] = [];
+
+      for (const [productIdentifier, subscription] of Object.entries(subscriptions)) {
+         const expiryTime = optionalDate(subscription.expires_date);
+         const purchaseTime = optionalDate(subscription.purchase_date);
+         const isExpired = expiryTime ? expiryTime <= new Date() : false;
+
+         if (shouldLog) {
+            logger.info("[REVENUECAT_API] Evaluating product", {
+               productIdentifier,
+               expiresDate: subscription.expires_date,
+               purchaseDate: subscription.purchase_date,
+               isExpired,
+               hasBillingIssue: Boolean(subscription.billing_issues_detected_at),
+               hasUnsubscribeDetected: Boolean(subscription.unsubscribe_detected_at),
+            });
+         }
+
+         if (isExpired || subscription.refunded_at) continue;
+
+         candidates.push({
+            productIdentifier,
+            expiryTime,
+            purchaseTime,
+            willRenew: !subscription.unsubscribe_detected_at,
+            storeTransactionId: optionalString(subscription.store_transaction_id),
+            store: optionalString(subscription.store),
+            environment: subscription.is_sandbox === true ? "SANDBOX" : "PRODUCTION",
+            billingIssueDetectedAt: optionalDate(subscription.billing_issues_detected_at),
+            gracePeriodEndsAt: optionalDate(subscription.grace_period_expires_date),
+         });
+      }
+
+      candidates.sort((first, second) => {
+         const purchaseDiff = (second.purchaseTime?.getTime() ?? 0) - (first.purchaseTime?.getTime() ?? 0);
+         if (purchaseDiff !== 0) return purchaseDiff;
+
+         const expiryDiff = (second.expiryTime?.getTime() ?? Number.MAX_SAFE_INTEGER) - (first.expiryTime?.getTime() ?? Number.MAX_SAFE_INTEGER);
+         if (expiryDiff !== 0) return expiryDiff;
+
+         return first.productIdentifier.localeCompare(second.productIdentifier);
+      });
+
+      const selected = candidates[0] ?? null;
+
+      if (shouldLog) {
+         if (selected) {
+            logger.info("[REVENUECAT_API] Active product selected", selected);
+         } else {
+            logger.warn(`[REVENUECAT_API] No active product found among ${Object.keys(subscriptions).length} subscriptions.`);
+         }
+      }
+
+      return selected;
+   }
+
+   private statusForActiveRevenueCatProduct(product: ActiveRevenueCatProduct): SubscriptionStatus {
+      if (product.billingIssueDetectedAt) {
+         return SubscriptionStatus.BILLING_ISSUE;
+      }
+
+      return product.willRenew ? SubscriptionStatus.ACTIVE : SubscriptionStatus.CANCELLED_PENDING_EXPIRY;
    }
 
    private async downgradeToFreePlan(userId: number): Promise<EnrichedUserSubscription | null> {
@@ -1033,21 +1169,47 @@ export class UserSubscriptionService implements IUserSubscriptionService {
       await this.applyFeaturesForPlan(userId, subscription.plan, resetUsage);
    }
 
-   private async syncActivatePlan(ctx: ISyncTransactionContext, userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean, status: SubscriptionStatus = SubscriptionStatus.ACTIVE): Promise<void> {
+   private async syncActivatePlan(ctx: ISyncTransactionContext, userId: number, planId: number, endDate: Date, willRenew: boolean, resetUsage: boolean, status: SubscriptionStatus = SubscriptionStatus.ACTIVE, revenueCatProduct?: ActiveRevenueCatProduct | null, shouldApplyFeaturePayload = true): Promise<void> {
       await ctx.deactivateUserSubscriptions(userId);
 
-      // RC-1 fix: store lastEventTimestampMs
-      const subscription = await ctx.createUserSubscription({
+      const now = new Date();
+      const storeTransactionId = revenueCatProduct?.storeTransactionId ?? null;
+      const lifecycleData = {
+         store: revenueCatProduct?.store ?? null,
+         environment: revenueCatProduct?.environment ?? null,
+         billingIssueDetectedAt: status === SubscriptionStatus.BILLING_ISSUE ? (revenueCatProduct?.billingIssueDetectedAt ?? now) : null,
+         gracePeriodEndsAt: revenueCatProduct?.gracePeriodEndsAt ?? null,
+         cancelledAt: status === SubscriptionStatus.CANCELLED_PENDING_EXPIRY ? now : null,
+         lastEventTimestampMs: BigInt(now.getTime()),
+         lastSyncedAt: now,
+      };
+
+      const createData = {
          userId,
          planId,
          status,
-         startDate: new Date(),
+         startDate: now,
          endDate,
          willRenew,
-         lastEventTimestampMs: BigInt(Date.now()),
-      } as any);
+         originalTransactionId: storeTransactionId,
+         ...lifecycleData,
+      } as any;
 
-      await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), resetUsage);
+      const updateData = {
+         userId,
+         planId,
+         status,
+         startDate: now,
+         endDate,
+         willRenew,
+         ...lifecycleData,
+      } as any;
+
+      const subscription = storeTransactionId ? await ctx.upsertUserSubscriptionByOriginalTransactionId(storeTransactionId, createData, updateData) : await ctx.createUserSubscription(createData);
+
+      if (shouldApplyFeaturePayload) {
+         await this.applyFeaturesInTx(ctx, userId, this.enrichPlan(subscription.plan), resetUsage);
+      }
    }
 
    private async syncDowngradeToFree(ctx: ISyncTransactionContext, userId: number, freePlanId?: number): Promise<void> {

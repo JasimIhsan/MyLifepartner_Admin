@@ -2,12 +2,15 @@ import axiosInstance from "@/api/api.config";
 import type { UserInterface } from "@/interface/user.interface";
 import type { AxiosError } from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useDebounce } from "use-debounce";
 import { UserModal } from "./(componets)/UserModal";
 import { UsersTable } from "./(componets)/UsersTable";
+import { UsersCards } from "./(componets)/UsersCards";
 import { UserAuditHistoryModal } from "./(componets)/UserAuditHistoryModal";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayoutGrid, List } from "lucide-react";
 
 const UsersPage = () => {
    const [searchParams, setSearchParams] = useSearchParams();
@@ -25,6 +28,8 @@ const UsersPage = () => {
    const [searchQuery, setSearchQuery] = useState(initialSearch);
    const [pageIndex, setPageIndex] = useState(initialPage - 1);
    const [pageSize, setPageSize] = useState(initialLimit);
+   const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
+   const navigate = useNavigate();
 
    const [debouncedSearch] = useDebounce(searchQuery, 500);
 
@@ -93,6 +98,10 @@ const UsersPage = () => {
       setIsAuditModalOpen(true);
    };
 
+   const handleViewDetails = (user: UserInterface) => {
+      navigate(`/users/${user.id}`);
+   };
+
    const handleDeleteUser = async (id: number) => {
       try {
          await axiosInstance.delete(`/admin/users/${id}`);
@@ -158,28 +167,64 @@ const UsersPage = () => {
 
    return (
       <div className="space-y-6 flex flex-col w-full">
-         <div>
-            <h1 className="text-2xl font-bold tracking-tight">Users Management</h1>
-            <p className="text-muted-foreground">Manage your users, view their details and statuses.</p>
+         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+               <h1 className="text-2xl font-bold tracking-tight">Users Management</h1>
+               <p className="text-muted-foreground">Manage your users, view their details and statuses.</p>
+            </div>
+            <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "table" | "cards")}>
+               <TabsList>
+                  <TabsTrigger value="table" className="flex items-center gap-2">
+                     <List className="h-4 w-4" />
+                     Table
+                  </TabsTrigger>
+                  <TabsTrigger value="cards" className="flex items-center gap-2">
+                     <LayoutGrid className="h-4 w-4" />
+                     Cards
+                  </TabsTrigger>
+               </TabsList>
+            </Tabs>
          </div>
          <>
-            <UsersTable
-               data={users}
-               searchQuery={searchQuery}
-               onSearchChange={handleSearchChange}
-               pageIndex={pageIndex}
-               pageSize={pageSize}
-               totalCount={totalCount}
-               onPageChange={handlePageChange}
-               onPageSizeChange={handlePageSizeChange}
-               isFetching={isFetching}
-               onAdd={handleAddUser}
-               onEdit={handleEditUser}
-               onDelete={handleDeleteUser}
-               onToggleBan={handleToggleBan}
-               onToggleFoundingMember={handleToggleFoundingMember}
-               onViewAuditHistory={handleViewAuditHistory}
-            />
+            {viewMode === "table" ? (
+               <UsersTable
+                  data={users}
+                  searchQuery={searchQuery}
+                  onSearchChange={handleSearchChange}
+                  pageIndex={pageIndex}
+                  pageSize={pageSize}
+                  totalCount={totalCount}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  isFetching={isFetching}
+                  onAdd={handleAddUser}
+                  onEdit={handleEditUser}
+                  onDelete={handleDeleteUser}
+                  onToggleBan={handleToggleBan}
+                  onToggleFoundingMember={handleToggleFoundingMember}
+                  onViewAuditHistory={handleViewAuditHistory}
+                  onViewDetails={handleViewDetails}
+               />
+            ) : (
+               <UsersCards
+                  data={users}
+                  searchQuery={searchQuery}
+                  onSearchChange={handleSearchChange}
+                  pageIndex={pageIndex}
+                  pageSize={pageSize}
+                  totalCount={totalCount}
+                  onPageChange={handlePageChange}
+                  onPageSizeChange={handlePageSizeChange}
+                  isFetching={isFetching}
+                  onAdd={handleAddUser}
+                  onEdit={handleEditUser}
+                  onDelete={handleDeleteUser}
+                  onToggleBan={handleToggleBan}
+                  onToggleFoundingMember={handleToggleFoundingMember}
+                  onViewAuditHistory={handleViewAuditHistory}
+                  onViewDetails={handleViewDetails}
+               />
+            )}
             <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={selectedUser} />
             <UserAuditHistoryModal 
                isOpen={isAuditModalOpen} 

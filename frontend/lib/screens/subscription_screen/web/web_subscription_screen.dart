@@ -74,15 +74,13 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '\${plan.name} Plan Details',
+                      '${plan.name} Plan Details',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w800,
                         color:
                             Theme.of(context).textTheme.bodyLarge?.color ??
-                            Theme.of(context).textTheme.bodyLarge?.color ??
-                            Theme.of(context).textTheme.bodyLarge?.color ??
-                            Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            AppColors.textPrimary,
                       ),
                     ),
                     IconButton(
@@ -131,15 +129,13 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Price: \${plan.displayPrice}',
+                        'Price: ${plan.displayPrice}',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color:
                               Theme.of(context).textTheme.bodyMedium?.color ??
-                              Theme.of(context).textTheme.bodyMedium?.color ??
-                              Theme.of(context).textTheme.bodyMedium?.color ??
-                              Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                              AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -153,9 +149,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                     fontWeight: FontWeight.w700,
                     color:
                         Theme.of(context).textTheme.bodyLarge?.color ??
-                        Theme.of(context).textTheme.bodyLarge?.color ??
-                        Theme.of(context).textTheme.bodyLarge?.color ??
-                        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -177,9 +171,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                             fontWeight: FontWeight.w600,
                             color:
                                 Theme.of(context).textTheme.bodyMedium?.color ??
-                                Theme.of(context).textTheme.bodyMedium?.color ??
-                                Theme.of(context).textTheme.bodyMedium?.color ??
-                                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -197,10 +189,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
 
   Widget _buildTermsAndPrivacy(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 48.0,
-        vertical: 24.0,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 48.0, vertical: 24.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -228,7 +217,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                 ),
                               ),
                               IconButton(
@@ -252,7 +245,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 Text(
                                   'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
                                   style: TextStyle(
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                     height: 1.5,
                                   ),
                                 ),
@@ -268,7 +265,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 Text(
                                   'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
                                   style: TextStyle(
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                     height: 1.5,
                                   ),
                                 ),
@@ -284,7 +285,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 Text(
                                   'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
                                   style: TextStyle(
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                     height: 1.5,
                                   ),
                                 ),
@@ -338,7 +343,9 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
 
           return Stack(
             children: [
-              const SubscriptionBackground(),
+              const Positioned.fill(
+                child: SubscriptionBackground(),
+              ),
               Positioned(
                 top: -150,
                 right: -80,
@@ -368,7 +375,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                             IconButton(
                               icon: Icon(
                                 Icons.arrow_back,
-                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color ??
+                                    AppColors.textPrimary,
                               ),
                               onPressed: () => context.pop(),
                             ),
@@ -376,19 +387,43 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                             Text(
                               'Choose Your Plan',
                               style: TextStyle(
-                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color ??
+                                    AppColors.textPrimary,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 24,
                               ),
                             ),
                             const Spacer(),
+                            Tooltip(
+                              message: 'Restore purchases',
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.restore_rounded,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
+                                  size: 28,
+                                ),
+                                onPressed: handleRestorePurchases,
+                              ),
+                            ),
                             IconButton(
                               icon: Icon(
                                 Icons.receipt_long_rounded,
-                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color ??
+                                    AppColors.textPrimary,
                                 size: 28,
                               ),
-                              onPressed: () => context.push(AppRoutes.billingHistory),
+                              onPressed: () =>
+                                  context.push(AppRoutes.billingHistory),
                             ),
                           ],
                         ),
@@ -407,7 +442,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -415,7 +454,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                 'Premium perks to help you find your perfect life partner.',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 48),
@@ -433,21 +476,35 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
 
                                       return SizedBox(
                                         width: 320,
-                                        height: 450,
                                         child: PlanCardWidget(
                                           plan: plan,
                                           isCurrentPlan: isCurrentPlan,
                                           isLoading: provider.isLoading,
                                           isSelectedPage: false,
-                                          willRenew: provider.mySubscription?.willRenew ?? true,
+                                          willRenew:
+                                              provider
+                                                  .mySubscription
+                                                  ?.willRenew ??
+                                              true,
                                           visuals: visuals,
-                                          hasBillingIssue: isCurrentPlan ? provider.hasBillingIssue : false,
-                                          isInGracePeriod: isCurrentPlan ? provider.isInGracePeriod : false,
-                                          isCancelledButActive: isCurrentPlan ? provider.isCancelledButActive : false,
-                                          isDowngradeScheduled: isCurrentPlan ? provider.isDowngradeScheduled : false,
-                                          isCancelled: isCurrentPlan ? provider.isCancelled : false,
+                                          hasBillingIssue: isCurrentPlan
+                                              ? provider.hasBillingIssue
+                                              : false,
+                                          isInGracePeriod: isCurrentPlan
+                                              ? provider.isInGracePeriod
+                                              : false,
+                                          isCancelledButActive: isCurrentPlan
+                                              ? provider.isCancelledButActive
+                                              : false,
+                                          isDowngradeScheduled: isCurrentPlan
+                                              ? provider.isDowngradeScheduled
+                                              : false,
+                                          isCancelled: isCurrentPlan
+                                              ? provider.isCancelled
+                                              : false,
                                           onSubscribe: () {
-                                            if (isCurrentPlan && plan.price > 0) {
+                                            if (isCurrentPlan &&
+                                                plan.price > 0) {
                                               handleSubscribe(
                                                 provider.plans.firstWhere(
                                                   (p) => p.price == 0,

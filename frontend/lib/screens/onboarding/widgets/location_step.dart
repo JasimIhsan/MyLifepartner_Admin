@@ -14,10 +14,12 @@ class LocationStep extends StatefulWidget {
   State<LocationStep> createState() => _LocationStepState();
 }
 
-class _LocationStepState extends State<LocationStep> {
+class _LocationStepState extends State<LocationStep>
+    with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final locProvider = context.read<LocationProvider>();
       if (!locProvider.hasAttemptedInitialLocationDetection &&
@@ -25,6 +27,25 @@ class _LocationStepState extends State<LocationStep> {
         locProvider.detectAndFillCurrentLocation();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final locProvider = context.read<LocationProvider>();
+      if (locProvider.currentLocationStatus ==
+              CurrentLocationStatus.serviceDisabled ||
+          locProvider.currentLocationStatus ==
+              CurrentLocationStatus.permissionDeniedForever) {
+        locProvider.detectAndFillCurrentLocation();
+      }
+    }
   }
 
   void _showSelector({
@@ -182,18 +203,39 @@ class _LocationStepState extends State<LocationStep> {
       );
     }
 
+    String buttonLabel = "Use current location";
+    VoidCallback onPressed = () =>
+        provider.detectAndFillCurrentLocation(forceReplace: true);
+    IconData icon = Icons.my_location;
+
+    if (provider.currentLocationStatus ==
+        CurrentLocationStatus.serviceDisabled) {
+      buttonLabel = "Turn On Location";
+      onPressed = () => LocationService().openLocationSettings();
+      icon = Icons.settings;
+    } else if (provider.currentLocationStatus ==
+        CurrentLocationStatus.permissionDenied) {
+      buttonLabel = "Grant Location Access";
+      onPressed = () =>
+          provider.detectAndFillCurrentLocation(forceReplace: true);
+      icon = Icons.location_off;
+    } else if (provider.currentLocationStatus ==
+        CurrentLocationStatus.permissionDeniedForever) {
+      buttonLabel = "Open App Settings";
+      onPressed = () => LocationService().openAppSettings();
+      icon = Icons.settings_applications;
+    } else if (provider.currentLocationStatus == CurrentLocationStatus.failed) {
+      buttonLabel = "Retry Location";
+      icon = Icons.refresh;
+    }
+
     return Column(
       children: [
         TextButton.icon(
-          onPressed: () =>
-              provider.detectAndFillCurrentLocation(forceReplace: true),
-          icon: Icon(
-            Icons.my_location,
-            color: Theme.of(context).primaryColor,
-            size: 20,
-          ),
+          onPressed: onPressed,
+          icon: Icon(icon, color: Theme.of(context).primaryColor, size: 20),
           label: Text(
-            "Use current location",
+            buttonLabel,
             style: TextStyle(
               color: Theme.of(context).primaryColor,
               fontWeight: FontWeight.w600,

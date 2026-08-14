@@ -5,7 +5,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/widgets/interest_limit_bottom_sheet.dart';
+import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -48,111 +48,6 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
     }
   }
 
-  Widget _actionButton({
-    required String label,
-    required IconData icon,
-    required bool isOutlined,
-    required VoidCallback? onTap,
-    bool isLoading = false,
-    bool isDisabled = false,
-  }) {
-    final bool effectivelyDisabled = isDisabled || onTap == null;
-    return Expanded(
-      child: GestureDetector(
-        onTap: isLoading || effectivelyDisabled ? null : onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          decoration: BoxDecoration(
-            color: isOutlined
-                ? Theme.of(context).colorScheme.surface
-                : effectivelyDisabled
-                ? Theme.of(context).primaryColor.withValues(alpha: 0.5)
-                : Theme.of(context).primaryColor,
-            borderRadius: BorderRadius.circular(16),
-            border: isOutlined
-                ? Border.all(
-                    color: effectivelyDisabled
-                        ? Theme.of(context).dividerColor.withValues(alpha: 0.5)
-                        : Theme.of(context).dividerColor,
-                    width: 1.5,
-                  )
-                : null,
-            boxShadow: isOutlined
-                ? [
-                    BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).shadowColor.withValues(alpha: 0.1),
-                      blurRadius: 15,
-                      offset: const Offset(0, 4),
-                      spreadRadius: 1,
-                    ),
-                  ]
-                : (!effectivelyDisabled
-                      ? [
-                          BoxShadow(
-                            color: Theme.of(
-                              context,
-                            ).primaryColor.withValues(alpha: 0.25),
-                            blurRadius: 15,
-                            offset: const Offset(0, 8),
-                            spreadRadius: 2,
-                          ),
-                        ]
-                      : null),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (isLoading)
-                SizedBox(
-                  width: 18,
-                  height: 18,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: isOutlined
-                        ? Theme.of(context).textTheme.bodyLarge?.color ??
-                              AppColors.textPrimary
-                        : Colors.white,
-                  ),
-                )
-              else ...[
-                Icon(
-                  icon,
-                  size: 18,
-                  color: isOutlined
-                      ? (effectivelyDisabled
-                            ? Theme.of(context).textTheme.bodyMedium?.color ??
-                                  AppColors.textSecondary.withValues(alpha: 0.5)
-                            : Theme.of(context).textTheme.bodyLarge?.color ??
-                                  AppColors.textPrimary)
-                      : Colors.white,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: isOutlined
-                        ? (effectivelyDisabled
-                              ? Theme.of(context).textTheme.bodyMedium?.color ??
-                                    AppColors.textSecondary.withValues(
-                                      alpha: 0.5,
-                                    )
-                              : Theme.of(context).textTheme.bodyLarge?.color ??
-                                    AppColors.textPrimary)
-                        : Colors.white,
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final interactionStateRaw = widget.profile['interactionState'];
@@ -170,6 +65,9 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
     final bool canPass = isNone || isInterestReceived;
     final bool canAction = isNone || isInterestReceived || isMatched;
 
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
     return Container(
       padding: EdgeInsets.only(
         left: 20,
@@ -178,22 +76,23 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
         bottom: MediaQuery.of(context).padding.bottom + 16,
       ),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: theme.colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(28),
+          topRight: Radius.circular(28),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withValues(alpha: 0.08),
-            blurRadius: 16,
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
             offset: const Offset(0, -4),
           ),
         ],
       ),
       child: Row(
         children: [
-          _actionButton(
-            label: '',
-            icon: Icons.heart_broken,
-            isOutlined: true,
-            isLoading: _isPassing,
+          // Pass Button
+          GestureDetector(
             onTap: canPass
                 ? () async {
                     if (_isPassing || _isInterested) return;
@@ -207,15 +106,9 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                     } catch (e) {
                       if (!context.mounted) return;
                       if (e is DioException && e.response?.statusCode == 402) {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          builder: (_) => InterestLimitBottomSheet(
-                            message:
-                                e.response?.data?['message'] ??
-                                'Unable to process skip at this moment.',
-                          ),
+                        FeatureExhaustedModal.show(
+                          context,
+                          featureType: 'Skip',
                         );
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -232,68 +125,139 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                     }
                   }
                 : null,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 60,
+              width: 80,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? theme.scaffoldBackgroundColor
+                    : const Color(0xFFF5F5F5),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Center(
+                child: _isPassing
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: theme.iconTheme.color ?? AppColors.textPrimary,
+                        ),
+                      )
+                    : Icon(
+                        Icons.heart_broken,
+                        color: theme.iconTheme.color ?? AppColors.textPrimary,
+                        size: 26,
+                      ),
+              ),
+            ),
           ),
           const SizedBox(width: 12),
-          _actionButton(
-            label: _getInteractionLabel(state),
-            icon: _getInteractionIcon(state),
-            isOutlined: false,
-            isLoading: _isInterested,
-            isDisabled: !canAction || isInterestSent,
-            onTap: canAction && !isInterestSent
-                ? () async {
-                    if (_isPassing || _isInterested) return;
+          // Interest/Action Button
+          Expanded(
+            child: GestureDetector(
+              onTap: canAction && !isInterestSent
+                  ? () async {
+                      if (_isPassing || _isInterested) return;
 
-                    // If already matched, navigate to chat
-                    if (isMatched) {
-                      final prefs = await SharedPreferences.getInstance();
-                      final currentUserId = prefs.getInt('userId') ?? 0;
-                      if (!context.mounted) return;
-                      context.push(
-                        '/chat-detail/${widget.profile['id']}',
-                        extra: ChatDetailArguments(
-                          profile: MatchRecommendation.fromJson(widget.profile),
-                          currentUserId: currentUserId,
-                        ),
-                      );
-                      return;
-                    }
-
-                    setState(() => _isInterested = true);
-                    try {
-                      await context.read<MatchProvider>().swipeRight(
-                        targetProfileId: widget.profile['id'],
-                      );
-                      if (!context.mounted) return;
-                      context.pop();
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      if (e is DioException && e.response?.statusCode == 402) {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          builder: (_) => InterestLimitBottomSheet(
-                            message:
-                                e.response?.data?['message'] ??
-                                'Unable to send interest at this moment.',
-                          ),
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              context.read<MatchProvider>().error ??
-                                  'Failed to send interest',
+                      // If already matched, navigate to chat
+                      if (isMatched) {
+                        final prefs = await SharedPreferences.getInstance();
+                        final currentUserId = prefs.getInt('userId') ?? 0;
+                        if (!context.mounted) return;
+                        context.push(
+                          '/chat-detail/${widget.profile['id']}',
+                          extra: ChatDetailArguments(
+                            profile: MatchRecommendation.fromJson(
+                              widget.profile,
                             ),
+                            currentUserId: currentUserId,
                           ),
                         );
+                        return;
                       }
-                    } finally {
-                      if (mounted) setState(() => _isInterested = false);
+
+                      setState(() => _isInterested = true);
+                      try {
+                        await context.read<MatchProvider>().swipeRight(
+                          targetProfileId: widget.profile['id'],
+                        );
+                        if (!context.mounted) return;
+                        context.pop();
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        if (e is DioException &&
+                            e.response?.statusCode == 402) {
+                          FeatureExhaustedModal.show(
+                            context,
+                            featureType: 'Interest',
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                context.read<MatchProvider>().error ??
+                                    'Failed to send interest',
+                              ),
+                            ),
+                          );
+                        }
+                      } finally {
+                        if (mounted) setState(() => _isInterested = false);
+                      }
                     }
-                  }
-                : null,
+                  : null,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                height: 60,
+                decoration: BoxDecoration(
+                  color: (!canAction || isInterestSent)
+                      ? theme.primaryColor.withValues(alpha: 0.5)
+                      : theme.primaryColor,
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: (!canAction || isInterestSent)
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: theme.primaryColor.withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isInterested)
+                      const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: Colors.white,
+                        ),
+                      )
+                    else ...[
+                      Icon(
+                        _getInteractionIcon(state),
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        _getInteractionLabel(state),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

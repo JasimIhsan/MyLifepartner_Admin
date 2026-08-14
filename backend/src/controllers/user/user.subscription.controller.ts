@@ -91,17 +91,20 @@ export class UserSubscriptionController {
     * @route POST /api/v1/user/subscriptions/verify-purchase
     * @purpose Verifies a RevenueCat purchase and immediately activates the plan.
     *
-    * Called by the Flutter app right after Purchases.purchasePackage() succeeds.
+    * Called by the Flutter app right after RevenueCat purchase succeeds.
     * The backend verifies the transaction with the RC REST API and activates the
     * subscription instantly — without waiting for a webhook.
     */
    public verifyPurchase = asyncHandler(async (req: Request, res: Response) => {
       const userId = this.getAuthenticatedUserId(req);
 
-      const { originalTransactionId, productId, store, environment } = req.body;
+      const { originalTransactionId, storeTransactionId, productId, store, environment } = req.body;
 
-      if (!originalTransactionId || typeof originalTransactionId !== "string" || originalTransactionId.trim() === "") {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "originalTransactionId is required");
+      const cleanOriginalTransactionId = typeof originalTransactionId === "string" && originalTransactionId.trim() !== "" ? originalTransactionId.trim() : undefined;
+      const cleanStoreTransactionId = typeof storeTransactionId === "string" && storeTransactionId.trim() !== "" ? storeTransactionId.trim() : undefined;
+
+      if (!cleanStoreTransactionId && !cleanOriginalTransactionId) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "storeTransactionId is required");
       }
 
       if (!productId || typeof productId !== "string" || productId.trim() === "") {
@@ -113,7 +116,8 @@ export class UserSubscriptionController {
       }
 
       const subscription = await this.userSubscriptionService.verifyAndActivatePurchase(userId, {
-         originalTransactionId: originalTransactionId.trim(),
+         storeTransactionId: cleanStoreTransactionId,
+         originalTransactionId: cleanOriginalTransactionId,
          productId: productId.trim(),
          store: store.trim(),
          environment: (environment ?? "PRODUCTION").trim(),
@@ -129,7 +133,7 @@ export class UserSubscriptionController {
          status: AuditStatus.SUCCESS,
          severity: AuditSeverity.INFO,
          message: `User verified purchase for product: ${productId}`,
-         newValue: { productId, store, environment, originalTransactionId },
+         newValue: { productId, store, environment, storeTransactionId: cleanStoreTransactionId, originalTransactionId: cleanOriginalTransactionId },
          entityType: "UserSubscription",
          entityId: subscription.id.toString(),
          source: AuditSource.API,

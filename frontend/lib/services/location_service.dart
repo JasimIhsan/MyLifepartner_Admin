@@ -47,8 +47,18 @@ class LocationService {
   }
 
   Future<Position> getCurrentPosition() async {
+    try {
+      final lastPosition = await Geolocator.getLastKnownPosition();
+      if (lastPosition != null &&
+          DateTime.now().difference(lastPosition.timestamp).inMinutes < 60) {
+        return lastPosition;
+      }
+    } catch (_) {
+      // Ignore errors fetching last known position
+    }
+
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.high,
+      desiredAccuracy: LocationAccuracy.low,
       timeLimit: const Duration(seconds: 15),
     );
   }

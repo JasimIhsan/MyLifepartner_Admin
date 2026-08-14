@@ -125,6 +125,60 @@ export class UserService implements IUserService {
    }
 
    /**
+    * Gets complete user details for admin.
+    *
+    * @param userId - User ID.
+    * @returns Complete user data including relations.
+    */
+   async getCompleteUserDetailsForAdmin(userId: number): Promise<any> {
+      const user = await prisma.user.findUnique({
+         where: { id: userId },
+         include: {
+            profile: {
+               include: {
+                  images: true,
+                  job: true,
+               },
+            },
+            partnerPreference: true,
+            privacySettings: true,
+            userFeature: true,
+            subscriptions: true,
+            archivedData: true,
+            deviceTokens: true,
+         },
+      });
+
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      // Hide sensitive data
+      const { password, ...safeUser } = user;
+
+      // Map image URLs if necessary
+      if (safeUser.profile?.images) {
+         safeUser.profile.images = await Promise.all(
+            safeUser.profile.images.map(async (img) => ({
+               ...img,
+               imageUrl: await this.getPresignedUrlOrNull(img.imageUrl) || img.imageUrl,
+            }))
+         );
+      }
+      if (safeUser.profile?.selfieUrl) {
+         safeUser.profile.selfieUrl = await this.getPresignedUrlOrNull(safeUser.profile.selfieUrl) || safeUser.profile.selfieUrl;
+      }
+      if (safeUser.profile?.leftSelfieUrl) {
+         safeUser.profile.leftSelfieUrl = await this.getPresignedUrlOrNull(safeUser.profile.leftSelfieUrl) || safeUser.profile.leftSelfieUrl;
+      }
+      if (safeUser.profile?.rightSelfieUrl) {
+         safeUser.profile.rightSelfieUrl = await this.getPresignedUrlOrNull(safeUser.profile.rightSelfieUrl) || safeUser.profile.rightSelfieUrl;
+      }
+
+      return safeUser;
+   }
+
+   /**
     * Gets user onboarding status.
     *
     * @param userId - User ID.

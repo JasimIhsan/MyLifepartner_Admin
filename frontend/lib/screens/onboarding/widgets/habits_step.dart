@@ -21,13 +21,48 @@ class HabitsStep extends StatelessWidget {
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
 
+    final drinkOptions = [
+      {'title': 'Never', 'icon': Icons.no_drinks_outlined, 'value': 'NEVER'},
+      {
+        'title': 'Occasionally',
+        'icon': Icons.calendar_month_outlined,
+        'value': 'OCCASIONALLY',
+      },
+      {'title': 'Socially', 'icon': Icons.groups_outlined, 'value': 'SOCIALLY'},
+      {
+        'title': 'Regularly',
+        'icon': Icons.local_bar_outlined,
+        'value': 'REGULARLY',
+      },
+    ];
+
+    final smokeOptions = [
+      {'title': 'Never', 'icon': Icons.smoke_free_outlined, 'value': 'NEVER'},
+      {
+        'title': 'Occasionally',
+        'icon': Icons.calendar_month_outlined,
+        'value': 'OCCASIONALLY',
+      },
+      {'title': 'Socially', 'icon': Icons.groups_outlined, 'value': 'SOCIALLY'},
+      {
+        'title': 'Regularly',
+        'icon': Icons.smoking_rooms_outlined,
+        'value': 'REGULARLY',
+      },
+    ];
+
     return Column(
       children: [
         const OnboardingStepTitle(title: "A few more details"),
         const SizedBox(height: 4),
         Text(
           "Help us understand your lifestyle better.",
-          style: TextStyle(fontSize: 15, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+          style: TextStyle(
+            fontSize: 15,
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
+          ),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
@@ -36,63 +71,11 @@ class HabitsStep extends StatelessWidget {
           Icons.wine_bar_outlined,
           isDarkMode,
         ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Never',
-                  // subtitle: "I don't drink",
-                  icon: Icons.no_drinks_outlined,
-                  value: 'NEVER',
-                  selectedValue: drinkingHabit,
-                  onTap: () => onDrinkingChanged('NEVER'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Occasionally',
-                  // subtitle: 'Once in a while',
-                  icon: Icons.calendar_month_outlined,
-                  value: 'OCCASIONALLY',
-                  selectedValue: drinkingHabit,
-                  onTap: () => onDrinkingChanged('OCCASIONALLY'),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Socially',
-                  // subtitle: 'With friends / at events',
-                  icon: Icons.groups_outlined,
-                  value: 'SOCIALLY',
-                  selectedValue: drinkingHabit,
-                  onTap: () => onDrinkingChanged('SOCIALLY'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Regularly',
-                  // subtitle: 'Often / frequently',
-                  icon: Icons.local_bar_outlined,
-                  value: 'REGULARLY',
-                  selectedValue: drinkingHabit,
-                  onTap: () => onDrinkingChanged('REGULARLY'),
-                ),
-              ),
-            ],
-          ),
+        const SizedBox(height: 16),
+        _buildResponsiveGrid(
+          selectedValue: drinkingHabit,
+          onChanged: onDrinkingChanged,
+          options: drinkOptions,
         ),
         const SizedBox(height: 32),
         _buildSectionHeader(
@@ -100,63 +83,11 @@ class HabitsStep extends StatelessWidget {
           Icons.smoking_rooms_outlined,
           isDarkMode,
         ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Never',
-                  // subtitle: "I don't smoke",
-                  icon: Icons.smoke_free_outlined,
-                  value: 'NEVER',
-                  selectedValue: smokingHabit,
-                  onTap: () => onSmokingChanged('NEVER'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Occasionally',
-                  // subtitle: 'Once in a while',
-                  icon: Icons.calendar_month_outlined,
-                  value: 'OCCASIONALLY',
-                  selectedValue: smokingHabit,
-                  onTap: () => onSmokingChanged('OCCASIONALLY'),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Socially',
-                  // subtitle: 'With friends / at events',
-                  icon: Icons.groups_outlined,
-                  value: 'SOCIALLY',
-                  selectedValue: smokingHabit,
-                  onTap: () => onSmokingChanged('SOCIALLY'),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: HabitSelectionCard(
-                  title: 'Regularly',
-                  // subtitle: 'Often / frequently',
-                  icon: Icons.smoking_rooms_outlined,
-                  value: 'REGULARLY',
-                  selectedValue: smokingHabit,
-                  onTap: () => onSmokingChanged('REGULARLY'),
-                ),
-              ),
-            ],
-          ),
+        const SizedBox(height: 16),
+        _buildResponsiveGrid(
+          selectedValue: smokingHabit,
+          onChanged: onSmokingChanged,
+          options: smokeOptions,
         ),
       ],
     );
@@ -165,17 +96,58 @@ class HabitsStep extends StatelessWidget {
   Widget _buildSectionHeader(String title, IconData icon, bool isDarkMode) {
     return Row(
       children: [
-        Icon(icon, color: AppColors.primary, size: 22),
-        const SizedBox(width: 8),
+        Icon(icon, color: AppColors.primary, size: 24),
+        const SizedBox(width: 10),
         Text(
           title,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
             color: isDarkMode ? Colors.white : AppColors.textPrimary,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildResponsiveGrid({
+    required String? selectedValue,
+    required ValueChanged<String> onChanged,
+    required List<Map<String, dynamic>> options,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double spacing = 12.0;
+        int crossAxisCount = 1;
+
+        if (constraints.maxWidth >= 450) {
+          crossAxisCount = 2;
+        } else {
+          crossAxisCount = 1;
+        }
+
+        final double itemWidth =
+            (constraints.maxWidth - (spacing * (crossAxisCount - 1))) /
+                crossAxisCount -
+            0.1;
+
+        return Wrap(
+          spacing: spacing,
+          runSpacing: spacing,
+          children: options.map((opt) {
+            return SizedBox(
+              width: itemWidth,
+              child: HabitSelectionCard(
+                title: opt['title'] as String,
+                icon: opt['icon'] as IconData,
+                value: opt['value'] as String,
+                selectedValue: selectedValue,
+                onTap: () => onChanged(opt['value'] as String),
+              ),
+            );
+          }).toList(),
+        );
+      },
     );
   }
 }
@@ -219,7 +191,7 @@ class HabitSelectionCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
           color: cardColor,
           border: Border.all(
@@ -232,7 +204,7 @@ class HabitSelectionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(icon, color: iconColor, size: 24),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,28 +213,34 @@ class HabitSelectionCard extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: 15,
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.w600,
-                      color: isDarkMode ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                      color: isDarkMode
+                          ? Colors.white
+                          : Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  if (subtitle != null)
+                  if (subtitle != null) ...[
+                    const SizedBox(height: 2),
                     Text(
                       subtitle!,
                       style: TextStyle(
-                        fontSize: 11,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        fontSize: 12,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
+                  ],
                 ],
               ),
             ),
-            const SizedBox(width: 4),
+            const SizedBox(width: 8),
             if (isSelected)
               Container(
                 padding: const EdgeInsets.all(3),

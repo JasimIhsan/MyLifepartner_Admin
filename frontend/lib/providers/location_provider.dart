@@ -175,6 +175,9 @@ class LocationProvider extends ChangeNotifier {
         _currentLocationStatus = CurrentLocationStatus.failed;
         _currentLocationError = "Failed to determine location details.";
       }
+    } on TimeoutException {
+      _currentLocationStatus = CurrentLocationStatus.failed;
+      _currentLocationError = "Location request timed out. Please try again.";
     } catch (e) {
       _currentLocationStatus = CurrentLocationStatus.failed;
       _currentLocationError = "Error detecting location: $e";

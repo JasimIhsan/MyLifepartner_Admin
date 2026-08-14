@@ -97,6 +97,13 @@ router.put("/replace-image/:userId/:imageId", multerConfig.single("image"), prof
 router.patch("/set-primary/:userId/:imageId", profileImageController.setPrimaryImage);
 
 /**
+ * @route   DELETE /api/v1/user/profile/delete-image/:userId/:imageId
+ * @desc    Deletes a specific profile image for user
+ * @access  Private
+ */
+router.delete("/delete-image/:userId/:imageId", profileImageController.deleteImage);
+
+/**
  * @route   GET /api/v1/user/profile/images/:userId
  * @desc    Get all profile images of user
  * @access  Private

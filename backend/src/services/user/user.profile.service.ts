@@ -316,6 +316,34 @@ export class ProfileService implements IProfileService {
    }
 
    /**
+    * Deletes a user image.
+    *
+    * @param userId - User ID.
+    * @param imageId - Image ID.
+    * @returns Success status.
+    */
+   async deleteUserImage(userId: number, imageId: number): Promise<DeleteImageResponse> {
+      const image = await this.getOwnedUserImage(userId, imageId);
+
+      if (image.isPrimary) {
+         throw new ApiError(400, "Cannot delete the primary image. Set another image as primary first.");
+      }
+
+      await this.profileRepository.deleteUserImage(imageId);
+
+      if (image.imageUrl) {
+         try {
+            await this.s3Service.deleteFromS3(image.imageUrl);
+         } catch (error) {
+            console.error("Failed to delete image from S3", error);
+            // Non-fatal, let the DB deletion succeed
+         }
+      }
+
+      return { success: true };
+   }
+
+   /**
     * Sets image as primary.
     *
     * @param userId - User ID.

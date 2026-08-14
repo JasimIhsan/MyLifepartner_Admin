@@ -24,4 +24,5 @@ export interface IProfileRepository {
    completeImageUpload(userId: number): Promise<Profile>;
    saveSelfie(userId: number, frontUrl: string, leftUrl: string, rightUrl: string, latitude?: number, longitude?: number): Promise<{ user: Profile; oldSelfieUrls: { front: string | null; left: string | null; right: string | null } }>;
    updatePrivacySettings(userId: number, privacyEnabled: boolean): Promise<PrivacySettings>;
+   deleteUserImage(imageId: number): Promise<UserImage>;
 }

@@ -37,6 +37,22 @@ export class AdminUsersController {
    });
 
    /**
+    * @route GET /api/v1/admin/users/:id
+    * @purpose Fetches complete details of a specific user.
+    */
+   public getUserById = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const user = await this.userService.getCompleteUserDetailsForAdmin(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, user, "User details fetched successfully"));
+   });
+
+   /**
     * Toggles user ban status.
     *
     * @route PATCH /api/v1/admin/users/:id/ban

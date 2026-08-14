@@ -43,8 +43,14 @@ export interface EnrichedUserSubscription extends UserSubscription {
  * immediately activate the subscription — without waiting for a webhook.
  */
 export interface VerifyPurchaseParams {
-   /** RC original transaction ID from CustomerInfo */
-   originalTransactionId: string;
+   /**
+    * Store transaction identifier returned by RevenueCat/StoreKit/Play Billing.
+    * Older clients sent this under originalTransactionId, so the service keeps
+    * that field as a compatibility fallback.
+    */
+   storeTransactionId?: string;
+   /** Legacy client field; do not send RevenueCat originalAppUserId here. */
+   originalTransactionId?: string;
    /** Store product identifier that was purchased */
    productId: string;
    /** "PLAY_STORE" | "APP_STORE" | "STRIPE" etc. */
