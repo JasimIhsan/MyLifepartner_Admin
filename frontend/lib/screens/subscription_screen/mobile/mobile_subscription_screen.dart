@@ -66,19 +66,19 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Tooltip(
-                message: 'Restore purchases',
-                child: IconButton(
-                  icon: Icon(
-                    Icons.restore_rounded,
-                    color:
-                        Theme.of(context).textTheme.bodyLarge?.color ??
-                        AppColors.textPrimary,
-                    size: 24,
-                  ),
-                  onPressed: handleRestorePurchases,
-                ),
-              ),
+              // Tooltip(
+              //   message: 'Restore purchases',
+              //   child: IconButton(
+              //     icon: Icon(
+              //       Icons.restore_rounded,
+              //       color:
+              //           Theme.of(context).textTheme.bodyLarge?.color ??
+              //           AppColors.textPrimary,
+              //       size: 24,
+              //     ),
+              //     onPressed: handleRestorePurchases,
+              //   ),
+              // ),
               Tooltip(
                 message: 'Billing history',
                 child: IconButton(
@@ -447,7 +447,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
           return Stack(
             children: [
               // Full screen waves background design
-              const SubscriptionBackground(),
+              const Positioned.fill(child: SubscriptionBackground()),
 
               // Beautiful top gradient background glow matching the design
               Positioned(
@@ -647,90 +647,153 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                       const SizedBox(height: 28),
 
                                       if (plans.isNotEmpty) ...[
-                                        // PageView for plan cards
-                                        SizedBox(
-                                          height: 410,
-                                          child: PageView.builder(
-                                            controller: _pageController,
-                                            itemCount: plans.length,
-                                            onPageChanged: (page) {
-                                              setState(() {
-                                                _currentPage = page;
-                                              });
-                                            },
-                                            itemBuilder: (context, index) {
-                                              final plan = plans[index];
-                                              final isCurrentPlan =
-                                                  currentSub != null &&
-                                                  currentSub.id == plan.id;
-                                              final isSelectedPage =
-                                                  index == _currentPage;
+                                        // Dynamic height for plan cards
+                                        NotificationListener<
+                                          ScrollUpdateNotification
+                                        >(
+                                          onNotification: (notification) {
+                                            if (notification.metrics.axis ==
+                                                Axis.horizontal) {
+                                              final screenWidth = MediaQuery.of(
+                                                context,
+                                              ).size.width;
+                                              final itemWidth =
+                                                  screenWidth * 0.85;
+                                              final page =
+                                                  (notification.metrics.pixels /
+                                                          itemWidth)
+                                                      .round();
+                                              if (_currentPage != page &&
+                                                  page >= 0 &&
+                                                  page < plans.length) {
+                                                WidgetsBinding.instance
+                                                    .addPostFrameCallback((_) {
+                                                      if (mounted &&
+                                                          _currentPage !=
+                                                              page) {
+                                                        setState(() {
+                                                          _currentPage = page;
+                                                        });
+                                                      }
+                                                    });
+                                              }
+                                            }
+                                            return false;
+                                          },
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.horizontal,
+                                            physics:
+                                                const BouncingScrollPhysics(),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal:
+                                                  MediaQuery.of(
+                                                    context,
+                                                  ).size.width *
+                                                  0.075,
+                                            ),
+                                            child: IntrinsicHeight(
+                                              child: Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.stretch,
+                                                children: plans.asMap().entries.map((
+                                                  entry,
+                                                ) {
+                                                  final index = entry.key;
+                                                  final plan = entry.value;
+                                                  final isCurrentPlan =
+                                                      currentSub != null &&
+                                                      currentSub.id == plan.id;
+                                                  final isSelectedPage =
+                                                      index == _currentPage;
+                                                  final visuals =
+                                                      getPlanVisuals(plan);
 
-                                              final visuals = getPlanVisuals(
-                                                plan,
-                                              );
-
-                                              return AnimatedScale(
-                                                scale: isSelectedPage
-                                                    ? 1.0
-                                                    : 0.94,
-                                                duration: const Duration(
-                                                  milliseconds: 300,
-                                                ),
-                                                curve: Curves.easeOutCubic,
-                                                child: PlanCardWidget(
-                                                  plan: plan,
-                                                  isCurrentPlan: isCurrentPlan,
-                                                  isLoading: provider.isLoading,
-                                                  isSelectedPage:
-                                                      isSelectedPage,
-                                                  willRenew:
-                                                      provider
-                                                          .mySubscription
-                                                          ?.willRenew ??
-                                                      true,
-                                                  visuals: visuals,
-                                                  hasBillingIssue: isCurrentPlan
-                                                      ? provider.hasBillingIssue
-                                                      : false,
-                                                  isInGracePeriod: isCurrentPlan
-                                                      ? provider.isInGracePeriod
-                                                      : false,
-                                                  isCancelledButActive:
-                                                      isCurrentPlan
-                                                      ? provider
-                                                            .isCancelledButActive
-                                                      : false,
-                                                  isDowngradeScheduled:
-                                                      isCurrentPlan
-                                                      ? provider
-                                                            .isDowngradeScheduled
-                                                      : false,
-                                                  isCancelled: isCurrentPlan
-                                                      ? provider.isCancelled
-                                                      : false,
-                                                  onSubscribe: () {
-                                                    if (isCurrentPlan &&
-                                                        plan.price > 0) {
-                                                      handleSubscribe(
-                                                        provider.plans
-                                                            .firstWhere(
-                                                              (p) =>
-                                                                  p.price == 0,
-                                                            ),
-                                                      );
-                                                    } else {
-                                                      handleSubscribe(plan);
-                                                    }
-                                                  },
-                                                  onInfoTap: () =>
-                                                      _showPlanDetailsSheet(
-                                                        context,
-                                                        plan,
+                                                  return Container(
+                                                    width:
+                                                        MediaQuery.of(
+                                                          context,
+                                                        ).size.width *
+                                                        0.85,
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 4,
+                                                        ),
+                                                    child: AnimatedScale(
+                                                      scale: isSelectedPage
+                                                          ? 1.0
+                                                          : 0.94,
+                                                      duration: const Duration(
+                                                        milliseconds: 300,
                                                       ),
-                                                ),
-                                              );
-                                            },
+                                                      curve:
+                                                          Curves.easeOutCubic,
+                                                      child: PlanCardWidget(
+                                                        plan: plan,
+                                                        isCurrentPlan:
+                                                            isCurrentPlan,
+                                                        isLoading:
+                                                            provider.isLoading,
+                                                        isSelectedPage:
+                                                            isSelectedPage,
+                                                        willRenew:
+                                                            provider
+                                                                .mySubscription
+                                                                ?.willRenew ??
+                                                            true,
+                                                        visuals: visuals,
+                                                        hasBillingIssue:
+                                                            isCurrentPlan
+                                                            ? provider
+                                                                  .hasBillingIssue
+                                                            : false,
+                                                        isInGracePeriod:
+                                                            isCurrentPlan
+                                                            ? provider
+                                                                  .isInGracePeriod
+                                                            : false,
+                                                        isCancelledButActive:
+                                                            isCurrentPlan
+                                                            ? provider
+                                                                  .isCancelledButActive
+                                                            : false,
+                                                        isDowngradeScheduled:
+                                                            isCurrentPlan
+                                                            ? provider
+                                                                  .isDowngradeScheduled
+                                                            : false,
+                                                        isCancelled:
+                                                            isCurrentPlan
+                                                            ? provider
+                                                                  .isCancelled
+                                                            : false,
+                                                        onSubscribe: () {
+                                                          if (isCurrentPlan &&
+                                                              plan.price > 0) {
+                                                            handleSubscribe(
+                                                              provider.plans
+                                                                  .firstWhere(
+                                                                    (p) =>
+                                                                        p.price ==
+                                                                        0,
+                                                                  ),
+                                                            );
+                                                          } else {
+                                                            handleSubscribe(
+                                                              plan,
+                                                            );
+                                                          }
+                                                        },
+                                                        onInfoTap: () =>
+                                                            _showPlanDetailsSheet(
+                                                              context,
+                                                              plan,
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(height: 16),

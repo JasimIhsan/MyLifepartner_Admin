@@ -111,394 +111,409 @@ class PlanCardWidget extends StatelessWidget {
             ],
           ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 12),
-              // Plan Name
-              Text(
-                plan.name,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color:
-                      theme.textTheme.bodyLarge?.color ?? AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 10),
-
-              // Price Row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                textBaseline: TextBaseline.alphabetic,
-                crossAxisAlignment: CrossAxisAlignment.baseline,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  const SizedBox(height: 12),
+                  // Plan Name
                   Text(
-                    plan.price > 0 ? plan.displayPrice : '₹0',
+                    plan.name,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                       color:
                           theme.textTheme.bodyLarge?.color ??
                           AppColors.textPrimary,
                     ),
                   ),
-                ],
-              ),
-              Text(
-                durationText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: theme.primaryColor,
-                ),
-              ),
-              if (isCurrentPlan &&
-                  (hasBillingIssue ||
-                      isInGracePeriod ||
-                      isDowngradeScheduled ||
-                      isCancelled)) ...[
-                const SizedBox(height: 12),
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: hasBillingIssue
-                          ? c(
-                              const Color(0xFFFEF2F2),
-                              theme.colorScheme.errorContainer,
-                            )
-                          : (isInGracePeriod
-                                ? c(
-                                    const Color(0xFFFFFBEB),
-                                    const Color(0xFF452700),
-                                  )
-                                : c(
-                                    const Color(0xFFF1F5F9),
-                                    const Color(0xFF1E293B),
-                                  )),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: hasBillingIssue
-                            ? c(
-                                const Color(0xFFFCA5A5),
-                                theme.colorScheme.error,
-                              )
-                            : (isInGracePeriod
-                                  ? c(
-                                      const Color(0xFFFCD34D),
-                                      const Color(0xFFB45309),
-                                    )
-                                  : c(
-                                      const Color(0xFFCBD5E1),
-                                      const Color(0xFF475569),
-                                    )),
+                  const SizedBox(height: 10),
+
+                  // Price Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    textBaseline: TextBaseline.alphabetic,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    children: [
+                      Text(
+                        plan.price > 0 ? plan.displayPrice : '₹0',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color:
+                              theme.textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
+                        ),
                       ),
+                    ],
+                  ),
+                  Text(
+                    durationText,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.primaryColor,
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          hasBillingIssue
-                              ? Icons.error_outline
-                              : (isInGracePeriod
-                                    ? Icons.warning_amber_rounded
-                                    : Icons.info_outline_rounded),
-                          size: 14,
+                  ),
+                  if (isCurrentPlan &&
+                      (hasBillingIssue ||
+                          isInGracePeriod ||
+                          isDowngradeScheduled ||
+                          isCancelled)) ...[
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
                           color: hasBillingIssue
                               ? c(
-                                  const Color(0xFFDC2626),
-                                  theme.colorScheme.onErrorContainer,
+                                  const Color(0xFFFEF2F2),
+                                  theme.colorScheme.errorContainer,
                                 )
                               : (isInGracePeriod
                                     ? c(
-                                        const Color(0xFFD97706),
-                                        const Color(0xFFFDE68A),
+                                        const Color(0xFFFFFBEB),
+                                        const Color(0xFF452700),
                                       )
                                     : c(
-                                        const Color(0xFF475569),
-                                        const Color(0xFFCBD5E1),
+                                        const Color(0xFFF1F5F9),
+                                        const Color(0xFF1E293B),
                                       )),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          hasBillingIssue
-                              ? 'Payment Failed'
-                              : (isInGracePeriod
-                                    ? 'Grace Period'
-                                    : (isDowngradeScheduled
-                                          ? 'Downgrades soon'
-                                          : 'Plan Cancelled')),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
                             color: hasBillingIssue
                                 ? c(
-                                    const Color(0xFFDC2626),
-                                    theme.colorScheme.onErrorContainer,
+                                    const Color(0xFFFCA5A5),
+                                    theme.colorScheme.error,
                                   )
                                 : (isInGracePeriod
                                       ? c(
-                                          const Color(0xFFD97706),
-                                          const Color(0xFFFDE68A),
+                                          const Color(0xFFFCD34D),
+                                          const Color(0xFFB45309),
                                         )
                                       : c(
-                                          const Color(0xFF475569),
                                           const Color(0xFFCBD5E1),
+                                          const Color(0xFF475569),
                                         )),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 20),
-
-              // Features List
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: displayFeatures.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6.0),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.check_circle_outline_rounded,
-                            size: 16,
-                            color: theme.primaryColor,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              displayFeatures[index],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              hasBillingIssue
+                                  ? Icons.error_outline
+                                  : (isInGracePeriod
+                                        ? Icons.warning_amber_rounded
+                                        : Icons.info_outline_rounded),
+                              size: 14,
+                              color: hasBillingIssue
+                                  ? c(
+                                      const Color(0xFFDC2626),
+                                      theme.colorScheme.onErrorContainer,
+                                    )
+                                  : (isInGracePeriod
+                                        ? c(
+                                            const Color(0xFFD97706),
+                                            const Color(0xFFFDE68A),
+                                          )
+                                        : c(
+                                            const Color(0xFF475569),
+                                            const Color(0xFFCBD5E1),
+                                          )),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              hasBillingIssue
+                                  ? 'Payment Failed'
+                                  : (isInGracePeriod
+                                        ? 'Grace Period'
+                                        : (isDowngradeScheduled
+                                              ? 'Downgrades soon'
+                                              : 'Plan Cancelled')),
                               style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color:
-                                    theme.textTheme.bodyMedium?.color ??
-                                    AppColors.textSecondary,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                color: hasBillingIssue
+                                    ? c(
+                                        const Color(0xFFDC2626),
+                                        theme.colorScheme.onErrorContainer,
+                                      )
+                                    : (isInGracePeriod
+                                          ? c(
+                                              const Color(0xFFD97706),
+                                              const Color(0xFFFDE68A),
+                                            )
+                                          : c(
+                                              const Color(0xFF475569),
+                                              const Color(0xFFCBD5E1),
+                                            )),
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    );
-                  },
-                ),
-              ),
+                    ),
+                  ],
+                  const SizedBox(height: 20),
 
-              // Dynamic selection button
-              const SizedBox(height: 16),
-              if (isCurrentPlan)
-                if (plan.price == 0)
-                  Container(
-                    height: 48,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: c(
-                        const Color(0xFFF1F5F9),
-                        const Color(0xFF1E293B),
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: c(
-                          const Color(0xFFE2E8F0),
-                          const Color(0xFF334155),
-                        ),
-                      ),
-                    ),
-                    child: Text(
-                      'Active Plan',
-                      style: TextStyle(
-                        color:
-                            theme.textTheme.bodyMedium?.color ??
-                            AppColors.textSecondary,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                      ),
-                    ),
-                  )
-                else if (hasBillingIssue)
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: c(
-                        const Color(0xFFFEF2F2),
-                        theme.colorScheme.errorContainer,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: c(
-                          const Color(0xFFFCA5A5),
-                          theme.colorScheme.error,
-                        ),
-                      ),
-                    ),
-                    child: TextButton(
-                      onPressed: () => onSubscribe(),
-                      child: Text(
-                        'Fix Payment Issue',
-                        style: TextStyle(
-                          color: c(
-                            const Color(0xFFDC2626),
-                            theme.colorScheme.onErrorContainer,
-                          ),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  )
-                else if (isInGracePeriod)
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: c(
-                        const Color(0xFFFFFBEB),
-                        const Color(0xFF452700),
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: c(
-                          const Color(0xFFFCD34D),
-                          const Color(0xFFB45309),
-                        ),
-                      ),
-                    ),
-                    child: TextButton(
-                      onPressed: () => onSubscribe(),
-                      child: Text(
-                        'Renew Now (Grace Period)',
-                        style: TextStyle(
-                          color: c(
-                            const Color(0xFFD97706),
-                            const Color(0xFFFDE68A),
-                          ),
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  )
-                else if (isDowngradeScheduled ||
-                    isCancelledButActive ||
-                    isCancelled ||
-                    !willRenew)
-                  const SizedBox.shrink()
-                else
-                  Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: c(
-                        const Color(0xFFF1F5F9),
-                        const Color(0xFF1E293B),
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: theme.primaryColor.withValues(alpha: 0.2),
-                      ),
-                    ),
-                    child: TextButton(
-                      onPressed: () => onSubscribe(),
-                      child: Text(
-                        'Cancel Subscription',
-                        style: TextStyle(
-                          color: theme.primaryColor,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  )
-              else if (visuals.isPopular)
-                Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: plan.price == 0
-                        ? c(const Color(0xFFF1F5F9), const Color(0xFF1E293B))
-                        : theme.primaryColor,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: plan.price == 0
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: theme.primaryColor.withValues(alpha: 0.3),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                  // Features List
+                  Column(
+                    children: displayFeatures.map((feature) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6.0),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 16,
+                              color: theme.primaryColor,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                feature,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color:
+                                      theme.textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
+                                ),
+                              ),
                             ),
                           ],
+                        ),
+                      );
+                    }).toList(),
                   ),
-                  child: ElevatedButton(
-                    onPressed: (isLoading || plan.price == 0)
-                        ? null
-                        : onSubscribe,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      plan.price == 0 ? 'Free Plan' : 'Subscribe',
-                      style: TextStyle(
+                ],
+              ),
+
+              // Dynamic selection button at bottom
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 16),
+                  if (isCurrentPlan)
+                    if (plan.price == 0)
+                      Container(
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: c(
+                            const Color(0xFFF1F5F9),
+                            const Color(0xFF1E293B),
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: c(
+                              const Color(0xFFE2E8F0),
+                              const Color(0xFF334155),
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'Active Plan',
+                          style: TextStyle(
+                            color:
+                                theme.textTheme.bodyMedium?.color ??
+                                AppColors.textSecondary,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      )
+                    else if (hasBillingIssue)
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: c(
+                            const Color(0xFFFEF2F2),
+                            theme.colorScheme.errorContainer,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: c(
+                              const Color(0xFFFCA5A5),
+                              theme.colorScheme.error,
+                            ),
+                          ),
+                        ),
+                        child: TextButton(
+                          onPressed: () => onSubscribe(),
+                          child: Text(
+                            'Fix Payment Issue',
+                            style: TextStyle(
+                              color: c(
+                                const Color(0xFFDC2626),
+                                theme.colorScheme.onErrorContainer,
+                              ),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      )
+                    else if (isInGracePeriod)
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: c(
+                            const Color(0xFFFFFBEB),
+                            const Color(0xFF452700),
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: c(
+                              const Color(0xFFFCD34D),
+                              const Color(0xFFB45309),
+                            ),
+                          ),
+                        ),
+                        child: TextButton(
+                          onPressed: () => onSubscribe(),
+                          child: Text(
+                            'Renew Now (Grace Period)',
+                            style: TextStyle(
+                              color: c(
+                                const Color(0xFFD97706),
+                                const Color(0xFFFDE68A),
+                              ),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      )
+                    else if (isDowngradeScheduled ||
+                        isCancelledButActive ||
+                        isCancelled ||
+                        !willRenew)
+                      const SizedBox.shrink()
+                    else
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: c(
+                            const Color(0xFFF1F5F9),
+                            const Color(0xFF1E293B),
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: theme.primaryColor.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: TextButton(
+                          onPressed: () => onSubscribe(),
+                          child: Text(
+                            'Cancel Subscription',
+                            style: TextStyle(
+                              color: theme.primaryColor,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      )
+                  else if (visuals.isPopular)
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
                         color: plan.price == 0
-                            ? theme.textTheme.bodyMedium?.color ??
-                                  AppColors.textSecondary
-                            : Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                )
-              else
-                Container(
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: c(const Color(0xFFF1F5F9), const Color(0xFF1E293B)),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: c(
-                        const Color(0xFFE2E8F0),
-                        const Color(0xFF334155),
-                      ),
-                      width: 1.2,
-                    ),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: (isLoading || plan.price == 0)
-                        ? null
-                        : onSubscribe,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: Text(
-                      plan.price == 0 ? 'Free Plan' : 'Subscribe',
-                      style: TextStyle(
-                        color: plan.price == 0
-                            ? theme.textTheme.bodyMedium?.color ??
-                                  AppColors.textSecondary
+                            ? c(
+                                const Color(0xFFF1F5F9),
+                                const Color(0xFF1E293B),
+                              )
                             : theme.primaryColor,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 14,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: plan.price == 0
+                            ? null
+                            : [
+                                BoxShadow(
+                                  color: theme.primaryColor.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: (isLoading || plan.price == 0)
+                            ? null
+                            : onSubscribe,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          plan.price == 0 ? 'Free Plan' : 'Subscribe',
+                          style: TextStyle(
+                            color: plan.price == 0
+                                ? theme.textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary
+                                : Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: c(
+                          const Color(0xFFF1F5F9),
+                          const Color(0xFF1E293B),
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: c(
+                            const Color(0xFFE2E8F0),
+                            const Color(0xFF334155),
+                          ),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: (isLoading || plan.price == 0)
+                            ? null
+                            : onSubscribe,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          plan.price == 0 ? 'Free Plan' : 'Subscribe',
+                          style: TextStyle(
+                            color: plan.price == 0
+                                ? theme.textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary
+                                : theme.primaryColor,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                ],
+              ),
             ],
           ),
         ),

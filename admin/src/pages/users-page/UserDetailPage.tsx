@@ -66,7 +66,7 @@ function FieldItem({ label, children }: { label: string; children: ReactNode }) 
    return (
       <div className="min-w-0 rounded-md border border-border/70 bg-muted/20 px-4 py-3">
          <span className="text-xs font-medium text-muted-foreground">{label}</span>
-         <div className="mt-1 min-w-0 break-words text-sm font-semibold text-foreground">{children}</div>
+         <div className="mt-1 min-w-0 wrap-break-word text-sm font-semibold text-foreground">{children}</div>
       </div>
    );
 }
@@ -78,13 +78,7 @@ function ImageSlot({ label, src, alt, badge, objectFit = "object-cover" }: { lab
             <span className="text-xs font-medium text-muted-foreground">{label}</span>
             {badge}
          </div>
-         <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border bg-muted/40">
-            {src ? (
-               <img src={src} alt={alt} className={`h-full w-full ${objectFit}`} />
-            ) : (
-               <span className="px-3 text-center text-sm text-muted-foreground">N/A</span>
-            )}
-         </div>
+         <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border bg-muted/40">{src ? <img src={src} alt={alt} className={`h-full w-full ${objectFit}`} /> : <span className="px-3 text-center text-sm text-muted-foreground">N/A</span>}</div>
       </div>
    );
 }
@@ -313,15 +307,7 @@ export default function UserDetailPage() {
                               const img = profileImages[index];
                               const imageUrl = img?.imageUrl ?? img?.url;
 
-                              return (
-                                 <ImageSlot
-                                    key={img?.id ?? `profile-image-${index}`}
-                                    label={`Image ${index + 1}`}
-                                    src={imageUrl}
-                                    alt={`Profile image ${index + 1}`}
-                                    badge={img?.isPrimary ? <Badge>Primary</Badge> : null}
-                                 />
-                              );
+                              return <ImageSlot key={img?.id ?? `profile-image-${index}`} label={`Image ${index + 1}`} src={imageUrl} alt={`Profile image ${index + 1}`} badge={img?.isPrimary ? <Badge>Primary</Badge> : null} />;
                            })}
                         </div>
                         {profileImages.length === 0 && (

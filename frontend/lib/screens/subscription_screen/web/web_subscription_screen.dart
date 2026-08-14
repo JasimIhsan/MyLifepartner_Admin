@@ -343,7 +343,9 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
 
           return Stack(
             children: [
-              const SubscriptionBackground(),
+              const Positioned.fill(
+                child: SubscriptionBackground(),
+              ),
               Positioned(
                 top: -150,
                 right: -80,
@@ -474,7 +476,6 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
 
                                       return SizedBox(
                                         width: 320,
-                                        height: 450,
                                         child: PlanCardWidget(
                                           plan: plan,
                                           isCurrentPlan: isCurrentPlan,

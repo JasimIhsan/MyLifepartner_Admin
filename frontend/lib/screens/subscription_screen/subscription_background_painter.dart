@@ -5,8 +5,11 @@ class SubscriptionBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: CustomPaint(painter: SubscriptionBackgroundPainter(Theme.of(context))),
+    return RepaintBoundary(
+      child: CustomPaint(
+        painter: SubscriptionBackgroundPainter(Theme.of(context)),
+        size: Size.infinite,
+      ),
     );
   }
 }
