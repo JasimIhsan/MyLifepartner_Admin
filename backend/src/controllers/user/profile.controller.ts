@@ -26,76 +26,55 @@ export class ProfileController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/questions or /questions/:userId
+    * @route GET /api/v1/user/profile/questions
     * @purpose Fetches profile questions for the authenticated user.
     */
    public getQuestions = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const sectionOrder = req.query.sectionOrder ? Number(req.query.sectionOrder) : undefined;
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
 
       if (sectionOrder !== undefined && (!Number.isInteger(sectionOrder) || sectionOrder <= 0)) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid section order");
       }
 
-      const data = sectionOrder ? await this.profileService.getQuestionsBySectionOrder(sectionOrder, userId) : await this.profileService.getProfileStructure(userId);
+      const data = sectionOrder ? await this.profileService.getQuestionsBySectionOrder(sectionOrder, authUserId) : await this.profileService.getProfileStructure(authUserId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, data, "Questions fetched successfully"));
    });
 
    /**
-    * @route GET /api/v1/user/profile/answers or /answers/:userId
+    * @route GET /api/v1/user/profile/answers
     * @purpose Fetches answers submitted by the authenticated user.
     */
    public getAnswers = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const data = await this.profileService.getUserAnswers(userId);
+      const data = await this.profileService.getUserAnswers(authUserId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, data, "Answers fetched successfully"));
    });
 
    /**
-    * @route POST /api/v1/user/profile/questions/save-answer/:questionId or /save-answer/:userId/:questionId
+    * @route POST /api/v1/user/profile/questions/save-answer/:questionId
     * @purpose Saves an answer for a profile question.
     */
    public saveAnswer = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const questionId = Number(req.params.questionId);
       const { answer } = req.body;
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
 
       if (!Number.isInteger(questionId) || questionId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid question ID");
       }
 
-      this.ensureUserOwnsResource(userId, authUserId);
-
       if (answer === undefined || answer === null || answer === "") {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "You need to select an answer to proceed");
       }
 
-      const result = await this.profileService.saveAnswer(userId, questionId, answer);
+      const result = await this.profileService.saveAnswer(authUserId, questionId, answer);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "SAVE_PROFILE_ANSWER",
@@ -112,23 +91,16 @@ export class ProfileController {
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/complete or /complete/:userId
+    * @route PATCH /api/v1/user/profile/complete
     * @purpose Marks profile setup as complete for the authenticated user.
     */
    public completeProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const result = await this.profileService.completeProfile(userId);
+      const result = await this.profileService.completeProfile(authUserId);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "COMPLETE_PROFILE",
@@ -142,42 +114,28 @@ export class ProfileController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/completion-status or /completion-status/:userId
+    * @route GET /api/v1/user/profile/completion-status
     * @purpose Fetches profile completion status for the authenticated user.
     */
    public getCompletionStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const result = await this.profileService.getProfileCompletionStatus(userId);
+      const result = await this.profileService.getProfileCompletionStatus(authUserId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Profile completion status fetched successfully"));
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/update or /update/:userId
+    * @route PATCH /api/v1/user/profile/update
     * @purpose Updates profile details for the authenticated user.
     */
    public updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const result = await this.profileService.updateProfile(userId, req.body);
+      const result = await this.profileService.updateProfile(authUserId, req.body);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "UPDATE_PROFILE",
@@ -186,7 +144,7 @@ export class ProfileController {
          message: `User updated profile`,
          newValue: req.body,
          entityType: "User",
-         entityId: userId.toString(),
+         entityId: authUserId.toString(),
          source: AuditSource.API,
       });
 
@@ -194,42 +152,28 @@ export class ProfileController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/partner-preference or /partner-preference/:userId
+    * @route GET /api/v1/user/profile/partner-preference
     * @purpose Fetches partner preference details for the authenticated user.
     */
    public getPartnerPreference = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const result = await this.profileService.getPartnerPreference(userId);
+      const result = await this.profileService.getPartnerPreference(authUserId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Partner preference fetched successfully"));
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/partner-preference or /partner-preference/:userId
+    * @route PATCH /api/v1/user/profile/partner-preference
     * @purpose Updates partner preference details for the authenticated user.
     */
    public updatePartnerPreference = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const result = await this.profileService.updatePartnerPreference(userId, req.body);
+      const result = await this.profileService.updatePartnerPreference(authUserId, req.body);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "UPDATE_PARTNER_PREFERENCE",
@@ -238,7 +182,7 @@ export class ProfileController {
          message: `User updated partner preferences`,
          newValue: req.body,
          entityType: "User",
-         entityId: userId.toString(),
+         entityId: authUserId.toString(),
          source: AuditSource.API,
       });
 
@@ -257,13 +201,5 @@ export class ProfileController {
 
       return userId;
    }
-
-   /**
-    * Ensures authenticated user owns the requested resource.
-    */
-   private ensureUserOwnsResource(resourceUserId: number, authUserId: number): void {
-      if (resourceUserId !== authUserId) {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Forbidden");
-      }
-   }
 }
+

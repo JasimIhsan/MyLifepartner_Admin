@@ -25,7 +25,7 @@ router.post("/account-deletion/request", userController.requestAccountDeletion);
  * @desc    Get current authenticated user profile
  * @access  Private
  */
-router.get("/profile", userController.getUserById);
+router.get("/profile", userController.getProfile);
 
 /**
  * @route   PATCH /api/v1/user/profile
@@ -42,25 +42,12 @@ router.patch("/profile", userController.updateUser);
 router.get("/", userController.getUsers);
 
 /**
- * @route   GET /api/v1/user/:id
- * @desc    Get user profile details by ID
- * @access  Private
- */
-router.get("/:id", userController.getUserById);
-
-/**
  * @route   POST /api/v1/user
  * @desc    Create a new user profile
  * @access  Private
  */
 router.post("/", userController.createUser);
 
-/**
- * @route   PATCH /api/v1/user/:id
- * @desc    Update user profile by ID
- * @access  Private
- */
-router.patch("/:id", userController.updateUser);
-
 export default router;
+
 

@@ -15,27 +15,20 @@ export class ProfileImageController {
    private static readonly MAX_BULK_PRESIGNED_IMAGE_IDS = 100;
 
    /**
-    * @route POST /api/v1/user/profile/upload-image or /upload-image/:userId
+    * @route POST /api/v1/user/profile/upload-image
     * @purpose Uploads a profile image for the authenticated user.
     */
    public uploadImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
 
       if (!req.file) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No image file provided");
       }
 
-      const newImage = await this.profileService.uploadUserImage(userId, req.file);
+      const newImage = await this.profileService.uploadUserImage(authUserId, req.file);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "UPLOAD_PROFILE_IMAGE",
@@ -52,32 +45,25 @@ export class ProfileImageController {
    });
 
    /**
-    * @route PUT /api/v1/user/profile/replace-image/:imageId or /replace-image/:userId/:imageId
+    * @route PUT /api/v1/user/profile/replace-image/:imageId
     * @purpose Replaces a profile image for the authenticated user.
     */
    public replaceImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const imageId = Number(req.params.imageId);
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
 
       if (!Number.isInteger(imageId) || imageId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid image ID");
       }
 
-      this.ensureUserOwnsResource(userId, authUserId);
-
       if (!req.file) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "No image file provided");
       }
 
-      const updatedImage = await this.profileService.replaceUserImage(userId, imageId, req.file);
+      const updatedImage = await this.profileService.replaceUserImage(authUserId, imageId, req.file);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "REPLACE_PROFILE_IMAGE",
@@ -94,28 +80,21 @@ export class ProfileImageController {
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/set-primary/:imageId or /set-primary/:userId/:imageId
+    * @route PATCH /api/v1/user/profile/set-primary/:imageId
     * @purpose Sets a profile image as the primary image.
     */
    public setPrimaryImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const imageId = Number(req.params.imageId);
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
 
       if (!Number.isInteger(imageId) || imageId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid image ID");
       }
 
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const updatedImage = await this.profileService.setPrimaryImage(userId, imageId);
+      const updatedImage = await this.profileService.setPrimaryImage(authUserId, imageId);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "SET_PRIMARY_PROFILE_IMAGE",
@@ -132,20 +111,13 @@ export class ProfileImageController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/images or /images/:userId
+    * @route GET /api/v1/user/profile/images
     * @purpose Fetches profile images for the authenticated user.
     */
    public getImages = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const images = await this.profileService.getUserImages(userId);
+      const images = await this.profileService.getUserImages(authUserId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, images, "User images fetched successfully"));
    });
@@ -178,23 +150,16 @@ export class ProfileImageController {
    });
 
    /**
-    * @route POST /api/v1/user/profile/complete-image-upload or /complete-image-upload/:userId
+    * @route POST /api/v1/user/profile/complete-image-upload
     * @purpose Marks profile image upload step as complete.
     */
    public completeImageUpload = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const result = await this.profileService.completeImageUpload(userId);
+      const result = await this.profileService.completeImageUpload(authUserId);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "COMPLETE_IMAGE_UPLOAD",
@@ -208,18 +173,11 @@ export class ProfileImageController {
    });
 
    /**
-    * @route POST /api/v1/user/profile/upload-selfie or /upload-selfie/:userId
+    * @route POST /api/v1/user/profile/upload-selfie
     * @purpose Uploads selfie images for profile verification.
     */
    public uploadSelfie = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
 
       const files = req.files as { [fieldname: string]: Express.Multer.File[] } | undefined;
 
@@ -242,10 +200,10 @@ export class ProfileImageController {
       const leftFile = files.leftImage[0];
       const rightFile = files.rightImage[0];
 
-      const { user } = await this.profileService.uploadSelfie(userId, frontFile, leftFile, rightFile, latitude, longitude);
+      const { user } = await this.profileService.uploadSelfie(authUserId, frontFile, leftFile, rightFile, latitude, longitude);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "UPLOAD_SELFIE_VERIFICATION",
@@ -254,7 +212,7 @@ export class ProfileImageController {
          message: `User uploaded selfies for verification`,
          newValue: { selfieStatus: user.selfieStatus, profileStatus: user.profileStatus },
          entityType: "User",
-         entityId: userId.toString(),
+         entityId: authUserId.toString(),
          source: AuditSource.API,
       });
 
@@ -262,28 +220,21 @@ export class ProfileImageController {
    });
 
    /**
-    * @route DELETE /api/v1/user/profile/delete-image/:imageId or /delete-image/:userId/:imageId
+    * @route DELETE /api/v1/user/profile/delete-image/:imageId
     * @purpose Deletes a profile image for the authenticated user.
     */
    public deleteImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const imageId = Number(req.params.imageId);
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
 
       if (!Number.isInteger(imageId) || imageId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid image ID");
       }
 
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const result = await this.profileService.deleteUserImage(userId, imageId);
+      const result = await this.profileService.deleteUserImage(authUserId, imageId);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.PROFILE,
          action: "DELETE_PROFILE_IMAGE",
@@ -310,13 +261,5 @@ export class ProfileImageController {
 
       return userId;
    }
-
-   /**
-    * Ensures authenticated user owns the requested resource.
-    */
-   private ensureUserOwnsResource(resourceUserId: number, authUserId: number): void {
-      if (resourceUserId !== authUserId) {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Forbidden");
-      }
-   }
 }
+

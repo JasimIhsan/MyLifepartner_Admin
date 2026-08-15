@@ -24,23 +24,13 @@ export class UserController {
    });
 
    /**
-    * @route GET /api/v1/user/:id or GET /api/v1/user/profile
-    * @purpose Fetches user details by ID or authenticated user.
+    * @route GET /api/v1/user/profile
+    * @purpose Fetches authenticated user's profile details.
     */
-   public getUserById = asyncHandler(async (req: AuthRequest, res: Response) => {
+   public getProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.id ? Number(req.params.id) : authUserId;
 
-      logger.debug(`User ID: ${userId}`);
-      logger.debug(`Auth User ID: ${authUserId}`);
-
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const user = await this.userService.getUserById(userId);
+      const user = await this.userService.getUserById(authUserId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, user, "User fetched successfully"));
    });
@@ -56,24 +46,17 @@ export class UserController {
    });
 
    /**
-    * @route PATCH /api/v1/user/:id or PATCH /api/v1/user/profile
-    * @purpose Updates user details by ID or authenticated user.
+    * @route PATCH /api/v1/user/profile
+    * @purpose Updates authenticated user's details.
     */
    public updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = req.params.id ? Number(req.params.id) : authUserId;
       const updatePayload: UpdateUserDto = req.body;
 
-      if (!Number.isInteger(userId) || userId <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
-      }
-
-      this.ensureUserOwnsResource(userId, authUserId);
-
-      const updatedUser = await this.userService.updateUser(userId, updatePayload);
+      const updatedUser = await this.userService.updateUser(authUserId, updatePayload);
 
       await auditService.log({
-         userId,
+         userId: authUserId,
          actorType: ActorType.USER,
          module: AuditModule.ACCOUNT,
          action: "UPDATE_USER_ACCOUNT",
@@ -82,7 +65,7 @@ export class UserController {
          message: `User updated account details`,
          newValue: updatePayload,
          entityType: "User",
-         entityId: userId.toString(),
+         entityId: authUserId.toString(),
          source: AuditSource.API,
       });
 
@@ -101,15 +84,6 @@ export class UserController {
       }
 
       return userId;
-   }
-
-   /**
-    * Ensures authenticated user owns the requested resource.
-    */
-   private ensureUserOwnsResource(resourceUserId: number, authUserId: number): void {
-      if (resourceUserId !== authUserId) {
-         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User is not authorized to access this resource.");
-      }
    }
 
    /**
