@@ -9,18 +9,14 @@ import { UserModal } from "./(componets)/UserModal";
 import { UsersTable } from "./(componets)/UsersTable";
 import { UsersCards } from "./(componets)/UsersCards";
 import { UserAuditHistoryModal } from "./(componets)/UserAuditHistoryModal";
-import { SubscriptionManagementTab } from "./(componets)/SubscriptionManagementTab";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, LayoutGrid, List, Users } from "lucide-react";
-
-type UsersPageTab = "users" | "subscriptions";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LayoutGrid, List } from "lucide-react";
 
 const UsersPage = () => {
    const [searchParams, setSearchParams] = useSearchParams();
    const initialSearch = searchParams.get("search") || "";
    const initialPage = parseInt(searchParams.get("page") || "1", 10);
-   const initialLimit = parseInt(searchParams.get("limit") || "10", 10);
-   const initialTab: UsersPageTab = searchParams.get("tab") === "subscriptions" ? "subscriptions" : "users";
+   const initialLimit = parseInt(searchParams.get("limit") || "20", 10);
 
    const [users, setUsers] = useState<UserInterface[]>([]);
    const [totalCount, setTotalCount] = useState(0);
@@ -33,7 +29,6 @@ const UsersPage = () => {
    const [pageIndex, setPageIndex] = useState(initialPage - 1);
    const [pageSize, setPageSize] = useState(initialLimit);
    const [viewMode, setViewMode] = useState<"table" | "cards">("cards");
-   const [activeTab, setActiveTab] = useState<UsersPageTab>(initialTab);
    const navigate = useNavigate();
 
    const [debouncedSearch] = useDebounce(searchQuery, 500);
@@ -59,10 +54,8 @@ const UsersPage = () => {
    }, [debouncedSearch, pageIndex, pageSize]);
 
    useEffect(() => {
-      if (activeTab === "users") {
-         fetchUsers();
-      }
-   }, [activeTab, fetchUsers]);
+      fetchUsers();
+   }, [fetchUsers]);
 
    useEffect(() => {
       const params = new URLSearchParams(searchParams);
@@ -73,13 +66,9 @@ const UsersPage = () => {
       }
       params.set("page", (pageIndex + 1).toString());
       params.set("limit", pageSize.toString());
-      if (activeTab === "subscriptions") {
-         params.set("tab", "subscriptions");
-      } else {
-         params.delete("tab");
-      }
+      params.delete("tab");
       setSearchParams(params, { replace: true });
-   }, [activeTab, debouncedSearch, pageIndex, pageSize, setSearchParams, searchParams]);
+   }, [debouncedSearch, pageIndex, pageSize, setSearchParams, searchParams]);
 
    const handleSearchChange = (value: string) => {
       setSearchQuery(value);
@@ -159,18 +148,6 @@ const UsersPage = () => {
       }
    };
 
-   const handleDowngradeGracePeriod = async (id: number) => {
-      try {
-         await axiosInstance.patch(`/admin/users/${id}/downgrade-grace-period`);
-         toast.success("User downgraded to base plan successfully");
-         fetchUsers();
-      } catch (error) {
-         console.error("Error downgrading grace period user:", error);
-         const axiosError = error as AxiosError<{ message: string }>;
-         toast.error(axiosError.response?.data?.message || "Failed to downgrade user to base plan");
-      }
-   };
-
    const handleSaveUser = async (data: Partial<UserInterface>) => {
       try {
          if (selectedUser) {
@@ -191,96 +168,74 @@ const UsersPage = () => {
 
    return (
       <div className="space-y-6 flex flex-col w-full">
-         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as UsersPageTab)} className="space-y-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-               <div>
-                  <h1 className="text-2xl font-bold tracking-tight">Users Management</h1>
-                  <p className="text-muted-foreground">Manage users, subscriptions, and account statuses.</p>
-               </div>
-               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                  <TabsList variant="line" className="w-full justify-start sm:w-auto">
-                     <TabsTrigger value="users" className="flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Users
+         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+               <h1 className="text-2xl font-bold tracking-tight">Users Management</h1>
+               <p className="text-muted-foreground">Manage users and account statuses.</p>
+            </div>
+            <div className="flex items-center gap-3">
+               <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "table" | "cards")}>
+                  <TabsList>
+                     <TabsTrigger value="table" className="flex items-center gap-2">
+                        <List className="h-4 w-4" />
+                        Table
                      </TabsTrigger>
-                     <TabsTrigger value="subscriptions" className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Grace Period Users
+                     <TabsTrigger value="cards" className="flex items-center gap-2">
+                        <LayoutGrid className="h-4 w-4" />
+                        Cards
                      </TabsTrigger>
                   </TabsList>
-                  {activeTab === "users" && (
-                     <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "table" | "cards")}>
-                        <TabsList>
-                           <TabsTrigger value="table" className="flex items-center gap-2">
-                              <List className="h-4 w-4" />
-                              Table
-                           </TabsTrigger>
-                           <TabsTrigger value="cards" className="flex items-center gap-2">
-                              <LayoutGrid className="h-4 w-4" />
-                              Cards
-                           </TabsTrigger>
-                        </TabsList>
-                     </Tabs>
-                  )}
-               </div>
+               </Tabs>
             </div>
+         </div>
 
-            <TabsContent value="users" className="mt-0">
-               {viewMode === "table" ? (
-                  <UsersTable
-                     data={users}
-                     searchQuery={searchQuery}
-                     onSearchChange={handleSearchChange}
-                     pageIndex={pageIndex}
-                     pageSize={pageSize}
-                     totalCount={totalCount}
-                     onPageChange={handlePageChange}
-                     onPageSizeChange={handlePageSizeChange}
-                     isFetching={isFetching}
-                     onAdd={handleAddUser}
-                     onEdit={handleEditUser}
-                     onDelete={handleDeleteUser}
-                     onToggleBan={handleToggleBan}
-                     onToggleFoundingMember={handleToggleFoundingMember}
-                     onDowngradeGracePeriod={handleDowngradeGracePeriod}
-                     onViewAuditHistory={handleViewAuditHistory}
-                     onViewDetails={handleViewDetails}
-                  />
-               ) : (
-                  <UsersCards
-                     data={users}
-                     searchQuery={searchQuery}
-                     onSearchChange={handleSearchChange}
-                     pageIndex={pageIndex}
-                     pageSize={pageSize}
-                     totalCount={totalCount}
-                     onPageChange={handlePageChange}
-                     onPageSizeChange={handlePageSizeChange}
-                     isFetching={isFetching}
-                     onAdd={handleAddUser}
-                     onEdit={handleEditUser}
-                     onDelete={handleDeleteUser}
-                     onToggleBan={handleToggleBan}
-                     onToggleFoundingMember={handleToggleFoundingMember}
-                     onDowngradeGracePeriod={handleDowngradeGracePeriod}
-                     onViewAuditHistory={handleViewAuditHistory}
-                     onViewDetails={handleViewDetails}
-                  />
-               )}
-            </TabsContent>
-
-            <TabsContent value="subscriptions" className="mt-0">
-               <SubscriptionManagementTab onViewDetails={handleViewDetails} onDowngradeSuccess={fetchUsers} />
-            </TabsContent>
-
-            <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={selectedUser} />
-            <UserAuditHistoryModal 
-               isOpen={isAuditModalOpen} 
-               onClose={() => setIsAuditModalOpen(false)} 
-               userId={auditUser?.id} 
-               userName={auditUser?.name} 
+         {viewMode === "table" ? (
+            <UsersTable
+               data={users}
+               searchQuery={searchQuery}
+               onSearchChange={handleSearchChange}
+               pageIndex={pageIndex}
+               pageSize={pageSize}
+               totalCount={totalCount}
+               onPageChange={handlePageChange}
+               onPageSizeChange={handlePageSizeChange}
+               isFetching={isFetching}
+               onAdd={handleAddUser}
+               onEdit={handleEditUser}
+               onDelete={handleDeleteUser}
+               onToggleBan={handleToggleBan}
+               onToggleFoundingMember={handleToggleFoundingMember}
+               onViewAuditHistory={handleViewAuditHistory}
+               onViewDetails={handleViewDetails}
             />
-         </Tabs>
+         ) : (
+            <UsersCards
+               data={users}
+               searchQuery={searchQuery}
+               onSearchChange={handleSearchChange}
+               pageIndex={pageIndex}
+               pageSize={pageSize}
+               totalCount={totalCount}
+               onPageChange={handlePageChange}
+               onPageSizeChange={handlePageSizeChange}
+               isFetching={isFetching}
+               onAdd={handleAddUser}
+               onEdit={handleEditUser}
+               onDelete={handleDeleteUser}
+               onToggleBan={handleToggleBan}
+               onToggleFoundingMember={handleToggleFoundingMember}
+               onViewAuditHistory={handleViewAuditHistory}
+               onViewDetails={handleViewDetails}
+            />
+         )}
+
+         <UserModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveUser} user={selectedUser} />
+         <UserAuditHistoryModal 
+            isOpen={isAuditModalOpen} 
+            onClose={() => setIsAuditModalOpen(false)} 
+            userId={auditUser?.id} 
+            userName={auditUser?.name} 
+         />
       </div>
    );
 };
