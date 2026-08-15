@@ -1,5 +1,6 @@
 import { CreatePlanInput, UpdatePlanInput } from "@/validators/subscription.validator";
-import { EnrichedSubscriptionPlan, PlanFeature, SubscriptionPlan } from "./user.subscription.service.interface";
+import { EnrichedSubscriptionPlan, EnrichedUserSubscription, PlanFeature, SubscriptionPlan } from "./user.subscription.service.interface";
+import { UserSubscriptionLog } from "@prisma/client";
 
 export interface AddFeaturesInput {
    featureKey: string;
@@ -17,4 +18,6 @@ export interface IAdminSubscriptionService {
    addFeatures(planId: number, features: AddFeaturesInput[]): Promise<PlanFeature[]>;
    updatePlanFeature(planFeatureId: number, data: { limit?: string; description?: string }): Promise<PlanFeature>;
    deletePlanFeature(planFeatureId: number): Promise<void>;
+
+   getUserSubscriptionLogs(userId: number): Promise<UserSubscriptionLog[]>;
 }

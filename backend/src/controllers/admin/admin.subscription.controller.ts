@@ -138,6 +138,53 @@ export class AdminSubscriptionController {
    });
 
    /**
+    * @route POST /api/admin/subscriptions/users/:userId/force-sync
+    * @purpose Forces a synchronization of the user's subscription state from the provider.
+    */
+   public forceSync = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.userId);
+      const adminId = Number(req.user?.id);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const subscription = await this.userSubscriptionService.syncSubscription(userId);
+
+      await auditService.log({
+         userId,
+         adminId: Number.isInteger(adminId) && adminId > 0 ? adminId : undefined,
+         actorType: ActorType.ADMIN,
+         module: AuditModule.SUBSCRIPTION,
+         action: "ADMIN_FORCE_SYNC_SUBSCRIPTION",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `Admin forced subscription sync for user ID: ${userId}`,
+         source: AuditSource.ADMIN,
+      });
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, subscription, "Subscription forcefully synchronized"));
+   });
+
+
+
+   /**
+    * @route GET /api/admin/subscriptions/users/:userId/logs
+    * @purpose Fetches subscription audit logs for a specific user.
+    */
+   public getUserSubscriptionLogs = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const userId = Number(req.params.userId);
+
+      if (!Number.isInteger(userId) || userId <= 0) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
+      }
+
+      const logs = await this.adminSubscriptionService.getUserSubscriptionLogs(userId);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, logs, "User subscription logs retrieved successfully"));
+   });
+
+   /**
     * @route GET /api/v1/admin/subscriptions/:planId
     * @purpose Fetches subscription plan details by ID.
     */

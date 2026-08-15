@@ -680,7 +680,13 @@ export class SubscriptionWebhookRepository implements ISubscriptionWebhookReposi
                      where: { userId, status: "ACTIVE" },
                   });
                   if (!remaining) {
-                     if (freePlanId && shouldApplyFeaturePayload) {
+                     if (!freePlanId) {
+                        logger.error(
+                           `[WEBHOOK REFUND] freePlanId is null — cannot downgrade userId=${userId} to FREE. ` +
+                           `Check database configuration (FREE plan may be missing or misconfigured).`,
+                           { userId, eventId: event.id, eventType: event.type },
+                        );
+                     } else if (shouldApplyFeaturePayload) {
                         const freeSub = await tx.userSubscription.create({
                            data: {
                               userId,

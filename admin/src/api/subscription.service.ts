@@ -90,6 +90,26 @@ export const updateUserSubscriptionPlan = async (userId: number, planId: number)
    return res.data;
 };
 
+export const revokeUserAccess = async (userId: number, reason: string) => {
+   const res = await axiosInstance.post(`/admin/subscriptions/users/${userId}/revoke-access`, { reason });
+   return res.data;
+};
+
+export const forceSync = async (userId: number) => {
+   const res = await axiosInstance.post(`/admin/subscriptions/users/${userId}/force-sync`);
+   return res.data;
+};
+
+export const recordManualRefund = async (userId: number, data: { reason: string; amount?: number; currency?: string; notes?: string }) => {
+   const res = await axiosInstance.post(`/admin/subscriptions/users/${userId}/record-refund`, data);
+   return res.data;
+};
+
+export const getUserSubscriptionLogs = async (userId: number, page: number = 1, limit: number = 20) => {
+   const res = await axiosInstance.get(`/admin/subscriptions/users/${userId}/logs`, { params: { page, limit } });
+   return res.data;
+};
+
 // ─── Plan Feature Mapping APIs ────────────────────────────────────────────────
 
 export const addFeaturesToPlan = async (planId: number, features: { featureKey: string; limit: string; description?: string }[]) => {

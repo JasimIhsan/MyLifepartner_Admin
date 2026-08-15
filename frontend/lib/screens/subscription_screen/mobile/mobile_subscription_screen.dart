@@ -65,36 +65,18 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
               letterSpacing: 0.2,
             ),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Tooltip(
-              //   message: 'Restore purchases',
-              //   child: IconButton(
-              //     icon: Icon(
-              //       Icons.restore_rounded,
-              //       color:
-              //           Theme.of(context).textTheme.bodyLarge?.color ??
-              //           AppColors.textPrimary,
-              //       size: 24,
-              //     ),
-              //     onPressed: handleRestorePurchases,
-              //   ),
-              // ),
-              Tooltip(
-                message: 'Billing history',
-                child: IconButton(
-                  icon: Icon(
-                    Icons.receipt_long_rounded,
-                    color:
-                        Theme.of(context).textTheme.bodyLarge?.color ??
-                        AppColors.textPrimary,
-                    size: 24,
-                  ),
-                  onPressed: () => context.push(AppRoutes.billingHistory),
-                ),
+          Tooltip(
+            message: 'Billing history',
+            child: IconButton(
+              icon: Icon(
+                Icons.receipt_long_rounded,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
+                size: 24,
               ),
-            ],
+              onPressed: () => context.push(AppRoutes.billingHistory),
+            ),
           ),
         ],
       ),
@@ -261,154 +243,196 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
   }
 
   Widget _buildTermsAndPrivacy(BuildContext context) {
+    final linkStyle = TextStyle(
+      color: Theme.of(context).primaryColor,
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+    );
+    final separatorStyle = TextStyle(
+      color:
+          Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+      fontSize: 13,
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 12.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          TextButton(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          // ── Terms & Privacy row ──────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 2,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                builder: (context) {
-                  return DraggableScrollableSheet(
-                    initialChildSize: 0.6,
-                    minChildSize: 0.4,
-                    maxChildSize: 0.9,
-                    expand: false,
-                    builder: (context, scrollController) {
-                      return Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                onPressed: () {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Theme.of(context).colorScheme.surface,
+                    isScrollControlled: true,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    builder: (context) {
+                      return DraggableScrollableSheet(
+                        initialChildSize: 0.6,
+                        minChildSize: 0.4,
+                        maxChildSize: 0.9,
+                        expand: false,
+                        builder: (context, scrollController) {
+                          return Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                Text(
-                                  'Terms & Privacy Policy',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w800,
-                                    color:
-                                        Theme.of(
-                                          context,
-                                        ).textTheme.bodyLarge?.color ??
-                                        AppColors.textPrimary,
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Terms & Privacy Policy',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w800,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge?.color ??
+                                            AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.close_rounded),
+                                      onPressed: () => context.pop(),
+                                    ),
+                                  ],
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.close_rounded),
-                                  onPressed: () => context.pop(),
+                                const SizedBox(height: 12),
+                                Expanded(
+                                  child: ListView(
+                                    controller: scrollController,
+                                    children: [
+                                      Text(
+                                        'Terms of Service',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color ??
+                                              AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium?.color ??
+                                              AppColors.textSecondary,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Privacy Policy',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color ??
+                                              AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium?.color ??
+                                              AppColors.textSecondary,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Subscription Management',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color ??
+                                              AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium?.color ??
+                                              AppColors.textSecondary,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 12),
-                            Expanded(
-                              child: ListView(
-                                controller: scrollController,
-                                children: [
-                                  Text(
-                                    'Terms of Service',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyLarge?.color ??
-                                          AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'Welcome to Life Partner Again. By subscribing to our premium plans, you agree to comply with and be bound by our general terms of service. Subscriptions automatically renew at the end of the billing period unless cancelled at least 24 hours prior to renewal.',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium?.color ??
-                                          AppColors.textSecondary,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Privacy Policy',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyLarge?.color ??
-                                          AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'We take your privacy seriously. We store your account details securely and process payments through safe systems (RevenueCat, App Store, Google Play). Your profile image and educational history are used solely to improve connections and match preferences. You can manage photo blurring and profile privacy settings directly from your settings panel.',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium?.color ??
-                                          AppColors.textSecondary,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'Subscription Management',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w700,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyLarge?.color ??
-                                          AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'You can upgrade, downgrade, or cancel your active subscription anytime. Downgrades take effect at the end of the current billing cycle. Refunds are managed directly by your respective App Store.',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium?.color ??
-                                          AppColors.textSecondary,
-                                      height: 1.4,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                          );
+                        },
                       );
                     },
                   );
                 },
-              );
-            },
-            child: Text(
-              'Terms & Privacy',
-              style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+                child: Text('Terms & Privacy', style: linkStyle),
               ),
-            ),
+            ],
+          ),
+
+          // ── Restore Purchases row ────────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Already purchased?', style: separatorStyle),
+              TextButton(
+                key: const Key('restore_purchases_button'),
+                style: TextButton.styleFrom(
+                  minimumSize: Size.zero,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                onPressed: handleRestorePurchases,
+                child: Text('Restore Purchases', style: linkStyle),
+              ),
+            ],
           ),
         ],
       ),

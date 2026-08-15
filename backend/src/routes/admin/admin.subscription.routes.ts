@@ -36,6 +36,20 @@ adminSubscriptionRoute.get("/users", adminSubscriptionController.getUserSubscrip
 adminSubscriptionRoute.patch("/users/:userId/plan", adminSubscriptionController.updateUserSubscriptionPlan);
 
 /**
+ * @route   POST /api/admin/subscriptions/users/:userId/force-sync
+ * @desc    Forces a synchronization of the user's subscription state
+ * @access  Admin
+ */
+adminSubscriptionRoute.post("/users/:userId/force-sync", adminSubscriptionController.forceSync);
+
+/**
+ * @route   GET /api/admin/subscriptions/users/:userId/logs
+ * @desc    Fetches subscription audit logs for a user
+ * @access  Admin
+ */
+adminSubscriptionRoute.get("/users/:userId/logs", adminSubscriptionController.getUserSubscriptionLogs);
+
+/**
  * @route   GET /api/v1/admin/subscriptions/:planId
  * @desc    Get subscription plan details by ID
  * @access  Admin

@@ -5,7 +5,9 @@ import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscript
 import { IAdminSubscriptionService } from "@/interfaces/services/admin.subscription.service.interface";
 import { EnrichedSubscriptionPlan } from "@/interfaces/services/user.subscription.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { PlanFeature, SubscriptionPlan } from "@/interfaces/services/user.subscription.service.interface";
+import { PlanFeature, SubscriptionPlan, IUserSubscriptionService, EnrichedUserSubscription } from "@/interfaces/services/user.subscription.service.interface";
+import { prisma } from "@/config/prisma";
+import { UserSubscriptionLog, SubscriptionStatus } from "@prisma/client";
 
 type CreateSubscriptionPlanData = {
    name: string;
@@ -39,7 +41,8 @@ const FREE_PLAN_NAME = "FREE";
 export class AdminSubscriptionService implements IAdminSubscriptionService {
    constructor(
       private readonly subscriptionPlanRepository: ISubscriptionPlanRepository,
-      private readonly planFeatureRepository: IPlanFeatureRepository
+      private readonly planFeatureRepository: IPlanFeatureRepository,
+      private readonly userSubscriptionService: IUserSubscriptionService
    ) {}
 
    /**
@@ -168,6 +171,17 @@ export class AdminSubscriptionService implements IAdminSubscriptionService {
       await this.getRequiredPlanFeature(planFeatureId);
 
       await this.planFeatureRepository.deletePlanFeature(planFeatureId);
+   }
+
+
+   /**
+    * Gets the subscription audit logs for a user.
+    */
+   async getUserSubscriptionLogs(userId: number): Promise<UserSubscriptionLog[]> {
+      return prisma.userSubscriptionLog.findMany({
+         where: { userId },
+         orderBy: { createdAt: "desc" },
+      });
    }
 
    /**

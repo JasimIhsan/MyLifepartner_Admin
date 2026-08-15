@@ -156,7 +156,11 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         initSubscriptions();
       }
     } else {
-      await showSubscriptionFailureUI(context, provider.error);
+      await showSubscriptionFailureUI(
+        context,
+        provider.error,
+        failureType: provider.lastFailureType,
+      );
     }
   }
 
@@ -218,6 +222,26 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
       return;
     }
 
+    // ── Pre-flight: fetch fresh status from backend before routing ──────
+    // This prevents routing decisions based on stale cached state and blocks
+    // duplicate purchases if the user is already on the selected plan.
+    if (mounted) {
+      final blockReason = await provider.checkStatusBeforePayment(plan);
+
+      if (!mounted) return;
+
+      if (blockReason == PurchaseBlockReason.alreadyOnPlan) {
+        await showSubscriptionFailureUI(
+          context,
+          'You already have an active subscription to this plan.',
+          failureType: SubscriptionFailureType.cancelled,
+        );
+        return;
+      }
+    }
+
+    // ── Free plan tap while on a paid plan ───────────────────────────────
+    // provider.mySubscription is now refreshed from the pre-flight above.
     if (plan.price == 0 &&
         provider.currentSubscription != null &&
         provider.currentSubscription!.price > 0) {
@@ -269,7 +293,17 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
         initSubscriptions();
       }
     } else {
-      await showSubscriptionFailureUI(context, provider.error);
+      // Pass the explicit failure type so the correct UI state is shown.
+      // For pending payments, also wire up the Restore Purchases CTA.
+      await showSubscriptionFailureUI(
+        context,
+        provider.error,
+        failureType: provider.lastFailureType,
+        onRestorePurchases:
+            provider.lastFailureType == SubscriptionFailureType.pending
+            ? handleRestorePurchases
+            : null,
+      );
     }
   }
 

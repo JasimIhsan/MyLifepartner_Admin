@@ -158,7 +158,6 @@ export const reportService = new ReportService(s3Service, emailService, reportRe
 export const adminAuthService = new AdminAuthService(adminRepository, jwtService);
 export const adminManagementService = new AdminManagementService(adminRepository);
 export const adminQuestionnaireService = new AdminQuestionnaireService(questionnaireRepository);
-export const adminSubscriptionService = new AdminSubscriptionService(subscriptionPlanRepository, planFeatureRepository);
 export const adminFeatureService = new AdminFeatureService();
 export const imageAssetService = new ImageAssetService(imageAssetRepository, s3Service);
 
@@ -174,7 +173,11 @@ export const userSubscriptionService = new UserSubscriptionService(subscriptionP
 export const oauthService = new OAuthService(userRepository, jwtService, subscriptionPlanRepository, userSubscriptionRepository);
 export const blockService = new BlockService(blockRepository);
 
-// Shared services
+export const adminSubscriptionService = new AdminSubscriptionService(
+   subscriptionPlanRepository, 
+   planFeatureRepository,
+   userSubscriptionService
+);
 export const guideService = new GuideService(guideRepository);
 export const chatService = new ChatService(chatRepository, userFeatureService, blockService, s3Service);
 export const privacyPolicyService = new PrivacyPolicyService();

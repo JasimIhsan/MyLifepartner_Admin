@@ -5,8 +5,17 @@ import 'package:flutter/services.dart';
 import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/models/subscription_plan.dart';
 import 'package:life_partner_again/services/subscription_service.dart';
+import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_failure_ui.dart'
+    show SubscriptionFailureType;
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+/// Internal sentinel thrown when the store returns no transaction identifier
+/// (SCA / family-purchase approval / RC propagation lag). Treated as
+/// [SubscriptionFailureType.pending] — NOT a hard error.
+class _PurchasePendingException implements Exception {
+  const _PurchasePendingException();
+}
 
 const String _androidPackageName = 'com.premiumglobalcorp.lifepartneragain';
 const String _revenueCatUuidPrefix = '00000000-0000-4000-8000-';
@@ -51,6 +60,15 @@ class SubscriptionProvider extends ChangeNotifier {
   bool _customerInfoListenerAttached = false;
   final SubscriptionService _subscriptionService = SubscriptionService();
   String? _authenticatedUserId;
+
+  /// The failure category of the most recent failed purchase attempt.
+  /// Reset to [SubscriptionFailureType.error] at the start of each purchase.
+  SubscriptionFailureType _lastFailureType = SubscriptionFailureType.error;
+
+  /// Returns the failure category for the most recent failed purchase.
+  /// Consumers should read this immediately after [subscribeToPlan] returns
+  /// `false` to render the appropriate failure UI.
+  SubscriptionFailureType get lastFailureType => _lastFailureType;
 
   // ═══════════════════════════════════════════════════════════════════════
   // INIT (call once per session)
@@ -351,6 +369,9 @@ class SubscriptionProvider extends ChangeNotifier {
 
     debugPrint('🔥 subscribeToPlan id: $id');
 
+    // Reset failure type for this new attempt.
+    _lastFailureType = SubscriptionFailureType.error;
+
     try {
       _isPurchasing = true;
       notifyListeners();
@@ -449,9 +470,14 @@ class SubscriptionProvider extends ChangeNotifier {
         ]);
 
         if (storeTransactionId == null) {
-          throw Exception(
-            'Store transaction identifier was not returned. Please restore purchases or try again in a few seconds.',
+          // No transaction ID yet — this happens during iOS SCA / family
+          // purchase approval or when RC hasn't propagated. Treat as pending:
+          // throw the sentinel so the verifyError catch attempts /sync first.
+          debugPrint(
+            '⚠️ No storeTransactionId returned. '
+            'Treating as pending — attempting /sync...',
           );
+          throw const _PurchasePendingException();
         }
 
         // Determine store string expected by the backend.
@@ -478,22 +504,51 @@ class SubscriptionProvider extends ChangeNotifier {
           'Status: ${_mySubscription?.status}',
         );
       } catch (verifyError) {
-        // Verify failed (e.g. network timeout). Fall back to /sync.
+        // _PurchasePendingException OR a network / API verify failure.
+        // Both paths attempt /sync first — if sync also shows no active sub,
+        // the pending sentinel sets lastFailureType = pending.
+        final isPendingSentinel = verifyError is _PurchasePendingException;
         debugPrint(
-          '⚠️ /verify-purchase failed ($verifyError). '
-          'Falling back to /sync...',
+          isPendingSentinel
+              ? '⏳ Purchase pending — attempting /sync to confirm...'
+              : '⚠️ /verify-purchase failed ($verifyError). Falling back to /sync...',
         );
+
         try {
           final synced = await _subscriptionService.syncSubscription();
           if (synced != null) {
             _mySubscription = synced;
             _applyCurrentSubscription();
+            // /sync confirmed an active subscription — clear any pending flag.
+            debugPrint('✅ /sync confirmed active plan after pending/verify-fail.');
+          } else if (isPendingSentinel) {
+            // /sync also returned null — payment is genuinely pending in the
+            // store. Signal the UI to show the processing state.
+            debugPrint(
+              '⏳ /sync found no active sub — payment is still pending.',
+            );
+            _lastFailureType = SubscriptionFailureType.pending;
+            error =
+                'Your payment is being reviewed by the store. '
+                'This usually takes a few seconds. If access doesn\'t '
+                'activate automatically, tap Restore Purchases below.';
+            return false;
           }
         } catch (syncError) {
           debugPrint(
             '⚠️ /sync fallback also failed ($syncError). '
             'Webhook will reconcile shortly.',
           );
+          // If this started as a pending sentinel and sync failed too,
+          // still surface the pending UI rather than a generic error.
+          if (isPendingSentinel) {
+            _lastFailureType = SubscriptionFailureType.pending;
+            error =
+                'Your payment is being reviewed by the store. '
+                'If access doesn\'t activate automatically, tap '
+                'Restore Purchases below.';
+            return false;
+          }
           // User sees their plan from the last known DB state. Webhook will
           // correct it within seconds.
         }
@@ -511,6 +566,16 @@ class SubscriptionProvider extends ChangeNotifier {
             onPurchaseCompleted?.call();
             return restorePurchases();
           }
+          // paymentPendingError = store-level deferral (carrier billing,
+          // family approval, etc.). Not a retry-able error — mark as pending.
+          if (errorCode == PurchasesErrorCode.paymentPendingError) {
+            debugPrint(
+              '⏳ paymentPendingError from RC — marking as pending.',
+            );
+            _lastFailureType = SubscriptionFailureType.pending;
+          } else if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+            _lastFailureType = SubscriptionFailureType.cancelled;
+          }
         } catch (_) {}
       }
       error = _getReadableError(e);
@@ -518,6 +583,52 @@ class SubscriptionProvider extends ChangeNotifier {
     } finally {
       _isPurchasing = false;
       notifyListeners();
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // PRE-FLIGHT STATUS CHECK
+  // ═══════════════════════════════════════════════════════════════════════
+
+  /// Fetches a fresh subscription status from the backend **before** opening
+  /// the store payment sheet.
+  ///
+  /// Returns a [PurchaseBlockReason] if the purchase should be prevented,
+  /// or `null` if it is safe to proceed.  Also refreshes the provider's
+  /// [_mySubscription] and [currentSubscription] state so that any routing
+  /// in [handleSubscribe] is based on current — not stale cached — data.
+  ///
+  /// Network errors are intentionally swallowed: a failed pre-flight must
+  /// never block the user from purchasing.
+  Future<PurchaseBlockReason?> checkStatusBeforePayment(
+    SubscriptionPlan plan,
+  ) async {
+    try {
+      debugPrint('🔍 Pre-flight: fetching fresh subscription status...');
+      final fresh = await _subscriptionService.getMySubscription();
+      _mySubscription = fresh;
+      _applyCurrentSubscription();
+      notifyListeners();
+
+      if (fresh == null || !fresh.isActive) {
+        debugPrint('✅ Pre-flight: no active sub — safe to proceed.');
+        return null;
+      }
+
+      // User is on the same paid plan and it is active — block duplicate.
+      if (plan.price > 0 && fresh.planId == plan.id) {
+        debugPrint(
+          '🚫 Pre-flight: user is already on plan ${plan.id} — blocking.',
+        );
+        return PurchaseBlockReason.alreadyOnPlan;
+      }
+
+      debugPrint('✅ Pre-flight: different plan or free — safe to proceed.');
+      return null;
+    } catch (e) {
+      // Network / API failure: fail open so users aren't blocked.
+      debugPrint('⚠️ Pre-flight check failed ($e) — allowing purchase.');
+      return null;
     }
   }
 
@@ -716,6 +827,9 @@ class SubscriptionProvider extends ChangeNotifier {
   bool get isExpired => _mySubscription?.isExpired ?? false;
   bool get isCancelled => _mySubscription?.isCancelled ?? false;
 
+  /// Convenience getter for loading subscription state.
+  Future<void> loadSubscription() => fetchMySubscription();
+
   StoreProductChangeInfo? _buildAndroidProductChangeInfo(
     SubscriptionPlan targetPlan,
   ) {
@@ -803,7 +917,10 @@ class SubscriptionProvider extends ChangeNotifier {
           case PurchasesErrorCode.networkError:
             return 'Network connection issue. Please check your internet connection and try again.';
           case PurchasesErrorCode.paymentPendingError:
-            return 'Your payment is currently processing. Access will unlock once confirmed.';
+            // Message is shown in the pending UI — keep it descriptive.
+            return 'Your payment is being reviewed by the store. '
+                'If access doesn\'t activate automatically, tap '
+                'Restore Purchases below.';
           case PurchasesErrorCode.insufficientPermissionsError:
             return 'Permission denied. Please check your store payment settings.';
           default:
@@ -819,4 +936,10 @@ class SubscriptionProvider extends ChangeNotifier {
     }
     return 'An unexpected error occurred. Please try again later.';
   }
+}
+
+/// Reason why a purchase was blocked at the pre-flight stage.
+enum PurchaseBlockReason {
+  /// The user already has an active subscription to the requested plan.
+  alreadyOnPlan,
 }

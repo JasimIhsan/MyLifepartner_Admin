@@ -59,6 +59,8 @@ export interface UserSubscriptionSummary {
       name: string;
       price: number;
    } | null;
+   store?: string | null;
+   environment?: string | null;
 }
 
 export interface ArchivedUserInterface {
