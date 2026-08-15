@@ -1,15 +1,22 @@
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/core/country_helper.dart';
-import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_image_gallery.dart';
+import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_action_bar.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_detail_controller.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_details_grid.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_image_gallery.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_name_row.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_skeleton.dart';
+import 'package:life_partner_again/screens/profile_detail_screen/widgets/report_user_dialog.dart';
+import 'package:life_partner_again/services/block_service.dart';
+import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom_sheet.dart';
+import 'package:provider/provider.dart';
 
 class WebProfileDetailScreen extends StatefulWidget {
   const WebProfileDetailScreen({super.key});
@@ -20,6 +27,8 @@ class WebProfileDetailScreen extends StatefulWidget {
 
 class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
     with ProfileDetailControllerState<WebProfileDetailScreen> {
+  final BlockService _blockService = BlockService();
+
   @override
   Widget build(BuildContext context) {
     if (!hasApiData) {
@@ -207,35 +216,141 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                       style: TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold,
-                                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge?.color ??
+                                            AppColors.textPrimary,
                                       ),
                                     ),
-                                    if (p['country'] != null &&
-                                        CountryHelper.getCode(p['country']) !=
-                                            null)
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withValues(
-                                                alpha: 0.1,
-                                              ),
-                                              blurRadius: 10,
-                                              offset: const Offset(0, 4),
-                                            ),
-                                          ],
-                                        ),
-                                        child: ClipOval(
-                                          child: CountryFlag.fromCountryCode(
+                                    Row(
+                                      children: [
+                                        if (p['country'] != null &&
                                             CountryHelper.getCode(
-                                              p['country'],
-                                            )!,
-                                            width: 44,
-                                            height: 44,
+                                                  p['country'],
+                                                ) !=
+                                                null)
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                              right: 12,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  color: Colors.black
+                                                      .withValues(alpha: 0.1),
+                                                  blurRadius: 10,
+                                                  offset: const Offset(0, 4),
+                                                ),
+                                              ],
+                                            ),
+                                            child: ClipOval(
+                                              child:
+                                                  CountryFlag.fromCountryCode(
+                                                    CountryHelper.getCode(
+                                                      p['country'],
+                                                    )!,
+                                                    width: 44,
+                                                    height: 44,
+                                                  ),
+                                            ),
                                           ),
+                                        PopupMenuButton<String>(
+                                          icon: Icon(
+                                            Icons.more_vert_rounded,
+                                            size: 24,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).textTheme.bodyLarge?.color ??
+                                                AppColors.textPrimary,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
+                                          ),
+                                          onSelected: (value) {
+                                            if (value == 'report') {
+                                              ReportUserDialog.show(context, p);
+                                            } else if (value == 'block') {
+                                              BlockConfirmationBottomSheet.show(
+                                                context: context,
+                                                isBlocking: true,
+                                                userName:
+                                                    p['name'] ?? 'this user',
+                                                onConfirm: () async {
+                                                  await _blockService.blockUser(
+                                                    p['userId'],
+                                                  );
+                                                },
+                                                onSuccess: () {
+                                                  final profileId =
+                                                      p['id'] as int?;
+                                                  if (profileId != null) {
+                                                    context
+                                                        .read<MatchProvider>()
+                                                        .removeProfile(
+                                                          profileId,
+                                                        );
+                                                  }
+                                                  if (context.canPop()) {
+                                                    context.pop();
+                                                  } else {
+                                                    context.go(AppRoutes.home);
+                                                  }
+                                                },
+                                              );
+                                            }
+                                          },
+                                          itemBuilder: (BuildContext context) =>
+                                              [
+                                                PopupMenuItem<String>(
+                                                  value: 'report',
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.flag_outlined,
+                                                        size: 20,
+                                                        color:
+                                                            Theme.of(context)
+                                                                .textTheme
+                                                                .bodyLarge
+                                                                ?.color ??
+                                                            AppColors
+                                                                .textPrimary,
+                                                      ),
+                                                      const SizedBox(width: 12),
+                                                      const Text('Report user'),
+                                                    ],
+                                                  ),
+                                                ),
+                                                PopupMenuItem<String>(
+                                                  value: 'block',
+                                                  child: Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons.block_outlined,
+                                                        size: 20,
+                                                        color: Colors.redAccent,
+                                                      ),
+                                                      const SizedBox(width: 12),
+                                                      Text(
+                                                        'Block user',
+                                                        style: TextStyle(
+                                                          color:
+                                                              Colors.redAccent,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                         ),
-                                      ),
+                                      ],
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 24),
@@ -246,7 +361,11 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color ??
+                                          AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 12),
@@ -261,7 +380,11 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                       p['bio'],
                                       style: TextStyle(
                                         fontSize: 15,
-                                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyLarge?.color ??
+                                            AppColors.textPrimary,
                                         height: 1.6,
                                       ),
                                     ),
@@ -279,7 +402,11 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color ??
+                                          AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 16),
@@ -296,7 +423,9 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                             color: Theme.of(context).colorScheme.surface,
                             boxShadow: [
                               BoxShadow(
-                                color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
+                                color: Theme.of(
+                                  context,
+                                ).shadowColor.withValues(alpha: 0.05),
                                 blurRadius: 10,
                                 offset: const Offset(0, -5),
                               ),

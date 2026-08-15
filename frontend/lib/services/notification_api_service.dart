@@ -15,9 +15,18 @@ class NotificationApiService {
   Future<void> registerToken() async {
     try {
       if (defaultTargetPlatform == TargetPlatform.iOS) {
-        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        String? apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        int retries = 0;
+        while (apnsToken == null && retries < 10) {
+          debugPrint('APNs token not yet available, waiting... ($retries/10)');
+          await Future<void>.delayed(const Duration(seconds: 1));
+          apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+          retries++;
+        }
         if (apnsToken == null) {
-          debugPrint('APNs token not yet available, waiting...');
+          debugPrint('Failed to get APNs token. FCM registration might fail.');
+        } else {
+          debugPrint('APNs token retrieved: $apnsToken');
         }
       }
 
@@ -76,7 +85,7 @@ class NotificationApiService {
       if (category != 'All') {
         queryParameters['category'] = category;
       }
-      
+
       final response = await _client.get(
         '/notifications',
         queryParameters: queryParameters,
@@ -99,9 +108,7 @@ class NotificationApiService {
         final data = response.data['data'];
         if (data != null && data['unreadCount'] != null) {
           final count = data['unreadCount'];
-          return count is int
-              ? count
-              : int.tryParse(count.toString()) ?? 0;
+          return count is int ? count : int.tryParse(count.toString()) ?? 0;
         }
       }
     } catch (e) {

@@ -74,10 +74,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                                       onNotInterested: () =>
                                           showRejectionConfirmation(profile),
                                       onReturnFromDetail: () {
-                                        context
-                                            .read<MatchProvider>()
-                                            .loadRecommendations()
-                                            .then((_) => syncWithProvider());
+                                        syncWithProvider();
                                       },
                                       isActioning:
                                           currentIndex == index &&

@@ -39,7 +39,7 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
 
   @override
   void didPopNext() {
-    fetchRecommendations();
+    syncWithProvider();
   }
 
   @override
@@ -54,20 +54,32 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
   void fetchRecommendations() {
     if (mounted) {
       context.read<MatchProvider>().loadRecommendations().then(
-        (_) => syncWithProvider(),
+        (_) => syncWithProvider(resetIndex: true),
       );
     }
   }
 
-  void syncWithProvider() {
+  void syncWithProvider({bool resetIndex = false}) {
     if (!mounted) return;
     final provider = context.read<MatchProvider>();
     setState(() {
       localProfiles = List.from(provider.profiles);
-      currentIndex = 0;
+      if (resetIndex) {
+        currentIndex = 0;
+      } else {
+        if (currentIndex >= localProfiles.length) {
+          currentIndex = localProfiles.length - 1;
+        }
+        if (currentIndex < 0) {
+          currentIndex = 0;
+        }
+      }
     });
-    if (pageController.hasClients) {
+    if (pageController.hasClients && resetIndex) {
       pageController.jumpToPage(0);
+    } else if (pageController.hasClients &&
+        pageController.page?.round() != currentIndex) {
+      pageController.jumpToPage(currentIndex);
     }
   }
 

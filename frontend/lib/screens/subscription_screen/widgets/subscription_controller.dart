@@ -2,16 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/models/auth_response.dart' as auth_model;
 import 'package:life_partner_again/models/subscription_plan.dart' as model;
 import 'package:life_partner_again/providers/subscription_provider.dart';
+import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/widgets/bottomsheet/subscription/dynamic_loading_ui.dart';
 import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_failure_ui.dart';
 import 'package:life_partner_again/widgets/bottomsheet/subscription/subscription_success_ui.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart'
+    show FoundingMemberBadge;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:life_partner_again/models/auth_response.dart' as auth_model;
-import 'package:life_partner_again/services/user_repository.dart';
 
 class PlanVisuals {
   final Color themeColor;
@@ -173,14 +175,15 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.star_rounded, color: Colors.amber, size: 48),
+              FoundingMemberBadge(size: 50),
               const SizedBox(height: 16),
               Text(
                 'Founding Member',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ??
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
                       AppColors.textPrimary,
                 ),
               ),
@@ -190,7 +193,8 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ??
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
                       AppColors.textSecondary,
                 ),
               ),

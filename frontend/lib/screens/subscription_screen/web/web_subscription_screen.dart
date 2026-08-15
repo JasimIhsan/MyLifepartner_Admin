@@ -350,7 +350,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                               IconButton(
                                 icon: Icon(
                                   Icons.arrow_back,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                 ),
                                 onPressed: () => context.pop(),
                               ),
@@ -364,14 +368,22 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.star_rounded, color: Colors.amber, size: 80),
+                                  const Icon(
+                                    Icons.star_rounded,
+                                    color: Colors.amber,
+                                    size: 80,
+                                  ),
                                   const SizedBox(height: 24),
                                   Text(
                                     'Founding Member',
                                     style: TextStyle(
                                       fontSize: 28,
                                       fontWeight: FontWeight.w800,
-                                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color ??
+                                          AppColors.textPrimary,
                                     ),
                                   ),
                                   const SizedBox(height: 16),
@@ -381,7 +393,11 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
                                     style: TextStyle(
                                       fontSize: 16,
                                       height: 1.5,
-                                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium?.color ??
+                                          AppColors.textSecondary,
                                     ),
                                   ),
                                   const SizedBox(height: 48),
@@ -427,9 +443,7 @@ class _WebSubscriptionScreenState extends State<WebSubscriptionScreen>
 
           return Stack(
             children: [
-              const Positioned.fill(
-                child: SubscriptionBackground(),
-              ),
+              const Positioned.fill(child: SubscriptionBackground()),
               Positioned(
                 top: -150,
                 right: -80,

@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_image_gallery.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/header_carousel.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile_action_bar.dart';
@@ -13,6 +14,7 @@ import 'package:life_partner_again/screens/profile_detail_screen/widgets/profile
 import 'package:life_partner_again/screens/profile_detail_screen/widgets/report_user_dialog.dart';
 import 'package:life_partner_again/services/block_service.dart';
 import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom_sheet.dart';
+import 'package:provider/provider.dart';
 
 class MobileProfileDetailScreen extends StatefulWidget {
   const MobileProfileDetailScreen({super.key});
@@ -298,9 +300,15 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
                       await _blockService.blockUser(p['userId']);
                     },
                     onSuccess: () {
-                      setState(() {
-                        resolvedProfile['isBlocked'] = true;
-                      });
+                      final profileId = p['id'] as int?;
+                      if (profileId != null) {
+                        context.read<MatchProvider>().removeProfile(profileId);
+                      }
+                      if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go(AppRoutes.home);
+                      }
                     },
                   );
                 }
