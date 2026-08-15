@@ -11,6 +11,7 @@ import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -33,6 +34,8 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
       } else {
         final status = await _authService.fetchMeOrThrow();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setInt('userId', status.id);
         _isLoggedIn = true;
         _onboardingStatus = status;
         await FirebaseNotificationService().setupAfterLogin();
@@ -54,7 +57,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void loginSuccess(OnboardingStatus status) {
+  void loginSuccess(OnboardingStatus status) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('userId', status.id);
     _isLoggedIn = true;
     _onboardingStatus = status;
     _isInitialized = true;

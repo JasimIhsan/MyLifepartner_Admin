@@ -21,6 +21,20 @@ router.use(verifyJWT);
 router.post("/account-deletion/request", userController.requestAccountDeletion);
 
 /**
+ * @route   GET /api/v1/user/profile
+ * @desc    Get current authenticated user profile
+ * @access  Private
+ */
+router.get("/profile", userController.getUserById);
+
+/**
+ * @route   PATCH /api/v1/user/profile
+ * @desc    Update current authenticated user profile
+ * @access  Private
+ */
+router.patch("/profile", userController.updateUser);
+
+/**
  * @route   GET /api/v1/user
  * @desc    Get list of users
  * @access  Private
@@ -49,3 +63,4 @@ router.post("/", userController.createUser);
 router.patch("/:id", userController.updateUser);
 
 export default router;
+

@@ -10,12 +10,12 @@ export class PrivacyController {
    constructor(private readonly profileService: IProfileService) {}
 
    /**
-    * @route PATCH /api/v1/user/profiles/:userId/privacy
+    * @route PATCH /api/v1/user/profile/privacy or /privacy/:userId
     * @purpose Updates privacy settings for the user's profile.
     */
    public updatePrivacySettings = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");

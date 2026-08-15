@@ -39,22 +39,8 @@ class ProfileRepository {
 
   Future<List<ProfileQuestion>> getQuestions(int sectionOrder) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId'); // Assuming userId is stored.
-      // If userId not stored, maybe we get it from token or user provider.
-      // For now, hardcoding or fetching from prefs.
-
-      // FIX: The user snippet showed /api/profile/questions/1?sectionOrder=1
-      // We need userId.
-
-      if (userId == null) {
-        // Fallback or throw error.
-        // For dev, lets assume 1 if not found or handle gracefully
-        // throw Exception('User not logged in');
-      }
-
       final response = await _client.get(
-        '/profile/questions/$userId',
+        '/profile/questions',
         queryParameters: {'sectionOrder': sectionOrder},
       );
 
@@ -77,12 +63,8 @@ class ProfileRepository {
     debugPrint('👉 Saving answer: $answer');
     debugPrint('👉 Question ID: $questionId');
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-      debugPrint('👉 User ID: $userId');
-
       final response = await _client.post(
-        '/profile/questions/save-answer/$userId/$questionId',
+        '/profile/questions/save-answer/$questionId',
         data: {'answer': answer},
       );
 
@@ -98,14 +80,7 @@ class ProfileRepository {
 
   Future<void> completeProfile() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
-      if (userId == null) {
-        throw Exception('User not logged in');
-      }
-
-      final response = await _client.patch('/profile/complete/$userId');
+      final response = await _client.patch('/profile/complete');
 
       if (response.statusCode != 200) {
         throw Exception('Failed to complete profile');
@@ -121,16 +96,7 @@ class ProfileRepository {
 
   Future<Map<String, dynamic>> getCompletionStatus() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
-      if (userId == null) {
-        // Fallback or throw error.
-        // For dev, lets assume 1 if not found or handle gracefully
-        // throw Exception('User not logged in');
-      }
-
-      final response = await _client.get('/profile/completion-status/$userId');
+      final response = await _client.get('/profile/completion-status');
 
       if (response.statusCode == 200) {
         return response.data['data'];
@@ -148,15 +114,8 @@ class ProfileRepository {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
-      if (userId == null) {
-        throw Exception('User not logged in');
-      }
-
       final response = await _client.patch(
-        '/profile/update/$userId',
+        '/profile/update',
         data: data,
       );
 
@@ -174,13 +133,8 @@ class ProfileRepository {
 
   Future<void> updatePartnerPreference(Map<String, dynamic> data) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
-      if (userId == null) throw Exception('User not logged in');
-
       final response = await _client.patch(
-        '/profile/partner-preference/$userId',
+        '/profile/partner-preference',
         data: data,
       );
 
@@ -198,12 +152,7 @@ class ProfileRepository {
 
   Future<PartnerPreference?> getPartnerPreference() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
-      if (userId == null) throw Exception('User not logged in');
-
-      final response = await _client.get('/profile/partner-preference/$userId');
+      final response = await _client.get('/profile/partner-preference');
 
       if (response.statusCode == 200) {
         final data = response.data['data'];
@@ -228,10 +177,7 @@ class ProfileRepository {
 
   Future<List<UserImage>> getUserImages() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
-      final response = await _client.get('/profile/images/$userId');
+      final response = await _client.get('/profile/images');
 
       return UserImageResponse.fromJson(response.data).data;
     } on DioException catch (e) {
@@ -243,9 +189,6 @@ class ProfileRepository {
 
   Future<UserImage> uploadImage(XFile imageFile) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
       final bytes = await imageFile.readAsBytes();
 
       final mimeType = imageFile.mimeType ?? 'image/jpeg';
@@ -260,7 +203,7 @@ class ProfileRepository {
       });
 
       final response = await _client.post(
-        '/profile/upload-image/$userId',
+        '/profile/upload-image',
         data: formData,
       );
 
@@ -280,9 +223,6 @@ class ProfileRepository {
     double? longitude,
   ]) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
       final frontBytes = await front.readAsBytes();
       final leftBytes = await left.readAsBytes();
       final rightBytes = await right.readAsBytes();
@@ -313,7 +253,7 @@ class ProfileRepository {
       }
 
       final response = await _client.post(
-        '/profile/upload-selfie/$userId',
+        '/profile/upload-selfie',
         data: formData,
       );
 
@@ -331,9 +271,6 @@ class ProfileRepository {
 
   Future<UserImage> replaceImage(int imageId, XFile imageFile) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
       final bytes = await imageFile.readAsBytes();
       final mimeType = imageFile.mimeType ?? 'image/jpeg';
       final mediaType = MediaType.parse(mimeType);
@@ -347,7 +284,7 @@ class ProfileRepository {
       });
 
       final response = await _client.put(
-        '/profile/replace-image/$userId/$imageId',
+        '/profile/replace-image/$imageId',
         data: formData,
       );
 
@@ -363,11 +300,8 @@ class ProfileRepository {
 
   Future<void> deleteImage(int imageId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
       final response = await _client.delete(
-        '/profile/delete-image/$userId/$imageId',
+        '/profile/delete-image/$imageId',
       );
 
       if (response.statusCode != 200) {
@@ -384,11 +318,8 @@ class ProfileRepository {
 
   Future<void> updatePrivacySettings(bool enabled) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
       final response = await _client.patch(
-        '/profile/privacy/$userId',
+        '/profile/privacy',
         data: {'privacyEnabled': enabled},
       );
 
@@ -406,11 +337,8 @@ class ProfileRepository {
 
   Future<void> setPrimaryImage(int imageId) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
       final response = await _client.patch(
-        '/profile/set-primary/$userId/$imageId',
+        '/profile/set-primary/$imageId',
       );
 
       if (response.statusCode != 200) {
@@ -427,17 +355,15 @@ class ProfileRepository {
 
   Future<void> completeImageUpload() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getInt('userId');
-
       final response = await _client.post(
-        '/profile/complete-image-upload/$userId',
+        '/profile/complete-image-upload',
       );
 
       if (response.statusCode != 200) {
         throw Exception('Failed to complete image upload');
       }
 
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('hasCompletedImageUpload', true);
     } on DioException catch (e) {
       throw Exception(

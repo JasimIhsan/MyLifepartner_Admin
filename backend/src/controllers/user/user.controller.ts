@@ -24,12 +24,12 @@ export class UserController {
    });
 
    /**
-    * @route GET /api/v1/user/:id
-    * @purpose Fetches user details by ID.
+    * @route GET /api/v1/user/:id or GET /api/v1/user/profile
+    * @purpose Fetches user details by ID or authenticated user.
     */
    public getUserById = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.id);
+      const userId = req.params.id ? Number(req.params.id) : authUserId;
 
       logger.debug(`User ID: ${userId}`);
       logger.debug(`Auth User ID: ${authUserId}`);
@@ -56,12 +56,12 @@ export class UserController {
    });
 
    /**
-    * @route PATCH /api/v1/user/:id
-    * @purpose Updates user details by ID.
+    * @route PATCH /api/v1/user/:id or PATCH /api/v1/user/profile
+    * @purpose Updates user details by ID or authenticated user.
     */
    public updateUser = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.id);
+      const userId = req.params.id ? Number(req.params.id) : authUserId;
       const updatePayload: UpdateUserDto = req.body;
 
       if (!Number.isInteger(userId) || userId <= 0) {

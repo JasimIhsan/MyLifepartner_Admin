@@ -15,12 +15,12 @@ export class ProfileImageController {
    private static readonly MAX_BULK_PRESIGNED_IMAGE_IDS = 100;
 
    /**
-    * @route POST /api/v1/user/profile/upload-image/:userId
+    * @route POST /api/v1/user/profile/upload-image or /upload-image/:userId
     * @purpose Uploads a profile image for the authenticated user.
     */
    public uploadImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -52,12 +52,12 @@ export class ProfileImageController {
    });
 
    /**
-    * @route PUT /api/v1/user/profile/replace-image/:userId/:imageId
+    * @route PUT /api/v1/user/profile/replace-image/:imageId or /replace-image/:userId/:imageId
     * @purpose Replaces a profile image for the authenticated user.
     */
    public replaceImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const imageId = Number(req.params.imageId);
 
       if (!Number.isInteger(userId) || userId <= 0) {
@@ -94,12 +94,12 @@ export class ProfileImageController {
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/set-primary/:userId/:imageId
+    * @route PATCH /api/v1/user/profile/set-primary/:imageId or /set-primary/:userId/:imageId
     * @purpose Sets a profile image as the primary image.
     */
    public setPrimaryImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const imageId = Number(req.params.imageId);
 
       if (!Number.isInteger(userId) || userId <= 0) {
@@ -132,12 +132,12 @@ export class ProfileImageController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/images/:userId
+    * @route GET /api/v1/user/profile/images or /images/:userId
     * @purpose Fetches profile images for the authenticated user.
     */
    public getImages = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -178,12 +178,12 @@ export class ProfileImageController {
    });
 
    /**
-    * @route POST /api/v1/user/profile/complete-image-upload/:userId
+    * @route POST /api/v1/user/profile/complete-image-upload or /complete-image-upload/:userId
     * @purpose Marks profile image upload step as complete.
     */
    public completeImageUpload = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -208,12 +208,12 @@ export class ProfileImageController {
    });
 
    /**
-    * @route POST /api/v1/user/profile/upload-selfie/:userId
+    * @route POST /api/v1/user/profile/upload-selfie or /upload-selfie/:userId
     * @purpose Uploads selfie images for profile verification.
     */
    public uploadSelfie = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -262,12 +262,12 @@ export class ProfileImageController {
    });
 
    /**
-    * @route DELETE /api/v1/user/profile/delete-image/:userId/:imageId
+    * @route DELETE /api/v1/user/profile/delete-image/:imageId or /delete-image/:userId/:imageId
     * @purpose Deletes a profile image for the authenticated user.
     */
    public deleteImage = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const imageId = Number(req.params.imageId);
 
       if (!Number.isInteger(userId) || userId <= 0) {

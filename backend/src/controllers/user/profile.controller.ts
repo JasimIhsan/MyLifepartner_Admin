@@ -26,12 +26,12 @@ export class ProfileController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/questions/:userId
+    * @route GET /api/v1/user/profile/questions or /questions/:userId
     * @purpose Fetches profile questions for the authenticated user.
     */
    public getQuestions = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const sectionOrder = req.query.sectionOrder ? Number(req.query.sectionOrder) : undefined;
 
       if (!Number.isInteger(userId) || userId <= 0) {
@@ -50,12 +50,12 @@ export class ProfileController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/answers/:userId
+    * @route GET /api/v1/user/profile/answers or /answers/:userId
     * @purpose Fetches answers submitted by the authenticated user.
     */
    public getAnswers = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -69,12 +69,12 @@ export class ProfileController {
    });
 
    /**
-    * @route POST /api/v1/user/profile/questions/save-answer/:userId/:questionId
+    * @route POST /api/v1/user/profile/questions/save-answer/:questionId or /save-answer/:userId/:questionId
     * @purpose Saves an answer for a profile question.
     */
    public saveAnswer = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
       const questionId = Number(req.params.questionId);
       const { answer } = req.body;
 
@@ -112,12 +112,12 @@ export class ProfileController {
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/complete/:userId
+    * @route PATCH /api/v1/user/profile/complete or /complete/:userId
     * @purpose Marks profile setup as complete for the authenticated user.
     */
    public completeProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -142,12 +142,12 @@ export class ProfileController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/completion-status/:userId
+    * @route GET /api/v1/user/profile/completion-status or /completion-status/:userId
     * @purpose Fetches profile completion status for the authenticated user.
     */
    public getCompletionStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -161,12 +161,12 @@ export class ProfileController {
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/update/:userId
+    * @route PATCH /api/v1/user/profile/update or /update/:userId
     * @purpose Updates profile details for the authenticated user.
     */
    public updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -194,12 +194,12 @@ export class ProfileController {
    });
 
    /**
-    * @route GET /api/v1/user/profile/partner-preference/:userId
+    * @route GET /api/v1/user/profile/partner-preference or /partner-preference/:userId
     * @purpose Fetches partner preference details for the authenticated user.
     */
    public getPartnerPreference = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
@@ -213,12 +213,12 @@ export class ProfileController {
    });
 
    /**
-    * @route PATCH /api/v1/user/profile/partner-preference/:userId
+    * @route PATCH /api/v1/user/profile/partner-preference or /partner-preference/:userId
     * @purpose Updates partner preference details for the authenticated user.
     */
    public updatePartnerPreference = asyncHandler(async (req: AuthRequest, res: Response) => {
       const authUserId = this.getAuthenticatedUserId(req);
-      const userId = Number(req.params.userId);
+      const userId = req.params.userId ? Number(req.params.userId) : authUserId;
 
       if (!Number.isInteger(userId) || userId <= 0) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid user ID");
