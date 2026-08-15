@@ -11,14 +11,18 @@ class IncomingCall {
   final String callId;
   final String callerId;
   final String callerName;
+  final int? callerAvatarImageId;
   final String? callerAvatar;
+  final bool callerAvatarIsBlurred;
   final bool isVideo;
 
   const IncomingCall({
     required this.callId,
     required this.callerId,
     required this.callerName,
+    this.callerAvatarImageId,
     this.callerAvatar,
+    this.callerAvatarIsBlurred = false,
     required this.isVideo,
   });
 }
@@ -28,14 +32,18 @@ class OutgoingCall {
   final String callId;
   final String calleeId;
   final String calleeName;
+  final int? calleeAvatarImageId;
   final String? calleeAvatar;
+  final bool calleeAvatarIsBlurred;
   final bool isVideo;
 
   const OutgoingCall({
     required this.callId,
     required this.calleeId,
     required this.calleeName,
+    this.calleeAvatarImageId,
     this.calleeAvatar,
+    this.calleeAvatarIsBlurred = false,
     required this.isVideo,
   });
 }
@@ -61,7 +69,9 @@ class CallProvider extends ChangeNotifier {
   OutgoingCall? _outgoingCall;
   String? _currentUserId;
   String? _currentUserName;
+  int? _currentUserAvatarImageId;
   String? _currentUserAvatar;
+  bool _currentUserAvatarIsBlurred = false;
   Timer? _incomingCallTimer; // Auto-dismiss if caller never cancels
 
   CallState _callState = CallState.idle;
@@ -69,16 +79,20 @@ class CallProvider extends ChangeNotifier {
 
   String? get currentUserId => _currentUserId;
   String? get currentUserName => _currentUserName;
+  int? get currentUserAvatarImageId => _currentUserAvatarImageId;
   String? get currentUserAvatar => _currentUserAvatar;
+  bool get currentUserAvatarIsBlurred => _currentUserAvatarIsBlurred;
 
   /// Whether the caller's invitation was declined by the callee.
   bool get wasDeclined => _callState == CallState.rejected;
 
   /// Whether the callee accepted the call (caller should navigate).
-  bool get wasAccepted => _callState == CallState.connected || _callState == CallState.connecting;
+  bool get wasAccepted =>
+      _callState == CallState.connected || _callState == CallState.connecting;
 
   IncomingCall? get incomingCall => _incomingCall;
-  bool get hasIncomingCall => _incomingCall != null && _callState == CallState.incoming;
+  bool get hasIncomingCall =>
+      _incomingCall != null && _callState == CallState.incoming;
 
   OutgoingCall? get outgoingCall => _outgoingCall;
   bool get hasOutgoingCall => _outgoingCall != null;
@@ -97,7 +111,13 @@ class CallProvider extends ChangeNotifier {
           images.where((img) => img.isPrimary).firstOrNull ??
           images.firstOrNull;
       if (primary != null) {
-        _currentUserAvatar = primary.imageUrl;
+        _currentUserAvatarImageId = primary.imageId;
+        _currentUserAvatar = primary.presignedImageUrl;
+        _currentUserAvatarIsBlurred = false;
+      } else {
+        _currentUserAvatarImageId = null;
+        _currentUserAvatar = null;
+        _currentUserAvatarIsBlurred = false;
       }
     } catch (_) {
       // Ignore
@@ -135,12 +155,14 @@ class CallProvider extends ChangeNotifier {
         case 'call_invite':
           // Dedup: ignore if the same callId is already ringing
           if (_incomingCall?.callId == data['callId'] as String?) break;
-          
+
           // Check if message is stale (older than 45 seconds)
           final now = DateTime.now().millisecondsSinceEpoch;
           final msgTime = msg.timestamp; // msg.timestamp is in ms
           if (now - msgTime > 45000) {
-            debugPrint('[CallProvider] Ignored stale call invite from ${msg.fromUserId}');
+            debugPrint(
+              '[CallProvider] Ignored stale call invite from ${msg.fromUserId}',
+            );
             break;
           }
 
@@ -148,19 +170,25 @@ class CallProvider extends ChangeNotifier {
             callId: data['callId'] as String,
             callerId: msg.fromUserId,
             callerName: data['callerName'] as String? ?? 'Unknown',
+            callerAvatarImageId: _readInt(data['callerAvatarImageId']),
             callerAvatar: data['callerAvatar'] as String?,
+            callerAvatarIsBlurred:
+                data['callerAvatarIsBlurred'] as bool? ?? false,
             isVideo: data['isVideo'] as bool? ?? false,
           );
-          
+
           _updateState(CallState.incoming);
-          
+
           // Auto-dismiss after 30 s if caller never sends call_cancel
           _incomingCallTimer?.cancel();
           _incomingCallTimer = Timer(const Duration(seconds: 30), () {
             if (_callState == CallState.incoming) {
               _incomingCall = null;
               _updateState(CallState.missed);
-              Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
+              Future.delayed(
+                const Duration(milliseconds: 500),
+                () => _updateState(CallState.idle),
+              );
             }
           });
           break;
@@ -170,7 +198,10 @@ class CallProvider extends ChangeNotifier {
           if (data['callId'] != _outgoingCall?.callId) break;
           _outgoingCall = null;
           _updateState(CallState.rejected);
-          Future.delayed(const Duration(milliseconds: 1000), () => _updateState(CallState.idle));
+          Future.delayed(
+            const Duration(milliseconds: 1000),
+            () => _updateState(CallState.idle),
+          );
           break;
 
         case 'call_accept':
@@ -185,7 +216,10 @@ class CallProvider extends ChangeNotifier {
           _incomingCallTimer?.cancel();
           _incomingCall = null;
           _updateState(CallState.cancelled);
-          Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
+          Future.delayed(
+            const Duration(milliseconds: 500),
+            () => _updateState(CallState.idle),
+          );
           break;
       }
     } catch (_) {
@@ -204,7 +238,9 @@ class CallProvider extends ChangeNotifier {
   Future<void> initiateCall({
     required String otherUserId,
     required String otherUserName,
+    int? calleeAvatarImageId,
     String? calleeAvatar,
+    bool calleeAvatarIsBlurred = false,
     required bool isVideo,
   }) async {
     if (_currentUserId == null) return;
@@ -214,19 +250,30 @@ class CallProvider extends ChangeNotifier {
       callId: callId,
       calleeId: otherUserId,
       calleeName: otherUserName,
+      calleeAvatarImageId: calleeAvatarImageId,
       calleeAvatar: calleeAvatar,
+      calleeAvatarIsBlurred: calleeAvatarIsBlurred,
       isVideo: isVideo,
     );
-    
+
     _updateState(CallState.ringing);
 
     await ZegoService.instance.sendCallInvitation(
       toUserId: otherUserId,
       callerName: _currentUserName ?? 'User $_currentUserId',
+      callerAvatarImageId: _currentUserAvatarImageId,
       callerAvatar: _currentUserAvatar,
+      callerAvatarIsBlurred: _currentUserAvatarIsBlurred,
       callId: callId,
       isVideo: isVideo,
     );
+  }
+
+  int? _readInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   /// Caller cancels the outgoing call.
@@ -241,7 +288,10 @@ class CallProvider extends ChangeNotifier {
 
     _outgoingCall = null;
     _updateState(CallState.cancelled);
-    Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
+    Future.delayed(
+      const Duration(milliseconds: 500),
+      () => _updateState(CallState.idle),
+    );
   }
 
   /// Clear outgoing call state after navigating to call screen.
@@ -259,7 +309,7 @@ class CallProvider extends ChangeNotifier {
       callId: _incomingCall!.callId,
       responseType: 'call_accept',
     );
-    
+
     _updateState(CallState.connecting);
   }
 
@@ -281,7 +331,10 @@ class CallProvider extends ChangeNotifier {
 
     _incomingCall = null;
     _updateState(CallState.rejected);
-    Future.delayed(const Duration(milliseconds: 500), () => _updateState(CallState.idle));
+    Future.delayed(
+      const Duration(milliseconds: 500),
+      () => _updateState(CallState.idle),
+    );
   }
 
   @override

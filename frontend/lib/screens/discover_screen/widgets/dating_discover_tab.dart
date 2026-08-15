@@ -132,7 +132,9 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
         if (provider.state == MatchLoadState.loading &&
             _localProfiles.isEmpty) {
           return Center(
-            child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+            child: CircularProgressIndicator(
+              color: Theme.of(context).primaryColor,
+            ),
           );
         }
 
@@ -187,14 +189,20 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               provider.error ?? 'Check your network and try again',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+              style: TextStyle(
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 32),
             _buildRetryButton(provider),
@@ -218,14 +226,20 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'We are searching for more matches. Check back later!',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+              style: TextStyle(
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 32),
             _buildRetryButton(provider),
@@ -251,14 +265,21 @@ class _DatingDiscoverTabState extends State<DatingDiscoverTab> with RouteAware {
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
           Text(
             "You've seen all recommendations for now.",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+            style: TextStyle(
+              fontSize: 16,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 32),
           _buildRetryButton(provider),

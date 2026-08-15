@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:provider/provider.dart';
 
 /// Discover listing – editorial magazine feel with portrait cards.
@@ -151,7 +152,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -161,7 +164,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -195,7 +200,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
                 letterSpacing: -0.5,
               ),
             ),
@@ -205,7 +212,9 @@ class _MatchesListTabState extends State<MatchesListTab> {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.6,
               ),
             ),
@@ -310,7 +319,12 @@ class _MatchesListTabState extends State<MatchesListTab> {
             const SizedBox(height: 12),
             Text(
               'Loading more…',
-              style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
+              ),
             ),
           ],
         ),
@@ -325,12 +339,7 @@ class _HeroCard extends StatelessWidget {
   final MatchRecommendation profile;
   const _HeroCard({required this.profile});
 
-  String? get _imageUrl {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
-    return null;
-  }
+  MatchImage? get _profileImage => profile.primaryOrFirstImage;
 
   @override
   Widget build(BuildContext context) {
@@ -344,11 +353,13 @@ class _HeroCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // Photo
-              _imageUrl != null
-                  ? Image.network(
-                      _imageUrl!,
+              _profileImage != null
+                  ? CachedAppImage(
+                      imageId: _profileImage!.imageId,
+                      presignedImageUrl: _profileImage!.presignedImageUrl,
+                      isBlurred: _profileImage!.isBlurred,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder(),
+                      errorWidget: (_, __, ___) => _placeholder(),
                     )
                   : _placeholder(),
 
@@ -477,12 +488,7 @@ class _PortraitCard extends StatelessWidget {
   final int index;
   const _PortraitCard({required this.profile, required this.index});
 
-  String? get _imageUrl {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
-    return null;
-  }
+  MatchImage? get _profileImage => profile.primaryOrFirstImage;
 
   @override
   Widget build(BuildContext context) {
@@ -513,11 +519,13 @@ class _PortraitCard extends StatelessWidget {
               child: SizedBox(
                 width: 100,
                 height: 120,
-                child: _imageUrl != null
-                    ? Image.network(
-                        _imageUrl!,
+                child: _profileImage != null
+                    ? CachedAppImage(
+                        imageId: _profileImage!.imageId,
+                        presignedImageUrl: _profileImage!.presignedImageUrl,
+                        isBlurred: _profileImage!.isBlurred,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorWidget: (_, __, ___) => _placeholder(),
                       )
                     : _placeholder(),
               ),
@@ -538,7 +546,9 @@ class _PortraitCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                             height: 1.1,
                             letterSpacing: -0.2,
                           ),
@@ -552,7 +562,11 @@ class _PortraitCard extends StatelessWidget {
                               Icon(
                                 Icons.location_on_outlined,
                                 size: 11,
-                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
                               ),
                               const SizedBox(width: 2),
                               Expanded(
@@ -562,7 +576,11 @@ class _PortraitCard extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                   ),
                                 ),
                               ),
@@ -717,7 +735,9 @@ class _MatchArc extends StatelessWidget {
             style: TextStyle(
               fontSize: size < 48 ? 9.5 : 11,
               fontWeight: FontWeight.w800,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.2,
             ),
           ),

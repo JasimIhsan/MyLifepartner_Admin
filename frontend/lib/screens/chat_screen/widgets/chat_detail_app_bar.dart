@@ -2,10 +2,13 @@ import 'package:go_router/go_router.dart';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String profileName;
+  final int? profileImageId;
   final String? profileImageUrl;
+  final bool profileImageIsBlurred;
   final VoidCallback onAudioCall;
   final VoidCallback onVideoCall;
   final bool isOnline;
@@ -14,7 +17,9 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ChatDetailAppBar({
     super.key,
     required this.profileName,
+    this.profileImageId,
     this.profileImageUrl,
+    this.profileImageIsBlurred = false,
     required this.onAudioCall,
     required this.onVideoCall,
     this.isOnline = false,
@@ -70,21 +75,23 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                     width: 1,
                   ),
                 ),
-                child: CircleAvatar(
-                  radius: 18,
-                  backgroundColor: Theme.of(context).colorScheme.surface,
-                  backgroundImage: profileImageUrl != null
-                      ? NetworkImage(profileImageUrl!)
-                      : null,
-                  child: profileImageUrl == null
-                      ? Icon(
-                          Icons.person,
-                          color:
-                              Theme.of(context).textTheme.bodyMedium?.color ??
-                              AppColors.textSecondary,
-                          size: 20,
-                        )
-                      : null,
+                child: SizedBox(
+                  width: 36,
+                  height: 36,
+                  child: ClipOval(
+                    child: profileImageId != null || profileImageUrl != null
+                        ? CachedAppImage(
+                            imageId: profileImageId,
+                            presignedImageUrl: profileImageUrl,
+                            isBlurred: profileImageIsBlurred,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) =>
+                                _buildAvatarFallback(context),
+                            errorWidget: (_, __, ___) =>
+                                _buildAvatarFallback(context),
+                          )
+                        : _buildAvatarFallback(context),
+                  ),
                 ),
               ),
               if (isOnline)
@@ -191,6 +198,19 @@ class ChatDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
       bottom: PreferredSize(
         preferredSize: const Size.fromHeight(1),
         child: Container(color: Theme.of(context).dividerColor, height: 1),
+      ),
+    );
+  }
+
+  Widget _buildAvatarFallback(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surface,
+      child: Icon(
+        Icons.person,
+        color:
+            Theme.of(context).textTheme.bodyMedium?.color ??
+            AppColors.textSecondary,
+        size: 20,
       ),
     );
   }

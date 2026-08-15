@@ -47,7 +47,8 @@ class _WebManageProfilePicturesScreenState
             fontSize: 14,
             color:
                 Theme.of(context).textTheme.bodyMedium?.color ??
-                Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.9),
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary.withValues(alpha: 0.9),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -127,7 +128,8 @@ class _WebManageProfilePicturesScreenState
                 fontWeight: FontWeight.bold,
                 color:
                     Theme.of(context).textTheme.bodyLarge?.color ??
-                    Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 16),
@@ -138,7 +140,8 @@ class _WebManageProfilePicturesScreenState
                 fontSize: 16,
                 color:
                     Theme.of(context).textTheme.bodyMedium?.color ??
-                    Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary.withValues(alpha: 0.8),
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary.withValues(alpha: 0.8),
                 height: 1.5,
               ),
             ),
@@ -208,7 +211,8 @@ class _WebManageProfilePicturesScreenState
             Icons.arrow_back,
             color:
                 Theme.of(context).textTheme.bodyLarge?.color ??
-                Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
           ),
           onPressed: () {
             context.pop(true);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 import 'profile_photo_fallback.dart';
 
@@ -27,12 +28,7 @@ class DatingProfileCard extends StatelessWidget {
     this.showNextButton = true,
   });
 
-  String? get _imageUrl {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
-    return null;
-  }
+  MatchImage? get _profileImage => profile.primaryOrFirstImage;
 
   @override
   Widget build(BuildContext context) {
@@ -60,15 +56,14 @@ class DatingProfileCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             // Background Image
-            _imageUrl != null
-                ? Image.network(
-                    _imageUrl!,
+            _profileImage != null
+                ? CachedAppImage(
+                    imageId: _profileImage!.imageId,
+                    presignedImageUrl: _profileImage!.presignedImageUrl,
+                    isBlurred: _profileImage!.isBlurred,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(context),
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return _placeholder(context); // or a shimmer
-                    },
+                    placeholder: (_, __) => _placeholder(context),
+                    errorWidget: (_, __, ___) => _placeholder(context),
                   )
                 : _placeholder(context),
 

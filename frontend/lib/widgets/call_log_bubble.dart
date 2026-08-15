@@ -102,7 +102,9 @@ class CallLogBubble extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -111,7 +113,9 @@ class CallLogBubble extends StatelessWidget {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -123,7 +127,9 @@ class CallLogBubble extends StatelessWidget {
               child: Text(
                 timeStr,
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                   fontSize: 11,
                 ),
               ),

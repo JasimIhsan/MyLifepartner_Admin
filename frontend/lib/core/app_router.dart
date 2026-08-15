@@ -295,7 +295,9 @@ GoRouter createRouter(AuthProvider authProvider) {
           }
           return OutgoingCallScreen(
             calleeName: args.calleeName,
+            calleeAvatarImageId: args.calleeAvatarImageId,
             calleeAvatar: args.calleeAvatar,
+            calleeAvatarIsBlurred: args.calleeAvatarIsBlurred,
             isVideoCall: args.isVideoCall,
           );
         },
@@ -312,8 +314,12 @@ GoRouter createRouter(AuthProvider authProvider) {
             callID: args.callID,
             userID: args.userID,
             userName: args.userName,
+            localUserAvatarImageId: args.localUserAvatarImageId,
             localUserAvatar: args.localUserAvatar,
+            localUserAvatarIsBlurred: args.localUserAvatarIsBlurred,
+            remoteUserAvatarImageId: args.remoteUserAvatarImageId,
             remoteUserAvatar: args.remoteUserAvatar,
+            remoteUserAvatarIsBlurred: args.remoteUserAvatarIsBlurred,
             isVideoCall: args.isVideoCall,
             isCaller: args.isCaller,
             otherUserId: args.otherUserId,

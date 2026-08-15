@@ -50,7 +50,8 @@ class DiscoveryFilter {
       if (ageFrom != null) 'ageFrom': ageFrom,
       if (ageTo != null) 'ageTo': ageTo,
       if (languages.isNotEmpty) 'languages': languages.join(','),
-      if (maritalStatuses.isNotEmpty) 'maritalStatus': maritalStatuses.join(','),
+      if (maritalStatuses.isNotEmpty)
+        'maritalStatus': maritalStatuses.join(','),
       if (childrenStatus != null) 'childrenStatus': childrenStatus,
       if (smokingStatuses.isNotEmpty) 'smoking': smokingStatuses.join(','),
       if (drinkingStatuses.isNotEmpty) 'drinking': drinkingStatuses.join(','),

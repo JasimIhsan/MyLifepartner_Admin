@@ -117,7 +117,9 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
           ),
         ),
       ],
@@ -171,7 +173,9 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               height: 1.2,
             ),
             textAlign: TextAlign.center,
@@ -203,7 +207,10 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: completed ? FontWeight.w700 : FontWeight.w500,
-                color: completed ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color: completed
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -223,7 +230,9 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
                       borderRadius: BorderRadius.circular(8),
                       child: LinearProgressIndicator(
                         value: value,
-                        backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.15),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.15),
                         valueColor: AlwaysStoppedAnimation<Color>(
                           Theme.of(context).primaryColor,
                         ),
@@ -255,9 +264,17 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _buildStepItem(Icons.favorite_rounded, "Fetching perks"),
-              Container(width: 1, height: 24, color: Theme.of(context).dividerColor),
+              Container(
+                width: 1,
+                height: 24,
+                color: Theme.of(context).dividerColor,
+              ),
               _buildStepItem(Icons.card_giftcard_rounded, "Almost there"),
-              Container(width: 1, height: 24, color: Theme.of(context).dividerColor),
+              Container(
+                width: 1,
+                height: 24,
+                color: Theme.of(context).dividerColor,
+              ),
               _buildStepItem(
                 completed ? Icons.check_circle_rounded : Icons.star_rounded,
                 completed ? "All done!" : "Preparing magic",
@@ -280,7 +297,9 @@ class _DynamicLoadingUIState extends State<DynamicLoadingUI> {
                 Text(
                   'Thanks for being awesome!',
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                     fontWeight: FontWeight.w600,
                     fontSize: 14,
                   ),

@@ -848,26 +848,38 @@ class MinimalTextField extends StatelessWidget {
               border: (minLines ?? 1) > 1
                   ? OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
                     )
                   : UnderlineInputBorder(
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
                     ),
               enabledBorder: (minLines ?? 1) > 1
                   ? OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
                     )
                   : UnderlineInputBorder(
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
                     ),
               disabledBorder: (minLines ?? 1) > 1
                   ? OutlineInputBorder(
                       borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
                     )
                   : UnderlineInputBorder(
-                      borderSide: BorderSide(color: Theme.of(context).dividerColor),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                      ),
                     ),
               focusedBorder: (minLines ?? 1) > 1
                   ? OutlineInputBorder(

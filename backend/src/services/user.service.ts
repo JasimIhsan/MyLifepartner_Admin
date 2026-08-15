@@ -320,8 +320,15 @@ export class UserService implements IUserService {
       const user = await this.findActiveUserById(userId);
 
       const dto = toUserDto(user);
-      if (dto.primaryImageUrl) {
-         dto.primaryImageUrl = await this.getPresignedUrlOrNull(dto.primaryImageUrl);
+      const primaryImage = user.profile?.images?.find((img) => img.isPrimary) ?? user.profile?.images?.[0] ?? null;
+      if (primaryImage) {
+         const presignedImageUrl = await this.getPresignedUrlOrNull(primaryImage.imageUrl);
+         dto.primaryImageId = primaryImage.id;
+         dto.primaryImage = {
+            imageId: primaryImage.id,
+            presignedImageUrl,
+         };
+         dto.primaryImageUrl = presignedImageUrl;
       }
 
       return dto;
@@ -376,10 +383,15 @@ export class UserService implements IUserService {
       // Map image URLs if necessary
       if (safeUser.profile?.images) {
          safeUser.profile.images = await Promise.all(
-            safeUser.profile.images.map(async (img) => ({
-               ...img,
-               imageUrl: await this.getPresignedUrlOrNull(img.imageUrl) || img.imageUrl,
-            }))
+            safeUser.profile.images.map(async (img) => {
+               const presignedImageUrl = (await this.getPresignedUrlOrNull(img.imageUrl)) || img.imageUrl;
+               return {
+                  ...img,
+                  imageId: img.id,
+                  imageUrl: presignedImageUrl,
+                  presignedImageUrl,
+               };
+            })
          );
       }
       if (safeUser.profile?.selfieUrl) {
@@ -567,10 +579,16 @@ export class UserService implements IUserService {
       }
 
       return Promise.all(
-         images.map(async (image) => ({
-            ...image,
-            url: await this.s3Service.getPresignedUrl(image.imageUrl, PRESIGNED_URL_EXPIRY_SECONDS),
-         }))
+         images.map(async (image) => {
+            const presignedImageUrl = await this.s3Service.getPresignedUrl(image.imageUrl, PRESIGNED_URL_EXPIRY_SECONDS);
+            return {
+               ...image,
+               imageId: image.id,
+               imageUrl: presignedImageUrl,
+               presignedImageUrl,
+               url: presignedImageUrl,
+            };
+         })
       );
    }
 

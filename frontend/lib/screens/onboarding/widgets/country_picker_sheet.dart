@@ -80,7 +80,9 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
               ),
 
@@ -100,12 +102,16 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
                   decoration: InputDecoration(
                     hintText: 'Search your country…',
                     hintStyle: TextStyle(
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                       fontSize: 15,
                     ),
                     prefixIcon: Icon(
                       Icons.search,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                       size: 20,
                     ),
                     border: InputBorder.none,
@@ -152,7 +158,10 @@ class _CountryPickerSheetState extends State<CountryPickerSheet> {
                                     : FontWeight.w400,
                                 color: isSelected
                                     ? Theme.of(context).primaryColor
-                                    : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                    : Theme.of(
+                                            context,
+                                          ).textTheme.bodyLarge?.color ??
+                                          AppColors.textPrimary,
                               ),
                             ),
                           ),

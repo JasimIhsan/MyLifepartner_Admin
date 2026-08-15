@@ -151,7 +151,11 @@ class ProfileSwipeCard extends StatelessWidget {
                                 'Why you match',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,
                                 ),

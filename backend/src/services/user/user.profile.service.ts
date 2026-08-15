@@ -1,12 +1,13 @@
-import { ImageUploadStatusDto, toImageUploadStatusDto, toUserImageDto, UserImageDto } from "@/dtos/image.dto";
+import { ImageUploadStatusDto, PresignedProfileImageDto, toImageUploadStatusDto, toUserImageDto, UserImageDto } from "@/dtos/image.dto";
 import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, toProfileQuestionDto, toProfileSectionDto, toProfileStatusDto, toUserAnswerDto, UserAnswerDto } from "@/dtos/profile.dto";
 import { CreatePartnerPreferenceDto, UpdateProfileDto } from "@/dtos/profile.input.dto";
+import prisma from "@/config/prisma";
 import { IProfileRepository } from "@/interfaces/repositories/profile.repository.interface";
 import { IImageProcessorService } from "@/interfaces/services/image-processor.service.interface";
 import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { IProfileService, PartnerPreference, Profile, ProfileStatus } from "@/interfaces/services/user.profile.service.interface";
 import { ApiError } from "@/utils/ApiError";
-import { Profile as DbProfile, Job } from "@prisma/client";
+import { Profile as DbProfile, ImageAccessStatus, Job } from "@prisma/client";
 
 const toServiceProfile = (profile: DbProfile & { job?: Job | null }): Profile => ({
    id: profile.id,
@@ -359,6 +360,7 @@ export class ProfileService implements IProfileService {
       // Regenerate blurred image from the new primary
       await this.regenerateBlurredImageFromS3(userId, image.imageUrl);
 
+      updatedImage.imageUrl = await this.s3Service.getPresignedUrl(updatedImage.imageUrl);
       return toUserImageDto(updatedImage);
    }
 
@@ -388,6 +390,156 @@ export class ProfileService implements IProfileService {
       await this.profileRepository.completeImageUpload(userId);
 
       return toImageUploadStatusDto(true, true);
+   }
+
+   /**
+    * Gets fresh presigned URLs for profile image IDs the viewer can access.
+    *
+    * @param userId - Viewer user ID.
+    * @param imageIds - UserImage record IDs.
+    * @returns Presigned URLs keyed by image ID.
+    */
+   async getPresignedImageUrls(userId: number, imageIds: number[]): Promise<PresignedProfileImageDto[]> {
+      const uniqueImageIds = [...new Set(imageIds.filter((id) => Number.isInteger(id) && id > 0))];
+
+      if (uniqueImageIds.length === 0) {
+         return [];
+      }
+
+      const [viewer, images] = await Promise.all([
+         prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+               privacySettings: {
+                  select: {
+                     privacyEnabled: true,
+                  },
+               },
+            },
+         }),
+         prisma.userImage.findMany({
+            where: {
+               id: {
+                  in: uniqueImageIds,
+               },
+            },
+            include: {
+               profile: {
+                  select: {
+                     userId: true,
+                     user: {
+                        select: {
+                           privacySettings: {
+                              select: {
+                                 privacyEnabled: true,
+                                 blurredImageUrl: true,
+                              },
+                           },
+                        },
+                     },
+                  },
+               },
+            },
+         }),
+      ]);
+
+      if (!viewer) {
+         throw new ApiError(404, "User not found");
+      }
+
+      const ownerUserIds = [...new Set(images.map((image) => image.profile.userId).filter((ownerUserId) => ownerUserId !== userId))];
+
+      const [approvedRequests, blocks] = await Promise.all([
+         ownerUserIds.length > 0
+            ? prisma.imageAccessRequest.findMany({
+                 where: {
+                    requesterUserId: userId,
+                    ownerUserId: {
+                       in: ownerUserIds,
+                    },
+                    status: ImageAccessStatus.APPROVED,
+                 },
+                 select: {
+                    ownerUserId: true,
+                 },
+              })
+            : [],
+         ownerUserIds.length > 0
+            ? prisma.userBlock.findMany({
+                 where: {
+                    OR: [
+                       {
+                          blockerUserId: userId,
+                          blockedUserId: {
+                             in: ownerUserIds,
+                          },
+                       },
+                       {
+                          blockerUserId: {
+                             in: ownerUserIds,
+                          },
+                          blockedUserId: userId,
+                       },
+                    ],
+                 },
+                 select: {
+                    blockerUserId: true,
+                    blockedUserId: true,
+                 },
+              })
+            : [],
+      ]);
+
+      const approvedOwnerUserIds = new Set(approvedRequests.map((request) => request.ownerUserId));
+      const blockedOwnerUserIds = new Set(blocks.map((block) => (block.blockerUserId === userId ? block.blockedUserId : block.blockerUserId)));
+      const viewerPrivacyEnabled = viewer.privacySettings?.privacyEnabled ?? false;
+      const imagesById = new Map(images.map((image) => [image.id, image]));
+
+      const resolvedUrls: Array<PresignedProfileImageDto | null> = await Promise.all(
+         uniqueImageIds.map(async (imageId) => {
+            const image = imagesById.get(imageId);
+
+            if (!image) {
+               return null;
+            }
+
+            const ownerUserId = image.profile.userId;
+
+            if (blockedOwnerUserIds.has(ownerUserId)) {
+               return {
+                  imageId,
+                  presignedImageUrl: null,
+               };
+            }
+
+            const targetPrivacyEnabled = image.profile.user.privacySettings?.privacyEnabled ?? false;
+            const canViewOriginal = ownerUserId === userId || approvedOwnerUserIds.has(ownerUserId) || (!viewerPrivacyEnabled && !targetPrivacyEnabled);
+
+            if (canViewOriginal) {
+               return {
+                  imageId,
+                  presignedImageUrl: await this.s3Service.getPresignedUrl(image.imageUrl),
+                  isBlurred: false,
+               };
+            }
+
+            const blurredImageUrl = image.profile.user.privacySettings?.blurredImageUrl;
+            if (image.isPrimary && blurredImageUrl) {
+               return {
+                  imageId,
+                  presignedImageUrl: await this.s3Service.getPresignedUrl(blurredImageUrl),
+                  isBlurred: true,
+               };
+            }
+
+            return {
+               imageId,
+               presignedImageUrl: null,
+            };
+         })
+      );
+
+      return resolvedUrls.filter((url): url is PresignedProfileImageDto => url !== null);
    }
 
    /**

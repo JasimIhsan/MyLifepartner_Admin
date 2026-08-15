@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class BodyPhotoCarousel extends StatefulWidget {
   final List<dynamic> images;
@@ -21,7 +22,7 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
     super.dispose();
   }
 
-  void _showFullImage(String url) {
+  void _showFullImage(dynamic image) {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
@@ -31,7 +32,16 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
           onTap: () => ctx.pop(),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: Image.network(url, fit: BoxFit.contain),
+            child: CachedAppImage.fromProfileImageMap(
+              image: image,
+              fit: BoxFit.contain,
+              placeholder: (_, __) => const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+              errorWidget: (_, __, ___) => const Center(
+                child: Icon(Icons.image_rounded, color: Colors.white),
+              ),
+            ),
           ),
         ),
       ),
@@ -53,35 +63,15 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
               itemCount: widget.images.length,
               onPageChanged: (i) => setState(() => _page = i),
               itemBuilder: (_, i) {
-                final img = widget.images[i] as Map<String, dynamic>;
-                final url = img['imageUrl'] as String?;
+                final img = widget.images[i];
                 return GestureDetector(
-                  onTap: url != null ? () => _showFullImage(url) : null,
-                  child: url != null
-                      ? Image.network(
-                          url,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => Container(
-                            color: Theme.of(context).primaryColorLight,
-                            child: const Center(
-                              child: Icon(
-                                Icons.image_rounded,
-                                size: 40,
-                                color: Color(0xFFCCCCCC),
-                              ),
-                            ),
-                          ),
-                        )
-                      : Container(
-                          color: Theme.of(context).primaryColorLight,
-                          child: const Center(
-                            child: Icon(
-                              Icons.image_rounded,
-                              size: 40,
-                              color: Color(0xFFCCCCCC),
-                            ),
-                          ),
-                        ),
+                  onTap: () => _showFullImage(img),
+                  child: CachedAppImage.fromProfileImageMap(
+                    image: img,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) => _photoFallback(context),
+                    errorWidget: (_, __, ___) => _photoFallback(context),
+                  ),
                 );
               },
             ),
@@ -102,7 +92,9 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
                   decoration: BoxDecoration(
                     color: _page == i
                         ? Theme.of(context).primaryColor
-                        : Theme.of(context).primaryColor.withValues(alpha: 0.25),
+                        : Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.25),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 );
@@ -112,7 +104,9 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
                 '${_page + 1} / ${widget.images.length}',
                 style: TextStyle(
                   fontSize: 11,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -120,6 +114,15 @@ class _BodyPhotoCarouselState extends State<BodyPhotoCarousel> {
           ),
         ],
       ],
+    );
+  }
+
+  Widget _photoFallback(BuildContext context) {
+    return Container(
+      color: Theme.of(context).primaryColorLight,
+      child: const Center(
+        child: Icon(Icons.image_rounded, size: 40, color: Color(0xFFCCCCCC)),
+      ),
     );
   }
 }

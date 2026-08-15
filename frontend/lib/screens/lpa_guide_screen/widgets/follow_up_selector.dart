@@ -17,8 +17,12 @@ class FollowUpSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tileBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
-    final textColor = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final chevronColor = isDark ? AppColors.darkTextSecondary : AppColors.textLight;
+    final textColor = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final chevronColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textLight;
 
     final List<Map<String, dynamic>> followUpOptions = [
       {
@@ -67,7 +71,10 @@ class FollowUpSelector extends StatelessWidget {
                     ? () => onSelectOption(opt['action'] as String)
                     : null,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       Icon(

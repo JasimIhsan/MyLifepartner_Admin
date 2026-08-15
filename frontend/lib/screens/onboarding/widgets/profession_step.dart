@@ -141,7 +141,9 @@ class _ProfessionStepState extends State<ProfessionStep> {
           onChanged: _onSearchChanged,
           prefixIcon: Icon(
             Icons.search,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
             size: 22,
           ),
           suffixIcon: _isLoading
@@ -165,7 +167,9 @@ class _ProfessionStepState extends State<ProfessionStep> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
             ),
           ),
@@ -194,7 +198,9 @@ class _ProfessionStepState extends State<ProfessionStep> {
                 trailing: Icon(
                   Icons.chevron_right,
                   size: 20,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
                 onTap: () {
                   widget.professionCtrl.text = job.name;
@@ -220,7 +226,9 @@ class _ProfessionStepState extends State<ProfessionStep> {
                 "Tap continue to use '${widget.professionCtrl.text.trim()}'",
                 style: TextStyle(
                   fontSize: 14,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                   fontStyle: FontStyle.italic,
                 ),
               ),

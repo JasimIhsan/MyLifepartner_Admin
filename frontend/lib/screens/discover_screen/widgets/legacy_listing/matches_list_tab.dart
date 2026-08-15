@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
 
@@ -338,12 +339,7 @@ class _HeroCard extends StatelessWidget {
   final MatchRecommendation profile;
   const _HeroCard({required this.profile});
 
-  String? get _imageUrl {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
-    return null;
-  }
+  MatchImage? get _profileImage => profile.primaryOrFirstImage;
 
   @override
   Widget build(BuildContext context) {
@@ -357,15 +353,14 @@ class _HeroCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // Photo
-              _imageUrl != null
-                  ? Image.network(
-                      _imageUrl!,
+              _profileImage != null
+                  ? CachedAppImage(
+                      imageId: _profileImage!.imageId,
+                      presignedImageUrl: _profileImage!.presignedImageUrl,
+                      isBlurred: _profileImage!.isBlurred,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _placeholder(context),
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return _placeholder(context);
-                      },
+                      placeholder: (_, __) => _placeholder(context),
+                      errorWidget: (_, __, ___) => _placeholder(context),
                     )
                   : _placeholder(context),
 
@@ -500,12 +495,7 @@ class _PortraitCard extends StatelessWidget {
   final int index;
   const _PortraitCard({required this.profile, required this.index});
 
-  String? get _imageUrl {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
-    return null;
-  }
+  MatchImage? get _profileImage => profile.primaryOrFirstImage;
 
   @override
   Widget build(BuildContext context) {
@@ -538,15 +528,14 @@ class _PortraitCard extends StatelessWidget {
               child: SizedBox(
                 width: 100,
                 height: 120,
-                child: _imageUrl != null
-                    ? Image.network(
-                        _imageUrl!,
+                child: _profileImage != null
+                    ? CachedAppImage(
+                        imageId: _profileImage!.imageId,
+                        presignedImageUrl: _profileImage!.presignedImageUrl,
+                        isBlurred: _profileImage!.isBlurred,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(context),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return _placeholder(context);
-                        },
+                        placeholder: (_, __) => _placeholder(context),
+                        errorWidget: (_, __, ___) => _placeholder(context),
                       )
                     : _placeholder(context),
               ),

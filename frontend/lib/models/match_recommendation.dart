@@ -1,18 +1,29 @@
 class MatchImage {
+  final int imageId;
   final String imageUrl;
+  final String presignedImageUrl;
   final bool isPrimary;
   final bool isBlurred;
 
   MatchImage({
+    required this.imageId,
     required this.imageUrl,
+    required this.presignedImageUrl,
     required this.isPrimary,
     this.isBlurred = false,
   });
 
   factory MatchImage.fromJson(Map<String, dynamic> json) {
+    final parsedImageUrl =
+        json['presignedImageUrl'] as String? ??
+        json['imageUrl'] as String? ??
+        '';
+
     return MatchImage(
-      imageUrl: json['imageUrl'] as String,
-      isPrimary: json['isPrimary'] as bool,
+      imageId: json['imageId'] as int? ?? json['id'] as int? ?? 0,
+      imageUrl: parsedImageUrl,
+      presignedImageUrl: parsedImageUrl,
+      isPrimary: json['isPrimary'] as bool? ?? false,
       isBlurred: json['isBlurred'] as bool? ?? false,
     );
   }
@@ -115,5 +126,12 @@ class MatchRecommendation {
       targetPrivacyEnabled: json['targetPrivacyEnabled'] as bool? ?? false,
       imageAccessRequestStatus: json['imageAccessRequestStatus'] as String?,
     );
+  }
+
+  MatchImage? get primaryOrFirstImage {
+    final primaryImages = images.where((image) => image.isPrimary);
+    if (primaryImages.isNotEmpty) return primaryImages.first;
+    if (images.isNotEmpty) return images.first;
+    return null;
   }
 }

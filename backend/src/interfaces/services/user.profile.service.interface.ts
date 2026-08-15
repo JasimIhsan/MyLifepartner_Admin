@@ -1,4 +1,4 @@
-import { ImageUploadStatusDto, UserImageDto } from "@/dtos/image.dto";
+import { ImageUploadStatusDto, PresignedProfileImageDto, UserImageDto } from "@/dtos/image.dto";
 import { ProfileQuestionDto, ProfileSectionDto, ProfileStatusDto, UserAnswerDto } from "@/dtos/profile.dto";
 import { UpdateProfileDto, CreatePartnerPreferenceDto } from "@/dtos/profile.input.dto";
 
@@ -67,6 +67,7 @@ export interface IProfileService {
    replaceUserImage(userId: number, imageId: number, file: Express.Multer.File): Promise<UserImageDto>;
    setPrimaryImage(userId: number, imageId: number): Promise<UserImageDto>;
    completeImageUpload(userId: number): Promise<ImageUploadStatusDto>;
+   getPresignedImageUrls(userId: number, imageIds: number[]): Promise<PresignedProfileImageDto[]>;
    uploadSelfie(userId: number, frontFile: Express.Multer.File, leftFile: Express.Multer.File, rightFile: Express.Multer.File, latitude?: number, longitude?: number): Promise<{ user: Profile }>;
    updatePrivacySettings(userId: number, privacyEnabled: boolean): Promise<{ privacyEnabled: boolean }>;
    deleteUserImage(userId: number, imageId: number): Promise<{ success: boolean }>;

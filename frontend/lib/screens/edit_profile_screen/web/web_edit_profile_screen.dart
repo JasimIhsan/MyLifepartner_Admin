@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/widgets/edit_profile_controller.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/widgets/edit_profile_ui_helpers.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_app_bar.dart';
 
 class WebEditProfileScreen extends StatefulWidget {
@@ -38,7 +38,8 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
               Icons.arrow_back,
               color:
                   Theme.of(context).textTheme.bodyLarge?.color ??
-                  Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
             onPressed: handleBackPress,
           ),
@@ -97,31 +98,31 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                           context,
                                         ).colorScheme.surface,
                                       ),
-                                      child: CircleAvatar(
-                                        radius: 64,
-                                        backgroundColor: Colors.transparent,
-                                        backgroundImage:
-                                            primaryImageUrl != null &&
-                                                primaryImageUrl!.isNotEmpty
-                                            ? CachedNetworkImageProvider(
-                                                primaryImageUrl!,
-                                              )
-                                            : null,
-                                        child: loadingImage
-                                            ? CircularProgressIndicator(
-                                                color: Theme.of(
+                                      child: SizedBox(
+                                        width: 128,
+                                        height: 128,
+                                        child: ClipOval(
+                                          child: primaryImage != null
+                                              ? CachedAppImage(
+                                                  imageId:
+                                                      primaryImage!.imageId,
+                                                  presignedImageUrl:
+                                                      primaryImage!
+                                                          .presignedImageUrl,
+                                                  fit: BoxFit.cover,
+                                                  placeholder: (_, __) =>
+                                                      _buildProfileImageLoading(
+                                                        context,
+                                                      ),
+                                                  errorWidget: (_, __, ___) =>
+                                                      _buildProfileImageFallback(),
+                                                )
+                                              : loadingImage
+                                              ? _buildProfileImageLoading(
                                                   context,
-                                                ).primaryColor,
-                                              )
-                                            : (primaryImageUrl == null ||
-                                                      primaryImageUrl!.isEmpty
-                                                  ? const Icon(
-                                                      Icons.person,
-                                                      size: 64,
-                                                      color: AppColors
-                                                          .textSecondary,
-                                                    )
-                                                  : null),
+                                                )
+                                              : _buildProfileImageFallback(),
+                                        ),
                                       ),
                                     ),
                                     Container(
@@ -173,7 +174,10 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                                             Theme.of(
                                               context,
                                             ).textTheme.bodyMedium?.color ??
-                                            Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                            Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.color ??
+                                            AppColors.textSecondary,
                                         fontSize: 16,
                                       ),
                                     ).animate().fadeIn(delay: 150.ms),
@@ -336,6 +340,18 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildProfileImageLoading(BuildContext context) {
+    return Center(
+      child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+    );
+  }
+
+  Widget _buildProfileImageFallback() {
+    return const Center(
+      child: Icon(Icons.person, size: 64, color: AppColors.textSecondary),
     );
   }
 }

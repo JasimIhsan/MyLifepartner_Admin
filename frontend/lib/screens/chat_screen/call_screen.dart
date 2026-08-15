@@ -8,6 +8,7 @@ import 'package:life_partner_again/config/env.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/services/chat_service.dart';
 import 'package:life_partner_again/services/zego_service.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:provider/provider.dart';
 import 'package:zego_uikit_prebuilt_call/zego_uikit_prebuilt_call.dart';
 
@@ -15,8 +16,12 @@ class CallScreen extends StatefulWidget {
   final String callID;
   final String userID;
   final String userName;
+  final int? localUserAvatarImageId;
   final String? localUserAvatar;
+  final bool localUserAvatarIsBlurred;
+  final int? remoteUserAvatarImageId;
   final String? remoteUserAvatar;
+  final bool remoteUserAvatarIsBlurred;
   final bool isVideoCall;
   final bool isCaller;
   final String otherUserId;
@@ -26,8 +31,12 @@ class CallScreen extends StatefulWidget {
     required this.callID,
     required this.userID,
     required this.userName,
+    this.localUserAvatarImageId,
     this.localUserAvatar,
+    this.localUserAvatarIsBlurred = false,
+    this.remoteUserAvatarImageId,
     this.remoteUserAvatar,
+    this.remoteUserAvatarIsBlurred = false,
     this.isVideoCall = true,
     required this.isCaller,
     required this.otherUserId,
@@ -232,17 +241,27 @@ class _CallScreenState extends State<CallScreen> {
                   : ZegoUIKitPrebuiltCallConfig.oneOnOneVoiceCall())
               ..avatarBuilder =
                   (BuildContext context, Size size, user, Map extraInfo) {
-                    final avatarUrl = user?.id == widget.userID
+                    final isLocalUser = user?.id == widget.userID;
+                    final avatarImageId = isLocalUser
+                        ? widget.localUserAvatarImageId
+                        : widget.remoteUserAvatarImageId;
+                    final avatarUrl = isLocalUser
                         ? widget.localUserAvatar
                         : widget.remoteUserAvatar;
-                    return user != null && avatarUrl != null
-                        ? Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                image: NetworkImage(avatarUrl),
-                                fit: BoxFit.cover,
-                              ),
+                    final isBlurred = isLocalUser
+                        ? widget.localUserAvatarIsBlurred
+                        : widget.remoteUserAvatarIsBlurred;
+
+                    return user != null &&
+                            (avatarImageId != null || avatarUrl != null)
+                        ? ClipOval(
+                            child: CachedAppImage(
+                              imageId: avatarImageId,
+                              presignedImageUrl: avatarUrl,
+                              isBlurred: isBlurred,
+                              width: size.width,
+                              height: size.height,
+                              fit: BoxFit.cover,
                             ),
                           )
                         : const SizedBox();

@@ -108,7 +108,7 @@ export class UserController {
     */
    private ensureUserOwnsResource(resourceUserId: number, authUserId: number): void {
       if (resourceUserId !== authUserId) {
-         throw new ApiError(HTTP_STATUS.FORBIDDEN, "Forbidden");
+         throw new ApiError(HTTP_STATUS.UNAUTHORIZED, "User is not authorized to access this resource.");
       }
    }
 

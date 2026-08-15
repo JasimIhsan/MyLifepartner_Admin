@@ -139,9 +139,12 @@ class NotificationProvider extends ChangeNotifier {
   }
 
   /// Fetches in-app notifications from backend API.
-  Future<void> fetchNotifications({bool isRefresh = false, int limit = 20}) async {
+  Future<void> fetchNotifications({
+    bool isRefresh = false,
+    int limit = 20,
+  }) async {
     final currentState = _categoryStates[_selectedCategory]!;
-    
+
     if (currentState.isLoading) return;
     if (!isRefresh && !currentState.hasMore) return;
 
@@ -174,7 +177,7 @@ class NotificationProvider extends ChangeNotifier {
       currentState.totalCount = result['total'] is int
           ? result['total']
           : int.tryParse(result['total']?.toString() ?? '0') ?? 0;
-          
+
       final totalPages = result['totalPages'] is int
           ? result['totalPages']
           : int.tryParse(result['totalPages']?.toString() ?? '1') ?? 1;
@@ -219,7 +222,9 @@ class NotificationProvider extends ChangeNotifier {
 
     // Optimistic UI update across all categories
     for (final state in _categoryStates.values) {
-      final index = state.notifications.indexWhere((n) => n.id == notificationId);
+      final index = state.notifications.indexWhere(
+        (n) => n.id == notificationId,
+      );
       if (index != -1 && !state.notifications[index].isRead) {
         state.notifications[index] = state.notifications[index].copyWith(
           isRead: true,

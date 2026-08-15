@@ -67,21 +67,30 @@ class PhotoTipsSheet extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
                 'Follow these tips for the best first impression.',
-                style: TextStyle(fontSize: 13, color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+                style: TextStyle(
+                  fontSize: 13,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: 24),
               Expanded(
                 child: ListView.separated(
                   controller: ctrl,
                   itemCount: tips.length,
-                  separatorBuilder: (_, __) =>
-                      Divider(height: 28, color: Theme.of(context).dividerColor),
+                  separatorBuilder: (_, __) => Divider(
+                    height: 28,
+                    color: Theme.of(context).dividerColor,
+                  ),
                   itemBuilder: (_, i) {
                     final (icon, title, desc) = tips[i];
                     return Row(
@@ -94,7 +103,11 @@ class PhotoTipsSheet extends StatelessWidget {
                             color: Theme.of(context).scaffoldBackgroundColor,
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(icon, size: 20, color: Theme.of(context).primaryColor),
+                          child: Icon(
+                            icon,
+                            size: 20,
+                            color: Theme.of(context).primaryColor,
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -106,7 +119,11 @@ class PhotoTipsSheet extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                 ),
                               ),
                               const SizedBox(height: 3),
@@ -114,7 +131,11 @@ class PhotoTipsSheet extends StatelessWidget {
                                 desc,
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
                                   height: 1.5,
                                 ),
                               ),

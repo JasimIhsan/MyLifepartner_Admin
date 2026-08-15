@@ -40,56 +40,72 @@ export class ImageAccessRequestService implements IImageAccessRequestService {
 
    async getReceivedRequests(ownerUserId: number): Promise<ImageAccessRequestResponseDto[]> {
       const requests = await this.requestRepository.findReceivedRequests(ownerUserId);
-      return Promise.all(requests.map(async (req) => {
-         const profile = req.requester?.profile;
-         let imageUrl = null;
-         if (profile?.images) {
-            const primaryImg = profile.images.find((img) => img.isPrimary) || profile.images[0];
-            if (primaryImg) {
-               imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
+      return Promise.all(
+         requests.map(async (req) => {
+            const profile = req.requester?.profile;
+            let imageUrl = null;
+            let imageId = null;
+            if (profile?.images) {
+               const primaryImg = profile.images.find((img) => img.isPrimary) || profile.images[0];
+               if (primaryImg) {
+                  imageId = primaryImg.id;
+                  imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
+               }
             }
-         }
-         return {
-            id: req.id,
-            ownerUserId: req.ownerUserId,
-            requesterUserId: req.requesterUserId,
-            status: req.status,
-            requestedAt: req.requestedAt,
-            respondedAt: req.respondedAt,
-            requesterProfile: profile ? {
-               name: profile.name,
-               age: profile.dateOfBirth ? this.calculateAge(profile.dateOfBirth) : null,
-               imageUrl,
-            } : null,
-         };
-      }));
+            return {
+               id: req.id,
+               ownerUserId: req.ownerUserId,
+               requesterUserId: req.requesterUserId,
+               status: req.status,
+               requestedAt: req.requestedAt,
+               respondedAt: req.respondedAt,
+               requesterProfile: profile
+                  ? {
+                       name: profile.name,
+                       age: profile.dateOfBirth ? this.calculateAge(profile.dateOfBirth) : null,
+                       imageId,
+                       imageUrl,
+                       presignedImageUrl: imageUrl,
+                    }
+                  : null,
+            };
+         })
+      );
    }
 
    async getSentRequests(requesterUserId: number): Promise<ImageAccessRequestResponseDto[]> {
       const requests = await this.requestRepository.findSentRequests(requesterUserId);
-      return Promise.all(requests.map(async (req) => {
-         const profile = req.owner?.profile;
-         let imageUrl = null;
-         if (profile?.images) {
-            const primaryImg = profile.images.find((img) => img.isPrimary) || profile.images[0];
-            if (primaryImg) {
-               imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
+      return Promise.all(
+         requests.map(async (req) => {
+            const profile = req.owner?.profile;
+            let imageUrl = null;
+            let imageId = null;
+            if (profile?.images) {
+               const primaryImg = profile.images.find((img) => img.isPrimary) || profile.images[0];
+               if (primaryImg) {
+                  imageId = primaryImg.id;
+                  imageUrl = await this.s3Service.getPresignedUrl(primaryImg.imageUrl);
+               }
             }
-         }
-         return {
-            id: req.id,
-            ownerUserId: req.ownerUserId,
-            requesterUserId: req.requesterUserId,
-            status: req.status,
-            requestedAt: req.requestedAt,
-            respondedAt: req.respondedAt,
-            ownerProfile: profile ? {
-               name: profile.name,
-               age: profile.dateOfBirth ? this.calculateAge(profile.dateOfBirth) : null,
-               imageUrl,
-            } : null,
-         };
-      }));
+            return {
+               id: req.id,
+               ownerUserId: req.ownerUserId,
+               requesterUserId: req.requesterUserId,
+               status: req.status,
+               requestedAt: req.requestedAt,
+               respondedAt: req.respondedAt,
+               ownerProfile: profile
+                  ? {
+                       name: profile.name,
+                       age: profile.dateOfBirth ? this.calculateAge(profile.dateOfBirth) : null,
+                       imageId,
+                       imageUrl,
+                       presignedImageUrl: imageUrl,
+                    }
+                  : null,
+            };
+         })
+      );
    }
 
    private calculateAge(dateOfBirth: Date): number {

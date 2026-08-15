@@ -1,4 +1,5 @@
 import { PartnerPreference, Profile, ProfileStatus, SelfieStatus, User, Job, PrivacySettings, SubscriptionPlan, UserSubscription } from "@prisma/client";
+import { PresignedProfileImageDto } from "@/dtos/image.dto";
 
 const ACTIVE_SUBSCRIPTION_STATUSES = new Set(["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"]);
 
@@ -41,6 +42,8 @@ export interface UserDto {
    hasCompletedPartnerPreference: boolean;
    selfieStatus: SelfieStatus | null;
    selfieUrl: string | null;
+   primaryImageId?: number | null;
+   primaryImage?: PresignedProfileImageDto | null;
    primaryImageUrl?: string | null;
    privacyEnabled?: boolean;
    activeSubscription?: UserSubscriptionSummaryDto | null;
@@ -154,7 +157,9 @@ export type UserSelfieDataDto = {
 
 export type UserImageDataDto = {
    id: number;
+   imageId: number;
    imageUrl: string;
+   presignedImageUrl: string;
    isPrimary: boolean;
    url: string;
 };

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:life_partner_again/main.dart' show navigatorKey;
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 /// Full-screen overlay shown when an incoming call is received.
 class IncomingCallOverlay extends StatefulWidget {
@@ -52,8 +53,12 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
         callID: call.callId,
         userID: provider.currentUserId ?? '',
         userName: provider.currentUserName ?? 'User',
+        localUserAvatarImageId: provider.currentUserAvatarImageId,
         localUserAvatar: provider.currentUserAvatar,
+        localUserAvatarIsBlurred: provider.currentUserAvatarIsBlurred,
+        remoteUserAvatarImageId: call.callerAvatarImageId,
         remoteUserAvatar: call.callerAvatar,
+        remoteUserAvatarIsBlurred: call.callerAvatarIsBlurred,
         isVideoCall: call.isVideo,
         isCaller: false,
         otherUserId: call.callerId,
@@ -154,30 +159,15 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Theme.of(context).primaryColor.withValues(alpha: 0.4),
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withValues(alpha: 0.4),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: call.callerAvatar != null
-                          ? CircleAvatar(
-                              radius: 53,
-                              backgroundImage: NetworkImage(call.callerAvatar!),
-                              backgroundColor: Colors.transparent,
-                            )
-                          : Text(
-                              call.callerName.isNotEmpty
-                                  ? call.callerName[0].toUpperCase()
-                                  : '?',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 44,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                    ),
+                    child: Center(child: _buildCallerAvatar(call)),
                   ),
                 ),
 
@@ -235,6 +225,36 @@ class _IncomingCallOverlayState extends State<IncomingCallOverlay>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCallerAvatar(IncomingCall call) {
+    if (call.callerAvatarImageId != null || call.callerAvatar != null) {
+      return ClipOval(
+        child: CachedAppImage(
+          imageId: call.callerAvatarImageId,
+          presignedImageUrl: call.callerAvatar,
+          isBlurred: call.callerAvatarIsBlurred,
+          width: 106,
+          height: 106,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => _buildInitialAvatar(call.callerName),
+          errorWidget: (_, __, ___) => _buildInitialAvatar(call.callerName),
+        ),
+      );
+    }
+
+    return _buildInitialAvatar(call.callerName);
+  }
+
+  Widget _buildInitialAvatar(String name) {
+    return Text(
+      name.isNotEmpty ? name[0].toUpperCase() : '?',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 44,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }

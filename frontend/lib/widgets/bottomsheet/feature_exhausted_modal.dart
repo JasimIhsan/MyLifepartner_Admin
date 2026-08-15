@@ -57,7 +57,9 @@ class FeatureExhaustedModal extends StatelessWidget {
               Text(
                 '$featureType Limit Reached',
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -67,7 +69,9 @@ class FeatureExhaustedModal extends StatelessWidget {
               Text(
                 'You have exhausted your $featureType capability. Please upgrade your subscription plan to continue using this feature.',
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                   fontSize: 14,
                   height: 1.5,
                 ),
@@ -110,7 +114,9 @@ class FeatureExhaustedModal extends StatelessWidget {
                   child: Text(
                     'Maybe Later',
                     style: TextStyle(
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),

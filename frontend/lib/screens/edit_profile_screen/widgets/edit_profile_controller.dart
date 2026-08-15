@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/auth_response.dart';
+import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/primay_date_picker.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/user_repository.dart';
@@ -28,7 +29,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
   bool isLoading = false;
   bool isInitialLoading = true;
   bool loadingImage = false;
-  String? primaryImageUrl;
+  UserImage? primaryImage;
   String? country;
   DateTime? dateOfBirth;
   String? gender;
@@ -153,9 +154,13 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
         );
         if (mounted) {
           setState(() {
-            primaryImageUrl = primary.imageUrl;
+            primaryImage = primary;
           });
         }
+      } else if (mounted) {
+        setState(() {
+          primaryImage = null;
+        });
       }
     } catch (e) {
       debugPrint('Error fetching primary image: $e');

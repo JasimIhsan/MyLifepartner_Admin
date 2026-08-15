@@ -362,7 +362,12 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
       backgroundColor: Colors.white,
       appBar: CustomAppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+          icon: Icon(
+            Icons.arrow_back,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
+          ),
           onPressed: () {
             // Navigator.pushAndRemoveUntil(
             //   context,
@@ -447,7 +452,10 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                                     ? Colors.white
                                     : isCompleted
                                     ? AppColors.success
-                                    : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    : Theme.of(
+                                            context,
+                                          ).textTheme.bodyMedium?.color ??
+                                          AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -479,7 +487,9 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                       'Question ${_currentIndex + 1} of ${_questions.length}',
                       style: TextStyle(
                         fontSize: 10,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -497,14 +507,21 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                 context.go(AppRoutes.landing);
               }
             },
-            child: Icon(Icons.logout, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+            child: Icon(
+              Icons.logout,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
+            ),
           ),
         ],
       ),
       body: SafeArea(
         child: _isLoading
             ? Center(
-                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               )
             : _errorMessage != null
             ? Center(
@@ -531,7 +548,11 @@ class _QuestionaireScreenState extends State<QuestionaireScreen> {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
                                   letterSpacing: 1.2,
                                   // uppercase:
                                   //     Color(0xFFB88973) == Theme.of(context).primaryColor

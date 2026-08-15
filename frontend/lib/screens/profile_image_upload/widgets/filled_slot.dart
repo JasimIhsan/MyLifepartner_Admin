@@ -1,10 +1,10 @@
 import 'dart:ui';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class FilledSlot extends StatefulWidget {
   final UserImage image;
@@ -51,7 +51,10 @@ class _FilledSlotState extends State<FilledSlot> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
                       border: isPrimary
-                          ? Border.all(color: Theme.of(context).primaryColor, width: 2.5)
+                          ? Border.all(
+                              color: Theme.of(context).primaryColor,
+                              width: 2.5,
+                            )
                           : null,
                       boxShadow: [
                         BoxShadow(
@@ -68,8 +71,9 @@ class _FilledSlotState extends State<FilledSlot> {
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
-                          CachedNetworkImage(
-                            imageUrl: widget.image.imageUrl,
+                          CachedAppImage(
+                            imageId: widget.image.imageId,
+                            presignedImageUrl: widget.image.presignedImageUrl,
                             fit: BoxFit.cover,
                             fadeInDuration: const Duration(milliseconds: 300),
                             placeholder: (_, __) => Container(
@@ -85,7 +89,11 @@ class _FilledSlotState extends State<FilledSlot> {
                               color: Theme.of(context).primaryColorLight,
                               child: Icon(
                                 Icons.broken_image_outlined,
-                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
                               ),
                             ),
                           ).animate().scale(
@@ -132,9 +140,9 @@ class _FilledSlotState extends State<FilledSlot> {
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Theme.of(context).primaryColor.withValues(
-                                      alpha: 0.35,
-                                    ),
+                                    color: Theme.of(
+                                      context,
+                                    ).primaryColor.withValues(alpha: 0.35),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),

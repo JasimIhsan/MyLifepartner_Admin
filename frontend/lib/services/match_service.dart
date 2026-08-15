@@ -30,7 +30,7 @@ class MatchService {
     final response = await _client.get('/match/profile/$profileId');
     final data = response.data;
     if (data['success'] == true) {
-      return data['data'] as Map<String, dynamic>;
+      return _normalizeProfileImages(data['data'] as Map<String, dynamic>);
     }
     return null;
   }
@@ -77,5 +77,35 @@ class MatchService {
       data: {'targetProfileId': targetProfileId},
     );
     return response.data['success'] == true;
+  }
+
+  static Map<String, dynamic> _normalizeProfileImages(
+    Map<String, dynamic> profile,
+  ) {
+    return {...profile, 'images': _normalizeImages(profile['images'])};
+  }
+
+  static List<dynamic> _normalizeImages(dynamic rawImages) {
+    if (rawImages is! List) return [];
+
+    return rawImages.map((rawImage) {
+      if (rawImage is! Map) return rawImage;
+
+      final image = Map<String, dynamic>.from(rawImage);
+      final imageId = image['imageId'] ?? image['id'];
+      final imageUrl =
+          image['presignedImageUrl'] ?? image['imageUrl'] ?? image['url'];
+
+      if (imageId != null) {
+        image['imageId'] = imageId;
+        image['id'] ??= imageId;
+      }
+      if (imageUrl != null) {
+        image['presignedImageUrl'] = imageUrl;
+        image['imageUrl'] = imageUrl;
+      }
+
+      return image;
+    }).toList();
   }
 }

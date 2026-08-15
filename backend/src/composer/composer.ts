@@ -176,7 +176,7 @@ export const blockService = new BlockService(blockRepository);
 
 // Shared services
 export const guideService = new GuideService(guideRepository);
-export const chatService = new ChatService(chatRepository, userFeatureService, blockService);
+export const chatService = new ChatService(chatRepository, userFeatureService, blockService, s3Service);
 export const privacyPolicyService = new PrivacyPolicyService();
 export const privacyImageMapperService = new PrivacyImageMapperService(privacyPolicyService, s3Service);
 export const imageAccessRequestService = new ImageAccessRequestService(imageAccessRequestRepository, s3Service);

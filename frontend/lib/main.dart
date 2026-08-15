@@ -188,8 +188,14 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(create: (_) => MatchProvider()),
         ChangeNotifierProvider(create: (_) => SubscriptionProvider()),
         ChangeNotifierProvider(create: (_) => ImageAssetProvider()),
-        ChangeNotifierProvider(create: (_) => ChatProvider()..initListeners(), lazy: false),
-        ChangeNotifierProvider(create: (_) => CallProvider()..initListeners(), lazy: false),
+        ChangeNotifierProvider(
+          create: (_) => ChatProvider()..initListeners(),
+          lazy: false,
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CallProvider()..initListeners(),
+          lazy: false,
+        ),
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(create: (_) => DiscoveryProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),

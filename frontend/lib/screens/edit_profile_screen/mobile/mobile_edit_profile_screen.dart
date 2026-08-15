@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +6,7 @@ import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/widgets/edit_profile_controller.dart';
 import 'package:life_partner_again/screens/onboarding/widgets/onboarding_ui_helpers.dart';
 import 'package:life_partner_again/services/job_service.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class MobileEditProfileScreen extends StatefulWidget {
   final User user;
@@ -141,205 +141,208 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                           children: [
                             _buildPhotoHeader(context),
                             const SizedBox(height: 8),
-                      _buildSection(
-                        context,
-                        label: 'PERSONAL DETAILS',
-                        icon: Icons.person_outline_rounded,
-                        children: [
-                          _buildFormField(
-                            context,
-                            label: 'Name',
-                            child: _buildTextInput(
-                              controller: nameController,
-                              hint: 'Your full name',
-                              validator: (v) {
-                                if (v == null || v.trim().isEmpty) {
-                                  return 'Please enter your name';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          _buildFormField(
-                            context,
-                            label: 'Gender',
-                            child: _buildTapField(
+                            _buildSection(
                               context,
-                              value: gender,
-                              hint: 'Select gender',
-                              onTap: () => _showGenderPicker(context),
+                              label: 'PERSONAL DETAILS',
+                              icon: Icons.person_outline_rounded,
+                              children: [
+                                _buildFormField(
+                                  context,
+                                  label: 'Name',
+                                  child: _buildTextInput(
+                                    controller: nameController,
+                                    hint: 'Your full name',
+                                    validator: (v) {
+                                      if (v == null || v.trim().isEmpty) {
+                                        return 'Please enter your name';
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                ),
+                                _buildFormField(
+                                  context,
+                                  label: 'Gender',
+                                  child: _buildTapField(
+                                    context,
+                                    value: gender,
+                                    hint: 'Select gender',
+                                    onTap: () => _showGenderPicker(context),
+                                  ),
+                                ),
+                                _buildFormField(
+                                  context,
+                                  label: 'Date of Birth',
+                                  child: _buildTapField(
+                                    context,
+                                    value: dateController.text.isEmpty
+                                        ? null
+                                        : dateController.text,
+                                    hint: 'Select date',
+                                    trailingLabel: ageController.text.isEmpty
+                                        ? null
+                                        : '${ageController.text} yrs',
+                                    onTap: selectDateOfBirth,
+                                  ),
+                                ),
+                                _buildFormField(
+                                  context,
+                                  label: 'Marital Status',
+                                  child: _buildTapField(
+                                    context,
+                                    value: maritalStatus,
+                                    hint: 'Select status',
+                                    onTap: () =>
+                                        _showMaritalStatusPicker(context),
+                                  ),
+                                ),
+                                _buildFormField(
+                                  context,
+                                  label: 'Children',
+                                  isLast: true,
+                                  child: _buildTapField(
+                                    context,
+                                    value: childrenStatus,
+                                    hint: 'Select status',
+                                    onTap: () =>
+                                        _showChildrenStatusPicker(context),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          _buildFormField(
-                            context,
-                            label: 'Date of Birth',
-                            child: _buildTapField(
+                            _buildSection(
                               context,
-                              value: dateController.text.isEmpty
-                                  ? null
-                                  : dateController.text,
-                              hint: 'Select date',
-                              trailingLabel: ageController.text.isEmpty
-                                  ? null
-                                  : '${ageController.text} yrs',
-                              onTap: selectDateOfBirth,
+                              label: 'ABOUT ME',
+                              icon: Icons.auto_awesome_outlined,
+                              children: [_buildTextArea(context)],
                             ),
-                          ),
-                          _buildFormField(
-                            context,
-                            label: 'Marital Status',
-                            child: _buildTapField(
+                            _buildSection(
                               context,
-                              value: maritalStatus,
-                              hint: 'Select status',
-                              onTap: () => _showMaritalStatusPicker(context),
+                              label: 'EDUCATION & CAREER',
+                              icon: Icons.school_outlined,
+                              children: [
+                                _buildFormField(
+                                  context,
+                                  label: 'Education',
+                                  child: _buildTapField(
+                                    context,
+                                    value: highestEducation,
+                                    hint: 'Select level',
+                                    onTap: () => _showEducationPicker(context),
+                                  ),
+                                ),
+                                _buildFormField(
+                                  context,
+                                  label: 'Profession',
+                                  isLast: true,
+                                  child: _buildTapField(
+                                    context,
+                                    value: occupationController.text.isEmpty
+                                        ? null
+                                        : occupationController.text,
+                                    hint: 'Select profession',
+                                    onTap: () => _showProfessionPicker(context),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          _buildFormField(
-                            context,
-                            label: 'Children',
-                            isLast: true,
-                            child: _buildTapField(
+                            _buildSection(
                               context,
-                              value: childrenStatus,
-                              hint: 'Select status',
-                              onTap: () => _showChildrenStatusPicker(context),
+                              label: 'LOCATION',
+                              icon: Icons.place_outlined,
+                              children: [
+                                _buildFormField(
+                                  context,
+                                  label: 'Country',
+                                  child: _buildCountryTapField(context),
+                                ),
+                                _buildFormField(
+                                  context,
+                                  label: 'City',
+                                  isLast: true,
+                                  child: _buildTextInput(
+                                    controller: cityController,
+                                    hint: 'Your city',
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                            _buildSection(
+                              context,
+                              label: 'RELATIONSHIP',
+                              icon: Icons.favorite_rounded,
+                              children: [
+                                _buildFormField(
+                                  context,
+                                  label: 'Looking For',
+                                  child: _buildTapField(
+                                    context,
+                                    value: lookingFor,
+                                    hint: 'What are you seeking?',
+                                    onTap: () => _showLookingForPicker(context),
+                                  ),
+                                ),
+                                // _buildFormField(
+                                //   context,
+                                //   label: 'Timeline',
+                                //   isLast: true,
+                                //   child: _buildTapField(
+                                //     context,
+                                //     value: relationshipTimeline,
+                                //     hint: 'Your timeline',
+                                //     onTap: () => _showTimelinePicker(context),
+                                //   ),
+                                // ),
+                              ],
+                            ),
+                            _buildSection(
+                              context,
+                              label: 'LIFESTYLE',
+                              icon: Icons.self_improvement_outlined,
+                              children: [
+                                _buildFormField(
+                                  context,
+                                  label: 'Smoking',
+                                  child: _buildTapField(
+                                    context,
+                                    value: smokingHabit,
+                                    hint: 'Smoking habit',
+                                    onTap: () => _showSmokingPicker(context),
+                                  ),
+                                ),
+                                _buildFormField(
+                                  context,
+                                  label: 'Drinking',
+                                  isLast: true,
+                                  child: _buildTapField(
+                                    context,
+                                    value: drinkingHabit,
+                                    hint: 'Drinking habit',
+                                    onTap: () => _showDrinkingPicker(context),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            _buildSection(
+                              context,
+                              label: 'LANGUAGES',
+                              icon: Icons.translate_rounded,
+                              children: [
+                                _buildFormField(
+                                  context,
+                                  label: 'Languages',
+                                  isLast: true,
+                                  child: _buildLanguagesTapField(context),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height:
+                                  MediaQuery.of(context).padding.bottom + 40,
+                            ),
+                          ],
+                        ),
                       ),
-                      _buildSection(
-                        context,
-                        label: 'ABOUT ME',
-                        icon: Icons.auto_awesome_outlined,
-                        children: [_buildTextArea(context)],
-                      ),
-                      _buildSection(
-                        context,
-                        label: 'EDUCATION & CAREER',
-                        icon: Icons.school_outlined,
-                        children: [
-                          _buildFormField(
-                            context,
-                            label: 'Education',
-                            child: _buildTapField(
-                              context,
-                              value: highestEducation,
-                              hint: 'Select level',
-                              onTap: () => _showEducationPicker(context),
-                            ),
-                          ),
-                          _buildFormField(
-                            context,
-                            label: 'Profession',
-                            isLast: true,
-                            child: _buildTapField(
-                              context,
-                              value: occupationController.text.isEmpty
-                                  ? null
-                                  : occupationController.text,
-                              hint: 'Select profession',
-                              onTap: () => _showProfessionPicker(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                      _buildSection(
-                        context,
-                        label: 'LOCATION',
-                        icon: Icons.place_outlined,
-                        children: [
-                          _buildFormField(
-                            context,
-                            label: 'Country',
-                            child: _buildCountryTapField(context),
-                          ),
-                          _buildFormField(
-                            context,
-                            label: 'City',
-                            isLast: true,
-                            child: _buildTextInput(
-                              controller: cityController,
-                              hint: 'Your city',
-                            ),
-                          ),
-                        ],
-                      ),
-                      _buildSection(
-                        context,
-                        label: 'RELATIONSHIP',
-                        icon: Icons.favorite_rounded,
-                        children: [
-                          _buildFormField(
-                            context,
-                            label: 'Looking For',
-                            child: _buildTapField(
-                              context,
-                              value: lookingFor,
-                              hint: 'What are you seeking?',
-                              onTap: () => _showLookingForPicker(context),
-                            ),
-                          ),
-                          // _buildFormField(
-                          //   context,
-                          //   label: 'Timeline',
-                          //   isLast: true,
-                          //   child: _buildTapField(
-                          //     context,
-                          //     value: relationshipTimeline,
-                          //     hint: 'Your timeline',
-                          //     onTap: () => _showTimelinePicker(context),
-                          //   ),
-                          // ),
-                        ],
-                      ),
-                      _buildSection(
-                        context,
-                        label: 'LIFESTYLE',
-                        icon: Icons.self_improvement_outlined,
-                        children: [
-                          _buildFormField(
-                            context,
-                            label: 'Smoking',
-                            child: _buildTapField(
-                              context,
-                              value: smokingHabit,
-                              hint: 'Smoking habit',
-                              onTap: () => _showSmokingPicker(context),
-                            ),
-                          ),
-                          _buildFormField(
-                            context,
-                            label: 'Drinking',
-                            isLast: true,
-                            child: _buildTapField(
-                              context,
-                              value: drinkingHabit,
-                              hint: 'Drinking habit',
-                              onTap: () => _showDrinkingPicker(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                      _buildSection(
-                        context,
-                        label: 'LANGUAGES',
-                        icon: Icons.translate_rounded,
-                        children: [
-                          _buildFormField(
-                            context,
-                            label: 'Languages',
-                            isLast: true,
-                            child: _buildLanguagesTapField(context),
-                          ),
-                        ],
-                      ),
-                          SizedBox(
-                            height: MediaQuery.of(context).padding.bottom + 40,
-                          ),
-                        ],
-                      ),
-                    ),
               ),
             ],
           ),
@@ -428,10 +431,11 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                       ),
                     ),
                     child: ClipOval(
-                      child:
-                          primaryImageUrl != null && primaryImageUrl!.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: primaryImageUrl!,
+                      child: primaryImage != null
+                          ? CachedAppImage(
+                              imageId: primaryImage!.imageId,
+                              presignedImageUrl:
+                                  primaryImage!.presignedImageUrl,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => Center(
                                 child: Icon(

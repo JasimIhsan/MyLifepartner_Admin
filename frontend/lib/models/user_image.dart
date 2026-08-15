@@ -1,22 +1,35 @@
 class UserImage {
   final int id;
+  final int imageId;
   final String imageUrl;
+  final String presignedImageUrl;
   final bool isPrimary;
   final int orderIndex;
   final String verificationStatus;
 
   UserImage({
     required this.id,
+    required this.imageId,
     required this.imageUrl,
+    required this.presignedImageUrl,
     required this.isPrimary,
     required this.orderIndex,
     required this.verificationStatus,
   });
 
   factory UserImage.fromJson(Map<String, dynamic> json) {
+    final parsedImageId = json['imageId'] as int? ?? json['id'] as int? ?? 0;
+    final parsedImageUrl =
+        json['presignedImageUrl'] as String? ??
+        json['imageUrl'] as String? ??
+        json['url'] as String? ??
+        '';
+
     return UserImage(
-      id: json['id'] as int? ?? 0,
-      imageUrl: json['imageUrl'] as String? ?? '',
+      id: parsedImageId,
+      imageId: parsedImageId,
+      imageUrl: parsedImageUrl,
+      presignedImageUrl: parsedImageUrl,
       isPrimary: json['isPrimary'] as bool? ?? false,
       orderIndex: json['orderIndex'] as int? ?? 0,
       verificationStatus: json['verificationStatus'] as String? ?? 'Pending',

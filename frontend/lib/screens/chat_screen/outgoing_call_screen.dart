@@ -5,18 +5,23 @@ import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:provider/provider.dart';
 
 /// Screen shown to the caller while waiting for the callee to accept/decline.
 class OutgoingCallScreen extends StatefulWidget {
   final String calleeName;
+  final int? calleeAvatarImageId;
   final String? calleeAvatar;
+  final bool calleeAvatarIsBlurred;
   final bool isVideoCall;
 
   const OutgoingCallScreen({
     super.key,
     required this.calleeName,
+    this.calleeAvatarImageId,
     this.calleeAvatar,
+    this.calleeAvatarIsBlurred = false,
     required this.isVideoCall,
   });
 
@@ -83,8 +88,12 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                 callID: call.callId,
                 userID: provider.currentUserId ?? '',
                 userName: provider.currentUserName ?? 'User',
+                localUserAvatarImageId: provider.currentUserAvatarImageId,
                 localUserAvatar: provider.currentUserAvatar,
-                remoteUserAvatar: widget.calleeAvatar,
+                localUserAvatarIsBlurred: provider.currentUserAvatarIsBlurred,
+                remoteUserAvatarImageId: call.calleeAvatarImageId,
+                remoteUserAvatar: call.calleeAvatar,
+                remoteUserAvatarIsBlurred: call.calleeAvatarIsBlurred,
                 isVideoCall: call.isVideo,
                 isCaller: true,
                 otherUserId: call.calleeId,
@@ -196,26 +205,7 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: widget.calleeAvatar != null
-                            ? CircleAvatar(
-                                radius: 53,
-                                backgroundImage: NetworkImage(
-                                  widget.calleeAvatar!,
-                                ),
-                                backgroundColor: Colors.transparent,
-                              )
-                            : Text(
-                                widget.calleeName.isNotEmpty
-                                    ? widget.calleeName[0].toUpperCase()
-                                    : '?',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 44,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                      ),
+                      child: Center(child: _buildCalleeAvatar()),
                     ),
                   ),
 
@@ -287,6 +277,36 @@ class _OutgoingCallScreenState extends State<OutgoingCallScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCalleeAvatar() {
+    if (widget.calleeAvatarImageId != null || widget.calleeAvatar != null) {
+      return ClipOval(
+        child: CachedAppImage(
+          imageId: widget.calleeAvatarImageId,
+          presignedImageUrl: widget.calleeAvatar,
+          isBlurred: widget.calleeAvatarIsBlurred,
+          width: 106,
+          height: 106,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => _buildInitialAvatar(),
+          errorWidget: (_, __, ___) => _buildInitialAvatar(),
+        ),
+      );
+    }
+
+    return _buildInitialAvatar();
+  }
+
+  Widget _buildInitialAvatar() {
+    return Text(
+      widget.calleeName.isNotEmpty ? widget.calleeName[0].toUpperCase() : '?',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 44,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }

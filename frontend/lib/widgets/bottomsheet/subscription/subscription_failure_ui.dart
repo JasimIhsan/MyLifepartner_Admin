@@ -77,7 +77,9 @@ class SubscriptionFailureUI extends StatelessWidget {
             isCancelled
                 ? Icons.info_outline_rounded
                 : Icons.error_outline_rounded,
-            color: isCancelled ? Colors.amber.shade800 : Theme.of(context).colorScheme.error,
+            color: isCancelled
+                ? Colors.amber.shade800
+                : Theme.of(context).colorScheme.error,
             size: 48,
           ),
         ),
@@ -87,7 +89,9 @@ class SubscriptionFailureUI extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -96,7 +100,9 @@ class SubscriptionFailureUI extends StatelessWidget {
           errorMessage,
           style: TextStyle(
             fontSize: 15,
-            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
             height: 1.5,
           ),
           textAlign: TextAlign.center,

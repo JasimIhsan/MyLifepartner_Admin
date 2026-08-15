@@ -23,7 +23,9 @@ class ChatMessageBubble extends StatelessWidget {
           if (isAssistant) ...[
             CircleAvatar(
               radius: 16,
-              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+              backgroundColor: Theme.of(
+                context,
+              ).primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
               child: Icon(
                 Icons.support_agent_rounded,
                 color: Theme.of(context).primaryColor,
@@ -49,7 +51,9 @@ class ChatMessageBubble extends StatelessWidget {
             const SizedBox(width: 8),
             CircleAvatar(
               radius: 16,
-              backgroundColor: Theme.of(context).primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
+              backgroundColor: Theme.of(
+                context,
+              ).primaryColor.withValues(alpha: isDark ? 0.2 : 0.1),
               child: Icon(
                 Icons.person_outline_rounded,
                 color: Theme.of(context).primaryColor,
@@ -64,7 +68,9 @@ class ChatMessageBubble extends StatelessWidget {
 
   Widget _buildThinkingBubble(BuildContext context, String text, bool isDark) {
     final bubbleBg = isDark ? const Color(0xFF2C2C2E) : Colors.grey.shade100;
-    final textColor = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+    final textColor = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -128,7 +134,12 @@ class ChatMessageBubble extends StatelessWidget {
     return RichText(text: TextSpan(children: spans));
   }
 
-  Widget _buildTextBubble(BuildContext context, ChatMessage message, bool isAssistant, bool isDark) {
+  Widget _buildTextBubble(
+    BuildContext context,
+    ChatMessage message,
+    bool isAssistant,
+    bool isDark,
+  ) {
     final List<String> bullets = message.data is List<String>
         ? message.data as List<String>
         : [];
@@ -136,9 +147,15 @@ class ChatMessageBubble extends StatelessWidget {
     // Assistant bubble: white in light, dark card in dark mode
     // User bubble: primary color always (looks great in both modes)
     final Color assistantBg = isDark ? const Color(0xFF2C2C2E) : Colors.white;
-    final Color assistantText = isDark ? AppColors.darkTextPrimary : AppColors.textPrimary;
-    final Color assistantSubText = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
-    final Color bulletDot = isDark ? AppColors.primary.withValues(alpha: 0.8) : AppColors.primary;
+    final Color assistantText = isDark
+        ? AppColors.darkTextPrimary
+        : AppColors.textPrimary;
+    final Color assistantSubText = isDark
+        ? AppColors.darkTextSecondary
+        : AppColors.textSecondary;
+    final Color bulletDot = isDark
+        ? AppColors.primary.withValues(alpha: 0.8)
+        : AppColors.primary;
 
     final baseStyle = TextStyle(
       fontSize: 14,
@@ -198,9 +215,7 @@ class ChatMessageBubble extends StatelessWidget {
                         width: 5,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: isAssistant
-                              ? bulletDot
-                              : Colors.white70,
+                          color: isAssistant ? bulletDot : Colors.white70,
                           shape: BoxShape.circle,
                         ),
                       ),

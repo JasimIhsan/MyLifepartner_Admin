@@ -86,13 +86,8 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
           ),
-          IOSUiSettings(
-            title: 'Crop Image',
-          ),
-          WebUiSettings(
-            context: context,
-            presentStyle: WebPresentStyle.dialog,
-          ),
+          IOSUiSettings(title: 'Crop Image'),
+          WebUiSettings(context: context, presentStyle: WebPresentStyle.dialog),
         ],
       );
       if (croppedFile != null) {
@@ -292,8 +287,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isValid =
-        _images.isNotEmpty &&
-        _images.any((img) => img.isPrimary == true);
+        _images.isNotEmpty && _images.any((img) => img.isPrimary == true);
 
     return PopScope(
       canPop: false,
@@ -315,12 +309,17 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                 height: 32,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: Theme.of(context).dividerColor, width: 1.5),
+                  border: Border.all(
+                    color: Theme.of(context).dividerColor,
+                    width: 1.5,
+                  ),
                 ),
                 child: Icon(
                   Icons.question_mark_rounded,
                   size: 16,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
               onPressed: _showPhotoTips,
@@ -331,7 +330,9 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
           top: false,
           child: _isLoading && _images.isEmpty
               ? Center(
-                  child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).primaryColor,
+                  ),
                 )
               : Column(
                   children: [
@@ -347,7 +348,11 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                               style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w700,
-                                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color ??
+                                    AppColors.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 6),
@@ -355,7 +360,11 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
                               'Upload at least 1 clear photo of yourself. Tap any photo to manage it.',
                               style: TextStyle(
                                 fontSize: 14,
-                                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                color:
+                                    Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
                                 height: 1.5,
                               ),
                             ),

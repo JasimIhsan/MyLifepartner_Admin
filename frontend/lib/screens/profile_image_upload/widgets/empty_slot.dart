@@ -40,7 +40,9 @@ class _EmptySlotState extends State<EmptySlot> {
                 curve: Curves.easeInOut,
                 child: CustomPaint(
                   painter: DashedBorderPainter(
-                    color: isMain ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
+                    color: isMain
+                        ? Theme.of(context).primaryColor
+                        : Theme.of(context).dividerColor,
                     borderRadius: 16,
                     dashLength: 7,
                     gapLength: 5,
@@ -49,7 +51,9 @@ class _EmptySlotState extends State<EmptySlot> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: isMain
-                          ? Theme.of(context).primaryColor.withValues(alpha: 0.04)
+                          ? Theme.of(
+                              context,
+                            ).primaryColor.withValues(alpha: 0.04)
                           : const Color(0xFFFAFAFA),
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -69,10 +73,12 @@ class _EmptySlotState extends State<EmptySlot> {
                                 height: 48,
                                 decoration: BoxDecoration(
                                   color: isMain
-                                      ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
-                                      : Theme.of(context).dividerColor.withValues(
-                                          alpha: 0.5,
-                                        ),
+                                      ? Theme.of(
+                                          context,
+                                        ).primaryColor.withValues(alpha: 0.1)
+                                      : Theme.of(
+                                          context,
+                                        ).dividerColor.withValues(alpha: 0.5),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
@@ -81,7 +87,10 @@ class _EmptySlotState extends State<EmptySlot> {
                                       : Icons.add_rounded,
                                   color: isMain
                                       ? Theme.of(context).primaryColor
-                                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                      : Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.color ??
+                                            AppColors.textSecondary,
                                   size: isMain ? 24 : 22,
                                 ),
                               ),
@@ -95,7 +104,10 @@ class _EmptySlotState extends State<EmptySlot> {
                                       : FontWeight.w500,
                                   color: isMain
                                       ? Theme.of(context).primaryColor
-                                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                      : Theme.of(
+                                              context,
+                                            ).textTheme.bodyMedium?.color ??
+                                            AppColors.textSecondary,
                                 ),
                               ),
                               if (isMain) ...[
@@ -104,7 +116,11 @@ class _EmptySlotState extends State<EmptySlot> {
                                   'First impression',
                                   style: TextStyle(
                                     fontSize: 11,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                   ),
                                 ),
                               ],

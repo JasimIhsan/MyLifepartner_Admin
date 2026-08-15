@@ -117,7 +117,11 @@ class _RunningChevrons extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: List.generate(3, (index) {
         final int animationOrder = isLeft ? (2 - index) : index;
-        return Icon(singleChevron, size: size * 0.16, color: Theme.of(context).primaryColor)
+        return Icon(
+              singleChevron,
+              size: size * 0.16,
+              color: Theme.of(context).primaryColor,
+            )
             .animate(onPlay: (controller) => controller.repeat())
             .fadeIn(
               begin: 0.25,

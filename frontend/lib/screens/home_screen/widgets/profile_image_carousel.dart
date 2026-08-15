@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class ProfileImageCarousel extends StatefulWidget {
   final List<MatchImage> images;
@@ -61,16 +61,20 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
             duration: const Duration(milliseconds: 300),
             transitionBuilder: (child, animation) =>
                 FadeTransition(opacity: animation, child: child),
-            child: CachedNetworkImage(
+            child: CachedAppImage(
               key: ValueKey(_currentIndex),
-              imageUrl: images[_currentIndex].imageUrl,
+              imageId: images[_currentIndex].imageId,
+              presignedImageUrl: images[_currentIndex].presignedImageUrl,
+              isBlurred: images[_currentIndex].isBlurred,
               width: double.infinity,
               height: widget.height,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 color: Colors.black,
                 child: Center(
-                  child: CircularProgressIndicator(color: Theme.of(context).colorScheme.surface),
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
                 ),
               ),
               errorWidget: (_, __, ___) => Container(
@@ -100,7 +104,9 @@ class _ProfileImageCarouselState extends State<ProfileImageCarousel> {
                       borderRadius: BorderRadius.circular(2),
                       color: i <= _currentIndex
                           ? Theme.of(context).colorScheme.surface
-                          : Theme.of(context).colorScheme.surface.withValues(alpha: 0.35),
+                          : Theme.of(
+                              context,
+                            ).colorScheme.surface.withValues(alpha: 0.35),
                     ),
                   ).animate().fadeIn(duration: 200.ms),
                 ),

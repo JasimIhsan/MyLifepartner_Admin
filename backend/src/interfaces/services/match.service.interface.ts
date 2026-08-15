@@ -11,6 +11,15 @@ export enum InteractionState {
    MATCHED = "MATCHED",
 }
 
+export interface ProfileImageResponse {
+   id: number;
+   imageId: number;
+   imageUrl: string;
+   presignedImageUrl: string;
+   isPrimary: boolean;
+   isBlurred?: boolean;
+}
+
 export interface MatchRecommendationItem {
    id: number;
    userId: number;
@@ -24,7 +33,7 @@ export interface MatchRecommendationItem {
    maritalStatus: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
-   images: Array<{ imageUrl: string; isPrimary: boolean; isBlurred?: boolean }>;
+   images: ProfileImageResponse[];
    interactionState: InteractionState;
    createdAt: Date;
    lastLoginAt: Date;
@@ -62,7 +71,7 @@ export interface ProfileDetail {
    smokingHabit?: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
-   images: Array<{ imageUrl: string; isPrimary: boolean; isBlurred?: boolean }>;
+   images: ProfileImageResponse[];
    interactionState: InteractionState;
    createdAt: Date;
    lastLoginAt: Date;

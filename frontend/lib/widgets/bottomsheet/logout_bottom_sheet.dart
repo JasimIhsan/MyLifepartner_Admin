@@ -65,7 +65,9 @@ class LogoutBottomSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
@@ -77,7 +79,9 @@ class LogoutBottomSheet extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               height: 1.5,
             ),
           ).animate().fadeIn(delay: 200.ms, duration: 300.ms),

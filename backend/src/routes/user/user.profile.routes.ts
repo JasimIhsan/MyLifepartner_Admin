@@ -83,6 +83,13 @@ router.patch("/privacy/:userId", privacyController.updatePrivacySettings);
 router.post("/upload-image/:userId", multerConfig.single("image"), profileImageController.uploadImage);
 
 /**
+ * @route   POST /api/v1/user/profile/images/presigned-urls
+ * @desc    Get fresh presigned URLs for profile image IDs
+ * @access  Private
+ */
+router.post("/images/presigned-urls", profileImageController.getPresignedImageUrls);
+
+/**
  * @route   PUT /api/v1/user/profile/replace-image/:userId/:imageId
  * @desc    Replace a specific profile image for user
  * @access  Private

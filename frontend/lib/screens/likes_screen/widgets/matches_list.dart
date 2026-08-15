@@ -80,7 +80,8 @@ class _MatchesListState extends State<MatchesList> {
   ) async {
     final provider = context.read<MatchProvider>();
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final successBgColor = Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
+    final successBgColor =
+        Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary;
     final errorBgColor = Theme.of(context).colorScheme.error;
     final bool? confirm = await showDialog<bool>(
       context: context,
@@ -94,19 +95,29 @@ class _MatchesListState extends State<MatchesList> {
             'Cancel Interest?',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
           ),
           content: Text(
             'Are you sure you want to cancel your interest request to ${profile.name}?',
-            style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+            style: TextStyle(
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => dialogContext.pop(false),
               child: Text(
                 'No',
-                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
+                style: TextStyle(
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
+                ),
               ),
             ),
             ElevatedButton(
@@ -223,7 +234,9 @@ class _MatchesListState extends State<MatchesList> {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
-                          color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          color:
+                              Theme.of(context).textTheme.bodyLarge?.color ??
+                              AppColors.textPrimary,
                           letterSpacing: -0.5,
                         ),
                       )
@@ -236,7 +249,9 @@ class _MatchesListState extends State<MatchesList> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 14,
-                          color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.textSecondary,
                           height: 1.5,
                         ),
                       )

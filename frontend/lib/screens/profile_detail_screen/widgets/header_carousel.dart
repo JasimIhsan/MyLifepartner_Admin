@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class HeaderCarousel extends StatefulWidget {
   final List<dynamic> images;
@@ -23,14 +24,12 @@ class _HeaderCarouselState extends State<HeaderCarousel> {
           itemCount: images.length,
           onPageChanged: (i) => setState(() => _page = i),
           itemBuilder: (_, i) {
-            final img = images[i] as Map<String, dynamic>;
-            final url = img['imageUrl'] as String?;
-            if (url == null) return Container(color: Theme.of(context).primaryColorLight);
-
-            return Image.network(
-              url,
+            return CachedAppImage.fromProfileImageMap(
+              image: images[i],
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) =>
+              placeholder: (_, __) =>
+                  Container(color: Theme.of(context).primaryColorLight),
+              errorWidget: (_, __, ___) =>
                   Container(color: Theme.of(context).primaryColorLight),
             );
           },

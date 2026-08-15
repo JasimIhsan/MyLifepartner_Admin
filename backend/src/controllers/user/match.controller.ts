@@ -3,6 +3,7 @@ import { ApiError } from "@/utils/ApiError";
 import { ApiResponse } from "@/utils/ApiResponse";
 import { asyncHandler } from "@/utils/asyncHandler";
 import { HTTP_STATUS } from "@/utils/constants";
+import logger from "@/utils/logger";
 import { Request, Response } from "express";
 
 export class MatchController {
@@ -14,6 +15,8 @@ export class MatchController {
     */
    public getRecommendations = asyncHandler(async (req: Request, res: Response) => {
       const userId = this.getAuthenticatedUserId(req);
+
+      logger.debug("UserId: ", userId);
 
       const recommendations = await this.matchService.getRecommendations(userId);
 

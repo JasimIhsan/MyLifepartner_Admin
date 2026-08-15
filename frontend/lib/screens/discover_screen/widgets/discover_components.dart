@@ -8,6 +8,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/country_helper.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/services/image_access_service.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
@@ -32,19 +33,9 @@ class ProfileBrowserCard extends StatelessWidget {
     this.isActioned = false,
   });
 
-  String? get _imageUrl {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
-    return null;
-  }
+  MatchImage? get _profileImage => profile.primaryOrFirstImage;
 
-  bool get _isBlurred {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.isBlurred;
-    if (profile.images.isNotEmpty) return profile.images.first.isBlurred;
-    return false;
-  }
+  bool get _isBlurred => _profileImage?.isBlurred ?? false;
 
   bool _isNewProfile(String isoString) {
     try {
@@ -78,15 +69,15 @@ class ProfileBrowserCard extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           // Profile Hero Image
-          _imageUrl != null
-              ? Image.network(
-                  _imageUrl!,
+          _profileImage != null
+              ? CachedAppImage(
+                  imageId: _profileImage!.imageId,
+                  presignedImageUrl: _profileImage!.presignedImageUrl,
+                  isBlurred: _profileImage!.isBlurred,
                   fit: BoxFit.cover,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return _placeholder(context, showLoading: true);
-                  },
-                  errorBuilder: (_, __, ___) => _placeholder(context),
+                  placeholder: (_, __) =>
+                      _placeholder(context, showLoading: true),
+                  errorWidget: (_, __, ___) => _placeholder(context),
                 )
               : _placeholder(context),
 

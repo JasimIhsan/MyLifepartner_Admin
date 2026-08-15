@@ -471,7 +471,9 @@ export class MatchService implements IMatchService {
 
       return mappedImages.map((image) => ({
          id: image.id,
-         imageUrl: image.imageUrl ?? "",
+         imageId: image.imageId,
+         imageUrl: image.presignedImageUrl ?? "",
+         presignedImageUrl: image.presignedImageUrl ?? "",
          isPrimary: image.isPrimary,
          isBlurred: image.isBlurred,
       }));

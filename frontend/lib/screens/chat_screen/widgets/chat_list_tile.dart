@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:provider/provider.dart';
 
 class ChatListTile extends StatefulWidget {
@@ -26,14 +27,7 @@ class ChatListTile extends StatefulWidget {
 class _ChatListTileState extends State<ChatListTile> {
   bool _isTapped = false;
 
-  String? get _imageUrl {
-    final primary = widget.profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (widget.profile.images.isNotEmpty) {
-      return widget.profile.images.first.imageUrl;
-    }
-    return null;
-  }
+  MatchImage? get _profileImage => widget.profile.primaryOrFirstImage;
 
   @override
   Widget build(BuildContext context) {
@@ -239,11 +233,14 @@ class _ChatListTileState extends State<ChatListTile> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(32),
-            child: _imageUrl != null
-                ? Image.network(
-                    _imageUrl!,
+            child: _profileImage != null
+                ? CachedAppImage(
+                    imageId: _profileImage!.imageId,
+                    presignedImageUrl: _profileImage!.presignedImageUrl,
+                    isBlurred: _profileImage!.isBlurred,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildFallbackAvatar(),
+                    placeholder: (_, __) => _buildFallbackAvatar(),
+                    errorWidget: (_, __, ___) => _buildFallbackAvatar(),
                   )
                 : _buildFallbackAvatar(),
           ),

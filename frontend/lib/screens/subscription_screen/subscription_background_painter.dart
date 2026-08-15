@@ -43,7 +43,10 @@ class SubscriptionBackgroundPainter extends CustomPainter {
 
     // 2. Grid of subtle decorative background dots
     final Paint dotPaint = Paint()
-      ..color = c(const Color(0xFFE2E8F0).withValues(alpha: 0.25), Colors.white.withValues(alpha: 0.05))
+      ..color = c(
+        const Color(0xFFE2E8F0).withValues(alpha: 0.25),
+        Colors.white.withValues(alpha: 0.05),
+      )
       ..style = PaintingStyle.fill;
     const double spacing = 24.0;
     for (double x = spacing / 2; x < w; x += spacing) {
@@ -65,8 +68,14 @@ class SubscriptionBackgroundPainter extends CustomPainter {
     pathA.close();
     wavePaint.shader = LinearGradient(
       colors: [
-        c(const Color(0xFFE2E8F0).withValues(alpha: 0.4), Colors.white.withValues(alpha: 0.04)),
-        c(const Color(0xFFF1F5F9).withValues(alpha: 0.15), Colors.white.withValues(alpha: 0.01)),
+        c(
+          const Color(0xFFE2E8F0).withValues(alpha: 0.4),
+          Colors.white.withValues(alpha: 0.04),
+        ),
+        c(
+          const Color(0xFFF1F5F9).withValues(alpha: 0.15),
+          Colors.white.withValues(alpha: 0.01),
+        ),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -81,8 +90,14 @@ class SubscriptionBackgroundPainter extends CustomPainter {
     pathB.close();
     wavePaint.shader = LinearGradient(
       colors: [
-        c(const Color(0xFFCBD5E1).withValues(alpha: 0.25), Colors.white.withValues(alpha: 0.05)),
-        c(const Color(0xFFE2E8F0).withValues(alpha: 0.08), Colors.white.withValues(alpha: 0.02)),
+        c(
+          const Color(0xFFCBD5E1).withValues(alpha: 0.25),
+          Colors.white.withValues(alpha: 0.05),
+        ),
+        c(
+          const Color(0xFFE2E8F0).withValues(alpha: 0.08),
+          Colors.white.withValues(alpha: 0.02),
+        ),
       ],
       begin: Alignment.topRight,
       end: Alignment.bottomLeft,
@@ -98,9 +113,18 @@ class SubscriptionBackgroundPainter extends CustomPainter {
     pathC.close();
     wavePaint.shader = LinearGradient(
       colors: [
-        c(const Color(0xFFF1F5F9).withValues(alpha: 0.5), Colors.white.withValues(alpha: 0.03)),
-        c(const Color(0xFFE2E8F0).withValues(alpha: 0.25), Colors.white.withValues(alpha: 0.06)),
-        c(const Color(0xFFF8FAFC).withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.01)),
+        c(
+          const Color(0xFFF1F5F9).withValues(alpha: 0.5),
+          Colors.white.withValues(alpha: 0.03),
+        ),
+        c(
+          const Color(0xFFE2E8F0).withValues(alpha: 0.25),
+          Colors.white.withValues(alpha: 0.06),
+        ),
+        c(
+          const Color(0xFFF8FAFC).withValues(alpha: 0.1),
+          Colors.white.withValues(alpha: 0.01),
+        ),
       ],
       begin: Alignment.centerLeft,
       end: Alignment.centerRight,
@@ -117,8 +141,14 @@ class SubscriptionBackgroundPainter extends CustomPainter {
     pathD.close();
     wavePaint.shader = LinearGradient(
       colors: [
-        c(const Color(0xFFCBD5E1).withValues(alpha: 0.35), Colors.white.withValues(alpha: 0.08)),
-        c(const Color(0xFFF1F5F9).withValues(alpha: 0.6), Colors.white.withValues(alpha: 0.04)),
+        c(
+          const Color(0xFFCBD5E1).withValues(alpha: 0.35),
+          Colors.white.withValues(alpha: 0.08),
+        ),
+        c(
+          const Color(0xFFF1F5F9).withValues(alpha: 0.6),
+          Colors.white.withValues(alpha: 0.04),
+        ),
       ],
       begin: Alignment.bottomLeft,
       end: Alignment.topRight,
@@ -134,8 +164,14 @@ class SubscriptionBackgroundPainter extends CustomPainter {
     pathE.close();
     wavePaint.shader = LinearGradient(
       colors: [
-        c(const Color(0xFFE2E8F0).withValues(alpha: 0.3), Colors.white.withValues(alpha: 0.05)),
-        c(const Color(0xFFF8FAFC).withValues(alpha: 0.15), Colors.white.withValues(alpha: 0.02)),
+        c(
+          const Color(0xFFE2E8F0).withValues(alpha: 0.3),
+          Colors.white.withValues(alpha: 0.05),
+        ),
+        c(
+          const Color(0xFFF8FAFC).withValues(alpha: 0.15),
+          Colors.white.withValues(alpha: 0.02),
+        ),
       ],
       begin: Alignment.bottomLeft,
       end: Alignment.topRight,
@@ -153,8 +189,14 @@ class SubscriptionBackgroundPainter extends CustomPainter {
     linePath1.cubicTo(w * 0.4, h * 0.12, w * 0.7, h * 0.22, w, h * 0.08);
     linePaint.shader = LinearGradient(
       colors: [
-        c(const Color(0xFFCBD5E1).withValues(alpha: 0.3), Colors.white.withValues(alpha: 0.1)),
-        c(const Color(0xFFCBD5E1).withValues(alpha: 0.05), Colors.white.withValues(alpha: 0.02)),
+        c(
+          const Color(0xFFCBD5E1).withValues(alpha: 0.3),
+          Colors.white.withValues(alpha: 0.1),
+        ),
+        c(
+          const Color(0xFFCBD5E1).withValues(alpha: 0.05),
+          Colors.white.withValues(alpha: 0.02),
+        ),
       ],
     ).createShader(Rect.fromLTWH(0, h * 0.08, w, h * 0.2));
     canvas.drawPath(linePath1, linePaint);
@@ -165,9 +207,18 @@ class SubscriptionBackgroundPainter extends CustomPainter {
     linePath2.cubicTo(w * 0.35, h * 0.76, w * 0.65, h * 0.92, w, h * 0.8);
     linePaint.shader = LinearGradient(
       colors: [
-        c(const Color(0xFFCBD5E1).withValues(alpha: 0.05), Colors.white.withValues(alpha: 0.02)),
-        c(const Color(0xFFCBD5E1).withValues(alpha: 0.4), Colors.white.withValues(alpha: 0.15)),
-        c(const Color(0xFFCBD5E1).withValues(alpha: 0.1), Colors.white.withValues(alpha: 0.05)),
+        c(
+          const Color(0xFFCBD5E1).withValues(alpha: 0.05),
+          Colors.white.withValues(alpha: 0.02),
+        ),
+        c(
+          const Color(0xFFCBD5E1).withValues(alpha: 0.4),
+          Colors.white.withValues(alpha: 0.15),
+        ),
+        c(
+          const Color(0xFFCBD5E1).withValues(alpha: 0.1),
+          Colors.white.withValues(alpha: 0.05),
+        ),
       ],
     ).createShader(Rect.fromLTWH(0, h * 0.76, w, h * 0.16));
     canvas.drawPath(linePath2, linePaint);

@@ -20,6 +20,7 @@ const conversationUserSelect = {
             },
             take: 1,
             select: {
+               id: true,
                imageUrl: true,
             },
          },

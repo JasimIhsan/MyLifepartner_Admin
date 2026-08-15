@@ -144,7 +144,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
-                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
                       letterSpacing: -0.4,
                       height: 1.2,
                     ),
@@ -160,7 +162,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                     widget.message,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                       height: 1.55,
                     ),
                   )
@@ -215,7 +219,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
             ),
@@ -338,7 +344,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
                       letterSpacing: -0.3,
                     ),
                   )
@@ -353,7 +361,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                       height: 1.55,
                     ),
                   )
@@ -397,7 +407,9 @@ class _BottomSheetContentState extends State<_BottomSheetContent> {
               borderRadius: 16,
               height: 52,
               backgroundColor: Theme.of(context).dividerColor,
-              textColor: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              textColor:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               fontSize: 15,
             ),
           ),

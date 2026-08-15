@@ -10,7 +10,7 @@ class ChatMessage {
   final DateTime createdAt;
   final String? senderName;
   final String status; // 'sent', 'processing', 'uploading', 'failed'
-  final double uploadProgress; 
+  final double uploadProgress;
 
   ChatMessage({
     required this.id,
@@ -44,7 +44,9 @@ class ChatConversation {
   final int userOneId;
   final int userTwoId;
   final String? otherUserName;
+  final int? otherUserImageId;
   final String? otherUserImage;
+  final bool otherUserImageIsBlurred;
   final int otherUserId;
   final String? lastMessage;
   final String lastMessageType;
@@ -56,7 +58,9 @@ class ChatConversation {
     required this.userOneId,
     required this.userTwoId,
     this.otherUserName,
+    this.otherUserImageId,
     this.otherUserImage,
+    this.otherUserImageIsBlurred = false,
     required this.otherUserId,
     this.lastMessage,
     this.lastMessageType = 'TEXT',
@@ -110,7 +114,16 @@ class ChatConversation {
     final lastMsg = messages.isNotEmpty ? messages.first : null;
 
     final images = otherProfile?['images'] as List<dynamic>? ?? [];
-    final primaryImage = images.isNotEmpty ? images.first['imageUrl'] : null;
+    Map<String, dynamic>? primaryImage;
+    for (final image in images) {
+      if (image is! Map) continue;
+      final imageMap = Map<String, dynamic>.from(image);
+      primaryImage ??= imageMap;
+      if (imageMap['isPrimary'] == true) {
+        primaryImage = imageMap;
+        break;
+      }
+    }
 
     return ChatConversation(
       id: json['id'] as int,
@@ -118,7 +131,13 @@ class ChatConversation {
       userTwoId: userTwoId,
       otherUserId: isUserOne ? userTwoId : userOneId,
       otherUserName: otherProfile?['name'] as String?,
-      otherUserImage: primaryImage as String?,
+      otherUserImageId: _readInt(
+        primaryImage?['imageId'] ?? primaryImage?['id'],
+      ),
+      otherUserImage:
+          primaryImage?['presignedImageUrl'] as String? ??
+          primaryImage?['imageUrl'] as String?,
+      otherUserImageIsBlurred: primaryImage?['isBlurred'] as bool? ?? false,
       lastMessage: lastMsg?['content'] as String?,
       lastMessageType: lastMsg?['messageType'] as String? ?? 'TEXT',
       lastMessageTime: lastMsg?['createdAt'] != null
@@ -126,5 +145,12 @@ class ChatConversation {
           : null,
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
+  }
+
+  static int? _readInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 }

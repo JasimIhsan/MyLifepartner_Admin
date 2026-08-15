@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
-import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart'
+    show defaultTargetPlatform, TargetPlatform;
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -27,7 +28,8 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBLHGWRlLSqucM7wVUN3ZbU8GCytJOKLG4',
-    appId: '1:908209924593:android:0e7c541fa9efca03ea7c50', // placeholder or standard
+    appId:
+        '1:908209924593:android:0e7c541fa9efca03ea7c50', // placeholder or standard
     messagingSenderId: '908209924593',
     projectId: 'life-partner-again-c112c',
     storageBucket: 'life-partner-again-c112c.firebasestorage.app',

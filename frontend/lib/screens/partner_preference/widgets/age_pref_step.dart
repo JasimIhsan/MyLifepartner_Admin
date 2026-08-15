@@ -82,7 +82,9 @@ class _AgePrefStepState extends State<AgePrefStep> {
             'Age range',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -97,7 +99,9 @@ class _AgePrefStepState extends State<AgePrefStep> {
                 style: TextStyle(
                   fontSize: 48,
                   fontWeight: FontWeight.w700,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                   height: 1.1,
                 ),
               ),
@@ -108,7 +112,9 @@ class _AgePrefStepState extends State<AgePrefStep> {
             'years',
             style: TextStyle(
               fontSize: 18,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -186,7 +192,10 @@ class _AgePrefStepState extends State<AgePrefStep> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
-                color: isActive ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color: isActive
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
               ),
             ),
           ),
@@ -221,7 +230,9 @@ class _AgePrefStepState extends State<AgePrefStep> {
           textAlign: TextAlign.center,
           style: TextStyle(
             fontSize: 16,
-            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
             height: 1.4,
           ),
         ),

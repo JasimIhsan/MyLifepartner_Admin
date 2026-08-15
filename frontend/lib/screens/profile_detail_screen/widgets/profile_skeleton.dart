@@ -15,7 +15,11 @@ class ProfileSkeleton extends StatelessWidget {
     );
   }
 
-  Widget _skeletonBox(BuildContext context, {double width = double.infinity, double height = 16}) {
+  Widget _skeletonBox(
+    BuildContext context, {
+    double width = double.infinity,
+    double height = 16,
+  }) {
     return Container(
       width: width,
       height: height,
@@ -46,7 +50,11 @@ class ProfileSkeleton extends StatelessWidget {
                   children: [
                     // Image placeholder
                     Positioned.fill(
-                      child: Container(color: Theme.of(context).disabledColor.withValues(alpha: 0.1)),
+                      child: Container(
+                        color: Theme.of(
+                          context,
+                        ).disabledColor.withValues(alpha: 0.1),
+                      ),
                     ),
 
                     // Gradient overlay (same as real)

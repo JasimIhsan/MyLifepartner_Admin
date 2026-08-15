@@ -19,11 +19,15 @@ export type ImageAccessRequestResponseDto = {
    requesterProfile?: {
       name: string | null;
       age: number | null;
+      imageId: number | null;
       imageUrl: string | null;
+      presignedImageUrl: string | null;
    } | null;
    ownerProfile?: {
       name: string | null;
       age: number | null;
+      imageId: number | null;
       imageUrl: string | null;
+      presignedImageUrl: string | null;
    } | null;
 };

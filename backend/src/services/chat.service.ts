@@ -3,6 +3,7 @@ import { IUserFeatureService } from "@/interfaces/services/user.feature.service.
 import { ChatRepository } from "@/repositories/chat.repository";
 import { notificationService } from "@/composer/composer";
 import { NotificationType } from "@/constants/notificationTypes";
+import { IS3Service } from "@/interfaces/services/s3.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import logger from "@/utils/logger";
 import { prisma } from "@/config/prisma";
@@ -14,7 +15,8 @@ export class ChatService {
    constructor(
       private readonly chatRepository: ChatRepository,
       private readonly userFeatureService: IUserFeatureService,
-      private readonly blockService: import("./block.service").BlockService
+      private readonly blockService: import("./block.service").BlockService,
+      private readonly s3Service: IS3Service
    ) {}
 
    /**
@@ -138,7 +140,41 @@ export class ChatService {
     * @returns User conversations.
     */
    async getConversations(userId: number) {
-      return this.chatRepository.getConversations(userId);
+      const conversations = await this.chatRepository.getConversations(userId);
+
+      return Promise.all(
+         conversations.map(async (conversation) => ({
+            ...conversation,
+            userOne: await this.addPresignedProfileImages(conversation.userOne),
+            userTwo: await this.addPresignedProfileImages(conversation.userTwo),
+         }))
+      );
+   }
+
+   private async addPresignedProfileImages<T extends { profile?: { images?: { id: number; imageUrl: string }[] | null } | null }>(user: T): Promise<T> {
+      if (!user.profile?.images) {
+         return user;
+      }
+
+      const images = await Promise.all(
+         user.profile.images.map(async (image) => {
+            const presignedImageUrl = await this.s3Service.getPresignedUrl(image.imageUrl);
+            return {
+               ...image,
+               imageId: image.id,
+               imageUrl: presignedImageUrl,
+               presignedImageUrl,
+            };
+         })
+      );
+
+      return {
+         ...user,
+         profile: {
+            ...user.profile,
+            images,
+         },
+      };
    }
 
    /**

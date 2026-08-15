@@ -18,7 +18,7 @@ class DiscoveryProvider extends ChangeNotifier {
   bool _hasNextPage = true;
   bool _isLoadingMore = false;
   int _totalCount = 0;
-  
+
   // Track requests to prevent race conditions
   int _fetchRequestId = 0;
 
@@ -43,7 +43,7 @@ class DiscoveryProvider extends ChangeNotifier {
   Future<void> refresh({bool clearProfiles = true}) async {
     _fetchRequestId++; // Invalidate previous requests
     final currentRequestId = _fetchRequestId;
-    
+
     _page = 1;
     _hasNextPage = true;
     if (clearProfiles) {
@@ -71,23 +71,29 @@ class DiscoveryProvider extends ChangeNotifier {
     await _fetchData(requestId: currentRequestId, isLoadMore: true);
   }
 
-  Future<void> _fetchData({required int requestId, bool isLoadMore = false}) async {
+  Future<void> _fetchData({
+    required int requestId,
+    bool isLoadMore = false,
+  }) async {
     try {
       final result = await DiscoveryService.discoverProfiles(
         filter: _filter,
         page: _page,
       );
-      
+
       // If a new request was started, discard this response
       if (_fetchRequestId != requestId) return;
 
       final fetchedProfiles = result['profiles'] as List<MatchRecommendation>;
-      
+
       if (isLoadMore) {
         // Prevent duplicate profiles
-        final uniqueNewProfiles = fetchedProfiles.where(
-          (newProfile) => !_profiles.any((existing) => existing.id == newProfile.id),
-        ).toList();
+        final uniqueNewProfiles = fetchedProfiles
+            .where(
+              (newProfile) =>
+                  !_profiles.any((existing) => existing.id == newProfile.id),
+            )
+            .toList();
         _profiles.addAll(uniqueNewProfiles);
       } else {
         _profiles = fetchedProfiles;
@@ -98,14 +104,14 @@ class DiscoveryProvider extends ChangeNotifier {
       _state = DiscoveryState.loaded;
     } on DioException catch (e) {
       if (_fetchRequestId != requestId) return;
-      
+
       _error = getDioErrorMessage(e, fallback: 'Failed to load profiles');
       _state = DiscoveryState.error;
       // If we failed to load more, revert the page increment
       if (isLoadMore) _page--;
     } catch (e) {
       if (_fetchRequestId != requestId) return;
-      
+
       _error = e.toString().replaceAll('Exception: ', '');
       _state = DiscoveryState.error;
       if (isLoadMore) _page--;

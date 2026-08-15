@@ -2,7 +2,9 @@ import { UserImage } from "@prisma/client";
 
 export type PrivacyImageDto = {
    id: number;
+   imageId: number;
    imageUrl: string | null;
+   presignedImageUrl: string | null;
    isPrimary: boolean;
    isBlurred: boolean;
 };

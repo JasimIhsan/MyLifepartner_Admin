@@ -1,6 +1,5 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -38,7 +37,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       titleStyle ??
                       TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: Theme.of(context).appBarTheme.foregroundColor ?? Theme.of(context).textTheme.bodyLarge?.color,
+                        color:
+                            Theme.of(context).appBarTheme.foregroundColor ??
+                            Theme.of(context).textTheme.bodyLarge?.color,
                         fontSize: 20,
                       ),
                 )
@@ -52,7 +53,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 IconButton(
                   icon: Icon(
                     Icons.arrow_back,
-                    color: Theme.of(context).appBarTheme.iconTheme?.color ?? Theme.of(context).iconTheme.color,
+                    color:
+                        Theme.of(context).appBarTheme.iconTheme?.color ??
+                        Theme.of(context).iconTheme.color,
                   ),
                   onPressed: () {
                     if (context.canPop()) {

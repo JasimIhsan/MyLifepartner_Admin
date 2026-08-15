@@ -40,11 +40,11 @@ class ChatMessageBubble extends StatelessWidget {
                   colors: [Theme.of(context).primaryColor, Color(0xFFE82B2B)],
                 )
               : null,
-          color: isMe 
-              ? null 
-              : (Theme.of(context).brightness == Brightness.light 
-                  ? AppColors.background 
-                  : Theme.of(context).colorScheme.surface),
+          color: isMe
+              ? null
+              : (Theme.of(context).brightness == Brightness.light
+                    ? AppColors.background
+                    : Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(20),
             topRight: const Radius.circular(20),

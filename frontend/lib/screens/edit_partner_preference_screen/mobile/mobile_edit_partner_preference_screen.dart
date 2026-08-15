@@ -72,7 +72,9 @@ class _MobileEditPartnerPreferenceScreenState
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: canSave
-                                      ? const Color(0xFFFF3B30) // Red save button like mockup
+                                      ? const Color(
+                                          0xFFFF3B30,
+                                        ) // Red save button like mockup
                                       : theme.disabledColor,
                                 ),
                               ),

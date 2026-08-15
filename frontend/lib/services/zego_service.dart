@@ -221,7 +221,9 @@ class ZegoService {
   Future<void> sendCallInvitation({
     required String toUserId,
     required String callerName,
+    int? callerAvatarImageId,
     String? callerAvatar,
+    bool callerAvatarIsBlurred = false,
     required String callId,
     required bool isVideo,
   }) async {
@@ -229,7 +231,9 @@ class ZegoService {
       'type': 'call_invite',
       'callId': callId,
       'callerName': callerName,
+      'callerAvatarImageId': callerAvatarImageId,
       'callerAvatar': callerAvatar,
+      'callerAvatarIsBlurred': callerAvatarIsBlurred,
       'isVideo': isVideo,
     });
     await sendMessage(toUserId, payload);

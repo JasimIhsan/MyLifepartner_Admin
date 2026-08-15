@@ -92,7 +92,11 @@ class SubscriptionSuccessUI extends StatelessWidget {
             children: [
               TextSpan(
                 text: 'Subscription\n',
-                style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+                style: TextStyle(
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
+                ),
               ),
               TextSpan(
                 text: 'Successful!',
@@ -108,7 +112,9 @@ class SubscriptionSuccessUI extends StatelessWidget {
           'Welcome to Premium! You now have\naccess to all exclusive perks.',
           style: TextStyle(
             fontSize: 15,
-            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+            color:
+                Theme.of(context).textTheme.bodyMedium?.color ??
+                AppColors.textSecondary,
             height: 1.5,
           ),
           textAlign: TextAlign.center,

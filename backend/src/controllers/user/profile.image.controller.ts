@@ -10,9 +10,9 @@ import { auditService } from "@/services/audit.service";
 import { ActorType, AuditModule, AuditStatus, AuditSeverity, AuditSource } from "@prisma/client";
 
 export class ProfileImageController {
-   constructor(
-      private readonly profileService: ProfileService
-   ) {}
+   constructor(private readonly profileService: ProfileService) {}
+
+   private static readonly MAX_BULK_PRESIGNED_IMAGE_IDS = 100;
 
    /**
     * @route POST /api/v1/user/profile/upload-image/:userId
@@ -148,6 +148,33 @@ export class ProfileImageController {
       const images = await this.profileService.getUserImages(userId);
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, images, "User images fetched successfully"));
+   });
+
+   /**
+    * @route POST /api/v1/user/profile/images/presigned-urls
+    * @purpose Fetches fresh presigned URLs for profile image IDs.
+    */
+   public getPresignedImageUrls = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const authUserId = this.getAuthenticatedUserId(req);
+      const rawImageIds = req.body?.imageIds;
+
+      if (!Array.isArray(rawImageIds)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "imageIds must be an array");
+      }
+
+      if (rawImageIds.length > ProfileImageController.MAX_BULK_PRESIGNED_IMAGE_IDS) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, `At most ${ProfileImageController.MAX_BULK_PRESIGNED_IMAGE_IDS} image IDs can be requested at once`);
+      }
+
+      const imageIds = rawImageIds.map((imageId) => Number(imageId));
+
+      if (imageIds.some((imageId) => !Number.isInteger(imageId) || imageId <= 0)) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "imageIds must contain positive integers");
+      }
+
+      const images = await this.profileService.getPresignedImageUrls(authUserId, imageIds);
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, images, "Presigned image URLs fetched successfully"));
    });
 
    /**

@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class NotificationPermissionService {
-  static final NotificationPermissionService _instance = NotificationPermissionService._internal();
+  static final NotificationPermissionService _instance =
+      NotificationPermissionService._internal();
   factory NotificationPermissionService() => _instance;
   NotificationPermissionService._internal();
 
@@ -36,7 +37,8 @@ class NotificationPermissionService {
   Future<bool> isPermissionGranted() async {
     try {
       if (defaultTargetPlatform == TargetPlatform.iOS) {
-        final settings = await FirebaseMessaging.instance.getNotificationSettings();
+        final settings = await FirebaseMessaging.instance
+            .getNotificationSettings();
         return settings.authorizationStatus == AuthorizationStatus.authorized;
       } else if (defaultTargetPlatform == TargetPlatform.android) {
         return await Permission.notification.isGranted;

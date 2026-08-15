@@ -152,7 +152,9 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
         ],
       ),
       child: Image.asset(
-        Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+        Theme.of(context).brightness == Brightness.dark
+            ? 'assets/icons/app_logo_dark.png'
+            : 'assets/icons/app_logo.png',
         height: 100,
         width: 100,
         errorBuilder: (context, error, stackTrace) => Icon(
@@ -390,7 +392,10 @@ class _WebLandingScreenState extends State<WebLandingScreen> {
                       Center(
                         child:
                             Image.asset(
-                                  Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+                                  Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? 'assets/icons/app_logo_dark.png'
+                                      : 'assets/icons/app_logo.png',
                                   height: 120,
                                   width: 120,
                                   errorBuilder: (context, error, stackTrace) =>

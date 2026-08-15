@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class ConnectionCard extends StatelessWidget {
   final MatchRecommendation profile;
@@ -16,12 +17,7 @@ class ConnectionCard extends StatelessWidget {
     this.onCancel,
   });
 
-  String? get _imageUrl {
-    final primary = profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (profile.images.isNotEmpty) return profile.images.first.imageUrl;
-    return null;
-  }
+  MatchImage? get _profileImage => profile.primaryOrFirstImage;
 
   @override
   Widget build(BuildContext context) {
@@ -46,15 +42,14 @@ class ConnectionCard extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  _imageUrl != null
-                      ? Image.network(
-                          _imageUrl!,
+                  _profileImage != null
+                      ? CachedAppImage(
+                          imageId: _profileImage!.imageId,
+                          presignedImageUrl: _profileImage!.presignedImageUrl,
+                          isBlurred: _profileImage!.isBlurred,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _placeholder(context),
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return _placeholder(context);
-                          },
+                          placeholder: (_, __) => _placeholder(context),
+                          errorWidget: (_, __, ___) => _placeholder(context),
                         )
                       : _placeholder(context),
                   Positioned.fill(
@@ -190,14 +185,22 @@ class ConnectionCard extends StatelessWidget {
                                 Icon(
                                   Icons.person_outline_rounded,
                                   size: 18,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                 ),
                                 SizedBox(width: 8),
                                 Text(
                                   'View Profile',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyLarge?.color ??
+                                        AppColors.textPrimary,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -248,5 +251,6 @@ class ConnectionCard extends StatelessWidget {
         .slideY(begin: 0.1, curve: Curves.easeOutCubic);
   }
 
-  Widget _placeholder(BuildContext context) => Container(color: Theme.of(context).disabledColor.withValues(alpha: 0.1));
+  Widget _placeholder(BuildContext context) =>
+      Container(color: Theme.of(context).disabledColor.withValues(alpha: 0.1));
 }

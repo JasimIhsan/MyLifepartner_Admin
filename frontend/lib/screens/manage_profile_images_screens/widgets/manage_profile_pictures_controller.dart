@@ -74,13 +74,8 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
           ),
-          IOSUiSettings(
-            title: 'Crop Image',
-          ),
-          WebUiSettings(
-            context: context,
-            presentStyle: WebPresentStyle.dialog,
-          ),
+          IOSUiSettings(title: 'Crop Image'),
+          WebUiSettings(context: context, presentStyle: WebPresentStyle.dialog),
         ],
       );
       if (croppedFile != null) {

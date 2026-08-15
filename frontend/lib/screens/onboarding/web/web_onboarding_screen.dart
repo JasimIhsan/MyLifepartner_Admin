@@ -46,7 +46,9 @@ class _WebOnboardingScreenState extends State<WebOnboardingScreen>
                     Row(
                       children: [
                         Image.asset(
-                          Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+                          Theme.of(context).brightness == Brightness.dark
+                              ? 'assets/icons/app_logo_dark.png'
+                              : 'assets/icons/app_logo.png',
                           height: 48,
                           width: 48,
                           errorBuilder: (context, error, stackTrace) =>
@@ -156,7 +158,9 @@ class _WebOnboardingScreenState extends State<WebOnboardingScreen>
                     constraints: const BoxConstraints(maxWidth: 520),
                     child: Card(
                       elevation: 4,
-                      shadowColor: Theme.of(context).shadowColor.withValues(alpha: 0.05),
+                      shadowColor: Theme.of(
+                        context,
+                      ).shadowColor.withValues(alpha: 0.05),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),

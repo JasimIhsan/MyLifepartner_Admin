@@ -82,7 +82,9 @@ class _QuestionWidgetState extends State<QuestionWidget> {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 16),
@@ -170,7 +172,9 @@ class _QuestionWidgetState extends State<QuestionWidget> {
                   ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
                   : Colors.white,
               border: Border.all(
-                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).dividerColor,
                 width: 1.5,
               ),
               borderRadius: BorderRadius.circular(12),
@@ -187,14 +191,18 @@ class _QuestionWidgetState extends State<QuestionWidget> {
                           : FontWeight.normal,
                       color: isSelected
                           ? Theme.of(context).primaryColor
-                          : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                          : Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                     ),
                   ),
                 ),
                 if (isSelected)
                   Padding(
                     padding: EdgeInsets.only(left: 8.0),
-                    child: Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ),
               ],
             ),
@@ -224,7 +232,9 @@ class _QuestionWidgetState extends State<QuestionWidget> {
             decoration: BoxDecoration(
               color: isSelected ? Theme.of(context).primaryColor : Colors.white,
               border: Border.all(
-                color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Theme.of(context).dividerColor,
               ),
               shape: BoxShape.circle,
             ),
@@ -234,7 +244,10 @@ class _QuestionWidgetState extends State<QuestionWidget> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color: isSelected
+                      ? Colors.white
+                      : Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                 ),
               ),
             ),
@@ -265,7 +278,9 @@ class _QuestionWidgetState extends State<QuestionWidget> {
               ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
               : Colors.white,
           border: Border.all(
-            color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Theme.of(context).dividerColor,
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(12),
@@ -278,14 +293,20 @@ class _QuestionWidgetState extends State<QuestionWidget> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                  color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                 ),
               ),
             ),
             if (isSelected)
               Padding(
                 padding: EdgeInsets.only(left: 8.0),
-                child: Icon(Icons.check_circle, color: Theme.of(context).primaryColor),
+                child: Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
           ],
         ),

@@ -30,7 +30,9 @@ export class PrivacyImageMapperService implements IPrivacyImageMapperService {
                const signedUrl = await this.s3Service.getPresignedUrl(image.imageUrl);
                return {
                   id: image.id,
+                  imageId: image.id,
                   imageUrl: signedUrl,
+                  presignedImageUrl: signedUrl,
                   isPrimary: image.isPrimary,
                   isBlurred: false,
                };
@@ -45,7 +47,9 @@ export class PrivacyImageMapperService implements IPrivacyImageMapperService {
          return [
             {
                id: primaryImage?.id ?? 0,
+               imageId: primaryImage?.id ?? 0,
                imageUrl: signedUrl,
+               presignedImageUrl: signedUrl,
                isPrimary: true,
                isBlurred: true,
             },

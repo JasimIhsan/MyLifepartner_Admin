@@ -318,7 +318,9 @@ export class DiscoveryService {
          bio: profile.bio,
          images: mappedImages.map((img) => ({
             id: img.id,
-            imageUrl: img.imageUrl ?? "",
+            imageId: img.imageId,
+            imageUrl: img.presignedImageUrl ?? "",
+            presignedImageUrl: img.presignedImageUrl ?? "",
             isPrimary: img.isPrimary,
             isBlurred: img.isBlurred ?? false,
          })),

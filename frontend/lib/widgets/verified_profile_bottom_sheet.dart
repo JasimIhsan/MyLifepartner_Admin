@@ -34,7 +34,9 @@ class VerifiedProfileBottomSheet extends StatelessWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -43,7 +45,9 @@ class VerifiedProfileBottomSheet extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 15,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               height: 1.5,
             ),
           ),

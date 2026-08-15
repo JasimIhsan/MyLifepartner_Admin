@@ -43,10 +43,7 @@ class InAppNotification {
     );
   }
 
-  InAppNotification copyWith({
-    bool? isRead,
-    DateTime? readAt,
-  }) {
+  InAppNotification copyWith({bool? isRead, DateTime? readAt}) {
     return InAppNotification(
       id: id,
       userId: userId,

@@ -453,97 +453,96 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       // const Icon(Icons.star_rounded, color: Colors.amber, size: 80),
-                                  FoundingMemberBadge(
-                                    size: 160,
-                                    needAnimation: false,
-                                  ),
-                                  const SizedBox(height: 24),
-                                  Text(
-                                    'Founding Member',
-                                    style: TextStyle(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyLarge?.color ??
-                                          AppColors.textPrimary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'You have complete free premium access\nto the application as a founding member.\n\nThank you for your support!',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      height: 1.5,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyMedium?.color ??
-                                          AppColors.textSecondary,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 48),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    // child: CustomButton(
-                                    //   onPressed: () {
-                                    //     setState(() {
-                                    //       _showPricing = true;
-                                    //     });
-                                    //   },
-                                    //   text: 'View Pricing',
-                                    //   type: CustomButtonType.outline,
-                                    //   textColor: Theme.of(context).primaryColor,
-                                    //   height: 56,
-                                    //   borderRadius: 16,
-                                    //   fontSize: 16,
-                                    //   fontWeight: FontWeight.w600,
-                                    // ),
-                                    child: TextButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _showPricing = true;
-                                        });
-                                      },
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: Theme.of(
-                                          context,
-                                        ).primaryColor,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 32,
-                                          vertical: 16,
+                                      FoundingMemberBadge(
+                                        size: 160,
+                                        needAnimation: false,
+                                      ),
+                                      const SizedBox(height: 24),
+                                      Text(
+                                        'Founding Member',
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w800,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyLarge?.color ??
+                                              AppColors.textPrimary,
                                         ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'You have complete free premium access\nto the application as a founding member.\n\nThank you for your support!',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          height: 1.5,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).textTheme.bodyMedium?.color ??
+                                              AppColors.textSecondary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 48),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        // child: CustomButton(
+                                        //   onPressed: () {
+                                        //     setState(() {
+                                        //       _showPricing = true;
+                                        //     });
+                                        //   },
+                                        //   text: 'View Pricing',
+                                        //   type: CustomButtonType.outline,
+                                        //   textColor: Theme.of(context).primaryColor,
+                                        //   height: 56,
+                                        //   borderRadius: 16,
+                                        //   fontSize: 16,
+                                        //   fontWeight: FontWeight.w600,
+                                        // ),
+                                        child: TextButton(
+                                          onPressed: () {
+                                            setState(() {
+                                              _showPricing = true;
+                                            });
+                                          },
+                                          style: TextButton.styleFrom(
+                                            foregroundColor: Theme.of(
+                                              context,
+                                            ).primaryColor,
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 32,
+                                              vertical: 16,
+                                            ),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'View Pricing',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
                                         ),
                                       ),
-                                      child: const Text(
-                                        'View Pricing',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
-        );
-      }
+              ],
+            );
+          }
 
           if (provider.error != null && provider.plans.isEmpty) {
             return SubscriptionErrorWidget(

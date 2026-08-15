@@ -183,14 +183,21 @@ class _HomePageState extends State<HomePage> {
   PreferredSizeWidget _buildAppBar() {
     return CustomAppBar(
       titleWidget: Image.asset(
-        Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+        Theme.of(context).brightness == Brightness.dark
+            ? 'assets/icons/app_logo_dark.png'
+            : 'assets/icons/app_logo.png',
         height: 40,
         fit: BoxFit.contain,
       ),
       showLeading: false,
       actions: [
         IconButton(
-          icon: Icon(Icons.search, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+          icon: Icon(
+            Icons.search,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
+          ),
           onPressed: () {
             context.push(AppRoutes.browseProfiles);
           },
@@ -214,7 +221,9 @@ class _HomePageState extends State<HomePage> {
               child: IconButton(
                 icon: Icon(
                   Icons.notifications_active_outlined,
-                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                  color:
+                      Theme.of(context).textTheme.bodyLarge?.color ??
+                      AppColors.textPrimary,
                 ),
                 onPressed: () {
                   setState(() {

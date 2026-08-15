@@ -75,7 +75,9 @@ class _SearchableLocationSelectorState
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
                 IconButton(
@@ -131,7 +133,9 @@ class _SearchableLocationSelectorState
             Padding(
               padding: EdgeInsets.all(20.0),
               child: Center(
-                child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).primaryColor,
+                ),
               ),
             )
           else if (widget.suggestions.isEmpty && _searchCtrl.text.length >= 2)

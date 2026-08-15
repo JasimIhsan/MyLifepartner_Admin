@@ -7,6 +7,7 @@ import 'package:life_partner_again/models/profile_question.dart';
 import 'package:life_partner_again/models/profile_section.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/services/api_service.dart';
+import 'package:life_partner_again/services/image_cache_service.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -350,7 +351,9 @@ class ProfileRepository {
         data: formData,
       );
 
-      return UserImage.fromJson(response.data['data']);
+      final updatedImage = UserImage.fromJson(response.data['data']);
+      await ImageCacheService.instance.evictProfileImage(imageId);
+      return updatedImage;
     } on DioException catch (e) {
       throw Exception(getDioErrorMessage(e, fallback: 'Error replacing image'));
     } catch (e) {
@@ -370,6 +373,8 @@ class ProfileRepository {
       if (response.statusCode != 200) {
         throw Exception('Failed to delete image');
       }
+
+      await ImageCacheService.instance.evictProfileImage(imageId);
     } on DioException catch (e) {
       throw Exception(getDioErrorMessage(e, fallback: 'Error deleting image'));
     } catch (e) {

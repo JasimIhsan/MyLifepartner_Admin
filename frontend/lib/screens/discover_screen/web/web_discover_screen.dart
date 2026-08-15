@@ -8,6 +8,7 @@ import 'package:life_partner_again/core/country_helper.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
@@ -492,27 +493,20 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
   }
 
   Widget _buildProfilePicture(MatchRecommendation profile) {
-    final primaryImg = profile.images.where((img) => img.isPrimary);
-    final String? imgUrl = primaryImg.isNotEmpty
-        ? primaryImg.first.imageUrl
-        : (profile.images.isNotEmpty ? profile.images.first.imageUrl : null);
-
-    final bool isBlurred = primaryImg.isNotEmpty
-        ? primaryImg.first.isBlurred
-        : (profile.images.isNotEmpty ? profile.images.first.isBlurred : false);
+    final profileImage = profile.primaryOrFirstImage;
+    final isBlurred = profileImage?.isBlurred ?? false;
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        imgUrl != null
-            ? Image.network(
-                imgUrl,
+        profileImage != null
+            ? CachedAppImage(
+                imageId: profileImage.imageId,
+                presignedImageUrl: profileImage.presignedImageUrl,
+                isBlurred: profileImage.isBlurred,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _picPlaceholder(context),
-                loadingBuilder: (context, child, loadingProgress) {
-                  if (loadingProgress == null) return child;
-                  return _picPlaceholder(context);
-                },
+                placeholder: (_, __) => _picPlaceholder(context),
+                errorWidget: (_, __, ___) => _picPlaceholder(context),
               )
             : _picPlaceholder(context),
         if (isBlurred)

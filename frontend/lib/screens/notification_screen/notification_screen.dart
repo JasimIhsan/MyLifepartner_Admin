@@ -143,10 +143,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+            color: isSelected
+                ? Theme.of(context).primaryColor
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isSelected ? Theme.of(context).primaryColor : Theme.of(context).dividerColor,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Theme.of(context).dividerColor,
             ),
           ),
           child: Row(
@@ -156,14 +160,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 Icon(
                   icon,
                   size: 16,
-                  color: isSelected ? Theme.of(context).colorScheme.onPrimary : iconColor,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : iconColor,
                 ),
                 const SizedBox(width: 6),
               ],
               Text(
                 category,
                 style: TextStyle(
-                  color: isSelected ? Theme.of(context).colorScheme.onPrimary : (Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textPrimary),
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : (Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textPrimary),
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   fontSize: 14,
                 ),
@@ -227,7 +236,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
             notification.title,
             style: TextStyle(
               fontSize: 15,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               fontWeight: notification.isRead
                   ? FontWeight.w500
                   : FontWeight.bold,
@@ -241,7 +252,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 notification.body,
                 style: TextStyle(
                   fontSize: 13,
-                  color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                  color:
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
               const SizedBox(height: 4),
@@ -249,7 +262,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 _formatTimeAgo(notification.createdAt),
                 style: TextStyle(
                   fontSize: 11,
-                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                  color:
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      AppColors.textLight,
                 ),
               ),
             ],
@@ -280,7 +295,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                   ),
                 ),
                 Consumer<NotificationProvider>(
@@ -293,7 +310,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       "${provider.totalCount} Total",
                       style: TextStyle(
                         fontSize: 13,
-                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                        color:
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                            AppColors.textLight,
                         fontWeight: FontWeight.w500,
                       ),
                     );
@@ -345,14 +364,20 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         Icon(
                           Icons.notifications_off_outlined,
                           size: 64,
-                          color: Theme.of(context).iconTheme.color?.withValues(alpha: 0.5) ?? Colors.grey.shade400,
+                          color:
+                              Theme.of(
+                                context,
+                              ).iconTheme.color?.withValues(alpha: 0.5) ??
+                              Colors.grey.shade400,
                         ),
                         const SizedBox(height: 16),
                         Text(
                           "No notifications yet",
                           style: TextStyle(
                             fontSize: 16,
-                            color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                            color:
+                                Theme.of(context).textTheme.bodyMedium?.color ??
+                                AppColors.textSecondary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -361,7 +386,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           "We'll notify you when something important happens",
                           style: TextStyle(
                             fontSize: 13,
-                            color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                            color:
+                                Theme.of(context).textTheme.bodySmall?.color ??
+                                AppColors.textLight,
                           ),
                         ),
                       ],
@@ -415,7 +442,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                                  color:
+                                      Theme.of(
+                                        context,
+                                      ).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
                                 ),
                               ),
                             ),

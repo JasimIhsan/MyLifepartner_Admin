@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class ProfileImageGallery extends StatelessWidget {
   final List<dynamic> images;
 
-  const ProfileImageGallery({
-    super.key,
-    required this.images,
-  });
+  const ProfileImageGallery({super.key, required this.images});
 
   void _openFullScreenViewer(BuildContext context, int initialIndex) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => _FullScreenImageViewer(
-          images: images,
-          initialIndex: initialIndex,
-        ),
+        builder: (context) =>
+            _FullScreenImageViewer(images: images, initialIndex: initialIndex),
       ),
     );
   }
@@ -23,7 +18,7 @@ class ProfileImageGallery extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> rows = [];
-    
+
     for (int i = 0; i < images.length; i += 2) {
       if (i + 1 < images.length) {
         // Pair of images
@@ -34,14 +29,14 @@ class ProfileImageGallery extends StatelessWidget {
               children: [
                 Expanded(
                   child: _GalleryImageItem(
-                    imageUrl: images[i]['imageUrl'],
+                    image: images[i],
                     onTap: () => _openFullScreenViewer(context, i),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: _GalleryImageItem(
-                    imageUrl: images[i + 1]['imageUrl'],
+                    image: images[i + 1],
                     onTap: () => _openFullScreenViewer(context, i + 1),
                   ),
                 ),
@@ -55,7 +50,7 @@ class ProfileImageGallery extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: _GalleryImageItem(
-              imageUrl: images[i]['imageUrl'],
+              image: images[i],
               onTap: () => _openFullScreenViewer(context, i),
               isFullWidth: true,
             ),
@@ -64,19 +59,17 @@ class ProfileImageGallery extends StatelessWidget {
       }
     }
 
-    return Column(
-      children: rows,
-    );
+    return Column(children: rows);
   }
 }
 
 class _GalleryImageItem extends StatelessWidget {
-  final String imageUrl;
+  final dynamic image;
   final VoidCallback onTap;
   final bool isFullWidth;
 
   const _GalleryImageItem({
-    required this.imageUrl,
+    required this.image,
     required this.onTap,
     this.isFullWidth = false,
   });
@@ -89,14 +82,12 @@ class _GalleryImageItem extends StatelessWidget {
         aspectRatio: isFullWidth ? 16 / 9 : 1.0,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: CachedNetworkImage(
-            imageUrl: imageUrl,
+          child: CachedAppImage.fromProfileImageMap(
+            image: image,
             fit: BoxFit.cover,
             placeholder: (context, url) => Container(
               color: Colors.grey.withValues(alpha: 0.1),
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: const Center(child: CircularProgressIndicator()),
             ),
             errorWidget: (context, url, error) => Container(
               color: Colors.grey.withValues(alpha: 0.1),
@@ -176,8 +167,8 @@ class _FullScreenImageViewerState extends State<_FullScreenImageViewer> {
           return InteractiveViewer(
             minScale: 0.5,
             maxScale: 4.0,
-            child: CachedNetworkImage(
-              imageUrl: widget.images[index]['imageUrl'],
+            child: CachedAppImage.fromProfileImageMap(
+              image: widget.images[index],
               fit: BoxFit.contain,
               placeholder: (context, url) => const Center(
                 child: CircularProgressIndicator(color: Colors.white),

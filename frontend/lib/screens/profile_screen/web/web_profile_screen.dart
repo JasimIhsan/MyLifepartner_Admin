@@ -1,5 +1,4 @@
 import 'package:life_partner_again/core/app_routes.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +6,7 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/theme_provider.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -97,8 +97,10 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                       ),
                       child: ClipOval(
                         child: primaryImage != null
-                            ? CachedNetworkImage(
-                                imageUrl: primaryImage!.imageUrl,
+                            ? CachedAppImage(
+                                imageId: primaryImage!.imageId,
+                                presignedImageUrl:
+                                    primaryImage!.presignedImageUrl,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) =>
                                     CircularProgressIndicator(

@@ -104,8 +104,12 @@ class _S3CachedImageState extends State<S3CachedImage> {
 }
 
 class S3CachedImageProvider extends CachedNetworkImageProvider {
-  S3CachedImageProvider(super.url, {super.maxHeight, super.maxWidth, super.scale})
-      : super(cacheKey: _extractCacheKey(url));
+  S3CachedImageProvider(
+    super.url, {
+    super.maxHeight,
+    super.maxWidth,
+    super.scale,
+  }) : super(cacheKey: _extractCacheKey(url));
 
   static String _extractCacheKey(String url) {
     try {

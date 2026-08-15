@@ -76,7 +76,9 @@ class _LanguagesStepState extends State<LanguagesStep> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w400,
-                  color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                  color:
+                      Theme.of(context).textTheme.bodySmall?.color ??
+                      AppColors.textLight,
                 ),
               ),
               const SizedBox(height: 12),
@@ -91,7 +93,9 @@ class _LanguagesStepState extends State<LanguagesStep> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.08),
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(24),
                       ),
                       child: Row(
@@ -131,12 +135,16 @@ class _LanguagesStepState extends State<LanguagesStep> {
                 decoration: InputDecoration(
                   hintText: "Search languages",
                   hintStyle: TextStyle(
-                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
                     fontSize: 15,
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                    color:
+                        Theme.of(context).textTheme.bodySmall?.color ??
+                        AppColors.textLight,
                     size: 20,
                   ),
                   filled: true,
@@ -182,7 +190,9 @@ class _LanguagesStepState extends State<LanguagesStep> {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w400,
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                           ),
                         ),
                         trailing: Container(
@@ -197,7 +207,9 @@ class _LanguagesStepState extends State<LanguagesStep> {
                           child: Icon(
                             Icons.add,
                             size: 14,
-                            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                            color:
+                                Theme.of(context).textTheme.bodyLarge?.color ??
+                                AppColors.textPrimary,
                           ),
                         ),
                         onTap: () {
@@ -205,7 +217,10 @@ class _LanguagesStepState extends State<LanguagesStep> {
                         },
                       ),
                       if (index < filteredLangs.length - 1)
-                        Divider(height: 1, color: Theme.of(context).dividerColor),
+                        Divider(
+                          height: 1,
+                          color: Theme.of(context).dividerColor,
+                        ),
                     ],
                   );
                 }).toList(),
@@ -217,7 +232,9 @@ class _LanguagesStepState extends State<LanguagesStep> {
                     child: Text(
                       "No matching languages found",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textLight,
+                        color:
+                            Theme.of(context).textTheme.bodySmall?.color ??
+                            AppColors.textLight,
                         fontSize: 14,
                       ),
                     ),

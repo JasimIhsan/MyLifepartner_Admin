@@ -53,7 +53,9 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                       style: TextStyle(
                         fontSize: 36,
                         fontWeight: FontWeight.w800,
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                         letterSpacing: -1.0,
                         height: 1.2,
                       ),
@@ -63,7 +65,9 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                       'Manage your likes, mutual matches, and connection requests.',
                       style: TextStyle(
                         fontSize: 15,
-                        color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        color:
+                            Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                         height: 1.5,
                       ),
                     ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
@@ -103,7 +107,9 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                       ),
                     ],
                     border: Border.all(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).dividerColor.withValues(alpha: 0.5),
                       width: 1,
                     ),
                   ),
@@ -142,7 +148,9 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
             style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w700,
-              color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
               letterSpacing: -0.5,
             ),
           ),
@@ -196,7 +204,8 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                   icon,
                   color: isSelected
                       ? Theme.of(context).primaryColor
-                      : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      : Theme.of(context).textTheme.bodyMedium?.color ??
+                            AppColors.textSecondary,
                   size: 22,
                 ),
                 const SizedBox(width: 16),
@@ -207,7 +216,8 @@ class _WebLikedMatchesScreenState extends State<WebLikedMatchesScreen>
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
                     color: isSelected
                         ? Theme.of(context).primaryColor
-                        : Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                        : Theme.of(context).textTheme.bodyMedium?.color ??
+                              AppColors.textSecondary,
                   ),
                 ),
               ],

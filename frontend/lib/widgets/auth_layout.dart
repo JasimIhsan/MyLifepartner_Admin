@@ -58,22 +58,25 @@ class AuthLayout extends StatelessWidget {
                     Transform.scale(
                       scale: 2,
                       child: Image.asset(
-                        Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+                        Theme.of(context).brightness == Brightness.dark
+                            ? 'assets/icons/app_logo_dark.png'
+                            : 'assets/icons/app_logo.png',
                         height: 32,
                         width: 32,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Icon(
-                              Icons.favorite,
-                              color: Theme.of(context).primaryColor,
-                              size: 24,
-                            ),
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.favorite,
+                          color: Theme.of(context).primaryColor,
+                          size: 24,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       "Life Partner Again",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                        color:
+                            Theme.of(context).textTheme.bodyLarge?.color ??
+                            AppColors.textPrimary,
                         fontWeight: FontWeight.w600,
                         fontSize: 20,
                       ),
@@ -85,7 +88,9 @@ class AuthLayout extends StatelessWidget {
                   "A trusted platform for emotionally\nmature relationships.",
                   style: TextStyle(
                     fontSize: 16,
-                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                    color:
+                        Theme.of(context).textTheme.bodyMedium?.color ??
+                        AppColors.textSecondary,
                     height: 1.5,
                   ),
                 ),
@@ -209,7 +214,9 @@ class AuthLayout extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Theme.of(context).shadowColor.withValues(alpha: 0.1),
+                            color: Theme.of(
+                              context,
+                            ).shadowColor.withValues(alpha: 0.1),
                             blurRadius: 20,
                             offset: const Offset(0, -5),
                           ),
@@ -243,16 +250,18 @@ class AuthLayout extends StatelessWidget {
                                 Transform.scale(
                                   scale: 1.5,
                                   child: Image.asset(
-                                    Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+                                    Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? 'assets/icons/app_logo_dark.png'
+                                        : 'assets/icons/app_logo.png',
                                     height: 80,
                                     width: 80,
                                     errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Icon(
-                                              Icons.favorite_rounded,
-                                              color: Theme.of(context).primaryColor,
-                                              size: 64,
-                                            ),
+                                        (context, error, stackTrace) => Icon(
+                                          Icons.favorite_rounded,
+                                          color: Theme.of(context).primaryColor,
+                                          size: 64,
+                                        ),
                                   ),
                                 ),
                                 const SizedBox(height: 16),
@@ -263,7 +272,11 @@ class AuthLayout extends StatelessWidget {
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
                                     height: 1.5,
                                   ),
                                 ),
@@ -289,7 +302,9 @@ class AuthLayout extends StatelessWidget {
               top: MediaQuery.of(context).padding.top + 10,
               left: 16,
               child: CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.surface.withValues(alpha: 0.8),
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withValues(alpha: 0.8),
                 child: IconButton(
                   icon: Icon(
                     Icons.arrow_back_ios_new,
@@ -312,7 +327,9 @@ class AuthLayout extends StatelessWidget {
         Transform.scale(
           scale: 1.5,
           child: Image.asset(
-            Theme.of(context).brightness == Brightness.dark ? 'assets/icons/app_logo_dark.png' : 'assets/icons/app_logo.png',
+            Theme.of(context).brightness == Brightness.dark
+                ? 'assets/icons/app_logo_dark.png'
+                : 'assets/icons/app_logo.png',
             height: 64,
             width: 64,
             errorBuilder: (context, error, stackTrace) => Icon(
@@ -328,7 +345,9 @@ class AuthLayout extends StatelessWidget {
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+            color:
+                Theme.of(context).textTheme.bodyLarge?.color ??
+                AppColors.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
@@ -338,7 +357,9 @@ class AuthLayout extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+              color:
+                  Theme.of(context).textTheme.bodyMedium?.color ??
+                  AppColors.textSecondary,
               height: 1.5,
             ),
           ),

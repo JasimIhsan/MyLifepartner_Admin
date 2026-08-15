@@ -231,12 +231,16 @@ class MediaPreviewArguments {
 
 class OutgoingCallArguments {
   final String calleeName;
+  final int? calleeAvatarImageId;
   final String? calleeAvatar;
+  final bool calleeAvatarIsBlurred;
   final bool isVideoCall;
 
   OutgoingCallArguments({
     required this.calleeName,
+    this.calleeAvatarImageId,
     this.calleeAvatar,
+    this.calleeAvatarIsBlurred = false,
     required this.isVideoCall,
   });
 }
@@ -245,8 +249,12 @@ class CallArguments {
   final String callID;
   final String userID;
   final String userName;
+  final int? localUserAvatarImageId;
   final String? localUserAvatar;
+  final bool localUserAvatarIsBlurred;
+  final int? remoteUserAvatarImageId;
   final String? remoteUserAvatar;
+  final bool remoteUserAvatarIsBlurred;
   final bool isVideoCall;
   final bool isCaller;
   final String otherUserId;
@@ -255,8 +263,12 @@ class CallArguments {
     required this.callID,
     required this.userID,
     required this.userName,
+    this.localUserAvatarImageId,
     this.localUserAvatar,
+    this.localUserAvatarIsBlurred = false,
+    this.remoteUserAvatarImageId,
     this.remoteUserAvatar,
+    this.remoteUserAvatarIsBlurred = false,
     this.isVideoCall = false,
     this.isCaller = false,
     required this.otherUserId,

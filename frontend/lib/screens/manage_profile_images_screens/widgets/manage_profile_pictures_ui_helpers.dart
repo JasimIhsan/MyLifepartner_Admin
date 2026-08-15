@@ -1,8 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/screens/profile_image_upload/widgets/dashed_border_painter.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class CustomEmptySlot extends StatelessWidget {
   final VoidCallback? onTap;
@@ -59,8 +59,9 @@ class PrimaryImageSlot extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl: image.imageUrl,
+            CachedAppImage(
+              imageId: image.imageId,
+              presignedImageUrl: image.presignedImageUrl,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
@@ -77,7 +78,8 @@ class PrimaryImageSlot extends StatelessWidget {
                   Icons.broken_image_outlined,
                   color:
                       Theme.of(context).textTheme.bodyMedium?.color ??
-                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
             ),
@@ -166,8 +168,9 @@ class SmallImageSlot extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl: image.imageUrl,
+            CachedAppImage(
+              imageId: image.imageId,
+              presignedImageUrl: image.presignedImageUrl,
               fit: BoxFit.cover,
               placeholder: (_, __) => Container(
                 color: Theme.of(context).primaryColor.withValues(alpha: 0.05),
@@ -184,7 +187,8 @@ class SmallImageSlot extends StatelessWidget {
                   Icons.broken_image_outlined,
                   color:
                       Theme.of(context).textTheme.bodyMedium?.color ??
-                      Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      Theme.of(context).textTheme.bodyMedium?.color ??
+                      AppColors.textSecondary,
                 ),
               ),
             ),

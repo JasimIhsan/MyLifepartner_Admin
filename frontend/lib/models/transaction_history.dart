@@ -38,7 +38,9 @@ class TransactionHistory {
       userId: json['userId'],
       planId: json['planId'],
       status: json['status'],
-      amount: json['amount'] != null ? (json['amount'] as num).toDouble() : null,
+      amount: json['amount'] != null
+          ? (json['amount'] as num).toDouble()
+          : null,
       currency: json['currency'],
       revenueCatEventId: json['revenueCatEventId'],
       originalTransactionId: json['originalTransactionId'],
@@ -47,7 +49,9 @@ class TransactionHistory {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       planName: plan?['name'],
-      planPrice: plan?['price'] != null ? (plan?['price'] as num).toDouble() : null,
+      planPrice: plan?['price'] != null
+          ? (plan?['price'] as num).toDouble()
+          : null,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/services/image_access_service.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class ImageAccessRequestsScreen extends StatefulWidget {
   const ImageAccessRequestsScreen({super.key});
@@ -142,10 +143,11 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
       itemCount: _receivedRequests.length,
       itemBuilder: (context, index) {
         final req = _receivedRequests[index];
-        final profile = req['requesterProfile'] ?? {};
+        final profile = Map<String, dynamic>.from(
+          req['requesterProfile'] as Map? ?? {},
+        );
         final name = profile['name'] ?? 'Unknown User';
         final age = profile['age'];
-        final avatarUrl = profile['imageUrl'];
         final status = req['status'] as String;
 
         return Card(
@@ -162,23 +164,7 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).dividerColor.withValues(alpha: 0.1),
-                  backgroundImage: avatarUrl != null
-                      ? NetworkImage(avatarUrl)
-                      : null,
-                  child: avatarUrl == null
-                      ? Icon(
-                          Icons.person,
-                          color:
-                              Theme.of(context).iconTheme.color ?? Colors.grey,
-                          size: 28,
-                        )
-                      : null,
-                ),
+                _buildRequestAvatar(context, profile),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -311,10 +297,11 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
       itemCount: _sentRequests.length,
       itemBuilder: (context, index) {
         final req = _sentRequests[index];
-        final profile = req['ownerProfile'] ?? {};
+        final profile = Map<String, dynamic>.from(
+          req['ownerProfile'] as Map? ?? {},
+        );
         final name = profile['name'] ?? 'Unknown User';
         final age = profile['age'];
-        final avatarUrl = profile['imageUrl'];
         final status = req['status'] as String;
 
         return Card(
@@ -331,23 +318,7 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).dividerColor.withValues(alpha: 0.1),
-                  backgroundImage: avatarUrl != null
-                      ? NetworkImage(avatarUrl)
-                      : null,
-                  child: avatarUrl == null
-                      ? Icon(
-                          Icons.person,
-                          color:
-                              Theme.of(context).iconTheme.color ?? Colors.grey,
-                          size: 28,
-                        )
-                      : null,
-                ),
+                _buildRequestAvatar(context, profile),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Column(
@@ -399,6 +370,50 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
         );
       },
     );
+  }
+
+  Widget _buildRequestAvatar(
+    BuildContext context,
+    Map<String, dynamic> profile,
+  ) {
+    final avatarUrl =
+        profile['presignedImageUrl'] as String? ??
+        profile['imageUrl'] as String?;
+    final imageId = _readImageId(profile['imageId']);
+
+    return SizedBox(
+      width: 56,
+      height: 56,
+      child: ClipOval(
+        child: imageId != null || avatarUrl != null
+            ? CachedAppImage(
+                imageId: imageId,
+                presignedImageUrl: avatarUrl,
+                fit: BoxFit.cover,
+                placeholder: (_, __) => _avatarFallback(context),
+                errorWidget: (_, __, ___) => _avatarFallback(context),
+              )
+            : _avatarFallback(context),
+      ),
+    );
+  }
+
+  Widget _avatarFallback(BuildContext context) {
+    return Container(
+      color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
+      child: Icon(
+        Icons.person,
+        color: Theme.of(context).iconTheme.color ?? Colors.grey,
+        size: 28,
+      ),
+    );
+  }
+
+  int? _readImageId(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   Color _getStatusColor(String status) {

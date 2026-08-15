@@ -495,7 +495,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     callProvider.initiateCall(
       otherUserId: otherUserId,
       otherUserName: widget.profile.name,
+      calleeAvatarImageId: _profileImage?.imageId,
       calleeAvatar: _profileImageUrl,
+      calleeAvatarIsBlurred: _profileImage?.isBlurred ?? false,
       isVideo: isVideo,
     );
 
@@ -504,20 +506,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       '/outgoing-call/$otherUserId',
       extra: OutgoingCallArguments(
         calleeName: widget.profile.name,
+        calleeAvatarImageId: _profileImage?.imageId,
         calleeAvatar: _profileImageUrl,
+        calleeAvatarIsBlurred: _profileImage?.isBlurred ?? false,
         isVideoCall: isVideo,
       ),
     );
   }
 
-  String? get _profileImageUrl {
-    final primary = widget.profile.images.where((img) => img.isPrimary);
-    if (primary.isNotEmpty) return primary.first.imageUrl;
-    if (widget.profile.images.isNotEmpty) {
-      return widget.profile.images.first.imageUrl;
-    }
-    return null;
-  }
+  MatchImage? get _profileImage => widget.profile.primaryOrFirstImage;
+
+  String? get _profileImageUrl => _profileImage?.presignedImageUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -529,7 +528,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       backgroundColor: Theme.of(context).canvasColor,
       appBar: ChatDetailAppBar(
         profileName: widget.profile.name,
+        profileImageId: _profileImage?.imageId,
         profileImageUrl: _profileImageUrl,
+        profileImageIsBlurred: _profileImage?.isBlurred ?? false,
         onAudioCall: () => _startCall(isVideo: false),
         onVideoCall: () => _startCall(isVideo: true),
         isOnline: isOnline,

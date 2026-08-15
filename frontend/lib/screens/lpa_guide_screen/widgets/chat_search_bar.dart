@@ -16,12 +16,7 @@ class ChatSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.only(
-        top: 12,
-        bottom: 12,
-        left: 16,
-        right: 16,
-      ),
+      padding: const EdgeInsets.only(top: 12, bottom: 12, left: 16, right: 16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
@@ -45,14 +40,18 @@ class ChatSearchBar extends StatelessWidget {
                   textInputAction: TextInputAction.send,
                   enabled: enabled,
                   style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                    color:
+                        Theme.of(context).textTheme.bodyLarge?.color ??
+                        AppColors.textPrimary,
                     fontSize: 16,
                   ),
                   decoration: InputDecoration(
                     hintText: 'Type your question...',
                     hintStyle: TextStyle(
                       fontSize: 15,
-                      color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                      color:
+                          Theme.of(context).textTheme.bodyMedium?.color ??
+                          AppColors.textSecondary,
                     ),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(
@@ -77,7 +76,9 @@ class ChatSearchBar extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.3),
+                        color: Theme.of(
+                          context,
+                        ).primaryColor.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 4),
                       ),

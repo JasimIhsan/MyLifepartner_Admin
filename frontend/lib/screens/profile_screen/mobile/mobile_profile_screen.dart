@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -8,6 +7,7 @@ import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/theme_provider.dart';
 import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/services/user_repository.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -263,8 +263,10 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                                             panEnabled: true,
                                             minScale: 0.5,
                                             maxScale: 4.0,
-                                            child: CachedNetworkImage(
-                                              imageUrl: primaryImage!.imageUrl,
+                                            child: CachedAppImage(
+                                              imageId: primaryImage!.imageId,
+                                              presignedImageUrl: primaryImage!
+                                                  .presignedImageUrl,
                                               fit: BoxFit.contain,
                                               placeholder: (context, url) =>
                                                   CircularProgressIndicator(
@@ -288,10 +290,12 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                               );
                             },
                             child: ClipOval(
-                              child: CachedNetworkImage(
+                              child: CachedAppImage(
                                 width: 140,
                                 height: 140,
-                                imageUrl: primaryImage!.imageUrl,
+                                imageId: primaryImage!.imageId,
+                                presignedImageUrl:
+                                    primaryImage!.presignedImageUrl,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) =>
                                     CircularProgressIndicator(

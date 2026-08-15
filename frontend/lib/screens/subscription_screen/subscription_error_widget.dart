@@ -39,7 +39,9 @@ class SubscriptionErrorWidget extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
-                color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ).animate().fadeIn(delay: 100.ms),
@@ -51,7 +53,9 @@ class SubscriptionErrorWidget extends StatelessWidget {
               "We’re having trouble loading subscription plans right now.\nPlease try again in a moment.",
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary,
+                color:
+                    Theme.of(context).textTheme.bodyMedium?.color ??
+                    AppColors.textSecondary,
                 height: 1.5,
               ),
               textAlign: TextAlign.center,

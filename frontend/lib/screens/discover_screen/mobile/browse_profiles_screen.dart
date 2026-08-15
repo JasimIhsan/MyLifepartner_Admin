@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
 
@@ -83,6 +84,17 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                 color: Theme.of(context).disabledColor.withValues(alpha: 0.2),
               );
         }, childCount: 6),
+      ),
+    );
+  }
+
+  Widget _profileImagePlaceholder(BuildContext context) {
+    return Container(
+      color: Theme.of(context).disabledColor.withValues(alpha: 0.1),
+      child: Icon(
+        Icons.person_rounded,
+        size: 48,
+        color: Theme.of(context).disabledColor,
       ),
     );
   }
@@ -316,12 +328,7 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                           ),
                       delegate: SliverChildBuilderDelegate((context, index) {
                         final profile = provider.profiles[index];
-                        final primaryImage = profile.images.isNotEmpty
-                            ? profile.images.firstWhere(
-                                (img) => img.isPrimary,
-                                orElse: () => profile.images.first,
-                              )
-                            : null;
+                        final primaryImage = profile.primaryOrFirstImage;
 
                         return GestureDetector(
                           onTap: () {
@@ -349,53 +356,19 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                               children: [
                                 // Background Image
                                 if (primaryImage != null)
-                                  Image.network(
-                                    primaryImage.imageUrl,
+                                  CachedAppImage(
+                                    imageId: primaryImage.imageId,
+                                    presignedImageUrl:
+                                        primaryImage.presignedImageUrl,
+                                    isBlurred: primaryImage.isBlurred,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Container(
-                                              color: Theme.of(context)
-                                                  .disabledColor
-                                                  .withValues(alpha: 0.1),
-                                              child: Icon(
-                                                Icons.person_rounded,
-                                                size: 48,
-                                                color: Theme.of(
-                                                  context,
-                                                ).disabledColor,
-                                              ),
-                                            ),
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return Container(
-                                            color: Theme.of(context)
-                                                .disabledColor
-                                                .withValues(alpha: 0.1),
-                                            child: Icon(
-                                              Icons.person_rounded,
-                                              size: 48,
-                                              color: Theme.of(
-                                                context,
-                                              ).disabledColor,
-                                            ),
-                                          );
-                                        },
+                                    placeholder: (_, __) =>
+                                        _profileImagePlaceholder(context),
+                                    errorWidget: (_, __, ___) =>
+                                        _profileImagePlaceholder(context),
                                   )
                                 else
-                                  Container(
-                                    color: Theme.of(
-                                      context,
-                                    ).disabledColor.withValues(alpha: 0.1),
-                                    child: Icon(
-                                      Icons.person_rounded,
-                                      size: 48,
-                                      color: Theme.of(context).disabledColor,
-                                    ),
-                                  ),
+                                  _profileImagePlaceholder(context),
 
                                 // Premium Gradient Overlay
                                 Positioned.fill(

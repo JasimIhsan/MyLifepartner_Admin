@@ -166,7 +166,12 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                 context.go(AppRoutes.landing);
               }
             },
-            child: Icon(Icons.logout, color: Theme.of(context).textTheme.bodyLarge?.color ?? AppColors.textPrimary),
+            child: Icon(
+              Icons.logout,
+              color:
+                  Theme.of(context).textTheme.bodyLarge?.color ??
+                  AppColors.textPrimary,
+            ),
           ),
         ],
       ),
