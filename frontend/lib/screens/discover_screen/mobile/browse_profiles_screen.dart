@@ -39,19 +39,19 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _searchController.dispose();
+    // _searchController.dispose();
     _debounce?.cancel();
     super.dispose();
   }
 
-  void _onSearchChanged(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      final provider = context.read<DiscoveryProvider>();
-      final filter = provider.filter.copyWith(searchQuery: query);
-      provider.applyFilter(filter);
-    });
-  }
+  // void _onSearchChanged(String query) {
+  //   if (_debounce?.isActive ?? false) _debounce!.cancel();
+  //   _debounce = Timer(const Duration(milliseconds: 500), () {
+  //     final provider = context.read<DiscoveryProvider>();
+  //     final filter = provider.filter.copyWith(searchQuery: query);
+  //     provider.applyFilter(filter);
+  //   });
+  // }
 
   void _onScroll() {
     if (!context.read<DiscoveryProvider>().isLoadingMore &&
@@ -155,76 +155,76 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                 parent: AlwaysScrollableScrollPhysics(),
               ),
               slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                    child: TextField(
-                      controller: _searchController,
-                      style: const TextStyle(fontSize: 16),
-                      decoration: InputDecoration(
-                        hintText: 'Search by name...',
-                        hintStyle: TextStyle(
-                          color: Theme.of(context).hintColor,
-                          fontSize: 15,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.search_rounded,
-                          color:
-                              Theme.of(
-                                context,
-                              ).iconTheme.color?.withValues(alpha: 0.5) ??
-                              Colors.grey.shade400,
-                          size: 22,
-                        ),
-                        suffixIcon: _searchController.text.isNotEmpty
-                            ? IconButton(
-                                icon: Icon(
-                                  Icons.cancel_rounded,
-                                  color:
-                                      Theme.of(context).iconTheme.color
-                                          ?.withValues(alpha: 0.5) ??
-                                      Colors.grey.shade400,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  _onSearchChanged('');
-                                  setState(() {});
-                                },
-                              )
-                            : null,
-                        filled: true,
-                        fillColor: Theme.of(context).cardColor,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 14,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).dividerColor,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).dividerColor,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(
-                            color: Theme.of(context).primaryColor,
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      onChanged: (val) {
-                        setState(() {});
-                        _onSearchChanged(val);
-                      },
-                    ),
-                  ),
-                ),
+                // SliverToBoxAdapter(
+                //   child: Padding(
+                //     padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                //     child: TextField(
+                //       controller: _searchController,
+                //       style: const TextStyle(fontSize: 16),
+                //       decoration: InputDecoration(
+                //         hintText: 'Search by name...',
+                //         hintStyle: TextStyle(
+                //           color: Theme.of(context).hintColor,
+                //           fontSize: 15,
+                //         ),
+                //         prefixIcon: Icon(
+                //           Icons.search_rounded,
+                //           color:
+                //               Theme.of(
+                //                 context,
+                //               ).iconTheme.color?.withValues(alpha: 0.5) ??
+                //               Colors.grey.shade400,
+                //           size: 22,
+                //         ),
+                //         suffixIcon: _searchController.text.isNotEmpty
+                //             ? IconButton(
+                //                 icon: Icon(
+                //                   Icons.cancel_rounded,
+                //                   color:
+                //                       Theme.of(context).iconTheme.color
+                //                           ?.withValues(alpha: 0.5) ??
+                //                       Colors.grey.shade400,
+                //                   size: 20,
+                //                 ),
+                //                 onPressed: () {
+                //                   _searchController.clear();
+                //                   _onSearchChanged('');
+                //                   setState(() {});
+                //                 },
+                //               )
+                //             : null,
+                //         filled: true,
+                //         fillColor: Theme.of(context).cardColor,
+                //         contentPadding: const EdgeInsets.symmetric(
+                //           vertical: 14,
+                //         ),
+                //         border: OutlineInputBorder(
+                //           borderRadius: BorderRadius.circular(16),
+                //           borderSide: BorderSide(
+                //             color: Theme.of(context).dividerColor,
+                //           ),
+                //         ),
+                //         enabledBorder: OutlineInputBorder(
+                //           borderRadius: BorderRadius.circular(16),
+                //           borderSide: BorderSide(
+                //             color: Theme.of(context).dividerColor,
+                //           ),
+                //         ),
+                //         focusedBorder: OutlineInputBorder(
+                //           borderRadius: BorderRadius.circular(16),
+                //           borderSide: BorderSide(
+                //             color: Theme.of(context).primaryColor,
+                //             width: 1.5,
+                //           ),
+                //         ),
+                //       ),
+                //       onChanged: (val) {
+                //         setState(() {});
+                //         _onSearchChanged(val);
+                //       },
+                //     ),
+                //   ),
+                // ),
                 if (provider.state == DiscoveryState.loading &&
                     provider.profiles.isEmpty)
                   _buildSkeletonGrid()
