@@ -51,6 +51,15 @@ const discoveryProfileSelect = {
                blurredImageUrl: true,
             },
          },
+         subscriptions: {
+            where: {
+               status: {
+                  in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"],
+               },
+            },
+            select: { id: true },
+            take: 1,
+         },
       },
    },
 } satisfies Prisma.ProfileSelect;
@@ -311,6 +320,7 @@ export class DiscoveryService {
          country: profile.country,
          isVerified: profile.user.isVerified,
          isFoundingMember: profile.user.isFoundingMember,
+         isPremium: ("subscriptions" in profile.user ? (profile.user.subscriptions?.length ?? 0) > 0 : false),
          maritalStatus: isRestricted ? null : profile.maritalStatus,
          motherTongue: profile.motherTongue,
          highestEducation: profile.highestEducation,

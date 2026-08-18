@@ -11,6 +11,15 @@ const candidateProfileInclude = {
          createdAt: true,
          updatedAt: true,
          privacySettings: true,
+         subscriptions: {
+            where: {
+               status: {
+                  in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"],
+               },
+            },
+            select: { id: true },
+            take: 1,
+         },
       },
    },
    images: {
@@ -42,6 +51,9 @@ type ProfileWithInteractionData = Prisma.ProfileGetPayload<{
             createdAt: true;
             updatedAt: true;
             privacySettings: true;
+            subscriptions: {
+               select: { id: true };
+            };
          };
       };
    };
@@ -232,6 +244,15 @@ export class MatchRepository implements IMatchRepository {
                   createdAt: true,
                   updatedAt: true,
                   privacySettings: true,
+                  subscriptions: {
+                     where: {
+                        status: {
+                           in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"],
+                        },
+                     },
+                     select: { id: true },
+                     take: 1,
+                  }
                },
             },
          },
@@ -494,6 +515,15 @@ export class MatchRepository implements IMatchRepository {
                      where: {
                         blockerUserId: currentUserId,
                      }
+                  },
+                  subscriptions: {
+                     where: {
+                        status: {
+                           in: ["ACTIVE", "CANCELLED_PENDING_EXPIRY", "BILLING_ISSUE", "GRACE_PERIOD"],
+                        },
+                     },
+                     select: { id: true },
+                     take: 1,
                   }
                },
             },
@@ -594,6 +624,7 @@ export class MatchRepository implements IMatchRepository {
          name: profile.name,
          isVerified: profile.user.isVerified,
          isFoundingMember: profile.user.isFoundingMember,
+         isPremium: ("subscriptions" in profile.user ? (profile.user.subscriptions?.length ?? 0) > 0 : false),
          jobId: profile.jobId,
          dateOfBirth: profile.dateOfBirth,
          maritalStatus: profile.maritalStatus,

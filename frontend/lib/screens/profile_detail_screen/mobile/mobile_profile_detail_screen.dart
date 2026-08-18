@@ -13,6 +13,7 @@ import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
+import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:provider/provider.dart';
 
 class MobileProfileDetailScreen extends StatefulWidget {
@@ -598,16 +599,17 @@ class _HeroProfileInfo extends StatelessWidget {
                 ),
               ),
             ),
-            if (profile['isVerified'] == true) ...[
+            if (profile['isVerified'] == true || profile['isPremium'] == true || profile['isFoundingMember'] == true) ...[
               const SizedBox(width: 6),
               CustomPopoverTooltip(
                 title: 'Verified Profile',
                 description:
                     'This profile has been verified and authenticated by our moderation team.',
-                child: Image.asset(
-                  'assets/icons/verified_icon.png',
-                  width: 20,
-                  height: 20,
+                child: VerifiedIconWidget(
+                  isVerified: profile['isVerified'] == true,
+                  isFoundingMember: profile['isFoundingMember'] == true,
+                  isPremium: profile['isPremium'] == true,
+                  size: 20,
                 ),
               ),
             ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 
@@ -77,16 +78,17 @@ class ProfileNameRow extends StatelessWidget {
                     ),
                   ),
 
-                  if (profile['isVerified'] == true) ...[
+                  if (profile['isVerified'] == true || profile['isPremium'] == true || profile['isFoundingMember'] == true) ...[
                     const SizedBox(width: 6),
                     CustomPopoverTooltip(
                       title: 'Verified Profile',
                       description:
                           'This profile has been verified and authenticated by our moderation team.',
-                      child: Image.asset(
-                        'assets/icons/verified_icon.png',
-                        width: 20,
-                        height: 20,
+                      child: VerifiedIconWidget(
+                        isVerified: profile['isVerified'] == true,
+                        isFoundingMember: profile['isFoundingMember'] == true,
+                        isPremium: profile['isPremium'] == true,
+                        size: 20,
                       ),
                     ),
                   ],

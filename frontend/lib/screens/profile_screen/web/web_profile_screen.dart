@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/theme_provider.dart';
@@ -163,16 +164,17 @@ class _WebProfileScreenState extends State<WebProfileScreen>
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          if (user!.isVerified) ...[
+                          if (user!.isVerified || user!.isPremium || user!.isFoundingMember) ...[
                             const SizedBox(width: 6),
                             CustomPopoverTooltip(
                               title: 'Verified Profile',
                               description:
                                   'This profile has been verified and authenticated by our moderation team.',
-                              child: Image.asset(
-                                'assets/icons/verified_icon.png',
-                                width: 22,
-                                height: 22,
+                              child: VerifiedIconWidget(
+                                isVerified: user!.isVerified,
+                                isFoundingMember: user!.isFoundingMember,
+                                isPremium: user!.isPremium,
+                                size: 22,
                               ),
                             ),
                           ],

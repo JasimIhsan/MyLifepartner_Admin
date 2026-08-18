@@ -27,6 +27,7 @@ export interface MatchRecommendationItem {
    age: number;
    isVerified: boolean;
    isFoundingMember: boolean;
+   isPremium: boolean;
    city: string | null;
    state: string | null;
    country: string | null;
@@ -78,6 +79,7 @@ export interface ProfileDetail {
    lastLoginAt: Date;
    isVerified: boolean;
    isFoundingMember: boolean;
+   isPremium: boolean;
    viewerPrivacyEnabled?: boolean;
    targetPrivacyEnabled?: boolean;
    imageAccessRequestStatus?: string | null;

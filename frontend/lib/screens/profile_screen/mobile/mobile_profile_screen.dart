@@ -11,6 +11,7 @@ import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
+import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -335,16 +336,17 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                       textAlign: TextAlign.center,
                     ),
                   ),
-                  if (user!.isVerified) ...[
+                  if (user!.isVerified || user!.isPremium || user!.isFoundingMember) ...[
                     const SizedBox(width: 6),
                     CustomPopoverTooltip(
                       title: 'Verified Profile',
                       description:
                           'This profile has been verified and authenticated by our moderation team.',
-                      child: Image.asset(
-                        'assets/icons/verified_icon.png',
-                        width: 22,
-                        height: 22,
+                      child: VerifiedIconWidget(
+                        isVerified: user!.isVerified,
+                        isFoundingMember: user!.isFoundingMember,
+                        isPremium: user!.isPremium,
+                        size: 22,
                       ),
                     ),
                   ],

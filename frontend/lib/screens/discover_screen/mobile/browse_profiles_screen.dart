@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
+import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
@@ -418,15 +419,16 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
-                                            if (profile.isVerified) ...[
+                                            if (profile.isVerified || profile.isPremium || profile.isFoundingMember) ...[
                                               const SizedBox(width: 4),
-                                              const CustomPopoverTooltip(
+                                              CustomPopoverTooltip(
                                                 title: 'Verified Profile',
                                                 description:
                                                     'This profile has been verified and authenticated by our moderation team.',
-                                                child: Icon(
-                                                  Icons.verified_rounded,
-                                                  color: Colors.blueAccent,
+                                                child: VerifiedIconWidget(
+                                                  isVerified: profile.isVerified,
+                                                  isFoundingMember: profile.isFoundingMember,
+                                                  isPremium: profile.isPremium,
                                                   size: 16,
                                                 ),
                                               ),

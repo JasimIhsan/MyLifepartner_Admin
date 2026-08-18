@@ -77,8 +77,12 @@ class _CachedAppImageState extends State<CachedAppImage> {
   final ImageCacheService _imageCacheService = ImageCacheService.instance;
   late String _currentUrl;
   late bool _effectiveIsBlurred;
+  late Future<void> _cachePreparation;
   late Future<bool> _cacheProbe;
+  bool _hasProvidedUrl = false;
+  bool _canUseCacheImmediately = true;
   bool _hasRetriedWithFreshUrl = false;
+  bool _refreshFinishedWithoutUrl = false;
   int _renderVersion = 0;
 
   @override
@@ -99,27 +103,27 @@ class _CachedAppImageState extends State<CachedAppImage> {
   }
 
   void _resetState() {
-    _currentUrl =
-        widget.presignedImageUrl ??
-        _imageCacheService.knownProfileImageUrl(
-          imageId: widget.imageId,
-          isBlurred: widget.isBlurred,
-        ) ??
-        '';
+    _currentUrl = widget.presignedImageUrl?.trim() ?? '';
+    _hasProvidedUrl = _currentUrl.isNotEmpty;
     _effectiveIsBlurred = widget.isBlurred;
     _hasRetriedWithFreshUrl = false;
+    _refreshFinishedWithoutUrl = false;
     _renderVersion++;
 
-    _imageCacheService.registerProfileImageUrl(
+    final cachePreparation = _imageCacheService.prepareProfileImageUrl(
       imageId: widget.imageId,
       presignedImageUrl: widget.presignedImageUrl,
       isBlurred: widget.isBlurred,
     );
+    _cachePreparation = cachePreparation.future;
+    _canUseCacheImmediately = cachePreparation.canUseCacheImmediately;
 
-    _cacheProbe = _imageCacheService.hasCachedProfileImage(
-      imageId: widget.imageId,
-      isBlurred: widget.isBlurred,
-    );
+    _cacheProbe = _cachePreparation.then((_) {
+      return _imageCacheService.hasCachedProfileImage(
+        imageId: widget.imageId,
+        isBlurred: widget.isBlurred,
+      );
+    });
   }
 
   Future<void> _refreshAndRetryOnce() async {
@@ -133,11 +137,19 @@ class _CachedAppImageState extends State<CachedAppImage> {
     if (!mounted) return;
 
     final presignedImageUrl = refreshedUrl?.presignedImageUrl;
-    if (presignedImageUrl == null || presignedImageUrl.isEmpty) return;
+    if (presignedImageUrl == null || presignedImageUrl.isEmpty) {
+      setState(() {
+        _currentUrl = '';
+        _refreshFinishedWithoutUrl = true;
+        _renderVersion++;
+      });
+      return;
+    }
 
     setState(() {
       _currentUrl = presignedImageUrl;
       _effectiveIsBlurred = refreshedUrl?.isBlurred ?? _effectiveIsBlurred;
+      _refreshFinishedWithoutUrl = false;
       _renderVersion++;
     });
   }
@@ -175,8 +187,51 @@ class _CachedAppImageState extends State<CachedAppImage> {
       isBlurred: _effectiveIsBlurred,
     );
 
+    if (!_canUseCacheImmediately) {
+      return FutureBuilder<void>(
+        future: _cachePreparation,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return _buildPlaceholder(context, _currentUrl);
+          }
+
+          return _buildPreparedProfileImage(cacheKey);
+        },
+      );
+    }
+
+    return _buildPreparedProfileImage(cacheKey);
+  }
+
+  Widget _buildPreparedProfileImage(String cacheKey) {
     if (_currentUrl.isNotEmpty) {
       return _buildCachedNetworkImage(cacheKey);
+    }
+
+    if (!_hasProvidedUrl) {
+      if (!_hasRetriedWithFreshUrl) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _refreshAndRetryOnce();
+        });
+      }
+
+      if (_refreshFinishedWithoutUrl) {
+        return _buildError(
+          context,
+          '',
+          StateError('Profile image URL could not be refreshed'),
+        );
+      }
+
+      return _buildPlaceholder(context, '');
+    }
+
+    if (_refreshFinishedWithoutUrl) {
+      return _buildError(
+        context,
+        '',
+        StateError('Profile image URL could not be refreshed'),
+      );
     }
 
     return FutureBuilder<bool>(
@@ -184,8 +239,7 @@ class _CachedAppImageState extends State<CachedAppImage> {
       builder: (context, snapshot) {
         final hasCache = snapshot.data == true;
 
-        if (!hasCache &&
-            _currentUrl.isEmpty &&
+        if (_currentUrl.isEmpty &&
             snapshot.connectionState == ConnectionState.done) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _refreshAndRetryOnce();

@@ -114,10 +114,7 @@ class ProfileRepository {
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
     try {
-      final response = await _client.patch(
-        '/profile/update',
-        data: data,
-      );
+      final response = await _client.patch('/profile/update', data: data);
 
       if (response.statusCode != 200) {
         throw Exception('Failed to update profile');
@@ -290,6 +287,10 @@ class ProfileRepository {
 
       final updatedImage = UserImage.fromJson(response.data['data']);
       await ImageCacheService.instance.evictProfileImage(imageId);
+      ImageCacheService.instance.registerProfileImageUrl(
+        imageId: updatedImage.imageId,
+        presignedImageUrl: updatedImage.presignedImageUrl,
+      );
       return updatedImage;
     } on DioException catch (e) {
       throw Exception(getDioErrorMessage(e, fallback: 'Error replacing image'));
@@ -300,9 +301,7 @@ class ProfileRepository {
 
   Future<void> deleteImage(int imageId) async {
     try {
-      final response = await _client.delete(
-        '/profile/delete-image/$imageId',
-      );
+      final response = await _client.delete('/profile/delete-image/$imageId');
 
       if (response.statusCode != 200) {
         throw Exception('Failed to delete image');
@@ -337,9 +336,7 @@ class ProfileRepository {
 
   Future<void> setPrimaryImage(int imageId) async {
     try {
-      final response = await _client.patch(
-        '/profile/set-primary/$imageId',
-      );
+      final response = await _client.patch('/profile/set-primary/$imageId');
 
       if (response.statusCode != 200) {
         throw Exception('Failed to set primary image');
@@ -355,9 +352,7 @@ class ProfileRepository {
 
   Future<void> completeImageUpload() async {
     try {
-      final response = await _client.post(
-        '/profile/complete-image-upload',
-      );
+      final response = await _client.post('/profile/complete-image-upload');
 
       if (response.statusCode != 200) {
         throw Exception('Failed to complete image upload');

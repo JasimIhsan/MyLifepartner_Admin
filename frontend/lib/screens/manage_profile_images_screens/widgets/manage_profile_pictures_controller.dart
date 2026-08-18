@@ -32,12 +32,7 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
     try {
       final fetchedImages = await profileRepository.getUserImages();
 
-      // Ensure the primary photo is always at index 0 (the large slot)
-      fetchedImages.sort((a, b) {
-        if (a.isPrimary && !b.isPrimary) return -1;
-        if (!a.isPrimary && b.isPrimary) return 1;
-        return 0;
-      });
+      _sortImages(fetchedImages);
 
       if (mounted) {
         setState(() {
@@ -150,7 +145,11 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
         final croppedImage = await cropImage(image);
         if (croppedImage != null) {
           setState(() => processingImageId = imageId);
-          await profileRepository.replaceImage(imageId, croppedImage);
+          final updatedImage = await profileRepository.replaceImage(
+            imageId,
+            croppedImage,
+          );
+          _replaceImageLocally(updatedImage);
           await fetchImages();
         }
       }
@@ -196,5 +195,28 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
         );
       },
     );
+  }
+
+  void _replaceImageLocally(UserImage updatedImage) {
+    if (!mounted) return;
+
+    final imageIndex = images.indexWhere(
+      (image) => image.imageId == updatedImage.imageId,
+    );
+    if (imageIndex == -1) return;
+
+    final nextImages = List<UserImage>.from(images);
+    nextImages[imageIndex] = updatedImage;
+    _sortImages(nextImages);
+
+    setState(() => images = nextImages);
+  }
+
+  void _sortImages(List<UserImage> imagesToSort) {
+    imagesToSort.sort((a, b) {
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+      return 0;
+    });
   }
 }

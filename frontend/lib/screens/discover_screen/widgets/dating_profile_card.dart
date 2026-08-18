@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
+import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 
@@ -217,16 +218,17 @@ class DatingProfileCard extends StatelessWidget {
                             ),
                           ),
                         ),
-                      if (profile.isVerified) ...[
+                      if (profile.isVerified || profile.isPremium || profile.isFoundingMember) ...[
                         const SizedBox(width: 8),
                         CustomPopoverTooltip(
                           title: 'Verified Profile',
                           description:
                               'This profile has been verified and authenticated by our moderation team.',
-                          child: Image.asset(
-                            'assets/icons/verified_icon.png',
-                            width: 22,
-                            height: 22,
+                          child: VerifiedIconWidget(
+                            isVerified: profile.isVerified,
+                            isFoundingMember: profile.isFoundingMember,
+                            isPremium: profile.isPremium,
+                            size: 22,
                           ),
                         ),
                       ],

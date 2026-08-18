@@ -32,6 +32,7 @@ export interface CandidateProfile {
    name: string | null;
    isVerified: boolean;
    isFoundingMember: boolean;
+   isPremium: boolean;
    jobId: number | null;
    dateOfBirth: Date | null;
    maritalStatus: string | null;

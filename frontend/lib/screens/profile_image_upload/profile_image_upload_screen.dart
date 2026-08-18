@@ -51,12 +51,7 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     try {
       final images = await _profileRepository.getUserImages();
 
-      // Ensure the primary photo is always at index 0 (the large slot)
-      images.sort((a, b) {
-        if (a.isPrimary && !b.isPrimary) return -1;
-        if (!a.isPrimary && b.isPrimary) return 1;
-        return 0;
-      });
+      _sortImages(images);
 
       if (mounted) {
         setState(() {
@@ -152,7 +147,11 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
         final croppedImage = await _cropImage(image);
         if (croppedImage != null) {
           setState(() => _processingImageId = imageId);
-          await _profileRepository.replaceImage(imageId, croppedImage);
+          final updatedImage = await _profileRepository.replaceImage(
+            imageId,
+            croppedImage,
+          );
+          _replaceImageLocally(updatedImage);
           await _fetchImages();
         }
       }
@@ -165,6 +164,29 @@ class _ProfileImageUploadScreenState extends State<ProfileImageUploadScreen> {
     } finally {
       if (mounted) setState(() => _processingImageId = null);
     }
+  }
+
+  void _replaceImageLocally(UserImage updatedImage) {
+    if (!mounted) return;
+
+    final imageIndex = _images.indexWhere(
+      (image) => image.imageId == updatedImage.imageId,
+    );
+    if (imageIndex == -1) return;
+
+    final nextImages = List<UserImage>.from(_images);
+    nextImages[imageIndex] = updatedImage;
+    _sortImages(nextImages);
+
+    setState(() => _images = nextImages);
+  }
+
+  void _sortImages(List<UserImage> imagesToSort) {
+    imagesToSort.sort((a, b) {
+      if (a.isPrimary && !b.isPrimary) return -1;
+      if (!a.isPrimary && b.isPrimary) return 1;
+      return 0;
+    });
   }
 
   Future<void> _deleteImage(int imageId) async {

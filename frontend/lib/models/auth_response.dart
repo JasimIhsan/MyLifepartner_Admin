@@ -86,6 +86,7 @@ class User {
   final String? selfieStatus;
   final bool isVerified;
   final bool isFoundingMember;
+  final bool isPremium;
   final DateTime? foundingMemberSince;
   final String? name;
   final String? email;
@@ -124,6 +125,7 @@ class User {
     this.selfieStatus,
     this.isVerified = false,
     this.isFoundingMember = false,
+    this.isPremium = false,
     this.foundingMemberSince,
     this.name,
     this.email,
@@ -166,6 +168,7 @@ class User {
       selfieStatus: json['selfieStatus'],
       isVerified: json['isVerified'] as bool? ?? false,
       isFoundingMember: json['isFoundingMember'] as bool? ?? false,
+      isPremium: json['activeSubscription'] != null || (json['isPremium'] as bool? ?? false),
       foundingMemberSince: json['foundingMemberSince'] != null
           ? DateTime.parse(json['foundingMemberSince'])
           : null,
