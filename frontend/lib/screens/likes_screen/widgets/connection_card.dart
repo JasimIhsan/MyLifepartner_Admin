@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
+import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 
 class ConnectionCard extends StatelessWidget {
   final MatchRecommendation profile;
@@ -92,10 +93,15 @@ class ConnectionCard extends StatelessWidget {
                             ),
                             if (profile.isVerified) ...[
                               const SizedBox(width: 4),
-                              Image.asset(
-                                'assets/icons/verified_icon.png',
-                                width: 14,
-                                height: 14,
+                              CustomPopoverTooltip(
+                                title: 'Verified Profile',
+                                description:
+                                    'This profile has been verified and authenticated by our moderation team.',
+                                child: Image.asset(
+                                  'assets/icons/verified_icon.png',
+                                  width: 14,
+                                  height: 14,
+                                ),
                               ),
                             ],
                           ],

@@ -10,8 +10,8 @@ import 'package:life_partner_again/providers/match_provider.dart';
 
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
-import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/discover_components.dart';
@@ -176,20 +176,10 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                                                 if (selectedProfile
                                                     .isVerified) ...[
                                                   const SizedBox(width: 8),
-                                                  GestureDetector(
-                                                    onTap: () {
-                                                      showModalBottomSheet(
-                                                        context: context,
-                                                        backgroundColor:
-                                                            Colors.transparent,
-                                                        builder: (_) =>
-                                                            VerifiedProfileBottomSheet(
-                                                              profileName:
-                                                                  selectedProfile
-                                                                      .name,
-                                                            ),
-                                                      );
-                                                    },
+                                                  CustomPopoverTooltip(
+                                                    title: 'Verified Profile',
+                                                    description:
+                                                        'This profile has been verified and authenticated by our moderation team.',
                                                     child: Icon(
                                                       Icons.verified,
                                                       color:

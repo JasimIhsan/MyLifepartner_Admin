@@ -480,6 +480,7 @@ class _MobileSubscriptionScreenState extends State<MobileSubscriptionScreen>
                                       FoundingMemberBadge(
                                         size: 160,
                                         needAnimation: false,
+                                        enableTooltip: false,
                                       ),
                                       const SizedBox(height: 24),
                                       Text(

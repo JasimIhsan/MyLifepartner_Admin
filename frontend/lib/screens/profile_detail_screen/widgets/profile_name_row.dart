@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
-import 'package:life_partner_again/widgets/verified_profile_bottom_sheet.dart';
 
 class ProfileNameRow extends StatelessWidget {
   final Map<String, dynamic> profile;
@@ -79,16 +79,10 @@ class ProfileNameRow extends StatelessWidget {
 
                   if (profile['isVerified'] == true) ...[
                     const SizedBox(width: 6),
-                    GestureDetector(
-                      onTap: () {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          builder: (_) => VerifiedProfileBottomSheet(
-                            profileName: profile['name'] ?? 'Unknown',
-                          ),
-                        );
-                      },
+                    CustomPopoverTooltip(
+                      title: 'Verified Profile',
+                      description:
+                          'This profile has been verified and authenticated by our moderation team.',
                       child: Image.asset(
                         'assets/icons/verified_icon.png',
                         width: 20,

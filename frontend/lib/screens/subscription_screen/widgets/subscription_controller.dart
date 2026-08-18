@@ -179,7 +179,7 @@ mixin SubscriptionControllerState<T extends StatefulWidget> on State<T> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              FoundingMemberBadge(size: 50),
+              FoundingMemberBadge(size: 50, enableTooltip: false),
               const SizedBox(height: 16),
               Text(
                 'Founding Member',

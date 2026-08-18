@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
+import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
 
@@ -419,10 +420,15 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                                             ),
                                             if (profile.isVerified) ...[
                                               const SizedBox(width: 4),
-                                              const Icon(
-                                                Icons.verified_rounded,
-                                                color: Colors.blueAccent,
-                                                size: 16,
+                                              const CustomPopoverTooltip(
+                                                title: 'Verified Profile',
+                                                description:
+                                                    'This profile has been verified and authenticated by our moderation team.',
+                                                child: Icon(
+                                                  Icons.verified_rounded,
+                                                  color: Colors.blueAccent,
+                                                  size: 16,
+                                                ),
                                               ),
                                             ],
                                             if (profile.isFoundingMember) ...[

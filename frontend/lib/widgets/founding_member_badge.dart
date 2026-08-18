@@ -1,17 +1,20 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 
 class FoundingMemberBadge extends StatefulWidget {
   final double size;
   final bool isOverlay;
   final bool needAnimation;
+  final bool enableTooltip;
 
   const FoundingMemberBadge({
     super.key,
     this.size = 20,
     this.isOverlay = false,
     this.needAnimation = false,
+    this.enableTooltip = true,
   });
 
   @override
@@ -66,13 +69,11 @@ class _FoundingMemberBadgeState extends State<FoundingMemberBadge>
       fit: BoxFit.contain,
     );
 
+    Widget badgeWidget;
     if (!widget.needAnimation || _controller == null) {
-      return Tooltip(message: 'Founding Member', child: image);
-    }
-
-    return Tooltip(
-      message: 'Founding Member',
-      child: AnimatedBuilder(
+      badgeWidget = image;
+    } else {
+      badgeWidget = AnimatedBuilder(
         animation: _controller!,
         builder: (context, child) {
           final progress = _controller!.value;
@@ -90,7 +91,17 @@ class _FoundingMemberBadgeState extends State<FoundingMemberBadge>
           );
         },
         child: image,
-      ),
-    );
+      );
+    }
+
+    if (widget.enableTooltip) {
+      return CustomPopoverTooltip(
+        title: 'Founding Member',
+        description: 'One of the early and distinguished members of our community.',
+        child: badgeWidget,
+      );
+    }
+
+    return badgeWidget;
   }
 }
