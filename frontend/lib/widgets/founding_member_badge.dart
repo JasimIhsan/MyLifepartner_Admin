@@ -11,7 +11,7 @@ class FoundingMemberBadge extends StatefulWidget {
     super.key,
     this.size = 20,
     this.isOverlay = false,
-    this.needAnimation = true,
+    this.needAnimation = false,
   });
 
   @override

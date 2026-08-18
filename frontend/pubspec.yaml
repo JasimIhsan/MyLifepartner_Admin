@@ -147,9 +147,17 @@ flutter:
 
 flutter_launcher_icons:
    android: true
-   ios: false
+   ios: true
 
-   image_path: "assets/icons/app_icon_android.png"
+   # Legacy Android icon
+   image_path_android: "assets/icons/app_icon_android.png"
 
-   adaptive_icon_background: "#FFFFFF"
+   # iOS icon
+   image_path_ios: "assets/icons/app_icon_ios.png"
+
+   # Modern Android adaptive icon
+   adaptive_icon_background: "assets/icons/app_icon_background.png"
    adaptive_icon_foreground: "assets/icons/app_icon_foreground.png"
+
+   # iOS App Store requires no alpha/transparency
+   remove_alpha_ios: true

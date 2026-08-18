@@ -1,5 +1,5 @@
-import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
@@ -12,6 +12,7 @@ mixin ProfileControllerState<T extends StatefulWidget> on State<T>, RouteAware {
 
   User? user;
   UserImage? primaryImage;
+  List<UserImage> profileImages = [];
   bool isLoading = true;
   bool isUpdatingPrivacy = false;
 
@@ -54,6 +55,7 @@ mixin ProfileControllerState<T extends StatefulWidget> on State<T>, RouteAware {
       setState(() {
         user = fetchedUser;
         primaryImage = primaryImg;
+        profileImages = images;
       });
     } catch (e) {
       debugPrint("Error fetching profile: $e");

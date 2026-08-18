@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
@@ -11,8 +12,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileActionBar extends StatefulWidget {
   final Map<String, dynamic> profile;
+  final VoidCallback onReportPressed;
+  final VoidCallback onBlockPressed;
 
-  const ProfileActionBar({super.key, required this.profile});
+  const ProfileActionBar({
+    super.key,
+    required this.profile,
+    required this.onReportPressed,
+    required this.onBlockPressed,
+  });
 
   @override
   State<ProfileActionBar> createState() => _ProfileActionBarState();
@@ -21,6 +29,29 @@ class ProfileActionBar extends StatefulWidget {
 class _ProfileActionBarState extends State<ProfileActionBar> {
   bool _isPassing = false;
   bool _isInterested = false;
+  bool _isMoreExpanded = false;
+
+  @override
+  void didUpdateWidget(covariant ProfileActionBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.profile['id'] != widget.profile['id']) {
+      _isMoreExpanded = false;
+    }
+  }
+
+  void _toggleMore() {
+    setState(() => _isMoreExpanded = !_isMoreExpanded);
+  }
+
+  void _closeMore() {
+    if (!_isMoreExpanded) return;
+    setState(() => _isMoreExpanded = false);
+  }
+
+  void _runMoreAction(VoidCallback action) {
+    _closeMore();
+    action();
+  }
 
   String _getInteractionLabel(InteractionState state) {
     switch (state) {
@@ -40,11 +71,11 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
       case InteractionState.none:
         return Icons.favorite_rounded;
       case InteractionState.interestSent:
-        return Icons.send_rounded;
+        return LucideIcons.send;
       case InteractionState.interestReceived:
-        return Icons.check_circle_rounded;
+        return LucideIcons.heart_handshake;
       case InteractionState.matched:
-        return Icons.chat_bubble_rounded;
+        return LucideIcons.message_circle_dashed;
     }
   }
 
@@ -64,16 +95,19 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
 
     final bool canPass = isNone || isInterestReceived;
     final bool canAction = isNone || isInterestReceived || isMatched;
+    final bool isBusy = _isPassing || _isInterested;
 
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
       padding: EdgeInsets.only(
         left: 20,
         right: 20,
-        top: 16,
-        bottom: MediaQuery.of(context).padding.bottom + 16,
+        top: _isMoreExpanded ? 12 : 14,
+        bottom: MediaQuery.of(context).padding.bottom + 14,
       ),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -89,177 +123,379 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Pass Button
-          GestureDetector(
-            onTap: canPass
-                ? () async {
-                    if (_isPassing || _isInterested) return;
-                    setState(() => _isPassing = true);
-                    try {
-                      await context.read<MatchProvider>().swipeLeft(
-                        targetProfileId: widget.profile['id'],
-                      );
-                      if (!context.mounted) return;
-                      context.pop();
-                    } catch (e) {
-                      if (!context.mounted) return;
-                      if (e is DioException && e.response?.statusCode == 402) {
-                        FeatureExhaustedModal.show(
-                          context,
-                          featureType: 'Skip',
-                        );
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              context.read<MatchProvider>().error ??
-                                  'Failed to skip',
-                            ),
-                          ),
-                        );
-                      }
-                    } finally {
-                      if (mounted) setState(() => _isPassing = false);
-                    }
-                  }
-                : null,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              height: 60,
-              width: 80,
-              decoration: BoxDecoration(
-                color: isDark
-                    ? theme.scaffoldBackgroundColor
-                    : const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(100),
-              ),
-              child: Center(
-                child: _isPassing
-                    ? SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: theme.iconTheme.color ?? AppColors.textPrimary,
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.bottomCenter,
+            child: _isMoreExpanded
+                ? Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Column(
+                      children: [
+                        _MoreActionButton(
+                          icon: LucideIcons.flag,
+                          title: 'Report profile',
+                          subtitle:
+                              'Tell us about suspicious or inappropriate activity.',
+                          onTap: () => _runMoreAction(widget.onReportPressed),
                         ),
-                      )
-                    : Icon(
-                        Icons.heart_broken,
-                        color: theme.iconTheme.color ?? AppColors.textPrimary,
-                        size: 26,
-                      ),
-              ),
-            ),
+                        const SizedBox(height: 8),
+                        _MoreActionButton(
+                          icon: LucideIcons.ban,
+                          title: 'Block profile',
+                          subtitle:
+                              'Hide this profile and prevent future contact.',
+                          isDestructive: true,
+                          onTap: () => _runMoreAction(widget.onBlockPressed),
+                        ),
+                      ],
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ),
-          const SizedBox(width: 12),
-          // Interest/Action Button
-          Expanded(
-            child: GestureDetector(
-              onTap: canAction && !isInterestSent
-                  ? () async {
-                      if (_isPassing || _isInterested) return;
-
-                      // If already matched, navigate to chat
-                      if (isMatched) {
-                        final prefs = await SharedPreferences.getInstance();
-                        final currentUserId = prefs.getInt('userId') ?? 0;
-                        if (!context.mounted) return;
-                        context.push(
-                          '/chat-detail/${widget.profile['id']}',
-                          extra: ChatDetailArguments(
-                            profile: MatchRecommendation.fromJson(
-                              widget.profile,
-                            ),
-                            currentUserId: currentUserId,
-                          ),
-                        );
-                        return;
-                      }
-
-                      setState(() => _isInterested = true);
-                      try {
-                        await context.read<MatchProvider>().swipeRight(
-                          targetProfileId: widget.profile['id'],
-                        );
-                        if (!context.mounted) return;
-                        context.pop();
-                      } catch (e) {
-                        if (!context.mounted) return;
-                        if (e is DioException &&
-                            e.response?.statusCode == 402) {
-                          FeatureExhaustedModal.show(
-                            context,
-                            featureType: 'Interest',
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                context.read<MatchProvider>().error ??
-                                    'Failed to send interest',
-                              ),
-                            ),
-                          );
+          Row(
+            children: [
+              Semantics(
+                button: true,
+                label: 'Pass',
+                child: GestureDetector(
+                  onTap: canPass
+                      ? () async {
+                          if (isBusy) return;
+                          _closeMore();
+                          setState(() => _isPassing = true);
+                          try {
+                            await context.read<MatchProvider>().swipeLeft(
+                              targetProfileId: widget.profile['id'],
+                            );
+                            if (!context.mounted) return;
+                            context.pop();
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            if (e is DioException &&
+                                e.response?.statusCode == 402) {
+                              FeatureExhaustedModal.show(
+                                context,
+                                featureType: 'Skip',
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    context.read<MatchProvider>().error ??
+                                        'Failed to skip',
+                                  ),
+                                ),
+                              );
+                            }
+                          } finally {
+                            if (mounted) setState(() => _isPassing = false);
+                          }
                         }
-                      } finally {
-                        if (mounted) setState(() => _isInterested = false);
-                      }
-                    }
-                  : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                height: 60,
-                decoration: BoxDecoration(
-                  color: (!canAction || isInterestSent)
-                      ? theme.primaryColor.withValues(alpha: 0.5)
-                      : theme.primaryColor,
-                  borderRadius: BorderRadius.circular(100),
-                  boxShadow: (!canAction || isInterestSent)
-                      ? []
-                      : [
-                          BoxShadow(
-                            color: theme.primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
+                      : null,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 54,
+                    width: 54,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? theme.scaffoldBackgroundColor
+                          : const Color(0xFFFBF8F8),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.primaryColor.withValues(alpha: 0.12),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: _isPassing
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                color:
+                                    theme.iconTheme.color ??
+                                    AppColors.textPrimary,
+                              ),
+                            )
+                          : Icon(
+                              Icons.heart_broken,
+                              color:
+                                  theme.iconTheme.color ??
+                                  AppColors.textPrimary,
+                              size: 24,
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: canAction && !isInterestSent
+                      ? () async {
+                          if (isBusy) return;
+                          _closeMore();
+
+                          // If already matched, navigate to chat
+                          if (isMatched) {
+                            final prefs = await SharedPreferences.getInstance();
+                            final currentUserId = prefs.getInt('userId') ?? 0;
+                            if (!context.mounted) return;
+                            context.push(
+                              '/chat-detail/${widget.profile['id']}',
+                              extra: ChatDetailArguments(
+                                profile: MatchRecommendation.fromJson(
+                                  widget.profile,
+                                ),
+                                currentUserId: currentUserId,
+                              ),
+                            );
+                            return;
+                          }
+
+                          setState(() => _isInterested = true);
+                          try {
+                            await context.read<MatchProvider>().swipeRight(
+                              targetProfileId: widget.profile['id'],
+                            );
+                            if (!context.mounted) return;
+                            context.pop();
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            if (e is DioException &&
+                                e.response?.statusCode == 402) {
+                              FeatureExhaustedModal.show(
+                                context,
+                                featureType: 'Interest',
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    context.read<MatchProvider>().error ??
+                                        'Failed to send interest',
+                                  ),
+                                ),
+                              );
+                            }
+                          } finally {
+                            if (mounted) {
+                              setState(() => _isInterested = false);
+                            }
+                          }
+                        }
+                      : null,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 54,
+                    decoration: BoxDecoration(
+                      color: (!canAction || isInterestSent)
+                          ? theme.primaryColor.withValues(alpha: 0.5)
+                          : theme.primaryColor,
+                      borderRadius: BorderRadius.circular(100),
+                      boxShadow: (!canAction || isInterestSent)
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: theme.primaryColor.withValues(
+                                  alpha: 0.3,
+                                ),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (_isInterested)
+                          const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.white,
+                            ),
+                          )
+                        else ...[
+                          Icon(
+                            _getInteractionIcon(state),
+                            color: Colors.white,
+                            size: 22,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            _getInteractionLabel(state),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
+                      ],
+                    ),
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (_isInterested)
-                      const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: Colors.white,
-                        ),
-                      )
-                    else ...[
-                      Icon(
-                        _getInteractionIcon(state),
-                        color: Colors.white,
-                        size: 24,
+              ),
+              const SizedBox(width: 12),
+              Semantics(
+                button: true,
+                label: 'More actions',
+                child: GestureDetector(
+                  onTap: isBusy ? null : _toggleMore,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    height: 54,
+                    width: 54,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? theme.scaffoldBackgroundColor
+                          : const Color(0xFFFBF8F8),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: theme.primaryColor.withValues(alpha: 0.12),
+                        width: 1,
                       ),
-                      const SizedBox(width: 10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 14,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        _isMoreExpanded ? LucideIcons.x : LucideIcons.ellipsis,
+                        color: theme.iconTheme.color ?? AppColors.textPrimary,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MoreActionButton extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool isDestructive;
+  final VoidCallback onTap;
+
+  const _MoreActionButton({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+    this.isDestructive = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = isDestructive ? Colors.redAccent : theme.primaryColor;
+    final textColor = isDestructive
+        ? Colors.redAccent
+        : theme.textTheme.bodyLarge?.color ?? AppColors.textPrimary;
+    final subtitleColor =
+        theme.textTheme.bodyMedium?.color ?? AppColors.textSecondary;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: Ink(
+            height: 70,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: isDestructive
+                  ? color.withValues(alpha: 0.07)
+                  : theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: color.withValues(alpha: isDestructive ? 0.28 : 0.14),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.11),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: color, size: 22),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        _getInteractionLabel(state),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: subtitleColor,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          height: 1.2,
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: isDestructive
+                      ? Colors.redAccent
+                      : subtitleColor.withValues(alpha: 0.8),
+                  size: 24,
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

@@ -397,6 +397,7 @@ export class MatchService implements IMatchService {
          name,
          age: this.getCandidateAge(candidate),
          city: candidate.city,
+         state: candidate.state,
          country: candidate.country,
          isVerified: candidate.isVerified,
          isFoundingMember: candidate.isFoundingMember,

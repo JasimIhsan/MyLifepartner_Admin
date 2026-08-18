@@ -28,6 +28,7 @@ export interface MatchRecommendationItem {
    isVerified: boolean;
    isFoundingMember: boolean;
    city: string | null;
+   state: string | null;
    country: string | null;
    occupation: string | null;
    maritalStatus: string | null;

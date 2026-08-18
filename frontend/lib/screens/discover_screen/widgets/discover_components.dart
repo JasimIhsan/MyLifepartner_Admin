@@ -1,9 +1,9 @@
-import 'package:go_router/go_router.dart';
-import 'dart:ui';
-
 import 'package:country_flags/country_flags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:go_router/go_router.dart';
+import 'dart:ui';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/country_helper.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
@@ -300,15 +300,25 @@ class ProfileBrowserCard extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
+        if (profile.occupation != null && profile.occupation!.trim().isNotEmpty)
+          _buildInfoRow(LucideIcons.briefcase, profile.occupation!),
         if (profile.maritalStatus != null)
-          _buildInfoRow(
-            Icons.favorite_border_rounded,
-            _formatEnum(profile.maritalStatus!),
-          ),
-        if (profile.city != null)
-          _buildInfoRow(Icons.location_on_outlined, profile.city!),
+          _buildInfoRow(LucideIcons.heart, _formatEnum(profile.maritalStatus!)),
+        if (_formatLocation(profile) != null)
+          _buildInfoRow(LucideIcons.map_pin, _formatLocation(profile)!),
       ],
     );
+  }
+
+  String? _formatLocation(MatchRecommendation profile) {
+    final parts = [
+      profile.city,
+      profile.state,
+      profile.country,
+    ].where((part) => part != null && part.trim().isNotEmpty).toList();
+
+    if (parts.isEmpty) return null;
+    return parts.join(', ');
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
@@ -318,12 +328,16 @@ class ProfileBrowserCard extends StatelessWidget {
         children: [
           Icon(icon, size: 14, color: Colors.white70),
           const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white.withValues(alpha: 0.8),
-              fontWeight: FontWeight.w500,
+          Expanded(
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white.withValues(alpha: 0.8),
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

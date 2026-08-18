@@ -431,7 +431,12 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                               ),
                             ],
                           ),
-                          child: ProfileActionBar(profile: p),
+                          child: ProfileActionBar(
+                            profile: p,
+                            onReportPressed: () =>
+                                ReportUserDialog.show(context, p),
+                            onBlockPressed: () => _showBlockConfirmation(p),
+                          ),
                         ),
                       ],
                     ),
@@ -442,6 +447,28 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
           ),
         ),
       ],
+    );
+  }
+
+  void _showBlockConfirmation(Map<String, dynamic> profile) {
+    BlockConfirmationBottomSheet.show(
+      context: context,
+      isBlocking: true,
+      userName: profile['name'] ?? 'this user',
+      onConfirm: () async {
+        await _blockService.blockUser(profile['userId']);
+      },
+      onSuccess: () {
+        final profileId = profile['id'] as int?;
+        if (profileId != null) {
+          context.read<MatchProvider>().removeProfile(profileId);
+        }
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go(AppRoutes.home);
+        }
+      },
     );
   }
 }
