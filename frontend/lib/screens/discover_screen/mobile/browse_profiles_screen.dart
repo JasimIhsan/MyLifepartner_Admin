@@ -7,7 +7,7 @@ import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/verified_icon.dart';
-import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
+
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
 
@@ -421,16 +421,11 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
                                             ),
                                             if (profile.isVerified || profile.isPremium || profile.isFoundingMember) ...[
                                               const SizedBox(width: 4),
-                                              CustomPopoverTooltip(
-                                                title: 'Verified Profile',
-                                                description:
-                                                    'This profile has been verified and authenticated by our moderation team.',
-                                                child: VerifiedIconWidget(
-                                                  isVerified: profile.isVerified,
-                                                  isFoundingMember: profile.isFoundingMember,
-                                                  isPremium: profile.isPremium,
-                                                  size: 16,
-                                                ),
+                                              VerifiedIconWidget(
+                                                isVerified: profile.isVerified,
+                                                isFoundingMember: profile.isFoundingMember,
+                                                isPremium: profile.isPremium,
+                                                size: 16,
                                               ),
                                             ],
                                             if (profile.isFoundingMember) ...[

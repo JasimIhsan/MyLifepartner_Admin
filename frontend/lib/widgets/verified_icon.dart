@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_partner_again/widgets/custom_popover_tooltip.dart';
 
 class VerifiedIconWidget extends StatelessWidget {
   final bool isVerified;
@@ -19,17 +20,27 @@ class VerifiedIconWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isPremium || isFoundingMember) {
-      final widget = Image.asset(
-        'assets/icons/verified_premium_icon.png',
-        width: size,
-        height: size,
+      final widget = CustomPopoverTooltip(
+        title: 'Premium Member',
+        description:
+            'This user is a verified premium member who can respond quickly to messages.',
+        child: Image.asset(
+          'assets/icons/verified_premium_icon.png',
+          width: size,
+          height: size,
+        ),
       );
       return padding != null ? Padding(padding: padding!, child: widget) : widget;
     } else if (isVerified) {
-      final widget = Image.asset(
-        'assets/icons/verified_icon.png',
-        width: size,
-        height: size,
+      final widget = CustomPopoverTooltip(
+        title: 'Verified Profile',
+        description:
+            'This profile has been verified and authenticated by our moderation team.',
+        child: Image.asset(
+          'assets/icons/verified_icon.png',
+          width: size,
+          height: size,
+        ),
       );
       return padding != null ? Padding(padding: padding!, child: widget) : widget;
     }
