@@ -13,10 +13,14 @@ class MembershipHero extends StatelessWidget {
 
     return Container(
       width: double.infinity,
+      constraints: BoxConstraints(
+        minHeight: MediaQuery.of(context).size.height * 0.7,
+      ),
       decoration: BoxDecoration(
         color: theme.colorScheme.primary.withValues(alpha: 0.03),
       ),
       child: Stack(
+        alignment: Alignment.center,
         children: [
           // Background blobs
           Positioned(
@@ -51,6 +55,7 @@ class MembershipHero extends StatelessWidget {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
