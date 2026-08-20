@@ -60,17 +60,25 @@ class WebFaqPage extends StatelessWidget {
 
     return Column(
       children: [
-        PublicWebSection(
-          topPadding: 58,
-          bottomPadding: 58,
-          backgroundColor: theme.brightness == Brightness.dark
+        Container(
+          width: double.infinity,
+          height: MediaQuery.sizeOf(context).height * 0.65,
+          color: theme.brightness == Brightness.dark
               ? theme.scaffoldBackgroundColor
               : const Color(0xFFFFFBFB),
-          child: const WebSectionHeader(
-            eyebrow: 'FAQ',
-            title: 'Common questions before you download.',
-            body:
-                'A quick guide to privacy, safety, membership, devices, notifications, password reset, and support.',
+          child: const Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: WebSectionHeader(
+                  eyebrow: 'FAQ',
+                  title: 'Common questions before you download.',
+                  body:
+                      'A quick guide to privacy, safety, membership, devices, notifications, password reset, and support.',
+                ),
+              ),
+            ],
           ),
         ),
         const PublicWebSection(
