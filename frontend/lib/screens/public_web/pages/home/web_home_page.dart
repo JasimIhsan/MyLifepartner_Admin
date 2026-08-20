@@ -17,11 +17,12 @@ class WebHomePage extends StatelessWidget {
     return Column(
       children: [
         const PublicHeroSection(
+          fullHeight: true,
           eyebrow: 'Life Partner Again',
-          title: 'A serious relationship app for people ready to begin again.',
-          body:
-              'Life Partner Again is a Canadian relationship platform for emotionally mature people seeking companionship, marriage-minded connection, and a safer path into their next chapter.',
-          imageAsset: 'profile_sample_2.png',
+          title: 'Because every\nnew beginning\ndeserves the\nright partner.',
+          titleHighlight: 'right partner.',
+          body: 'Thoughtful matches. Verified members. Serious relationships.',
+          imageAsset: 'assets/images/landing_couple.png',
           actions: DownloadAppButtons(),
           highlights: [
             'Built in Canada',
@@ -29,12 +30,12 @@ class WebHomePage extends StatelessWidget {
             'Privacy-first controls',
           ],
         ),
-        PublicWebSection(
-          topPadding: 38,
-          bottomPadding: 42,
-          backgroundColor: theme.colorScheme.surface,
-          child: const _TrustBand(),
-        ),
+        // PublicWebSection(
+        //   topPadding: 38,
+        //   bottomPadding: 42,
+        //   backgroundColor: theme.colorScheme.surface,
+        //   child: const _TrustBand(),
+        // ),
         PublicWebSection(
           backgroundColor: theme.brightness == Brightness.dark
               ? theme.scaffoldBackgroundColor
@@ -52,117 +53,6 @@ class WebHomePage extends StatelessWidget {
         PublicWebSection(
           backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.06),
           child: const _AppContextSection(),
-        ),
-      ],
-    );
-  }
-}
-
-class _TrustBand extends StatelessWidget {
-  const _TrustBand();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isMobile = constraints.maxWidth < 760;
-        final items = [
-          _BandItem(
-            icon: LucideIcons.map,
-            title: 'Canadian focus',
-            body: 'A public website and app experience shaped for Canada.',
-          ),
-          _BandItem(
-            icon: LucideIcons.user_round_check,
-            title: 'Mature intent',
-            body: 'For people seeking sincere, long-term companionship.',
-          ),
-          _BandItem(
-            icon: LucideIcons.shield_check,
-            title: 'Trust-minded design',
-            body: 'Verification, privacy, report, and block tools are central.',
-          ),
-        ];
-
-        if (isMobile) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              for (var index = 0; index < items.length; index++) ...[
-                if (index > 0) const SizedBox(height: 20),
-                items[index],
-              ],
-            ],
-          );
-        }
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (var index = 0; index < items.length; index++) ...[
-              if (index > 0)
-                Container(
-                  width: 1,
-                  height: 82,
-                  margin: const EdgeInsets.symmetric(horizontal: 30),
-                  color: theme.dividerColor,
-                ),
-              Expanded(child: items[index]),
-            ],
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _BandItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String body;
-
-  const _BandItem({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 42,
-          height: 42,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, color: theme.colorScheme.primary, size: 22),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                body,
-                style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
-              ),
-            ],
-          ),
         ),
       ],
     );
@@ -189,16 +79,23 @@ class _WhyLpaStory extends StatelessWidget {
                   'Many people come back to relationships with more self-knowledge, more responsibilities, and less patience for shallow discovery. LPA is built for that reality.',
               textAlign: TextAlign.left,
             ),
-            const SizedBox(height: 24),
-            const PublicBulletList(
-              items: [
-                'Create a thoughtful profile before starting discovery.',
-                'Use verification and privacy controls to move at your pace.',
-                'Discover people through intention, not endless casual swipes.',
-                'Keep communication inside the app until trust grows.',
-              ],
+            const SizedBox(height: 40),
+            const _WhyLpaFeature(
+              icon: LucideIcons.user,
+              title: 'Thoughtful Profiles',
+              body: 'Create a thoughtful profile before starting discovery to ensure intent.',
             ),
-            const SizedBox(height: 22),
+            const _WhyLpaFeature(
+              icon: LucideIcons.shield_check,
+              title: 'Paced Discovery',
+              body: 'Use verification and privacy controls to move at your pace safely.',
+            ),
+            const _WhyLpaFeature(
+              icon: LucideIcons.search,
+              title: 'Intentional Matching',
+              body: 'Discover people through shared intent and values, not endless casual swipes.',
+            ),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => context.go(PublicWebRoutes.about),
               icon: const Icon(LucideIcons.arrow_right, size: 18),
@@ -208,46 +105,180 @@ class _WhyLpaStory extends StatelessWidget {
                 backgroundColor: theme.colorScheme.primary,
                 foregroundColor: theme.colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 14,
+                  horizontal: 24,
+                  vertical: 16,
                 ),
+                textStyle: const TextStyle(fontWeight: FontWeight.w700),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
           ],
         );
-        final image = ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: AspectRatio(
-            aspectRatio: 1.18,
-            child: Image.asset(
-              'assets/images/landing_couple_2.png',
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: theme.colorScheme.primary.withValues(alpha: 0.08),
+
+        final image = Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 30,
+                    offset: const Offset(0, 15),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: AspectRatio(
+                  aspectRatio: 0.85,
+                  child: Image.asset(
+                    'assets/images/landing_couple_2.png',
+                    fit: BoxFit.cover,
+                    alignment: Alignment.topCenter,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+            Positioned(
+              bottom: -20,
+              left: -30,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(LucideIcons.heart_handshake, color: theme.colorScheme.primary),
+                    ),
+                    const SizedBox(width: 16),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Meaningful',
+                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                        Text(
+                          'Connections only',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
 
         if (isMobile) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [text, const SizedBox(height: 30), image],
+            children: [
+              text,
+              const SizedBox(height: 60),
+              Padding(
+                padding: const EdgeInsets.only(left: 30),
+                child: image,
+              ),
+            ],
           );
         }
 
         return Row(
           children: [
             Expanded(flex: 10, child: text),
-            const SizedBox(width: 64),
-            Expanded(flex: 9, child: image),
+            const SizedBox(width: 80),
+            Expanded(
+              flex: 9,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20, left: 30),
+                child: image,
+              ),
+            ),
           ],
         );
       },
+    );
+  }
+}
+
+class _WhyLpaFeature extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String body;
+
+  const _WhyLpaFeature({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: theme.colorScheme.primary, size: 24),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  body,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    height: 1.5,
+                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

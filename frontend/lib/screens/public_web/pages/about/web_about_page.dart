@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:life_partner_again/screens/public_web/sections/public_web_shared_sections.dart';
-import 'package:life_partner_again/screens/public_web/widgets/web_feature_card.dart';
-import 'package:life_partner_again/screens/public_web/widgets/web_section_header.dart';
 
 class WebAboutPage extends StatelessWidget {
   const WebAboutPage({super.key});
@@ -10,199 +7,415 @@ class WebAboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Column(
       children: [
-        const PublicHeroSection(
-          eyebrow: 'About Us',
-          title: 'For people who are ready to love again with intention.',
-          body:
-              'Life Partner Again is a Canadian premium relationship platform for mature individuals seeking genuine, long-term relationships and marriage.',
-          imageAsset: 'assets/images/landing_couple_2.png',
-          highlights: [
-            'Serious relationships',
-            'Respectful community',
-            'Built for trust',
-          ],
-        ),
-        const PublicWebSection(
+        // 1. Hero Section
+        Container(
+          width: double.infinity,
+          constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 100),
+          decoration: BoxDecoration(
+            color: isDark
+                ? theme.colorScheme.surface
+                : theme.primaryColor.withOpacity(0.05),
+          ),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              WebSectionHeader(
-                eyebrow: 'Who LPA is for',
-                title: 'A place for sincere people in a real chapter of life.',
-                body:
-                    'LPA welcomes adults who are genuinely looking for a serious relationship or marriage, including divorced individuals, widows, widowers, separated people, single parents, professionals, and people who simply want something meaningful.',
+              Text(
+                'ABOUT US',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  letterSpacing: 2,
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              SizedBox(height: 34),
-              PublicSimpleGrid(
-                children: [
-                  WebFeatureCard(
-                    icon: LucideIcons.heart_handshake,
-                    title: 'Companionship',
-                    body:
-                        'For people who value emotional warmth, shared values, and steadier connection.',
+              const SizedBox(height: 32),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 900),
+                child: Text(
+                  'LPA brings out the most attractive version of you, to find the right life partner this time!',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.displaySmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    height: 1.2,
+                    color: isDark ? Colors.white : Colors.black87,
                   ),
-                  WebFeatureCard(
-                    icon: LucideIcons.user_check,
-                    title: 'Readiness',
-                    body:
-                        'For members who are prepared to be honest about who they are and what they seek.',
+                ),
+              ),
+              const SizedBox(height: 24),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Text(
+                  'We have built and continue to build an international community on mutual respect and trust.',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: isDark ? Colors.white70 : Colors.black54,
+                    height: 1.5,
                   ),
-                  WebFeatureCard(
-                    icon: LucideIcons.shield_check,
-                    title: 'Respect',
-                    body:
-                        'For a community where dignity and safety matter as much as attraction.',
-                  ),
-                ],
+                ),
               ),
             ],
           ),
         ),
-        PublicWebSection(
-          backgroundColor: theme.brightness == Brightness.dark
-              ? theme.scaffoldBackgroundColor
-              : const Color(0xFFF8F8F8),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isMobile = constraints.maxWidth < 860;
-              final blocks = const [
-                _MissionBlock(
-                  icon: LucideIcons.compass,
-                  title: 'Mission',
-                  body:
-                      'To help sincere individuals find meaningful, lifelong relationships in a respectful and secure environment.',
-                ),
-                _MissionBlock(
-                  icon: LucideIcons.landmark,
-                  title: 'Vision',
-                  body:
-                      'To become a trusted relationship platform where another chance at companionship feels hopeful, safe, and dignified.',
-                ),
-              ];
 
-              if (isMobile) {
-                return const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _MissionBlock(
-                      icon: LucideIcons.compass,
-                      title: 'Mission',
-                      body:
-                          'To help sincere individuals find meaningful, lifelong relationships in a respectful and secure environment.',
-                    ),
-                    SizedBox(height: 24),
-                    _MissionBlock(
-                      icon: LucideIcons.landmark,
-                      title: 'Vision',
-                      body:
-                          'To become a trusted relationship platform where another chance at companionship feels hopeful, safe, and dignified.',
-                    ),
-                  ],
-                );
-              }
-
-              return Row(
+        // 2. The Story Section
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 100),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (var index = 0; index < blocks.length; index++) ...[
-                    Expanded(child: blocks[index]),
-                    if (index == 0) const SizedBox(width: 28),
-                  ],
+                  Text(
+                    'Does it matter? Definitely, YES!',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  _buildParagraph(
+                    theme,
+                    'Pairs part, when loneliness takes over love.\n\n'
+                    'Multiple reasons cause separation and divorce. Moreover, many among us are unfortunately widowed. There are single parents as well. But, none of these experiences define them. Instead, they become stronger and wiser.',
+                  ),
+                  const SizedBox(height: 24),
+                  _buildParagraph(
+                    theme,
+                    'LPA plays a vital role by bringing together ideal life partners in Canada. Sometimes it takes years to find a relationship built on trust. In reality, your perfect partner is hidden somewhere!',
+                  ),
+                  const SizedBox(height: 24),
+                  _buildParagraph(
+                    theme,
+                    'Life Partner Again is the favourite App since we value emotions. In a word, LPA is the best platform for emotionally mature people to get into something real.',
+                  ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
         ),
-        const PublicWebSection(
-          child: Column(
-            children: [
-              WebSectionHeader(
-                eyebrow: 'Values',
-                title: 'The tone of the platform matters.',
-                body:
-                    'The LPA experience is shaped by values that protect the person behind each profile.',
+
+        // 3. Mission & Vision
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 100),
+          color: isDark ? theme.colorScheme.surface : const Color(0xFFF9FAFB),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1100),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final isMobile = constraints.maxWidth < 800;
+                  if (isMobile) {
+                    return Column(
+                      children: [
+                        _buildMissionVisionCard(
+                          theme,
+                          title: 'Mission',
+                          icon: LucideIcons.compass,
+                          content:
+                              'The advanced Application serves as a trustworthy platform connecting adults seeking another chance for a serious relationship.',
+                        ),
+                        const SizedBox(height: 32),
+                        _buildMissionVisionCard(
+                          theme,
+                          title: 'Vision',
+                          icon: LucideIcons.telescope,
+                          content:
+                              'A world with ample space to experience joy and build fulfilling relationships at any stage of life.',
+                        ),
+                      ],
+                    );
+                  }
+                  return IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(
+                          child: _buildMissionVisionCard(
+                            theme,
+                            title: 'Mission',
+                            icon: LucideIcons.compass,
+                            content:
+                                'The advanced Application serves as a trustworthy platform connecting adults seeking another chance for a serious relationship.',
+                          ),
+                        ),
+                        const SizedBox(width: 40),
+                        Expanded(
+                          child: _buildMissionVisionCard(
+                            theme,
+                            title: 'Vision',
+                            icon: LucideIcons.telescope,
+                            content:
+                                'A world with ample space to experience joy and build fulfilling relationships at any stage of life.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              SizedBox(height: 34),
-              PublicSimpleGrid(
-                minTileWidth: 300,
+            ),
+          ),
+        ),
+
+        // 4. Values
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 120),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: Column(
                 children: [
-                  WebFeatureCard(
-                    icon: LucideIcons.scale,
-                    title: 'Integrity',
-                    body:
-                        'Clear intentions, honest profiles, and responsible community behaviour.',
+                  Text(
+                    'Our Values',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-                  WebFeatureCard(
-                    icon: LucideIcons.gem,
-                    title: 'Dignity',
-                    body:
-                        'A mature tone for people whose stories deserve care, not judgment.',
-                  ),
-                  WebFeatureCard(
-                    icon: LucideIcons.shield,
-                    title: 'Safety',
-                    body:
-                        'Verification, privacy, reporting, and moderation working together.',
+                  const SizedBox(height: 80),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isMobile = constraints.maxWidth < 900;
+                      if (isMobile) {
+                        return Column(
+                          children: [
+                            _buildValueItem(
+                              theme,
+                              icon: LucideIcons.scale,
+                              title: 'Integrity',
+                              description:
+                                  'We lead with honesty. You get what you see, because every connection begins with mutual trust.',
+                            ),
+                            const SizedBox(height: 56),
+                            _buildValueItem(
+                              theme,
+                              icon: LucideIcons.gem,
+                              title: 'Dignity',
+                              description:
+                                  'Your age, your past, and your thoughts deserve to be met with respect.',
+                            ),
+                            const SizedBox(height: 56),
+                            _buildValueItem(
+                              theme,
+                              icon: LucideIcons.shield_check,
+                              title: 'Safety',
+                              description:
+                                  'We protect your space; you can show up with a smile.',
+                            ),
+                          ],
+                        );
+                      }
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _buildValueItem(
+                              theme,
+                              icon: LucideIcons.scale,
+                              title: 'Integrity',
+                              description:
+                                  'We lead with honesty. You get what you see, because every connection begins with mutual trust.',
+                            ),
+                          ),
+                          const SizedBox(width: 56),
+                          Expanded(
+                            child: _buildValueItem(
+                              theme,
+                              icon: LucideIcons.gem,
+                              title: 'Dignity',
+                              description:
+                                  'Your age, your past, and your thoughts deserve to be met with respect.',
+                            ),
+                          ),
+                          const SizedBox(width: 56),
+                          Expanded(
+                            child: _buildValueItem(
+                              theme,
+                              icon: LucideIcons.shield_check,
+                              title: 'Safety',
+                              description:
+                                  'We protect your space; you can show up with a smile.',
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
-        PublicWebSection(
-          backgroundColor: theme.brightness == Brightness.dark
-              ? theme.scaffoldBackgroundColor
-              : const Color(0xFFFFFBFB),
-          child: const EditorialQuote(
-            body:
-                'Life Partner Again exists for people who still believe in companionship, but want to approach it with more wisdom, patience, and self-respect.',
-            attribution: 'Founder message',
+
+        // 5. Founder's Message
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 120),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161616) : const Color(0xFFFFFBFB),
+          ),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: Column(
+                children: [
+                  Icon(
+                    LucideIcons.quote,
+                    size: 64,
+                    color: theme.colorScheme.primary.withOpacity(0.3),
+                  ),
+                  const SizedBox(height: 40),
+                  Text(
+                    '“No seasons, no age limits for a serious relationship. So, we began Life Partner Again.\n\nI wanted to stand for people with history, kids, careers, and Hopes & Plans. As a member, you are free to express your expectations and meet others aspiring to the same.\n\nWe are grown adults showing up honestly, looking for something that counts.\n\nIf you’re ready to take the first step with the right attitude, you belong here!”',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                      height: 1.8,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 56),
+                  Text(
+                    'Syed Sohail',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Founder & CEO',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],
     );
   }
-}
 
-class _MissionBlock extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String body;
+  Widget _buildParagraph(ThemeData theme, String text) {
+    return Text(
+      text,
+      style: theme.textTheme.titleMedium?.copyWith(
+        height: 1.8,
+        color: theme.brightness == Brightness.dark
+            ? Colors.white70
+            : Colors.black87,
+      ),
+    );
+  }
 
-  const _MissionBlock({
-    required this.icon,
-    required this.title,
-    required this.body,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
+  Widget _buildMissionVisionCard(
+    ThemeData theme, {
+    required String title,
+    required IconData icon,
+    required String content,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(28),
+      padding: const EdgeInsets.all(48),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.dividerColor),
+        color: theme.scaffoldBackgroundColor,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 30,
+            offset: const Offset(0, 15),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: theme.colorScheme.primary, size: 30),
-          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: theme.colorScheme.primary, size: 36),
+          ),
+          const SizedBox(height: 40),
           Text(
             title,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: FontWeight.w900,
             ),
           ),
-          const SizedBox(height: 12),
-          Text(body, style: theme.textTheme.bodyLarge?.copyWith(height: 1.65)),
+          const SizedBox(height: 20),
+          Text(
+            content,
+            style: theme.textTheme.titleMedium?.copyWith(
+              height: 1.7,
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white70
+                  : Colors.black54,
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildValueItem(
+    ThemeData theme, {
+    required IconData icon,
+    required String title,
+    required String description,
+  }) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: theme.brightness == Brightness.dark
+                ? theme.colorScheme.surface
+                : Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: theme.colorScheme.primary, size: 48),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          title,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          description,
+          textAlign: TextAlign.center,
+          style: theme.textTheme.titleMedium?.copyWith(
+            height: 1.6,
+            color: theme.brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black54,
+          ),
+        ),
+      ],
     );
   }
 }

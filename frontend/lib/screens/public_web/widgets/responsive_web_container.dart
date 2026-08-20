@@ -32,7 +32,7 @@ class ResponsiveWebContainer extends StatelessWidget {
                   : 40.0
             : PublicWebBreakpoints.isTablet(width)
             ? 50.0
-            : 80.0;
+            : 100.0;
 
         return Center(
           child: ConstrainedBox(
