@@ -121,6 +121,14 @@ flutter:
       - assets/images/
       - assets/images/onboarding/
       - assets/images/illustrations/
+      - assets/store_badges/
+      - flutter_01.png
+      - flutter_02.png
+      - flutter_03.png
+      - flutter_04.png
+      - flutter_05.png
+      - profile_sample.png
+      - profile_sample_2.png
 
    # For details regarding adding assets from package dependencies, see
    # https://flutter.dev/to/asset-from-package

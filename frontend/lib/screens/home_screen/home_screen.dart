@@ -33,6 +33,16 @@ class _HomePageState extends State<HomePage> {
   late int _selectedIndex;
   bool _showNotifications = false;
 
+  bool get _isPrefixedWebAppRoute {
+    if (!kIsWeb) return false;
+    final location = GoRouterState.of(context).matchedLocation;
+    return location == '/app' || location.startsWith('/app/');
+  }
+
+  String _targetRoute(String route) {
+    return _isPrefixedWebAppRoute ? '/app$route' : route;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -104,7 +114,7 @@ class _HomePageState extends State<HomePage> {
       if (index == 3) targetRoute = AppRoutes.profile;
 
       _showNotifications = false;
-      context.go(targetRoute);
+      context.go(_targetRoute(targetRoute));
       return;
     }
 
@@ -199,7 +209,7 @@ class _HomePageState extends State<HomePage> {
                 AppColors.textPrimary,
           ),
           onPressed: () {
-            context.push(AppRoutes.browseProfiles);
+            context.push(_targetRoute(AppRoutes.browseProfiles));
           },
         ),
         Consumer<NotificationProvider>(
@@ -243,7 +253,7 @@ class _HomePageState extends State<HomePage> {
       selectedIndex: _selectedIndex,
       onTap: _onTabTapped,
       onCenterTap: () {
-        context.push(AppRoutes.lpaGuide);
+        context.push(_targetRoute(AppRoutes.lpaGuide));
       },
       items: const [
         BottomNavigationBarItem(

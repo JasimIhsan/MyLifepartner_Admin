@@ -20,6 +20,22 @@ class _WebMainLayoutState extends State<WebMainLayout> {
   bool _showNotifications = false;
   bool _showGuideOverlay = false;
 
+  bool get _isPrefixedWebAppRoute {
+    final location = GoRouterState.of(context).matchedLocation;
+    return location == '/app' || location.startsWith('/app/');
+  }
+
+  String _targetRoute(String route) {
+    return _isPrefixedWebAppRoute ? '/app$route' : route;
+  }
+
+  String _currentAppLocation() {
+    final location = GoRouterState.of(context).matchedLocation;
+    if (location == '/app') return AppRoutes.home;
+    if (location.startsWith('/app/')) return location.substring('/app'.length);
+    return location;
+  }
+
   void _onTabTapped(int index) {
     String targetRoute = AppRoutes.home;
     if (index == 0) targetRoute = AppRoutes.discover;
@@ -30,11 +46,11 @@ class _WebMainLayoutState extends State<WebMainLayout> {
     setState(() {
       _showNotifications = false;
     });
-    context.go(targetRoute);
+    context.go(_targetRoute(targetRoute));
   }
 
   int _getSelectedIndex() {
-    final location = GoRouterState.of(context).matchedLocation;
+    final location = _currentAppLocation();
     if (location.startsWith(AppRoutes.matches)) return 1;
     if (location.startsWith(AppRoutes.chat)) return 2;
     if (location.startsWith(AppRoutes.profile) && !location.contains(':')) {
