@@ -81,9 +81,9 @@ class _ImageAccessRequestsScreenState extends State<ImageAccessRequestsScreen> {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).canvasColor,
         appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          backgroundColor: Theme.of(context).canvasColor,
           elevation: 0,
           leading: IconButton(
             icon: Icon(

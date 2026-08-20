@@ -84,7 +84,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                        "Find Love, Begin Again",
+                        "Built in Canada, For Canadians",
                         style: GoogleFonts.outfit(
                           color: Theme.of(context).primaryColor,
                           fontSize: 20,

@@ -20,6 +20,7 @@ export class UserRepository implements IUserRepository {
       profile: {
          include: {
             images: true,
+            job: true,
          },
       },
       partnerPreference: true,

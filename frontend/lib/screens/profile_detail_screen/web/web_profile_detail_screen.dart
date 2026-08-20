@@ -46,6 +46,11 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
   Widget _buildBody() {
     final p = resolvedProfile;
     final images = (p['images'] as List<dynamic>? ?? []);
+    
+    final isBlurred = images.isNotEmpty && images.first is Map && images.first['isBlurred'] == true;
+    final isPrivate = p['viewerPrivacyEnabled'] == true || isBlurred;
+    
+    final displayImages = isPrivate && images.isNotEmpty ? [images.first] : images;
 
     return Stack(
       children: [
@@ -88,7 +93,7 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      if (images.isEmpty)
+                      if (displayImages.isEmpty)
                         Container(
                           color: Theme.of(context).primaryColorLight,
                           child: const Center(
@@ -100,95 +105,94 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                           ),
                         )
                       else
-                        HeaderCarousel(images: images),
+                        HeaderCarousel(images: displayImages),
 
-                      if (images.isNotEmpty &&
-                          images.first['isBlurred'] == true)
-                        Align(
-                          alignment: Alignment.center,
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 32),
-                            padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.65),
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.15),
-                                width: 1,
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
+                      Positioned.fill(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (displayImages.isNotEmpty && displayImages.first['isBlurred'] == true) ...[
+                              const Spacer(),
+                              Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 32),
+                                  padding: const EdgeInsets.all(24),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
+                                    color: Colors.black.withValues(alpha: 0.65),
+                                    borderRadius: BorderRadius.circular(24),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(alpha: 0.15),
+                                      width: 1,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.lock_outline_rounded,
-                                    color: Colors.white,
-                                    size: 32,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.lock_outline_rounded,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        (p['viewerPrivacyEnabled'] == true)
+                                            ? 'Your profile is private'
+                                            : 'Photos are private',
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        (p['viewerPrivacyEnabled'] == true)
+                                            ? "You need access to see ${p['name'] ?? 'this user'}'s photos."
+                                            : "Request access to see ${p['name'] ?? 'this user'}'s photos.",
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.white.withValues(alpha: 0.8),
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 24),
+                                      RequestAccessButton(
+                                        userId: p['userId'],
+                                        imageAccessRequestStatus:
+                                            p['imageAccessRequestStatus'],
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  (p['viewerPrivacyEnabled'] == true)
-                                      ? 'Your profile is private'
-                                      : 'Photos are private',
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  textAlign: TextAlign.center,
+                              ),
+                              const Spacer(),
+                            ] else
+                              const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [
+                                    Colors.black.withValues(alpha: 0.8),
+                                    Colors.transparent,
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  (p['viewerPrivacyEnabled'] == true)
-                                      ? "You need access to see ${p['name'] ?? 'this user'}'s photos."
-                                      : "Request access to see ${p['name'] ?? 'this user'}'s photos.",
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 24),
-                                RequestAccessButton(
-                                  userId: p['userId'],
-                                  imageAccessRequestStatus:
-                                      p['imageAccessRequestStatus'],
-                                ),
-                              ],
+                              ),
+                              child: ProfileNameRow(profile: p, isOverlay: true),
                             ),
-                          ),
+                          ],
                         ),
-                      // Gradient overlay at bottom for name
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 120,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: 0.8),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 24,
-                        left: 24,
-                        right: 24,
-                        child: ProfileNameRow(profile: p, isOverlay: true),
                       ),
                     ],
                   ),
@@ -396,9 +400,9 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                 ],
                                 ProfileDetailsGrid(profile: p),
                                 const SizedBox(height: 32),
-                                if (images.isNotEmpty) ...[
+                                if (displayImages.isNotEmpty) ...[
                                   Text(
-                                    'Photos (${images.length})',
+                                    'Photos (${displayImages.length})',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w600,
@@ -410,7 +414,7 @@ class _WebProfileDetailScreenState extends State<WebProfileDetailScreen>
                                     ),
                                   ),
                                   const SizedBox(height: 16),
-                                  ProfileImageGallery(images: images),
+                                  ProfileImageGallery(images: displayImages),
                                   const SizedBox(height: 24),
                                 ],
                               ],

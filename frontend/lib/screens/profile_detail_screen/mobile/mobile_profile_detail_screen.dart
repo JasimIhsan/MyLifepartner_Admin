@@ -46,7 +46,11 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
   Widget _buildBody() {
     final profile = resolvedProfile;
     final images = (profile['images'] as List<dynamic>? ?? []);
-    final bodyImages = images.length > 1 ? images.skip(1).toList() : [];
+    
+    final isBlurred = images.isNotEmpty && images.first is Map && images.first['isBlurred'] == true;
+    final isPrivate = profile['viewerPrivacyEnabled'] == true || isBlurred;
+    
+    final bodyImages = (images.length > 1 && !isPrivate) ? images.skip(1).toList() : [];
 
     return Stack(
       children: [
@@ -103,7 +107,6 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
     final firstImage = images.first;
 
     return Stack(
-      alignment: Alignment.bottomLeft,
       children: [
         _ProfileAspectPhoto(
           image: firstImage,
@@ -126,13 +129,28 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
             ),
           ),
         ),
-        if (firstImage is Map && firstImage['isBlurred'] == true)
-          Center(child: _buildPrivacyOverlay(profile)),
-        Positioned(
-          left: 20,
-          right: 20,
-          bottom: 22,
-          child: _HeroProfileInfo(profile: profile),
+        Positioned.fill(
+          child: SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (firstImage is Map && firstImage['isBlurred'] == true) ...[
+                  const Spacer(flex: 4),
+                  _buildPrivacyOverlay(profile),
+                  const Spacer(flex: 1),
+                ] else
+                  const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: _HeroProfileInfo(profile: profile),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -247,11 +265,11 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
 
   Widget _buildPrivacyOverlay(Map<String, dynamic> profile) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 32),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 56),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.68),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.16),
           width: 1,
@@ -261,38 +279,38 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(LucideIcons.lock, color: Colors.white, size: 26),
+            child: const Icon(LucideIcons.lock, color: Colors.white, size: 20),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Text(
             (profile['viewerPrivacyEnabled'] == true)
                 ? 'Your profile is private'
                 : 'Photos are private',
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             (profile['viewerPrivacyEnabled'] == true)
                 ? "You need access to see ${profile['name'] ?? 'this user'}'s photos."
                 : "Request access to see ${profile['name'] ?? 'this user'}'s photos.",
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 11,
               color: Colors.white.withValues(alpha: 0.8),
-              height: 1.35,
+              height: 1.3,
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           RequestAccessButton(
             userId: profile['userId'],
             imageAccessRequestStatus: profile['imageAccessRequestStatus'],
@@ -599,7 +617,9 @@ class _HeroProfileInfo extends StatelessWidget {
                 ),
               ),
             ),
-            if (profile['isVerified'] == true || profile['isPremium'] == true || profile['isFoundingMember'] == true) ...[
+            if (profile['isVerified'] == true ||
+                profile['isPremium'] == true ||
+                profile['isFoundingMember'] == true) ...[
               const SizedBox(width: 6),
               VerifiedIconWidget(
                 isVerified: profile['isVerified'] == true,
