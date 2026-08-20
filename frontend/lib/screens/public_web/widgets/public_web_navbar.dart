@@ -46,36 +46,51 @@ class PublicWebNavbar extends StatelessWidget {
         maxWidth: 1480,
         child: SizedBox(
           height: 66,
-          child: Row(
-            children: [
-              _Brand(onTap: () => context.go(PublicWebRoutes.home)),
-              const Spacer(),
-              LayoutBuilder(
-                builder: (context, _) {
-                  final width = MediaQuery.sizeOf(context).width;
-                  if (PublicWebBreakpoints.isMobile(width) || width < 1320) {
-                    return IconButton(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = MediaQuery.sizeOf(context).width;
+              final isCompact = PublicWebBreakpoints.isMobile(width) || width < 1280;
+
+              if (isCompact) {
+                return Row(
+                  children: [
+                    _Brand(onTap: () => context.go(PublicWebRoutes.home)),
+                    const Spacer(),
+                    IconButton(
                       tooltip: 'Open navigation menu',
                       icon: const Icon(LucideIcons.menu),
                       onPressed: () => _showMobileMenu(context),
-                    );
-                  }
+                    ),
+                  ],
+                );
+              }
 
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      for (final item in publicWebNavItems)
-                        _NavLink(
-                          item: item,
-                          isActive: currentRoute == item.route,
-                        ),
-                      const SizedBox(width: 14),
-                      const DownloadAppButtons(compact: true),
-                    ],
-                  );
-                },
-              ),
-            ],
+              return Row(
+                children: [
+                  // Left Zone: Brand Logo
+                  _Brand(onTap: () => context.go(PublicWebRoutes.home)),
+                  
+                  // Center Zone: Navigation Links
+                  Expanded(
+                    child: Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (final item in publicWebNavItems)
+                            _NavLink(
+                              item: item,
+                              isActive: currentRoute == item.route,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // Right Zone: Download Action Buttons
+                  const DownloadAppButtons(compact: true),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -85,45 +100,36 @@ class PublicWebNavbar extends StatelessWidget {
   void _showMobileMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       showDragHandle: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
       builder: (context) {
-        final theme = Theme.of(context);
-
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    const _Logo(size: 36),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Life Partner Again',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                      ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+            ),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final item in publicWebNavItems)
+                    _MobileNavLink(
+                      item: item,
+                      isActive: currentRoute == item.route,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                for (final item in publicWebNavItems)
-                  _MobileNavLink(
-                    item: item,
-                    isActive: currentRoute == item.route,
+                  const SizedBox(height: 18),
+                  const DownloadAppButtons(
+                    compact: true,
+                    alignment: WrapAlignment.center,
                   ),
-                const SizedBox(height: 18),
-                const DownloadAppButtons(
-                  compact: true,
-                  alignment: WrapAlignment.center,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -139,8 +145,6 @@ class _Brand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
@@ -151,20 +155,20 @@ class _Brand extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const _Logo(size: 38),
-              const SizedBox(width: 10),
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 190),
-                child: Text(
-                  'Life Partner Again',
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ),
+              const _Logo(size: 90),
+              // const SizedBox(width: 10),
+              // ConstrainedBox(
+              //   constraints: const BoxConstraints(maxWidth: 190),
+              //   child: Text(
+              //     'Life Partner Again',
+              //     overflow: TextOverflow.ellipsis,
+              //     style: theme.textTheme.titleMedium?.copyWith(
+              //       color: theme.colorScheme.primary,
+              //       fontWeight: FontWeight.w900,
+              //       letterSpacing: 0,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -192,7 +196,7 @@ class _Logo extends StatelessWidget {
       errorBuilder: (context, error, stackTrace) => Icon(
         LucideIcons.heart,
         color: Theme.of(context).colorScheme.primary,
-        size: size * 0.72,
+        size: size * 1.2,
       ),
     );
   }
@@ -214,13 +218,14 @@ class _NavLinkState extends State<_NavLink> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isHighlighted = widget.isActive || _isHovered;
     final foreground = widget.isActive
         ? theme.colorScheme.primary
+        : _isHovered
+        ? theme.colorScheme.primary.withValues(alpha: 0.85)
         : theme.textTheme.bodyLarge?.color;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
         onEnter: (_) => setState(() => _isHovered = true),
@@ -228,43 +233,43 @@ class _NavLinkState extends State<_NavLink> {
         child: InkWell(
           onTap: () => context.go(widget.item.route),
           borderRadius: BorderRadius.circular(8),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 160),
-            curve: Curves.easeOutCubic,
-            height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 11),
-            decoration: BoxDecoration(
-              color: widget.isActive
-                  ? theme.colorScheme.primary.withValues(alpha: 0.08)
-                  : _isHovered
-                  ? theme.colorScheme.primary.withValues(alpha: 0.045)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: widget.isActive
-                    ? theme.colorScheme.primary.withValues(alpha: 0.16)
-                    : Colors.transparent,
-              ),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+          hoverColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          child: SizedBox(
+            height: 66,
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                Icon(
-                  widget.item.icon,
-                  size: 15,
-                  color: isHighlighted
-                      ? theme.colorScheme.primary
-                      : theme.iconTheme.color?.withValues(alpha: 0.72),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Text(
+                    widget.item.label,
+                    style: TextStyle(
+                      color: foreground,
+                      fontWeight: widget.isActive
+                          ? FontWeight.w900
+                          : FontWeight.w700,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 7),
-                Text(
-                  widget.item.label,
-                  style: TextStyle(
-                    color: foreground,
-                    fontWeight: widget.isActive
-                        ? FontWeight.w900
-                        : FontWeight.w700,
-                    fontSize: 14,
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    height: widget.isActive ? 3.5 : 0,
+                    decoration: BoxDecoration(
+                      color: widget.isActive
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(4),
+                      ),
+                    ),
                   ),
                 ),
               ],

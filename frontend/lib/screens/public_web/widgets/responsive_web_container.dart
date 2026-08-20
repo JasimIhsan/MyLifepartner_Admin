@@ -28,11 +28,11 @@ class ResponsiveWebContainer extends StatelessWidget {
         final width = constraints.maxWidth;
         final horizontalPadding = PublicWebBreakpoints.isMobile(width)
             ? width < 420
-                  ? 18.0
-                  : 22.0
+                  ? 25.0
+                  : 40.0
             : PublicWebBreakpoints.isTablet(width)
-            ? 36.0
-            : 44.0;
+            ? 50.0
+            : 80.0;
 
         return Center(
           child: ConstrainedBox(
