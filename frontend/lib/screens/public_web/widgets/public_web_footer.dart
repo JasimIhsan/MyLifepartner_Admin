@@ -5,6 +5,7 @@ import 'package:life_partner_again/screens/public_web/public_web_routes.dart';
 import 'package:life_partner_again/screens/public_web/services/app_download_promotion_service.dart';
 import 'package:life_partner_again/screens/public_web/widgets/download_app_buttons.dart';
 import 'package:life_partner_again/screens/public_web/widgets/responsive_web_container.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PublicWebFooter extends StatelessWidget {
   const PublicWebFooter({super.key});
@@ -132,25 +133,15 @@ class _BrandColumn extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(
               'assets/icons/app_logo_dark.png',
-              width: 44,
-              height: 44,
+              width: 100,
+              height: 48,
+              fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) =>
-                  const Icon(LucideIcons.heart, color: Colors.white, size: 32),
-            ),
-            const SizedBox(width: 12),
-            const Flexible(
-              child: Text(
-                'Life Partner Again',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0,
-                ),
-              ),
+                  const Icon(LucideIcons.heart, color: Colors.white, size: 36),
             ),
           ],
         ),
@@ -219,6 +210,10 @@ class _ContactColumn extends StatelessWidget {
         _FooterInfoRow(
           icon: LucideIcons.mail,
           text: AppStoreLinks.supportEmail,
+          onTap: () {
+            final emailUri = Uri.parse('mailto:${AppStoreLinks.supportEmail}');
+            launchUrl(emailUri, mode: LaunchMode.externalApplication);
+          },
         ),
         if (AppStoreLinks.supportPhone != null)
           _FooterInfoRow(
@@ -254,55 +249,128 @@ class _FooterTitle extends StatelessWidget {
   }
 }
 
-class _FooterTextButton extends StatelessWidget {
+class _FooterTextButton extends StatefulWidget {
   final String label;
   final VoidCallback onPressed;
 
   const _FooterTextButton({required this.label, required this.onPressed});
 
   @override
+  State<_FooterTextButton> createState() => _FooterTextButtonState();
+}
+
+class _FooterTextButtonState extends State<_FooterTextButton> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
     return Align(
       alignment: Alignment.centerLeft,
-      child: TextButton(
-        onPressed: onPressed,
-        style: TextButton.styleFrom(
-          foregroundColor: Colors.white.withValues(alpha: 0.68),
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          minimumSize: const Size(0, 36),
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          onTap: widget.onPressed,
+          splashColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 140),
+              style: TextStyle(
+                color: _isHovered
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.68),
+                fontSize: 14,
+                decoration: _isHovered
+                    ? TextDecoration.underline
+                    : TextDecoration.none,
+                decorationColor: Colors.white,
+                decorationThickness: 1.5,
+              ),
+              child: Text(widget.label),
+            ),
+          ),
         ),
-        child: Text(label),
       ),
     );
   }
 }
 
-class _FooterInfoRow extends StatelessWidget {
+class _FooterInfoRow extends StatefulWidget {
   final IconData icon;
   final String text;
+  final VoidCallback? onTap;
 
-  const _FooterInfoRow({required this.icon, required this.text});
+  const _FooterInfoRow({required this.icon, required this.text, this.onTap});
+
+  @override
+  State<_FooterInfoRow> createState() => _FooterInfoRowState();
+}
+
+class _FooterInfoRowState extends State<_FooterInfoRow> {
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
+    final isInteractive = widget.onTap != null;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: Colors.white.withValues(alpha: 0.7), size: 17),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.68),
-                height: 1.45,
+      child: MouseRegion(
+        cursor: isInteractive
+            ? SystemMouseCursors.click
+            : SystemMouseCursors.basic,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          onTap: widget.onTap,
+          splashColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: _isHovered
+                      ? primaryColor.withValues(alpha: 0.22)
+                      : primaryColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  widget.icon,
+                  color: _isHovered ? Colors.white : primaryColor,
+                  size: 20,
+                ),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: Text(
+                    widget.text,
+                    style: TextStyle(
+                      color: _isHovered
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.76),
+                      fontSize: 14,
+                      decoration: (isInteractive && _isHovered)
+                          ? TextDecoration.underline
+                          : TextDecoration.none,
+                      decorationColor: Colors.white,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
