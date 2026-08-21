@@ -45,7 +45,7 @@ export class UserService implements IUserService {
     */
    async createUser(userData: CreateUserDto): Promise<UserDto> {
       await this.ensureEmailIsAvailable(userData.email);
-      await this.ensureMobileNumberIsAvailable(userData.mobileNumber);
+
 
       const user = await this.userRepository.create(userData);
 
@@ -142,12 +142,7 @@ export class UserService implements IUserService {
                   mode: "insensitive",
                },
             },
-            {
-               mobileNumber: {
-                  contains: trimmedSearch,
-                  mode: "insensitive",
-               },
-            },
+
          ];
       }
 
@@ -254,12 +249,7 @@ export class UserService implements IUserService {
                   mode: "insensitive",
                },
             },
-            {
-               mobileNumber: {
-                  contains: trimmedSearch,
-                  mode: "insensitive",
-               },
-            },
+
          ];
       }
 
@@ -454,9 +444,7 @@ export class UserService implements IUserService {
          await this.ensureEmailIsAvailable(updateData.email, userId);
       }
 
-      if (updateData.mobileNumber) {
-         await this.ensureMobileNumberIsAvailable(updateData.mobileNumber, userId);
-      }
+
 
       const updatedUser = await this.userRepository.update(userId, updateData);
 
@@ -695,24 +683,6 @@ export class UserService implements IUserService {
       }
    }
 
-   /**
-    * Checks whether mobile number is available.
-    *
-    * @param mobileNumber - User mobile number.
-    * @param ignoreUserId - Optional user ID to ignore.
-    * @returns Nothing.
-    */
-   private async ensureMobileNumberIsAvailable(mobileNumber?: string | null, ignoreUserId?: number): Promise<void> {
-      if (!mobileNumber) {
-         return;
-      }
-
-      const existingUser = await this.userRepository.findByMobileNumber(mobileNumber);
-
-      if (existingUser && existingUser.id !== ignoreUserId) {
-         throw new ApiError(409, "Mobile number is already in use by another account");
-      }
-   }
 
    /**
     * Gets presigned URL if image key exists.
@@ -897,7 +867,7 @@ export class UserService implements IUserService {
             data: {
                userId,
                originalEmail: user.email,
-               originalPhone: user.mobileNumber,
+
                originalName: user.profile?.name,
                reasonForArchive: user.deleteRequestReason || `Admin ${adminId} approved account deletion`,
             },
@@ -908,7 +878,7 @@ export class UserService implements IUserService {
             where: { id: userId },
             data: {
                email: anonymizedEmail,
-               mobileNumber: null,
+
                password: null,
                isDeleted: true,
                deleteRequestStatus: "APPROVED",

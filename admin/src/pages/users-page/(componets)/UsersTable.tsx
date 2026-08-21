@@ -208,7 +208,6 @@ export function UsersTable({
                                     <span className="text-sm truncate max-w-37.5 sm:max-w-50 md:max-w-75 lg:max-w-100 xl:max-w-125" title={user.email || ""}>
                                        {user.email || "No email"}
                                     </span>
-                                    <span className="text-xs text-muted-foreground">{user.mobileNumber}</span>
                                  </div>
                               </TableCell>
                               <TableCell>

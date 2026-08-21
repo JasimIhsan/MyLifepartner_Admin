@@ -1,6 +1,6 @@
 export interface CreateUserDto {
    email: string;
-   mobileNumber?: string;
+
    password?: string;
    role?: "USER" | "ADMIN" | "SUPER_ADMIN";
    isBanned?: boolean;
@@ -10,7 +10,7 @@ export interface CreateUserDto {
 
 export interface UpdateUserDto {
    email?: string;
-   mobileNumber?: string;
+
    password?: string;
    role?: "USER" | "ADMIN" | "SUPER_ADMIN";
    isBanned?: boolean;

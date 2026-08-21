@@ -20,7 +20,7 @@ export type UserSubscriptionSummaryDto = {
 
 export interface UserDto {
    id: number;
-   mobileNumber?: string | null;
+
    name: string | null;
    email: string | null;
    role: string;
@@ -82,7 +82,7 @@ export const toUserDto = (
 
    return {
       id: user.id,
-      mobileNumber: user.mobileNumber,
+
       name: user.profile?.name || null,
       email: user.email,
       role: user.role,

@@ -7,7 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { UserInterface } from "@/interface/user.interface";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreVertical, Search, Mail, Phone, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreVertical, Search, Mail, CalendarDays } from "lucide-react";
 import * as React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -234,10 +234,7 @@ export function UsersCards({
                                  <Mail className="h-4 w-4 mr-2 shrink-0" />
                                  <span className="truncate">{user.email || "No email"}</span>
                               </div>
-                              <div className="flex items-center text-muted-foreground overflow-hidden">
-                                 <Phone className="h-4 w-4 mr-2 shrink-0" />
-                                 <span className="truncate">{user.mobileNumber || "No phone"}</span>
-                              </div>
+
                               <div className="flex items-center text-muted-foreground">
                                  <CalendarDays className="h-4 w-4 mr-2 shrink-0" />
                                  <span className="truncate">Joined {formatDate(user.createdAt)}</span>

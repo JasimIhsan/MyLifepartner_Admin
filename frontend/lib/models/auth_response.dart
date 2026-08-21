@@ -78,7 +78,7 @@ class AuthResultResponse {
 
 class User {
   final int id;
-  final String? mobileNumber;
+
   final String profileStatus;
   final bool hasCompletedBasicDetails;
   final bool hasCompletedImageUpload;
@@ -116,7 +116,7 @@ class User {
 
   User({
     required this.id,
-    required this.mobileNumber,
+
     required this.profileStatus,
     required this.hasCompletedBasicDetails,
     required this.hasCompletedImageUpload,
@@ -157,7 +157,7 @@ class User {
 
     return User(
       id: json['id'] ?? 0,
-      mobileNumber: json['mobileNumber'],
+
       profileStatus: json['profileStatus'] ?? 'INCOMPLETE',
       hasCompletedBasicDetails: json['hasCompletedBasicDetails'] ?? false,
       hasCompletedImageUpload: json['hasCompletedImageUpload'] ?? false,

@@ -51,7 +51,7 @@ export class AdminAuditController {
                take: parsedLimit,
                orderBy: { createdAt: "desc" },
                include: {
-                  user: { select: { id: true, email: true, mobileNumber: true, profile: { select: { name: true } } } },
+                  user: { select: { id: true, email: true, profile: { select: { name: true } } } },
                   admin: { select: { id: true, username: true } },
                },
             }),

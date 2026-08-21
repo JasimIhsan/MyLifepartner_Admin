@@ -13,7 +13,7 @@ interface SuspendedUser {
    id: number;
    name: string | null;
    email: string | null;
-   mobileNumber?: string | null;
+
    suspendedAt: string | null;
 }
 

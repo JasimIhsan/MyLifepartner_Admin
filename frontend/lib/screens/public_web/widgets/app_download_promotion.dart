@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:life_partner_again/screens/public_web/services/app_download_promotion_service.dart';
 import 'package:life_partner_again/screens/public_web/widgets/download_app_buttons.dart';
-import 'package:life_partner_again/screens/public_web/widgets/responsive_web_container.dart';
 
 class AppDownloadPromotion extends StatelessWidget {
   final bool visible;
@@ -69,7 +68,8 @@ class AppDownloadPromotion extends StatelessWidget {
                         child: FittedBox(
                           fit: BoxFit.contain,
                           child: SizedBox(
-                            width: 1000, // Fixed width for consistent side-by-side layout
+                            width:
+                                1000, // Fixed width for consistent side-by-side layout
                             child: _PromotionHeroCard(
                               audience: audience,
                               onDismiss: onDismiss,
@@ -93,10 +93,7 @@ class _PromotionHeroCard extends StatelessWidget {
   final AppDownloadAudience audience;
   final VoidCallback onDismiss;
 
-  const _PromotionHeroCard({
-    required this.audience,
-    required this.onDismiss,
-  });
+  const _PromotionHeroCard({required this.audience, required this.onDismiss});
 
   @override
   Widget build(BuildContext context) {

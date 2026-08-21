@@ -53,7 +53,6 @@ export interface IUserRepository {
    findOnboardingStatusById(id: number): Promise<UserOnboardingStatus | null>;
    findByEmail(email: string): Promise<UserWithProfile | null>;
    findByProviderId(provider: string, providerUserId: string): Promise<UserWithProfile | null>;
-   findByMobileNumber(mobileNumber: string): Promise<UserWithProfile | null>;
    upsertSocialAccount(userId: number, provider: string, providerUserId: string): Promise<void>;
    update(id: number, data: UpdateUserDto): Promise<UserWithProfile>;
    updateFoundingMemberStatus(id: number, isFoundingMember: boolean, foundingMemberSince: Date | null): Promise<UserWithProfile>;

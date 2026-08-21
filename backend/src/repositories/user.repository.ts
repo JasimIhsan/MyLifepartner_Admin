@@ -233,20 +233,7 @@ export class UserRepository implements IUserRepository {
       });
    }
 
-   /**
-    * Finds a user by mobile number.
-    *
-    * @param mobileNumber - User mobile number.
-    * @returns User with profile, partner preference, and feature details, or null if not found.
-    */
-   async findByMobileNumber(mobileNumber: string): Promise<UserWithProfile | null> {
-      return prisma.user.findUnique({
-         where: {
-            mobileNumber,
-         },
-         include: UserRepository.STANDARD_INCLUDE,
-      });
-   }
+
 
    /**
     * Updates a user.
@@ -344,12 +331,7 @@ export class UserRepository implements IUserRepository {
                   mode: "insensitive",
                },
             },
-            {
-               mobileNumber: {
-                  contains: searchQuery,
-                  mode: "insensitive",
-               },
-            },
+
          ];
       }
 
@@ -367,7 +349,7 @@ export class UserRepository implements IUserRepository {
          email: data.email,
       };
 
-      if (data.mobileNumber !== undefined) createData.mobileNumber = data.mobileNumber;
+
       if (data.password !== undefined) createData.password = data.password;
       if (data.role !== undefined) createData.role = data.role;
       if (data.isBanned !== undefined) createData.isBanned = data.isBanned;
@@ -389,7 +371,7 @@ export class UserRepository implements IUserRepository {
       const updateData: Prisma.UserUpdateInput = {};
 
       if (data.email !== undefined) updateData.email = data.email;
-      if (data.mobileNumber !== undefined) updateData.mobileNumber = data.mobileNumber;
+
       if (data.password !== undefined) updateData.password = data.password;
       if (data.role !== undefined) updateData.role = data.role;
       if (data.isBanned !== undefined) updateData.isBanned = data.isBanned;

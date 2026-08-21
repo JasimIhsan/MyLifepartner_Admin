@@ -16,7 +16,7 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
    const [formData, setFormData] = useState<Partial<UserInterface>>({
       name: "",
       email: "",
-      mobileNumber: "",
+
    });
 
    useEffect(() => {
@@ -24,13 +24,13 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
          setFormData({
             name: user.name || "",
             email: user.email || "",
-            mobileNumber: user.mobileNumber || "",
+
          });
       } else {
          setFormData({
             name: "",
             email: "",
-            mobileNumber: "",
+
          });
       }
    }, [user, isOpen]);
@@ -66,12 +66,7 @@ export function UserModal({ isOpen, onClose, onSave, user }: UserModalProps) {
                      </Label>
                      <Input id="email" name="email" type="email" value={formData.email || ""} onChange={handleChange} className="col-span-3" placeholder="john@example.com" />
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                     <Label htmlFor="mobileNumber" className="text-right">
-                        Mobile
-                     </Label>
-                     <Input id="mobileNumber" name="mobileNumber" value={formData.mobileNumber || ""} onChange={handleChange} className="col-span-3" placeholder="+1234567890" required />
-                  </div>
+
                </div>
                <DialogFooter>
                   <Button type="button" variant="outline" onClick={onClose}>

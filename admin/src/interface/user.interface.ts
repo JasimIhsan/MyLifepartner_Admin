@@ -1,6 +1,6 @@
 export interface UserInterface {
    id: number;
-   mobileNumber: string;
+
    name: string | null;
    email: string | null;
    isBanned: boolean;

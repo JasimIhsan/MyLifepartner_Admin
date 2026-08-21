@@ -30,7 +30,7 @@ jest.mock("@/config/prisma", () => {
 const makeUser = (overrides: Partial<UserWithProfile> = {}): UserWithProfile =>
    ({
       id: 42,
-      mobileNumber: null,
+
       email: "member@example.com",
       password: null,
       isVerified: false,

@@ -280,7 +280,7 @@ export default function UserDetailPage() {
                            {user.email || "N/A"}
                         </span>
                      </DetailRow>
-                     <DetailRow label="Mobile">{user.mobileNumber || "N/A"}</DetailRow>
+
                      <DetailRow label="Joined">{formatDate(user.createdAt)}</DetailRow>
                      <DetailRow label="Last Updated">{formatDate(user.updatedAt)}</DetailRow>
                      <DetailRow label="Profile Status">
