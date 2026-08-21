@@ -24,6 +24,7 @@ import 'package:life_partner_again/providers/transaction_provider.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/zego_service.dart';
 import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
+import 'package:life_partner_again/widgets/global_app_download_overlay.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
@@ -217,7 +218,19 @@ class _MyAppState extends State<MyApp> {
             darkTheme: AppTheme.darkTheme,
 
             builder: (context, child) {
-              return Stack(children: [child!, const IncomingCallOverlay()]);
+              return Stack(children: [
+                child!,
+                Overlay(
+                  initialEntries: [
+                    OverlayEntry(
+                      builder: (context) => const GlobalAppDownloadOverlay(),
+                    ),
+                    OverlayEntry(
+                      builder: (context) => const IncomingCallOverlay(),
+                    ),
+                  ],
+                ),
+              ]);
             },
           );
         },
