@@ -152,4 +152,8 @@ export class ReportService {
    public async getUserModerationHistory(userId: number) {
       return this.moderationRepository.getUserModerationHistory(userId);
    }
+
+   public async hasUnresolvedReportsAgainstUser(userId: number): Promise<boolean> {
+      return this.reportRepository.hasUnresolvedReportsAgainstUser(userId);
+   }
 }

@@ -70,12 +70,17 @@ const mockCacheService = {
    deleteCache: jest.fn(),
 };
 
+const mockReportService = {
+   hasUnresolvedReportsAgainstUser: jest.fn(),
+};
+
 const makeService = () =>
    new UserService(
       mockUserRepository as unknown as IUserRepository,
       {} as S3Service,
       mockEmailService as unknown as IEmailService,
-      mockCacheService as unknown as ICacheService
+      mockCacheService as unknown as ICacheService,
+      mockReportService as any
    );
 
 describe("UserService founding-member status", () => {

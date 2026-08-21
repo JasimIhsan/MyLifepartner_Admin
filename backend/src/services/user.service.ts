@@ -7,6 +7,7 @@ import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IEmailService } from "@/interfaces/services/email.service.interface";
 import { IUserService } from "@/interfaces/services/user.service.interface";
 import { S3Service } from "@/services/s3.service";
+import { ReportService } from "@/services/report.service";
 import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS } from "@/utils/constants";
 import { Prisma, SubscriptionStatus } from "@prisma/client";
@@ -32,7 +33,8 @@ export class UserService implements IUserService {
       private readonly userRepository: IUserRepository,
       private readonly s3Service: S3Service,
       private readonly emailService: IEmailService,
-      private readonly cacheService: ICacheService
+      private readonly cacheService: ICacheService,
+      private readonly reportService: ReportService
    ) {}
 
    /**
@@ -876,6 +878,12 @@ export class UserService implements IUserService {
 
       if (!user || user.deleteRequestStatus !== "PENDING") {
          throw new ApiError(400, "Invalid or already processed deletion request");
+      }
+
+      const hasUnresolvedReports = await this.reportService.hasUnresolvedReportsAgainstUser(userId);
+
+      if (hasUnresolvedReports) {
+         throw new ApiError(400, "Cannot approve deletion. This user has unresolved reports that must be verified first.");
       }
 
       // We are retaining original data instead of hashing it for Admin viewing.

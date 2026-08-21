@@ -84,4 +84,14 @@ export class ReportRepository implements IReportRepository {
          },
       });
    }
+
+   async hasUnresolvedReportsAgainstUser(userId: number): Promise<boolean> {
+      const report = await prisma.userReport.findFirst({
+         where: {
+            reportedUserId: userId,
+            status: { in: [ReportStatus.PENDING, ReportStatus.UNDER_REVIEW] },
+         },
+      });
+      return !!report;
+   }
 }

@@ -38,4 +38,6 @@ export interface IReportRepository {
    findByIdWithUsersProfile(reportId: number): Promise<ReportWithUsersProfile | null>;
 
    updateStatus(reportId: number, adminId: number, status: ReportStatus, priority?: ReportPriority, notes?: string): Promise<ReportWithUsersProfile>;
+
+   hasUnresolvedReportsAgainstUser(userId: number): Promise<boolean>;
 }
