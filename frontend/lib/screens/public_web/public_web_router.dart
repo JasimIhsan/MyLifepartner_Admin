@@ -37,7 +37,36 @@ List<RouteBase> buildPublicWebRoutes() {
           path: PublicWebRoutes.safety,
           child: const WebSafetyPage(),
         ),
-        _publicRoute(path: PublicWebRoutes.faq, child: const WebFaqPage()),
+        GoRoute(
+          path: PublicWebRoutes.faq,
+          pageBuilder: (context, state) {
+            final section = state.uri.queryParameters['question'];
+            return CustomTransitionPage(
+              key: state.pageKey,
+              child: WebFaqPage(initialExpandedId: section),
+              transitionDuration: const Duration(milliseconds: 240),
+              reverseTransitionDuration: const Duration(milliseconds: 180),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                    final curved = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    );
+
+                    return FadeTransition(
+                      opacity: curved,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.018),
+                          end: Offset.zero,
+                        ).animate(curved),
+                        child: child,
+                      ),
+                    );
+                  },
+            );
+          },
+        ),
         _publicRoute(
           path: PublicWebRoutes.privacy,
           child: const WebPrivacyPage(),

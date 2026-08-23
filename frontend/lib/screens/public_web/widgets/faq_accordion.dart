@@ -2,23 +2,66 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 
 class FaqItem {
+  final String id;
   final String question;
   final String answer;
 
-  const FaqItem({required this.question, required this.answer});
+  const FaqItem({
+    required this.id,
+    required this.question,
+    required this.answer,
+  });
 }
 
 class FaqAccordion extends StatefulWidget {
   final List<FaqItem> items;
+  final String? initialExpandedId;
 
-  const FaqAccordion({super.key, required this.items});
+  const FaqAccordion({
+    super.key,
+    required this.items,
+    this.initialExpandedId,
+  });
 
   @override
   State<FaqAccordion> createState() => _FaqAccordionState();
 }
 
 class _FaqAccordionState extends State<FaqAccordion> {
-  int _expandedIndex = 0;
+  int _expandedIndex = -1;
+  final Map<String, GlobalKey> _itemKeys = {};
+
+  @override
+  void initState() {
+    super.initState();
+    for (var item in widget.items) {
+      _itemKeys[item.id] = GlobalKey();
+    }
+
+    if (widget.initialExpandedId != null) {
+      final index = widget.items.indexWhere(
+        (item) => item.id == widget.initialExpandedId,
+      );
+      if (index != -1) {
+        _expandedIndex = index;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollToItem(widget.initialExpandedId!);
+        });
+      }
+    }
+  }
+
+  void _scrollToItem(String id) {
+    final key = _itemKeys[id];
+    if (key != null && key.currentContext != null) {
+      Scrollable.ensureVisible(
+        key.currentContext!,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        alignment: 0.1, // Slight offset from the top
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +71,7 @@ class _FaqAccordionState extends State<FaqAccordion> {
       children: [
         for (var index = 0; index < widget.items.length; index++) ...[
           _FaqAccordionTile(
+            key: _itemKeys[widget.items[index].id],
             item: widget.items[index],
             isExpanded: _expandedIndex == index,
             onTap: () {
@@ -50,6 +94,7 @@ class _FaqAccordionTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const _FaqAccordionTile({
+    super.key,
     required this.item,
     required this.isExpanded,
     required this.onTap,

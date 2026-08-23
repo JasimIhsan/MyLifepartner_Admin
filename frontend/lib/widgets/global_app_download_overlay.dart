@@ -22,7 +22,7 @@ class _GlobalAppDownloadOverlayState extends State<GlobalAppDownloadOverlay> {
     super.initState();
     // Only start timer and show the pop-up if running on the web
     if (kIsWeb) {
-      _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      _timer = Timer.periodic(const Duration(minutes: 3), (timer) {
         if (mounted && !_isVisible) {
           setState(() {
             _isVisible = true;
