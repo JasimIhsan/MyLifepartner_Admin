@@ -233,8 +233,6 @@ export class UserRepository implements IUserRepository {
       });
    }
 
-
-
    /**
     * Updates a user.
     *
@@ -292,7 +290,7 @@ export class UserRepository implements IUserRepository {
     */
    async clearDeviceTokens(userId: number): Promise<void> {
       await prisma.deviceToken.deleteMany({
-         where: { userId }
+         where: { userId },
       });
    }
 
@@ -331,7 +329,6 @@ export class UserRepository implements IUserRepository {
                   mode: "insensitive",
                },
             },
-
          ];
       }
 
@@ -349,12 +346,18 @@ export class UserRepository implements IUserRepository {
          email: data.email,
       };
 
-
       if (data.password !== undefined) createData.password = data.password;
       if (data.role !== undefined) createData.role = data.role;
       if (data.isBanned !== undefined) createData.isBanned = data.isBanned;
       if (data.isSuspended !== undefined) createData.isSuspended = data.isSuspended;
       if (data.isDeleted !== undefined) createData.isDeleted = data.isDeleted;
+
+      if (data.termsAccepted !== undefined) createData.termsAccepted = data.termsAccepted;
+      if (data.termsAcceptedAt !== undefined) createData.termsAcceptedAt = data.termsAcceptedAt;
+      if (data.termsVersion !== undefined) createData.termsVersion = data.termsVersion;
+      if (data.privacyAcknowledged !== undefined) createData.privacyAcknowledged = data.privacyAcknowledged;
+      if (data.privacyAcknowledgedAt !== undefined) createData.privacyAcknowledgedAt = data.privacyAcknowledgedAt;
+      if (data.privacyVersion !== undefined) createData.privacyVersion = data.privacyVersion;
 
       return createData;
    }

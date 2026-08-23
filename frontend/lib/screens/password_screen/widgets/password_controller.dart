@@ -7,8 +7,9 @@ import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:life_partner_again/screens/consent_privacy_screen/consent_privacy_screen.dart';
+import 'package:provider/provider.dart';
 
 mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -67,15 +68,24 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
         return;
       }
 
-      final response = isExistingUser
-          ? await authRepository.login(
-              email: email,
-              password: passwordController.text,
-            )
-          : await authRepository.register(
-              email: email,
-              password: passwordController.text,
-            );
+      if (!isExistingUser) {
+        if (mounted) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ConsentPrivacyScreen(
+                email: email,
+                password: passwordController.text,
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
+      final response = await authRepository.login(
+        email: email,
+        password: passwordController.text,
+      );
 
       if (response.success && response.user != null) {
         final sharedPrefs = await SharedPreferences.getInstance();

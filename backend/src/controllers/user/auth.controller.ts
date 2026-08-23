@@ -106,7 +106,17 @@ export class AuthController {
       const email = this.getRequiredString(req.body.email, "Email is required");
       const password = this.getRequiredString(req.body.password, "Password is required");
 
-      const result = await this.authService.register(email, password);
+      const termsAccepted = req.body.termsAccepted === true;
+      const privacyAcknowledged = req.body.privacyAcknowledged === true;
+      const termsVersion = req.body.termsVersion as string | undefined;
+      const privacyVersion = req.body.privacyVersion as string | undefined;
+
+      const result = await this.authService.register(email, password, {
+         termsAccepted,
+         privacyAcknowledged,
+         termsVersion,
+         privacyVersion,
+      });
 
       await auditService.log({
          userId: (result as any).user.id,

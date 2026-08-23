@@ -6,6 +6,13 @@ export interface CreateUserDto {
    isBanned?: boolean;
    isSuspended?: boolean;
    isDeleted?: boolean;
+
+   termsAccepted?: boolean;
+   termsAcceptedAt?: Date;
+   termsVersion?: string;
+   privacyAcknowledged?: boolean;
+   privacyAcknowledgedAt?: Date;
+   privacyVersion?: string;
 }
 
 export interface UpdateUserDto {

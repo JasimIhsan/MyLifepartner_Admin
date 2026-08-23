@@ -27,5 +27,5 @@ export interface IUserService {
    getPendingDeletionRequests(page?: number, limit?: number): Promise<{ data: UserDto[]; total: number }>;
    approveDeletionRequest(userId: number, adminId: number): Promise<void>;
    rejectDeletionRequest(userId: number, adminId: number): Promise<void>;
-   getArchivedUsers(page?: number, limit?: number): Promise<{ data: any[]; total: number }>;
+
 }

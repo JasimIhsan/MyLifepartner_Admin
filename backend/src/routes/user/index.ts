@@ -19,6 +19,7 @@ import userBlockRoutes from "@routes/user/user.block.routes";
 import zegoRoutes from "@routes/user/zego.routes";
 import deviceTokenRoutes from "@routes/deviceToken.route";
 import notificationRoutes from "@routes/user/notification.routes";
+import userLegalDocumentRoutes from "@routes/user/legal-document.routes";
 
 const router = Router();
 
@@ -51,6 +52,7 @@ router.use("/transactions", transactionRoutes);
 router.use("/reports", userReportRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/device-tokens", deviceTokenRoutes);
+router.use("/legal", userLegalDocumentRoutes);
 router.use("/", userRoutes);
 
 export default router;

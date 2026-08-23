@@ -360,7 +360,7 @@ export class UserService implements IUserService {
                   createdAt: "desc",
                },
             },
-            archivedData: true,
+
             deviceTokens: true,
          },
       });
@@ -819,23 +819,7 @@ export class UserService implements IUserService {
       });
    }
 
-   /**
-    * Fetches paginated archived (deleted) users.
-    */
-   async getArchivedUsers(page: number = 1, limit: number = 10): Promise<{ data: any[]; total: number }> {
-      const skip = (page - 1) * limit;
 
-      const [data, total] = await Promise.all([
-         prisma.archivedUserData.findMany({
-            skip,
-            take: limit,
-            orderBy: { archivedAt: "desc" },
-         }),
-         prisma.archivedUserData.count(),
-      ]);
-
-      return { data, total };
-   }
 
    /**
     * Approves a deletion request, archives data, and scrubs PII.
@@ -862,16 +846,7 @@ export class UserService implements IUserService {
       const anonymizedEmail = `deleted_${userId}_${crypto.randomUUID()}@premiumglobalcorp.com`;
 
       await prisma.$transaction(async (tx) => {
-         // 1. Create archive
-         await tx.archivedUserData.create({
-            data: {
-               userId,
-               originalEmail: user.email,
 
-               originalName: user.profile?.name,
-               reasonForArchive: user.deleteRequestReason || `Admin ${adminId} approved account deletion`,
-            },
-         });
 
          // 2. Anonymize user
          await tx.user.update({

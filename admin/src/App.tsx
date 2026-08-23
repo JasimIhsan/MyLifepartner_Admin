@@ -23,10 +23,10 @@ import ReportsPage from "./pages/reports-page/ReportsPage";
 import ReportDetailPage from "./pages/reports-page/ReportDetailPage";
 import SuspendedUsersPage from "./pages/suspended-users-page/SuspendedUsersPage";
 import DeletionRequestsPage from "./pages/deletion-requests-page/DeletionRequestsPage";
-import DeletedUsersPage from "./pages/deleted-users-page/DeletedUsersPage";
 
 import AuditLogsPage from "./pages/audit-logs-page/AuditLogsPage";
 import TransactionsPage from "./pages/transactions-page/TransactionsPage";
+import LegalDocumentsPage from "./pages/legal-documents-page/LegalDocumentsPage";
 
 function App() {
    const dispatch = useDispatch();
@@ -64,11 +64,12 @@ function App() {
                   <Route path="/users/:id" element={<UserDetailPage />} />
                   <Route path="/suspended-users" element={<SuspendedUsersPage />} />
                   <Route path="/deletion-requests" element={<DeletionRequestsPage />} />
-                  <Route path="/deleted-users" element={<DeletedUsersPage />} />
+
                   <Route path="/questionnaire" element={<QuestionnairePage />} />
                   <Route path="/profile-verification" element={<ProfileVerificationPage />} />
                   <Route path="/image-assets" element={<ImageAssetsPage />} />
                   <Route path="/lpa-guide" element={<LpaGuidePage />} />
+                  <Route path="/legal-documents" element={<LegalDocumentsPage />} />
                   <Route path="/subscriptions/users" element={<UserSubscriptionsPage />} />
                   <Route path="/subscriptions/plans" element={<SubscriptionPage />} />
                   <Route path="/subscriptions/features" element={<FeaturesPage />} />

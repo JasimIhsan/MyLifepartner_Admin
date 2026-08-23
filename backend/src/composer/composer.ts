@@ -77,6 +77,7 @@ import { OAuthService } from "@/services/user/user.oauth.service";
 import { ProfileService } from "@/services/user/user.profile.service";
 import { UserSubscriptionService } from "@/services/user/user.subscription.service";
 import { DiscoveryService } from "@/services/user/discovery.service";
+import { LegalDocumentService } from "@/services/legal-document.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Controllers
@@ -89,6 +90,7 @@ import { AdminQuestionnaireController } from "@/controllers/admin/admin.question
 import { AdminReportController } from "@/controllers/admin/admin.report.controller";
 import { AdminSubscriptionController } from "@/controllers/admin/admin.subscription.controller";
 import { AdminUsersController } from "@/controllers/admin/admin.users.controller";
+import { AdminLegalDocumentController } from "@/controllers/admin/legal-document.controller";
 import { DeviceTokenController } from "@/controllers/deviceToken.controller";
 import { GuideController } from "@/controllers/guide.controller";
 import { ImageAssetController } from "@/controllers/image-asset.controller";
@@ -109,6 +111,7 @@ import { UserController } from "@/controllers/user/user.controller";
 import { UserReportController } from "@/controllers/user/user.report.controller";
 import { UserSubscriptionController } from "@/controllers/user/user.subscription.controller";
 import { ZegoController } from "@/controllers/user/zego.controller";
+import { UserLegalDocumentController } from "@/controllers/user/legal-document.controller";
 import { NotificationService } from "@/services/notification.service";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -146,6 +149,7 @@ export const s3Service = new S3Service();
 export const emailService = new EmailService(s3Service);
 export const jwtService = new JwtService();
 export const zegoService = new ZegoService();
+export const legalDocumentService = new LegalDocumentService();
 
 export const otpService = new OtpService(cacheService, emailService);
 export const reportService = new ReportService(s3Service, emailService, reportRepository, moderationRepository);
@@ -200,6 +204,7 @@ export const adminFeatureController = new AdminFeatureController(adminFeatureSer
 export const imageAssetController = new ImageAssetController(imageAssetService);
 export const adminUsersController = new AdminUsersController(userService, userSubscriptionService);
 export const adminReportController = new AdminReportController(reportService);
+export const adminLegalDocumentController = new AdminLegalDocumentController(legalDocumentService);
 
 // Shared controllers
 export const guideController = new GuideController(guideService);
@@ -223,5 +228,6 @@ export const oauthController = new OAuthController(oauthService, userSubscriptio
 export const notificationController = new NotificationController(notificationService);
 export const userReportController = new UserReportController(reportService);
 export const deviceTokenController = new DeviceTokenController();
+export const userLegalDocumentController = new UserLegalDocumentController(legalDocumentService);
 
 // End of composer.ts

@@ -8,10 +8,7 @@ import prisma from "@/config/prisma";
 jest.mock("@/config/prisma", () => {
    const mockPrismaClient = {
       $transaction: jest.fn(),
-      archivedUserData: {
-         count: jest.fn(),
-         findMany: jest.fn(),
-      },
+
       user: {
          count: jest.fn(),
          findMany: jest.fn(),

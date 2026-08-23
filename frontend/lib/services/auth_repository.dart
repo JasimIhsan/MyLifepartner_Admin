@@ -122,11 +122,22 @@ class AuthRepository {
   Future<AuthResultResponse> register({
     required String email,
     required String password,
+    required bool termsAccepted,
+    required bool privacyAcknowledged,
+    String? termsVersion,
+    String? privacyVersion,
   }) async {
     try {
       final response = await _client.post(
         "/auth/register",
-        data: {"email": email, "password": password},
+        data: {
+          "email": email, 
+          "password": password,
+          "termsAccepted": termsAccepted,
+          "privacyAcknowledged": privacyAcknowledged,
+          "termsVersion": termsVersion,
+          "privacyVersion": privacyVersion,
+        },
       );
       final verifyResponse = AuthResultResponse.fromJson(response.data);
       if (verifyResponse.success) {

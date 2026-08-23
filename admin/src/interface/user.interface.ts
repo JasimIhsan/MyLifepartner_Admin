@@ -63,12 +63,4 @@ export interface UserSubscriptionSummary {
    environment?: string | null;
 }
 
-export interface ArchivedUserInterface {
-   id: number;
-   userId: number;
-   originalEmail: string;
-   originalPhone: string | null;
-   originalName: string | null;
-   reasonForArchive: string | null;
-   archivedAt: string | Date;
-}
+

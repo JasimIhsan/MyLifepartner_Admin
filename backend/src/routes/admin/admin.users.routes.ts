@@ -25,13 +25,6 @@ adminUsersRoute.get("/suspended", adminUsersController.getSuspendedUsers);
 adminUsersRoute.get("/deletion-requests", adminUsersController.getPendingDeletionRequests);
 
 /**
- * @route   GET /api/v1/admin/users/archived
- * @desc    Get all archived (deleted) users
- * @access  Admin
- */
-adminUsersRoute.get("/archived", adminUsersController.getArchivedUsers);
-
-/**
  * @route   GET /api/admin/users/subscriptions/grace-period
  * @desc    Get users whose current subscription is in grace period
  * @access  Admin

@@ -441,25 +441,4 @@ export class AdminUsersController {
 
       return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, null, "Deletion request rejected"));
    });
-
-   /**
-    * @route GET /api/v1/admin/users/archived
-    * @purpose Fetches all archived (deleted) users
-    */
-   public getArchivedUsers = asyncHandler(async (req: AuthRequest, res: Response) => {
-      const pageNumber = req.query.page ? Number(req.query.page) : 1;
-      const limitNumber = req.query.limit ? Number(req.query.limit) : 10;
-
-      if (!Number.isInteger(pageNumber) || pageNumber <= 0) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid page number");
-      }
-
-      if (!Number.isInteger(limitNumber) || limitNumber <= 0 || limitNumber > 100) {
-         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Invalid limit number");
-      }
-
-      const { data, total } = await this.userService.getArchivedUsers(pageNumber, limitNumber);
-
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, { data, total }, "Archived users fetched successfully"));
-   });
 }

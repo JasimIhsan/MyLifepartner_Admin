@@ -90,6 +90,11 @@ const data = {
          url: "/lpa-guide",
          icon: BookOpen,
       },
+      {
+         title: "Legal Documents",
+         url: "/legal-documents",
+         icon: BookOpen,
+      },
 
       // System
       {

@@ -6,7 +6,7 @@ import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user
 import { ICacheService } from "@/interfaces/services/cache.service.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
 import { IOtpService } from "@/interfaces/services/otp.service.interface";
-import { IUserAuthService } from "@/interfaces/services/user.auth.service.interface";
+import { IUserAuthService, RegisterConsentDto } from "@/interfaces/services/user.auth.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS, HTTP_STATUS, RATE_LIMIT_CONFIG } from "@/utils/constants";
 import logger from "@/utils/logger";
@@ -134,10 +134,15 @@ export class AuthService implements IUserAuthService {
     *
     * @param email - User email.
     * @param passwordPlain - Plain password.
+    * @param consent - Consent data.
     * @returns Created user with auth tokens.
     */
-   async register(email: string, passwordPlain: string) {
+   async register(email: string, passwordPlain: string, consent: RegisterConsentDto) {
       const normalizedEmail = this.normalizeEmail(email);
+
+      if (!consent.termsAccepted || !consent.privacyAcknowledged) {
+         throw new ApiError(HTTP_STATUS.BAD_REQUEST, "You must accept the Terms and Conditions and Privacy Policy to register.");
+      }
 
       await this.assertOtpVerified(normalizedEmail, DEFAULT_AUTH_PURPOSE);
 
@@ -152,6 +157,12 @@ export class AuthService implements IUserAuthService {
       const user = await this.userRepository.create({
          email: normalizedEmail,
          password: hashedPassword,
+         termsAccepted: consent.termsAccepted,
+         termsAcceptedAt: consent.termsAccepted ? new Date() : undefined,
+         termsVersion: consent.termsVersion,
+         privacyAcknowledged: consent.privacyAcknowledged,
+         privacyAcknowledgedAt: consent.privacyAcknowledged ? new Date() : undefined,
+         privacyVersion: consent.privacyVersion,
       });
 
       await this.assignFreePlanIfAvailable(user.id);
