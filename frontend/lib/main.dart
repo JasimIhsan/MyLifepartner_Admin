@@ -7,11 +7,9 @@ import 'package:flutter/services.dart';
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:go_router/go_router.dart';
-import 'package:life_partner_again/core/app_theme.dart';
 import 'package:life_partner_again/core/app_router.dart';
+import 'package:life_partner_again/core/app_theme.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
-import 'package:life_partner_again/providers/theme_provider.dart';
-import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/providers/call_provider.dart';
 import 'package:life_partner_again/providers/chat_provider.dart';
 import 'package:life_partner_again/providers/discovery_provider.dart';
@@ -20,11 +18,14 @@ import 'package:life_partner_again/providers/location_provider.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/providers/notification_provider.dart';
 import 'package:life_partner_again/providers/subscription_provider.dart';
+import 'package:life_partner_again/providers/theme_provider.dart';
 import 'package:life_partner_again/providers/transaction_provider.dart';
+import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/zego_service.dart';
-import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
 import 'package:life_partner_again/widgets/global_app_download_overlay.dart';
+import 'package:life_partner_again/widgets/incoming_call_overlay.dart';
+import 'package:no_screenshot/no_screenshot.dart';
 import 'package:provider/provider.dart';
 
 import 'firebase_options.dart';
@@ -111,6 +112,7 @@ class _MyAppState extends State<MyApp> {
     _authProvider = widget.authProvider;
     _router = createRouter(_authProvider);
     _handleIncomingLinks();
+    NoScreenshot.instance.screenshotOff();
   }
 
   @override
@@ -218,19 +220,21 @@ class _MyAppState extends State<MyApp> {
             darkTheme: AppTheme.darkTheme,
 
             builder: (context, child) {
-              return Stack(children: [
-                child!,
-                Overlay(
-                  initialEntries: [
-                    OverlayEntry(
-                      builder: (context) => const GlobalAppDownloadOverlay(),
-                    ),
-                    OverlayEntry(
-                      builder: (context) => const IncomingCallOverlay(),
-                    ),
-                  ],
-                ),
-              ]);
+              return Stack(
+                children: [
+                  child!,
+                  Overlay(
+                    initialEntries: [
+                      OverlayEntry(
+                        builder: (context) => const GlobalAppDownloadOverlay(),
+                      ),
+                      OverlayEntry(
+                        builder: (context) => const IncomingCallOverlay(),
+                      ),
+                    ],
+                  ),
+                ],
+              );
             },
           );
         },
