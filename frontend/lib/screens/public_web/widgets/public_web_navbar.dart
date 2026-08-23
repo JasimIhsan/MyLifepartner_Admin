@@ -49,7 +49,8 @@ class PublicWebNavbar extends StatelessWidget {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final width = MediaQuery.sizeOf(context).width;
-              final isCompact = PublicWebBreakpoints.isMobile(width) || width < 1280;
+              final isCompact =
+                  PublicWebBreakpoints.isMobile(width) || width < 1280;
 
               if (isCompact) {
                 return Row(
@@ -69,7 +70,7 @@ class PublicWebNavbar extends StatelessWidget {
                 children: [
                   // Left Zone: Brand Logo
                   _Brand(onTap: () => context.go(PublicWebRoutes.home)),
-                  
+
                   // Center Zone: Navigation Links
                   Expanded(
                     child: Center(
