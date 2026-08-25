@@ -83,17 +83,20 @@ class _WhyLpaStory extends StatelessWidget {
             const _WhyLpaFeature(
               icon: LucideIcons.user,
               title: 'Thoughtful Profiles',
-              body: 'Create a thoughtful profile before starting discovery to ensure intent.',
+              body:
+                  'Create a thoughtful profile before starting discovery to ensure intent.',
             ),
             const _WhyLpaFeature(
               icon: LucideIcons.shield_check,
               title: 'Paced Discovery',
-              body: 'Use verification and privacy controls to move at your pace safely.',
+              body:
+                  'Use verification and privacy controls to move at your pace safely.',
             ),
             const _WhyLpaFeature(
               icon: LucideIcons.search,
               title: 'Intentional Matching',
-              body: 'Discover people through shared intent and values, not endless casual swipes.',
+              body:
+                  'Discover people through shared intent and values, not endless casual swipes.',
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
@@ -171,7 +174,10 @@ class _WhyLpaStory extends StatelessWidget {
                         color: theme.colorScheme.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(LucideIcons.heart_handshake, color: theme.colorScheme.primary),
+                      child: Icon(
+                        LucideIcons.heart_handshake,
+                        color: theme.colorScheme.primary,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Column(
@@ -179,12 +185,15 @@ class _WhyLpaStory extends StatelessWidget {
                       children: [
                         Text(
                           'Meaningful',
-                          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                         Text(
                           'Connections only',
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
+                            color: theme.textTheme.bodyMedium?.color
+                                ?.withValues(alpha: 0.7),
                           ),
                         ),
                       ],
@@ -202,10 +211,7 @@ class _WhyLpaStory extends StatelessWidget {
             children: [
               text,
               const SizedBox(height: 60),
-              Padding(
-                padding: const EdgeInsets.only(left: 30),
-                child: image,
-              ),
+              Padding(padding: const EdgeInsets.only(left: 30), child: image),
             ],
           );
         }
@@ -271,7 +277,9 @@ class _WhyLpaFeature extends StatelessWidget {
                   body,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     height: 1.5,
-                    color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.8),
+                    color: theme.textTheme.bodyMedium?.color?.withValues(
+                      alpha: 0.8,
+                    ),
                   ),
                 ),
               ],
@@ -377,7 +385,7 @@ class _PrimaryFeatureGrid extends StatelessWidget {
             (i + count).clamp(0, panels.length),
           );
           final rowWidgets = <Widget>[];
-          
+
           for (var j = 0; j < count; j++) {
             if (j < rowPanels.length) {
               rowWidgets.add(Expanded(child: rowPanels[j]));
@@ -388,7 +396,7 @@ class _PrimaryFeatureGrid extends StatelessWidget {
               rowWidgets.add(SizedBox(width: spacing));
             }
           }
-          
+
           rows.add(
             IntrinsicHeight(
               child: Row(
@@ -818,14 +826,18 @@ class _ScreenshotRail extends StatelessWidget {
                 top: isCompact ? 28 : 0,
                 width: isCompact ? constraints.maxWidth * 0.54 : 220,
                 bottom: 28,
-                child: const _ScreenshotCard(asset: 'flutter_01.png'),
+                child: const _ScreenshotCard(
+                  asset: 'assets/images/landing_couple_1.png',
+                ),
               ),
               Positioned(
                 right: 0,
                 top: isCompact ? 0 : 36,
                 width: isCompact ? constraints.maxWidth * 0.58 : 250,
                 bottom: 0,
-                child: const _ScreenshotCard(asset: 'profile_sample.png'),
+                child: const _ScreenshotCard(
+                  asset: 'assets/images/landing_couple_3.png',
+                ),
               ),
             ],
           ),
