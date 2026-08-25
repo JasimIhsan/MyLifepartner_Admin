@@ -6,7 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Plus, Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ConfirmationModal } from "@/components/confirmation-modal";
@@ -30,6 +33,7 @@ export default function LegalDocumentsPage() {
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [isPublishingId, setIsPublishingId] = useState<number | null>(null);
    const [publishTargetId, setPublishTargetId] = useState<number | null>(null);
+   const [viewDocument, setViewDocument] = useState<LegalDocument | null>(null);
 
    const [formData, setFormData] = useState<{
       id?: number;
@@ -174,16 +178,21 @@ export default function LegalDocumentsPage() {
                            </TableCell>
                            <TableCell>{new Date(doc.updatedAt).toLocaleDateString()}</TableCell>
                            <TableCell className="text-right">
-                              {doc.status === "DRAFT" && (
                                  <div className="flex justify-end gap-2">
-                                    <Button variant="outline" size="sm" onClick={() => openModal(doc)}>
-                                       Edit
+                                    <Button variant="secondary" size="sm" onClick={() => setViewDocument(doc)}>
+                                       <Eye className="mr-2 h-4 w-4" /> View
                                     </Button>
-                                    <Button size="sm" onClick={() => setPublishTargetId(doc.id)} disabled={isPublishingId === doc.id}>
-                                       {isPublishingId === doc.id ? "Publishing..." : "Publish"}
-                                    </Button>
+                                    {doc.status === "DRAFT" && (
+                                       <>
+                                          <Button variant="outline" size="sm" onClick={() => openModal(doc)}>
+                                             Edit
+                                          </Button>
+                                          <Button size="sm" onClick={() => setPublishTargetId(doc.id)} disabled={isPublishingId === doc.id}>
+                                             {isPublishingId === doc.id ? "Publishing..." : "Publish"}
+                                          </Button>
+                                       </>
+                                    )}
                                  </div>
-                              )}
                            </TableCell>
                         </TableRow>
                      ))
@@ -220,8 +229,25 @@ export default function LegalDocumentsPage() {
                      <Input placeholder="e.g. 1.0.0" value={formData.version} onChange={(e) => setFormData({ ...formData, version: e.target.value })} />
                   </div>
                   <div className="grid gap-2">
-                     <label className="text-sm font-medium">Content</label>
-                     <Textarea placeholder="Enter the full text here..." rows={10} value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} />
+                     <label className="text-sm font-medium">Content (Markdown supported)</label>
+                     <Tabs defaultValue="edit" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 mb-2">
+                           <TabsTrigger value="edit">Edit</TabsTrigger>
+                           <TabsTrigger value="preview">Preview</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="edit">
+                           <Textarea placeholder="Enter the full text in markdown here..." className="min-h-[300px]" value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} />
+                        </TabsContent>
+                        <TabsContent value="preview" className="border rounded-md p-4 min-h-[300px] max-h-[500px] overflow-y-auto bg-background">
+                           <div className="markdown-preview">
+                              {formData.content ? (
+                                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{formData.content}</ReactMarkdown>
+                              ) : (
+                                 <p className="text-muted-foreground italic">Nothing to preview...</p>
+                              )}
+                           </div>
+                        </TabsContent>
+                     </Tabs>
                   </div>
                </div>
                <DialogFooter>
@@ -229,6 +255,25 @@ export default function LegalDocumentsPage() {
                      Cancel
                   </Button>
                   <Button onClick={handleSaveDraft}>Save Draft</Button>
+               </DialogFooter>
+            </DialogContent>
+         </Dialog>
+
+         <Dialog open={viewDocument !== null} onOpenChange={(open) => !open && setViewDocument(null)}>
+            <DialogContent className="sm:max-w-3xl max-h-[85vh] flex flex-col">
+               <DialogHeader>
+                  <DialogTitle>{viewDocument?.title}</DialogTitle>
+                  <DialogDescription>
+                     Version {viewDocument?.version} • {viewDocument?.status}
+                  </DialogDescription>
+               </DialogHeader>
+               <div className="flex-1 overflow-y-auto pr-2 py-4 border-t border-b">
+                  <div className="markdown-preview">
+                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{viewDocument?.content || ""}</ReactMarkdown>
+                  </div>
+               </div>
+               <DialogFooter>
+                  <Button onClick={() => setViewDocument(null)}>Close</Button>
                </DialogFooter>
             </DialogContent>
          </Dialog>

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:life_partner_again/screens/public_web/widgets/download_app_buttons.dart';
 import 'package:life_partner_again/screens/public_web/widgets/responsive_web_container.dart';
 import 'package:life_partner_again/screens/public_web/widgets/web_section_header.dart';
@@ -832,14 +833,16 @@ class EditorialQuote extends StatelessWidget {
 
 class LegalContentSection extends StatelessWidget {
   final String title;
-  final String body;
-  final List<LegalContentBlock> blocks;
+  final String? body;
+  final List<LegalContentBlock>? blocks;
+  final String? markdownContent;
 
   const LegalContentSection({
     super.key,
     required this.title,
-    required this.body,
-    required this.blocks,
+    this.body,
+    this.blocks,
+    this.markdownContent,
   });
 
   @override
@@ -859,20 +862,43 @@ class LegalContentSection extends StatelessWidget {
             textAlign: TextAlign.left,
           ),
           const SizedBox(height: 42),
-          for (final block in blocks) ...[
-            Text(
-              block.title,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
+          if (markdownContent != null)
+            MarkdownBody(
+              data: markdownContent!,
+              styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+                p: theme.textTheme.bodyLarge?.copyWith(height: 1.7),
+                h1: theme.textTheme.headlineLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  height: 1.4,
+                ),
+                h2: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  height: 1.4,
+                ),
+                h3: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  height: 1.4,
+                ),
+                listBullet: theme.textTheme.bodyLarge?.copyWith(height: 1.7),
               ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              block.body,
-              style: theme.textTheme.bodyLarge?.copyWith(height: 1.7),
-            ),
-            const SizedBox(height: 28),
-          ],
+          if (blocks != null)
+            for (final block in blocks!) ...[
+              if (block.title.isNotEmpty) ...[
+                Text(
+                  block.title,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 10),
+              ],
+              Text(
+                block.body,
+                style: theme.textTheme.bodyLarge?.copyWith(height: 1.7),
+              ),
+              const SizedBox(height: 28),
+            ],
         ],
       ),
     );

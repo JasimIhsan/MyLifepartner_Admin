@@ -122,3 +122,71 @@
       @apply bg-background text-foreground;
    }
 }
+
+.markdown-preview {
+   @apply text-base leading-relaxed text-foreground;
+}
+
+.markdown-preview h1 {
+   @apply text-3xl font-bold mt-8 mb-4 tracking-tight;
+}
+
+.markdown-preview h2 {
+   @apply text-2xl font-semibold mt-6 mb-3 tracking-tight;
+}
+
+.markdown-preview h3 {
+   @apply text-xl font-semibold mt-5 mb-2 tracking-tight;
+}
+
+.markdown-preview p {
+   @apply mb-4 leading-7;
+}
+
+.markdown-preview ul {
+   @apply list-disc list-inside mb-4 space-y-1 ml-4;
+}
+
+.markdown-preview ol {
+   @apply list-decimal list-inside mb-4 space-y-1 ml-4;
+}
+
+.markdown-preview li {
+   @apply leading-7;
+}
+
+.markdown-preview a {
+   @apply text-primary font-medium underline underline-offset-4 hover:text-primary/80;
+}
+
+.markdown-preview strong {
+   @apply font-bold;
+}
+
+.markdown-preview blockquote {
+   @apply border-l-4 border-primary pl-4 italic text-muted-foreground my-4;
+}
+
+.markdown-preview table {
+   @apply w-full border-collapse mb-4;
+}
+
+.markdown-preview th, .markdown-preview td {
+   @apply border border-border px-4 py-2 text-left;
+}
+
+.markdown-preview th {
+   @apply bg-muted font-semibold;
+}
+
+.markdown-preview code {
+   @apply bg-muted text-muted-foreground px-1.5 py-0.5 rounded-md text-sm font-mono;
+}
+
+.markdown-preview pre {
+   @apply bg-muted p-4 rounded-lg overflow-x-auto mb-4;
+}
+
+.markdown-preview pre code {
+   @apply bg-transparent text-inherit p-0 text-sm;
+}

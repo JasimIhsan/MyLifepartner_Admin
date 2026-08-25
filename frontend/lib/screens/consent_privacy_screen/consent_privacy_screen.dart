@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:life_partner_again/models/onboarding_status.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/services/api_service.dart';
@@ -439,12 +440,22 @@ class FullTextScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
-        child: Text(
-          content,
-          style: TextStyle(
-            fontSize: 13,
-            height: 1.6,
-            color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
+        child: MarkdownBody(
+          data: content,
+          styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
+            p: TextStyle(
+              fontSize: 13,
+              height: 1.6,
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
+            ),
+            h1: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            h2: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            h3: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            listBullet: TextStyle(
+              fontSize: 13,
+              height: 1.6,
+              color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.85),
+            ),
           ),
         ),
       ),
