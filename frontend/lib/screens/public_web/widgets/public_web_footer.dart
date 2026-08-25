@@ -113,7 +113,7 @@ class PublicWebFooter extends StatelessWidget {
               Divider(color: Colors.white.withValues(alpha: 0.14)),
               const SizedBox(height: 22),
               Text(
-                '© ${DateTime.now().year} Life Partner Again. All rights reserved.',
+                '© ${DateTime.now().year} Life Partner Again. All rights reserved. A product of Premium Global Corp., Canada.',
                 style: TextStyle(color: Colors.white.withValues(alpha: 0.62)),
               ),
             ],
