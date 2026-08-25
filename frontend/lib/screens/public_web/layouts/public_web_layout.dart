@@ -44,6 +44,18 @@ class _PublicWebLayoutState extends State<PublicWebLayout> {
   }
 
   @override
+  void didUpdateWidget(PublicWebLayout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentRoute != widget.currentRoute) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(0);
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _promotionTimer?.cancel();
     _scrollController
@@ -103,16 +115,25 @@ class _PublicWebLayoutState extends State<PublicWebLayout> {
                     isScrolled: _isScrolled,
                   ),
                   Expanded(
-                    child: SingleChildScrollView(
-                      controller: _scrollController,
-                      child: Column(
-                        children: [
-                          widget.child,
-                          if (widget.showGlobalDownloadCta)
-                            const PublicDownloadCtaSection(),
-                          const PublicWebFooter(),
-                        ],
-                      ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          controller: _scrollController,
+                          child: Column(
+                            children: [
+                              ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight,
+                                ),
+                                child: widget.child,
+                              ),
+                              if (widget.showGlobalDownloadCta)
+                                const PublicDownloadCtaSection(),
+                              const PublicWebFooter(),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],

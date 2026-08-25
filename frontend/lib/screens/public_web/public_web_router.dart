@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/screens/public_web/layouts/public_web_layout.dart';
 import 'package:life_partner_again/screens/public_web/pages/about/web_about_page.dart';
@@ -44,22 +44,20 @@ List<RouteBase> buildPublicWebRoutes() {
             return CustomTransitionPage(
               key: state.pageKey,
               child: WebFaqPage(initialExpandedId: section),
-              transitionDuration: const Duration(milliseconds: 240),
-              reverseTransitionDuration: const Duration(milliseconds: 180),
+              transitionDuration: const Duration(milliseconds: 300),
+              reverseTransitionDuration: const Duration(milliseconds: 250),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
-                    final curved = CurvedAnimation(
+                    final fadeAnimation = CurvedAnimation(
                       parent: animation,
                       curve: Curves.easeOutCubic,
+                      reverseCurve: Curves.easeInCubic,
                     );
 
                     return FadeTransition(
-                      opacity: curved,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.018),
-                          end: Offset.zero,
-                        ).animate(curved),
+                      opacity: fadeAnimation,
+                      child: ColoredBox(
+                        color: Theme.of(context).colorScheme.surface,
                         child: child,
                       ),
                     );
@@ -84,21 +82,19 @@ GoRoute _publicRoute({required String path, required Widget child}) {
       return CustomTransitionPage(
         key: state.pageKey,
         child: child,
-        transitionDuration: const Duration(milliseconds: 240),
-        reverseTransitionDuration: const Duration(milliseconds: 180),
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          final curved = CurvedAnimation(
+          final fadeAnimation = CurvedAnimation(
             parent: animation,
             curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
           );
 
           return FadeTransition(
-            opacity: curved,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, 0.018),
-                end: Offset.zero,
-              ).animate(curved),
+            opacity: fadeAnimation,
+            child: ColoredBox(
+              color: Theme.of(context).colorScheme.surface,
               child: child,
             ),
           );

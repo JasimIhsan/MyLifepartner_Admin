@@ -726,15 +726,42 @@ class PublicSimpleGrid extends StatelessWidget {
             .floor()
             .clamp(1, 4)
             .toInt();
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: [
-            for (final child in children)
-              SizedBox(
-                width: (constraints.maxWidth - (spacing * (count - 1))) / count,
-                child: child,
+            
+        final rows = <Widget>[];
+        for (var i = 0; i < children.length; i += count) {
+          final rowChildren = children.sublist(
+            i,
+            (i + count).clamp(0, children.length),
+          );
+          final rowWidgets = <Widget>[];
+          
+          for (var j = 0; j < count; j++) {
+            if (j < rowChildren.length) {
+              rowWidgets.add(Expanded(child: rowChildren[j]));
+            } else {
+              rowWidgets.add(const Expanded(child: SizedBox.shrink()));
+            }
+            if (j < count - 1) {
+              rowWidgets.add(SizedBox(width: spacing));
+            }
+          }
+          
+          rows.add(
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: rowWidgets,
               ),
+            ),
+          );
+        }
+
+        return Column(
+          children: [
+            for (var i = 0; i < rows.length; i++) ...[
+              rows[i],
+              if (i < rows.length - 1) SizedBox(height: spacing),
+            ],
           ],
         );
       },

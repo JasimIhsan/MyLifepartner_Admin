@@ -346,7 +346,6 @@ class _PrimaryFeatureGrid extends StatelessWidget {
       builder: (context, constraints) {
         final count = constraints.maxWidth < 900 ? 1 : 3;
         final spacing = constraints.maxWidth < 900 ? 16.0 : 20.0;
-        final width = (constraints.maxWidth - (spacing * (count - 1))) / count;
         const panels = [
           _PrimaryFeaturePanel(
             icon: LucideIcons.brain_circuit,
@@ -371,11 +370,41 @@ class _PrimaryFeatureGrid extends StatelessWidget {
           ),
         ];
 
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
+        final rows = <Widget>[];
+        for (var i = 0; i < panels.length; i += count) {
+          final rowPanels = panels.sublist(
+            i,
+            (i + count).clamp(0, panels.length),
+          );
+          final rowWidgets = <Widget>[];
+          
+          for (var j = 0; j < count; j++) {
+            if (j < rowPanels.length) {
+              rowWidgets.add(Expanded(child: rowPanels[j]));
+            } else {
+              rowWidgets.add(const Expanded(child: SizedBox.shrink()));
+            }
+            if (j < count - 1) {
+              rowWidgets.add(SizedBox(width: spacing));
+            }
+          }
+          
+          rows.add(
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: rowWidgets,
+              ),
+            ),
+          );
+        }
+
+        return Column(
           children: [
-            for (final panel in panels) SizedBox(width: width, child: panel),
+            for (var i = 0; i < rows.length; i++) ...[
+              rows[i],
+              if (i < rows.length - 1) SizedBox(height: spacing),
+            ],
           ],
         );
       },
