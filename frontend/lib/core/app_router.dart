@@ -8,6 +8,8 @@ import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
+import 'package:life_partner_again/screens/support_screen/support_screen.dart';
+import 'package:life_partner_again/screens/support_screen/accepted_legal_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
@@ -290,6 +292,20 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.blockedUsers,
             builder: (context, state) => const BlockedUsersScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.support,
+            builder: (context, state) => const SupportScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.acceptedLegal,
+            builder: (context, state) {
+              final docType = state.extra as LegalDocType?;
+              if (docType == null) {
+                return _buildErrorScreen(context, 'Document type not found.');
+              }
+              return AcceptedLegalScreen(docType: docType);
+            },
           ),
         ],
       ),

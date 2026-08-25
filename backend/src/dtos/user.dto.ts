@@ -68,6 +68,13 @@ export interface UserDto {
 
    createdAt: Date;
    updatedAt: Date;
+
+   termsAccepted?: boolean;
+   termsAcceptedAt?: Date | null;
+   termsVersion?: string | null;
+   privacyAcknowledged?: boolean;
+   privacyAcknowledgedAt?: Date | null;
+   privacyVersion?: string | null;
 }
 
 export const toUserDto = (
@@ -144,6 +151,13 @@ export const toUserDto = (
 
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+
+      termsAccepted: user.termsAccepted,
+      termsAcceptedAt: user.termsAcceptedAt,
+      termsVersion: user.termsVersion,
+      privacyAcknowledged: user.privacyAcknowledged,
+      privacyAcknowledgedAt: user.privacyAcknowledgedAt,
+      privacyVersion: user.privacyVersion,
    };
 };
 

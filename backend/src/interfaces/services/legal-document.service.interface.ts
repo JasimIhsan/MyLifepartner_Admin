@@ -38,4 +38,9 @@ export interface ILegalDocumentService {
     * Gets a single document by ID.
     */
    getDocumentById(id: number): Promise<LegalDocument | null>;
+
+   /**
+    * Gets a document by its type and version.
+    */
+   getDocumentByVersion(type: LegalDocumentType, version: string): Promise<LegalDocument | null>;
 }

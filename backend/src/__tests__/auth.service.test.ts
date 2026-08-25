@@ -270,16 +270,18 @@ describe("AuthService", () => {
 
       it("throws FORBIDDEN if OTP is not verified", async () => {
          mockCacheService.getCache.mockResolvedValue(null);
-         await expect(authService.register(validEmail, "password")).rejects.toThrow(ApiError);
-         const err = await authService.register(validEmail, "password").catch(e => e);
+         const consent = { termsAccepted: true, privacyAcknowledged: true };
+         await expect(authService.register(validEmail, "password", consent)).rejects.toThrow(ApiError);
+         const err = await authService.register(validEmail, "password", consent).catch(e => e);
          expect(err.statusCode).toBe(HTTP_STATUS.FORBIDDEN);
       });
 
       it("throws CONFLICT if user already exists", async () => {
          mockUserRepo.findByEmail.mockResolvedValue({ id: 1 });
 
-         await expect(authService.register(validEmail, "password")).rejects.toThrow(ApiError);
-         const err = await authService.register(validEmail, "password").catch(e => e);
+         const consent = { termsAccepted: true, privacyAcknowledged: true };
+         await expect(authService.register(validEmail, "password", consent)).rejects.toThrow(ApiError);
+         const err = await authService.register(validEmail, "password", consent).catch(e => e);
          expect(err.statusCode).toBe(HTTP_STATUS.CONFLICT);
       });
 
@@ -298,9 +300,10 @@ describe("AuthService", () => {
          mockJwtService.signAccess.mockReturnValue("access-token");
          mockJwtService.signRefresh.mockReturnValue("refresh-token");
 
-         const result = await authService.register(validEmail, "password");
+         const consent = { termsAccepted: true, privacyAcknowledged: true };
+         const result = await authService.register(validEmail, "password", consent);
 
-         expect(mockUserRepo.create).toHaveBeenCalledWith({ email: normalizedEmail, password: "hashedPassword" });
+         expect(mockUserRepo.create).toHaveBeenCalledWith({ email: normalizedEmail, password: "hashedPassword", ...consent, termsAcceptedAt: expect.any(Date), privacyAcknowledgedAt: expect.any(Date) });
          expect(mockUserSubRepo.createUserSubscription).toHaveBeenCalledWith(expect.objectContaining({
             plan: { connect: { id: 99 } }
          }));

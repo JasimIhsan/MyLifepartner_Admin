@@ -90,4 +90,10 @@ export class LegalDocumentService implements ILegalDocumentService {
    public async getDocumentById(id: number): Promise<LegalDocument | null> {
       return prisma.legalDocument.findUnique({ where: { id } });
    }
+
+   public async getDocumentByVersion(type: LegalDocumentType, version: string): Promise<LegalDocument | null> {
+      return prisma.legalDocument.findFirst({
+         where: { type, version },
+      });
+   }
 }

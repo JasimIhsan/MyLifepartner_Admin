@@ -464,7 +464,7 @@ class _LpaGuideScreenState extends State<LpaGuideScreen> {
             ChatMessage(
               sender: MessageSender.assistant,
               text:
-                  'You can reach out to our customer support team directly at support@mylifepartner.com, or tap the button below to compose an email.',
+                  'You can reach out to our customer support team directly at support@lifepartneragain.com, or tap the button below to compose an email.',
               timestamp: DateTime.now(),
             ),
           );

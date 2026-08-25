@@ -126,6 +126,13 @@ class User {
   final String? drinkingHabit;
   final bool privacyEnabled;
 
+  final bool termsAccepted;
+  final DateTime? termsAcceptedAt;
+  final String? termsVersion;
+  final bool privacyAcknowledged;
+  final DateTime? privacyAcknowledgedAt;
+  final String? privacyVersion;
+
   User({
     required this.id,
 
@@ -161,6 +168,12 @@ class User {
     this.languages = const [],
     this.smokingHabit,
     this.drinkingHabit,
+    this.termsAccepted = false,
+    this.termsAcceptedAt,
+    this.termsVersion,
+    this.privacyAcknowledged = false,
+    this.privacyAcknowledgedAt,
+    this.privacyVersion,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -222,6 +235,16 @@ class User {
           : const [],
       smokingHabit: json['smokingHabit'],
       drinkingHabit: json['drinkingHabit'],
+      termsAccepted: json['termsAccepted'] ?? false,
+      termsAcceptedAt: json['termsAcceptedAt'] != null
+          ? DateTime.parse(json['termsAcceptedAt'])
+          : null,
+      termsVersion: json['termsVersion'],
+      privacyAcknowledged: json['privacyAcknowledged'] ?? false,
+      privacyAcknowledgedAt: json['privacyAcknowledgedAt'] != null
+          ? DateTime.parse(json['privacyAcknowledgedAt'])
+          : null,
+      privacyVersion: json['privacyVersion'],
     );
   }
 }

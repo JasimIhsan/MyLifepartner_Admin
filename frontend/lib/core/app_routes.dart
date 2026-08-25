@@ -21,6 +21,7 @@ import 'package:life_partner_again/screens/subscription_screen/subscription_scre
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
 import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/billing_history_screen.dart';
+import 'package:life_partner_again/screens/support_screen/support_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
@@ -42,6 +43,8 @@ class AppRoutes {
   static String profileDetailPath(Object profileId) => '/profile/$profileId';
   static const String lpaGuide = '/lpa-guide';
   static const String blockedUsers = '/blocked-users';
+  static const String support = '/support';
+  static const String acceptedLegal = '/accepted-legal';
   static const String chatDetail = '/chat-detail/:profileId';
   static const String editProfile = '/edit-profile';
   static const String editPartnerPreference = '/edit-partner-preference';
@@ -178,6 +181,11 @@ class AppRoutes {
       case blockedUsers:
         return MaterialPageRoute(
           builder: (_) => const BlockedUsersScreen(),
+          settings: settings,
+        );
+      case support:
+        return MaterialPageRoute(
+          builder: (_) => const SupportScreen(),
           settings: settings,
         );
       default:

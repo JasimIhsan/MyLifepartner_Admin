@@ -27,4 +27,16 @@ class LegalService {
     }
     return null;
   }
+
+  static Future<Map<String, dynamic>?> getAcceptedDocument(String type) async {
+    try {
+      final response = await ApiService.client.get('/legal/accepted/$type');
+      if (response.statusCode == 200) {
+        return response.data['data'] as Map<String, dynamic>?;
+      }
+    } on DioException catch (e) {
+      print('Error fetching accepted $type: $e');
+    }
+    return null;
+  }
 }
