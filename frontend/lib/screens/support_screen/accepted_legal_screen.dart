@@ -14,7 +14,11 @@ class AcceptedLegalScreen extends StatelessWidget {
 
   const AcceptedLegalScreen({super.key, required this.docType});
 
-  Future<void> _showLegalContent(BuildContext context, bool isPrivacy, bool hasAccepted) async {
+  Future<void> _showLegalContent(
+    BuildContext context,
+    bool isPrivacy,
+    bool hasAccepted,
+  ) async {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -51,8 +55,12 @@ class AcceptedLegalScreen extends StatelessWidget {
               Expanded(
                 child: FutureBuilder<Map<String, dynamic>?>(
                   future: hasAccepted
-                      ? LegalService.getAcceptedDocument(isPrivacy ? 'privacy' : 'terms')
-                      : (isPrivacy ? LegalService.getLatestPrivacyPolicy() : LegalService.getLatestTerms()),
+                      ? LegalService.getAcceptedDocument(
+                          isPrivacy ? 'privacy' : 'terms',
+                        )
+                      : (isPrivacy
+                            ? LegalService.getLatestPrivacyPolicy()
+                            : LegalService.getLatestTerms()),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -125,7 +133,10 @@ class AcceptedLegalScreen extends StatelessWidget {
 
           return SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 24.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 24.0,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -137,7 +148,13 @@ class AcceptedLegalScreen extends StatelessWidget {
                     acceptedAt,
                   ),
                   const SizedBox(height: 32),
-                  _buildDocumentCard(theme, title, isPrivacy, context, hasAccepted),
+                  _buildDocumentCard(
+                    theme,
+                    title,
+                    isPrivacy,
+                    context,
+                    hasAccepted,
+                  ),
                 ],
               ),
             ),
@@ -199,7 +216,7 @@ class AcceptedLegalScreen extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             hasAccepted
-                ? "You have agreed to our latest ${isPrivacy ? "privacy policy" : "terms and conditions"}."
+                ? "You have agreed to our ${isPrivacy ? "privacy policy" : "terms and conditions"}."
                 : "We do not have a record of your agreement.",
             textAlign: TextAlign.center,
             style: TextStyle(
