@@ -4,7 +4,7 @@ import { ISubscriptionPlanRepository } from "@/interfaces/repositories/subscript
 import { IUserSubscriptionRepository, SubscriptionStatus } from "@/interfaces/repositories/user-subscription.repository.interface";
 import { IUserRepository, UserWithProfile } from "@/interfaces/repositories/user.repository.interface";
 import { IJwtService } from "@/interfaces/services/jwt.service.interface";
-import { AuthTokens, IOAuthService } from "@/interfaces/services/user.oauth.service.interface";
+import { AuthTokens, IOAuthService, IOAuthConsent, OAuthResponse } from "@/interfaces/services/user.oauth.service.interface";
 import { ApiError } from "@/utils/ApiError";
 import { HTTP_STATUS } from "@/utils/constants";
 import logger from "@/utils/logger";
@@ -46,7 +46,7 @@ export class OAuthService implements IOAuthService {
       this.googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
    }
 
-   public async googleSignIn(idToken: string) {
+   public async googleSignIn(idToken: string, consent?: IOAuthConsent): Promise<OAuthResponse> {
       if (!idToken) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "ID token is required");
       }
@@ -84,13 +84,29 @@ export class OAuthService implements IOAuthService {
          user = await this.userRepository.findByEmail(email);
 
          if (!user) {
-            // 3. Create new user account
+            // 3. User does not exist. Check if consent is provided.
+            if (!consent?.termsAccepted) {
+               return {
+                  action: "REQUIRE_CONSENT",
+                  email,
+                  firstName: payload.given_name,
+                  lastName: payload.family_name,
+               };
+            }
+
+            // 4. Consent provided. Create new user account.
             const randomPassword = crypto.randomBytes(16).toString("hex");
             const hashedPassword = await bcrypt.hash(randomPassword, PASSWORD_SALT_ROUNDS);
 
             user = await this.userRepository.create({
                email,
                password: hashedPassword,
+               termsAccepted: consent.termsAccepted,
+               termsAcceptedAt: consent.termsAccepted ? new Date() : undefined,
+               termsVersion: consent.termsVersion,
+               privacyAcknowledged: consent.privacyAcknowledged,
+               privacyAcknowledgedAt: consent.privacyAcknowledged ? new Date() : undefined,
+               privacyVersion: consent.privacyVersion,
             });
 
             const fullName = payload.name?.trim() || `${payload.given_name ?? ""} ${payload.family_name ?? ""}`.trim();
@@ -110,12 +126,13 @@ export class OAuthService implements IOAuthService {
       const tokens = this.generateAuthTokens(user.id, user.email, user.role);
 
       return {
+         action: "LOGIN",
          user: toUserDto(user),
          ...tokens,
       };
    }
 
-   public async appleSignIn(identityToken: string, authorizationCode: string, platform: "ios" | "android" | "web", email?: string | null, firstName?: string | null, lastName?: string | null, nonce?: string | null) {
+   public async appleSignIn(identityToken: string, authorizationCode: string, platform: "ios" | "android" | "web", email?: string | null, firstName?: string | null, lastName?: string | null, nonce?: string | null, consent?: IOAuthConsent): Promise<OAuthResponse> {
       if (!identityToken || !authorizationCode) {
          throw new ApiError(HTTP_STATUS.BAD_REQUEST, "Identity token and authorization code are required");
       }
@@ -185,25 +202,36 @@ export class OAuthService implements IOAuthService {
          }
 
          if (!user) {
-            // Create new account.
-            const randomPassword = crypto.randomBytes(16).toString("hex");
-            const hashedPassword = await bcrypt.hash(randomPassword, PASSWORD_SALT_ROUNDS);
-
-            // Apple always includes an email in the JWT (either the user's real address
-            // or their actual Apple private relay address like xyz@privaterelay.appleid.com).
-            // Fall back to the client-provided email (sent only on first sign-in) if the
-            // JWT email is somehow absent. Never construct a fake relay address.
             const clientEmail = email?.trim().toLowerCase() ?? null;
             const finalEmail = verifiedEmail ?? clientEmail;
 
             if (!finalEmail) {
-               // This should be extremely rare: Apple always provides email in the JWT.
                throw new ApiError(HTTP_STATUS.UNPROCESSABLE_ENTITY, "Unable to retrieve email from Apple sign-in. Please try again or use a different sign-in method.");
             }
+
+            // User does not exist. Check if consent is provided.
+            if (!consent?.termsAccepted) {
+               return {
+                  action: "REQUIRE_CONSENT",
+                  email: finalEmail,
+                  firstName: firstName ?? undefined,
+                  lastName: lastName ?? undefined,
+               };
+            }
+
+            // Create new account.
+            const randomPassword = crypto.randomBytes(16).toString("hex");
+            const hashedPassword = await bcrypt.hash(randomPassword, PASSWORD_SALT_ROUNDS);
 
             user = await this.userRepository.create({
                email: finalEmail,
                password: hashedPassword,
+               termsAccepted: consent.termsAccepted,
+               termsAcceptedAt: consent.termsAccepted ? new Date() : undefined,
+               termsVersion: consent.termsVersion,
+               privacyAcknowledged: consent.privacyAcknowledged,
+               privacyAcknowledgedAt: consent.privacyAcknowledged ? new Date() : undefined,
+               privacyVersion: consent.privacyVersion,
             });
 
             if (firstName || lastName) {
@@ -225,6 +253,7 @@ export class OAuthService implements IOAuthService {
       const tokens = this.generateAuthTokens(user.id, user.email, user.role);
 
       return {
+         action: "LOGIN",
          user: toUserDto(user),
          ...tokens,
       };

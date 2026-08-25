@@ -55,8 +55,8 @@ class AuthRepository {
       final verifyResponse = AuthResultResponse.fromJson(response.data);
       if (verifyResponse.success) {
         await TokenService.saveTokens(
-          accessToken: verifyResponse.accessToken,
-          refreshToken: verifyResponse.refreshToken,
+          accessToken: verifyResponse.accessToken!,
+          refreshToken: verifyResponse.refreshToken!,
         );
       }
       return verifyResponse;
@@ -65,17 +65,29 @@ class AuthRepository {
     }
   }
 
-  Future<AuthResultResponse> googleSignIn({required String idToken}) async {
+  Future<AuthResultResponse> googleSignIn({
+    required String idToken,
+    bool? termsAccepted,
+    bool? privacyAcknowledged,
+    String? termsVersion,
+    String? privacyVersion,
+  }) async {
     try {
       final response = await _client.post(
         "/oauth/google",
-        data: {"idToken": idToken},
+        data: {
+          "idToken": idToken,
+          if (termsAccepted != null) "termsAccepted": termsAccepted,
+          if (privacyAcknowledged != null) "privacyAcknowledged": privacyAcknowledged,
+          if (termsVersion != null) "termsVersion": termsVersion,
+          if (privacyVersion != null) "privacyVersion": privacyVersion,
+        },
       );
       final verifyResponse = AuthResultResponse.fromJson(response.data);
-      if (verifyResponse.success) {
+      if (verifyResponse.success && verifyResponse.action == 'LOGIN') {
         await TokenService.saveTokens(
-          accessToken: verifyResponse.accessToken,
-          refreshToken: verifyResponse.refreshToken,
+          accessToken: verifyResponse.accessToken!,
+          refreshToken: verifyResponse.refreshToken!,
         );
       }
       return verifyResponse;
@@ -92,6 +104,10 @@ class AuthRepository {
     String? firstName,
     String? lastName,
     String? nonce,
+    bool? termsAccepted,
+    bool? privacyAcknowledged,
+    String? termsVersion,
+    String? privacyVersion,
   }) async {
     try {
       final response = await _client.post(
@@ -104,13 +120,17 @@ class AuthRepository {
           "firstName": firstName,
           "lastName": lastName,
           "nonce": nonce,
+          if (termsAccepted != null) "termsAccepted": termsAccepted,
+          if (privacyAcknowledged != null) "privacyAcknowledged": privacyAcknowledged,
+          if (termsVersion != null) "termsVersion": termsVersion,
+          if (privacyVersion != null) "privacyVersion": privacyVersion,
         },
       );
       final verifyResponse = AuthResultResponse.fromJson(response.data);
-      if (verifyResponse.success) {
+      if (verifyResponse.success && verifyResponse.action == 'LOGIN') {
         await TokenService.saveTokens(
-          accessToken: verifyResponse.accessToken,
-          refreshToken: verifyResponse.refreshToken,
+          accessToken: verifyResponse.accessToken!,
+          refreshToken: verifyResponse.refreshToken!,
         );
       }
       return verifyResponse;
@@ -142,8 +162,8 @@ class AuthRepository {
       final verifyResponse = AuthResultResponse.fromJson(response.data);
       if (verifyResponse.success) {
         await TokenService.saveTokens(
-          accessToken: verifyResponse.accessToken,
-          refreshToken: verifyResponse.refreshToken,
+          accessToken: verifyResponse.accessToken!,
+          refreshToken: verifyResponse.refreshToken!,
         );
       }
       return verifyResponse;

@@ -10,13 +10,31 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ConsentPrivacyScreen extends StatefulWidget {
-  final String email;
-  final String password;
+  final String? email;
+  final String? password;
+  final String? provider;
+  final String? googleIdToken;
+  final String? appleIdentityToken;
+  final String? appleAuthorizationCode;
+  final String? appleEmail;
+  final String? appleFirstName;
+  final String? appleLastName;
+  final String? firstName;
+  final String? lastName;
 
   const ConsentPrivacyScreen({
     super.key,
-    required this.email,
-    required this.password,
+    this.email,
+    this.password,
+    this.provider,
+    this.googleIdToken,
+    this.appleIdentityToken,
+    this.appleAuthorizationCode,
+    this.appleEmail,
+    this.appleFirstName,
+    this.appleLastName,
+    this.firstName,
+    this.lastName,
   });
 
   @override
@@ -78,14 +96,39 @@ class _ConsentPrivacyScreenState extends State<ConsentPrivacyScreen> {
 
     try {
       final authRepository = AuthRepository();
-      final response = await authRepository.register(
-        email: widget.email,
-        password: widget.password,
-        termsAccepted: termsAccepted,
-        privacyAcknowledged: privacyAcknowledged,
-        termsVersion: termsVersion,
-        privacyVersion: privacyVersion,
-      );
+      dynamic response;
+      
+      if (widget.provider == 'google') {
+        response = await authRepository.googleSignIn(
+          idToken: widget.googleIdToken!,
+          termsAccepted: termsAccepted,
+          privacyAcknowledged: privacyAcknowledged,
+          termsVersion: termsVersion,
+          privacyVersion: privacyVersion,
+        );
+      } else if (widget.provider == 'apple') {
+        response = await authRepository.appleSignIn(
+          identityToken: widget.appleIdentityToken!,
+          authorizationCode: widget.appleAuthorizationCode!,
+          platform: 'ios', // or extract from where it's known, but apple is usually ios
+          email: widget.appleEmail,
+          firstName: widget.appleFirstName,
+          lastName: widget.appleLastName,
+          termsAccepted: termsAccepted,
+          privacyAcknowledged: privacyAcknowledged,
+          termsVersion: termsVersion,
+          privacyVersion: privacyVersion,
+        );
+      } else {
+        response = await authRepository.register(
+          email: widget.email!,
+          password: widget.password!,
+          termsAccepted: termsAccepted,
+          privacyAcknowledged: privacyAcknowledged,
+          termsVersion: termsVersion,
+          privacyVersion: privacyVersion,
+        );
+      }
 
       if (response.success && response.user != null) {
         final sharedPrefs = await SharedPreferences.getInstance();

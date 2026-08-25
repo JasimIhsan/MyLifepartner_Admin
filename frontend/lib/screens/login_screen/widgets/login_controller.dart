@@ -9,6 +9,7 @@ import 'package:life_partner_again/providers/image_asset_provider.dart';
 import 'package:life_partner_again/services/apple_auth_service.dart';
 import 'package:life_partner_again/services/auth_repository.dart';
 import 'package:life_partner_again/services/google_auth_service.dart';
+import 'package:life_partner_again/screens/consent_privacy_screen/consent_privacy_screen.dart';
 import 'package:life_partner_again/utils/dio_error_helper.dart';
 import 'package:life_partner_again/widgets/bottomsheet/custom_bottom_sheet.dart';
 import 'package:provider/provider.dart';
@@ -97,6 +98,22 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
       debugPrint(
         "Backend Google Sign-In Response: success=${response.success}",
       );
+
+      if (response.success && response.action == 'REQUIRE_CONSENT') {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ConsentPrivacyScreen(
+              provider: 'google',
+              googleIdToken: idToken,
+              email: response.email,
+              firstName: response.firstName,
+              lastName: response.lastName,
+            ),
+          ),
+        );
+        return;
+      }
 
       if (response.success && response.user != null) {
         final sharedPrefs = await SharedPreferences.getInstance();
@@ -225,6 +242,26 @@ mixin LoginControllerState<T extends StatefulWidget> on State<T> {
       );
 
       debugPrint("Backend Apple Sign-In Response: success=${response.success}");
+
+      if (response.success && response.action == 'REQUIRE_CONSENT') {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ConsentPrivacyScreen(
+              provider: 'apple',
+              appleIdentityToken: result.identityToken,
+              appleAuthorizationCode: result.authorizationCode,
+              appleEmail: result.email,
+              appleFirstName: result.firstName,
+              appleLastName: result.lastName,
+              email: response.email,
+              firstName: response.firstName,
+              lastName: response.lastName,
+            ),
+          ),
+        );
+        return;
+      }
 
       if (response.success && response.user != null) {
         final sharedPrefs = await SharedPreferences.getInstance();

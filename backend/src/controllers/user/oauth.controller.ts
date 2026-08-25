@@ -21,24 +21,33 @@ export class OAuthController {
     */
    public googleSignIn = asyncHandler(async (req: Request, res: Response) => {
       const idToken = this.getRequiredString(req.body.idToken, "ID token is required");
+      
+      const consent = {
+         termsAccepted: req.body.termsAccepted,
+         privacyAcknowledged: req.body.privacyAcknowledged,
+         termsVersion: req.body.termsVersion,
+         privacyVersion: req.body.privacyVersion,
+      };
 
-      const result = await this.oauthService.googleSignIn(idToken);
+      const result = await this.oauthService.googleSignIn(idToken, consent);
 
-      // Lazily reconcile subscription state with RevenueCat upon login
-      await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
+      if (result.action === "LOGIN") {
+         // Lazily reconcile subscription state with RevenueCat upon login
+         await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
 
-      await auditService.log({
-         userId: result.user.id,
-         actorType: ActorType.USER,
-         module: AuditModule.AUTH,
-         action: "USER_LOGIN_OAUTH_GOOGLE",
-         status: AuditStatus.SUCCESS,
-         severity: AuditSeverity.INFO,
-         message: `User logged in via Google OAuth`,
-         source: AuditSource.API,
-      });
+         await auditService.log({
+            userId: result.user.id,
+            actorType: ActorType.USER,
+            module: AuditModule.AUTH,
+            action: "USER_LOGIN_OAUTH_GOOGLE",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `User logged in via Google OAuth`,
+            source: AuditSource.API,
+         });
+      }
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Google sign-in successful"));
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Google sign-in processed"));
    });
 
    /**
@@ -56,23 +65,32 @@ export class OAuthController {
       const platform = req.body.platform as "ios" | "android" | "web";
       const { email, firstName, lastName, nonce } = req.body;
 
-      const result = await this.oauthService.appleSignIn(identityToken, authorizationCode, platform, email, firstName, lastName, nonce);
+      const consent = {
+         termsAccepted: req.body.termsAccepted,
+         privacyAcknowledged: req.body.privacyAcknowledged,
+         termsVersion: req.body.termsVersion,
+         privacyVersion: req.body.privacyVersion,
+      };
 
-      // Lazily reconcile subscription state with RevenueCat upon login
-      await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
+      const result = await this.oauthService.appleSignIn(identityToken, authorizationCode, platform, email, firstName, lastName, nonce, consent);
 
-      await auditService.log({
-         userId: result.user.id,
-         actorType: ActorType.USER,
-         module: AuditModule.AUTH,
-         action: "USER_LOGIN_OAUTH_APPLE",
-         status: AuditStatus.SUCCESS,
-         severity: AuditSeverity.INFO,
-         message: `User logged in via Apple OAuth (${platform})`,
-         source: AuditSource.API,
-      });
+      if (result.action === "LOGIN") {
+         // Lazily reconcile subscription state with RevenueCat upon login
+         await this.userSubscriptionService.reconcileUserSubscription(result.user.id);
 
-      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Apple sign-in successful"));
+         await auditService.log({
+            userId: result.user.id,
+            actorType: ActorType.USER,
+            module: AuditModule.AUTH,
+            action: "USER_LOGIN_OAUTH_APPLE",
+            status: AuditStatus.SUCCESS,
+            severity: AuditSeverity.INFO,
+            message: `User logged in via Apple OAuth (${platform})`,
+            source: AuditSource.API,
+         });
+      }
+
+      return res.status(HTTP_STATUS.OK).json(new ApiResponse(HTTP_STATUS.OK, result, "Apple sign-in processed"));
    });
 
    /**

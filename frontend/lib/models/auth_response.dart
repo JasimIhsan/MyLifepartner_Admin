@@ -51,15 +51,23 @@ class SimpleMessageResponse {
 class AuthResultResponse {
   final bool success;
   final String message;
-  final String accessToken;
-  final String refreshToken;
+  final String? action;
+  final String? email;
+  final String? firstName;
+  final String? lastName;
+  final String? accessToken;
+  final String? refreshToken;
   final User? user;
 
   AuthResultResponse({
     required this.success,
     required this.message,
-    required this.accessToken,
-    required this.refreshToken,
+    this.action,
+    this.email,
+    this.firstName,
+    this.lastName,
+    this.accessToken,
+    this.refreshToken,
     this.user,
   });
 
@@ -67,8 +75,12 @@ class AuthResultResponse {
     return AuthResultResponse(
       success: json['success'] ?? false,
       message: json['message'] ?? '',
-      accessToken: json['data']?['accessToken'] ?? '',
-      refreshToken: json['data']?['refreshToken'] ?? '',
+      action: json['data']?['action'],
+      email: json['data']?['email'],
+      firstName: json['data']?['firstName'],
+      lastName: json['data']?['lastName'],
+      accessToken: json['data']?['accessToken'],
+      refreshToken: json['data']?['refreshToken'],
       user: json['data'] != null && json['data']['user'] != null
           ? User.fromJson(json['data']['user'])
           : null,
@@ -168,7 +180,9 @@ class User {
       selfieStatus: json['selfieStatus'],
       isVerified: json['isVerified'] as bool? ?? false,
       isFoundingMember: json['isFoundingMember'] as bool? ?? false,
-      isPremium: json['activeSubscription'] != null || (json['isPremium'] as bool? ?? false),
+      isPremium:
+          json['activeSubscription'] != null ||
+          (json['isPremium'] as bool? ?? false),
       foundingMemberSince: json['foundingMemberSince'] != null
           ? DateTime.parse(json['foundingMemberSince'])
           : null,

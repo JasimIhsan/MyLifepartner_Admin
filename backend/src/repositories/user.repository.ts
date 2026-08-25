@@ -385,18 +385,24 @@ export class UserRepository implements IUserRepository {
       if (data.isVerified !== undefined) updateData.isVerified = data.isVerified;
 
       const profileUpdateData: Prisma.ProfileUpdateWithoutUserInput = {};
+      const profileCreateData: Prisma.ProfileCreateWithoutUserInput = {};
 
       if (name !== undefined) {
          profileUpdateData.name = name;
+         profileCreateData.name = name;
       }
 
       if (selfieStatus !== undefined) {
          profileUpdateData.selfieStatus = selfieStatus;
+         profileCreateData.selfieStatus = selfieStatus;
       }
 
       if (Object.keys(profileUpdateData).length > 0) {
          updateData.profile = {
-            update: profileUpdateData,
+            upsert: {
+               create: profileCreateData,
+               update: profileUpdateData,
+            },
          };
       }
 
