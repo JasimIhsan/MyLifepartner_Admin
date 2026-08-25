@@ -6,8 +6,6 @@ import 'package:life_partner_again/main.dart';
 import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/providers/theme_provider.dart';
-import 'package:life_partner_again/services/api_service.dart';
-import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_icon.dart';
@@ -669,7 +667,6 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
       ],
     );
   }
-
 }
 
 class _ProfileImagePreviewGallery extends StatefulWidget {

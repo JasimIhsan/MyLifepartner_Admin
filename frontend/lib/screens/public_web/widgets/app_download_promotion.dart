@@ -38,49 +38,46 @@ class AppDownloadPromotion extends StatelessWidget {
                 ),
               ),
             ),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Focus(
-                      autofocus: visible,
-                      onKeyEvent: (node, event) {
-                        if (event.logicalKey == LogicalKeyboardKey.escape) {
-                          onDismiss();
-                          return KeyEventResult.handled;
-                        }
-                        return KeyEventResult.ignored;
-                      },
-                      child: TweenAnimationBuilder<double>(
-                        tween: Tween(end: visible ? 1 : 0),
-                        duration: const Duration(milliseconds: 350),
-                        curve: Curves.easeOutCubic,
-                        builder: (context, value, child) {
-                          return Transform.translate(
-                            offset: Offset(0, (1 - value) * 20),
-                            child: Transform.scale(
-                              scale: 0.95 + (0.05 * value),
-                              child: child,
-                            ),
-                          );
-                        },
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: SizedBox(
-                            width:
-                                1000, // Fixed width for consistent side-by-side layout
-                            child: _PromotionHeroCard(
-                              audience: audience,
-                              onDismiss: onDismiss,
-                            ),
-                          ),
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Focus(
+                  autofocus: visible,
+                  onKeyEvent: (node, event) {
+                    if (event.logicalKey == LogicalKeyboardKey.escape) {
+                      onDismiss();
+                      return KeyEventResult.handled;
+                    }
+                    return KeyEventResult.ignored;
+                  },
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(end: visible ? 1 : 0),
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, child) {
+                      return Transform.translate(
+                        offset: Offset(0, (1 - value) * 20),
+                        child: Transform.scale(
+                          scale: 0.95 + (0.05 * value),
+                          child: child,
+                        ),
+                      );
+                    },
+                    // ConstrainedBox sets a maximum width for large screens.
+                    // SingleChildScrollView allows the card to scroll if the
+                    // screen is too small (e.g., in landscape on mobile).
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 1000),
+                      child: SingleChildScrollView(
+                        child: _PromotionHeroCard(
+                          audience: audience,
+                          onDismiss: onDismiss,
                         ),
                       ),
                     ),
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ],
         ),
@@ -162,22 +159,39 @@ class _PromotionHeroCard extends StatelessWidget {
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.all(56),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      flex: 11,
-                      child: _PromotionContentSide(
-                        audience: audience,
-                        onDismiss: onDismiss,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth > 768;
+
+                  if (isWide) {
+                    return Padding(
+                      padding: const EdgeInsets.all(56),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 11,
+                            child: _PromotionContentSide(
+                              audience: audience,
+                              onDismiss: onDismiss,
+                            ),
+                          ),
+                          const SizedBox(width: 48),
+                          const Expanded(flex: 9, child: _PromotionImageSide()),
+                        ],
                       ),
+                    );
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 40, 24, 24),
+                    child: _PromotionContentSide(
+                      audience: audience,
+                      onDismiss: onDismiss,
+                      isMobile: true,
                     ),
-                    const SizedBox(width: 48),
-                    const Expanded(flex: 9, child: _PromotionImageSide()),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ),
@@ -190,10 +204,13 @@ class _PromotionHeroCard extends StatelessWidget {
 class _PromotionContentSide extends StatelessWidget {
   final AppDownloadAudience audience;
   final VoidCallback onDismiss;
+  final bool isMobile;
 
   const _PromotionContentSide({
+    super.key,
     required this.audience,
     required this.onDismiss,
+    this.isMobile = false,
   });
 
   @override
@@ -212,40 +229,48 @@ class _PromotionContentSide extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: EdgeInsets.all(isMobile ? 4 : 6),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Image.asset(
                 'assets/icons/app_logo.png',
-                width: 40,
-                height: 40,
+                width: isMobile ? 24 : 40,
+                height: isMobile ? 24 : 40,
                 errorBuilder: (context, error, stackTrace) => Icon(
                   LucideIcons.heart,
                   color: theme.colorScheme.primary,
-                  size: 24,
+                  size: isMobile ? 16 : 24,
                 ),
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: isMobile ? 8 : 12),
             Text(
               'Life Partner Again',
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
+              style:
+                  (isMobile
+                          ? theme.textTheme.titleSmall
+                          : theme.textTheme.titleMedium)
+                      ?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
             ),
           ],
         ),
-        const SizedBox(height: 40),
+        SizedBox(height: isMobile ? 24 : 40),
         RichText(
           text: TextSpan(
-            style: theme.textTheme.displaySmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-              height: 1.15,
-            ),
+            style:
+                (isMobile
+                        ? theme.textTheme.headlineMedium
+                        : theme.textTheme.displaySmall)
+                    ?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      height: 1.15,
+                    ),
             children: const [
               TextSpan(text: 'A better way\nto find your\n'),
               TextSpan(
@@ -255,50 +280,64 @@ class _PromotionContentSide extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: isMobile ? 12 : 16),
         Text(
           'Trusted by thousands.\nDesigned for you.',
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: Colors.white.withValues(alpha: 0.95),
-            fontWeight: FontWeight.w500,
-            height: 1.4,
-          ),
+          style:
+              (isMobile
+                      ? theme.textTheme.titleMedium
+                      : theme.textTheme.titleLarge)
+                  ?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.95),
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
         ),
-        const SizedBox(height: 36),
-        const _BenefitItem(
+        SizedBox(height: isMobile ? 24 : 36),
+        _BenefitItem(
           icon: LucideIcons.shield_check,
           text: 'Verified profiles you can trust',
+          isMobile: isMobile,
         ),
-        const _BenefitItem(
+        _BenefitItem(
           icon: LucideIcons.message_square_text,
           text: 'Secure in-app messaging',
+          isMobile: isMobile,
         ),
-        const _BenefitItem(
+        _BenefitItem(
           icon: LucideIcons.aperture,
           text: 'Advanced matching',
+          isMobile: isMobile,
         ),
-        const _BenefitItem(
+        _BenefitItem(
           icon: LucideIcons.lock,
           text: 'Your privacy, our priority',
+          isMobile: isMobile,
         ),
-        const SizedBox(height: 48),
+        SizedBox(height: isMobile ? 32 : 48),
         DownloadAppButtons(
           mode: mode,
-          compact: false,
+          compact: isMobile,
           alignment: WrapAlignment.start,
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: isMobile ? 16 : 24),
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton(
             onPressed: onDismiss,
             style: TextButton.styleFrom(
               foregroundColor: Colors.white.withValues(alpha: 0.75),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 8 : 16,
+                vertical: 8,
+              ),
             ),
-            child: const Text(
+            child: Text(
               'Maybe Later',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: isMobile ? 14 : 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ),
@@ -310,33 +349,43 @@ class _PromotionContentSide extends StatelessWidget {
 class _BenefitItem extends StatelessWidget {
   final IconData icon;
   final String text;
+  final bool isMobile;
 
-  const _BenefitItem({required this.icon, required this.text});
+  const _BenefitItem({
+    super.key,
+    required this.icon,
+    required this.text,
+    this.isMobile = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: isMobile ? 12 : 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(isMobile ? 6 : 8),
             decoration: BoxDecoration(
               color: Colors.white.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: Colors.white, size: 20),
+            child: Icon(icon, color: Colors.white, size: isMobile ? 16 : 20),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: isMobile ? 12 : 16),
           Expanded(
             child: Text(
               text,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.white.withValues(alpha: 0.95),
-                fontWeight: FontWeight.w500,
-              ),
+              style:
+                  (isMobile
+                          ? theme.textTheme.titleSmall
+                          : theme.textTheme.titleMedium)
+                      ?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.95),
+                        fontWeight: FontWeight.w500,
+                      ),
             ),
           ),
         ],
@@ -346,7 +395,7 @@ class _BenefitItem extends StatelessWidget {
 }
 
 class _PromotionImageSide extends StatelessWidget {
-  const _PromotionImageSide();
+  const _PromotionImageSide({super.key});
 
   @override
   Widget build(BuildContext context) {
