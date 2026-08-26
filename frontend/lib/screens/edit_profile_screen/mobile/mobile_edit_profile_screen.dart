@@ -258,6 +258,14 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                                 ),
                                 _buildFormField(
                                   context,
+                                  label: 'State/Province',
+                                  child: _buildTextInput(
+                                    controller: stateController,
+                                    hint: 'Your state or province',
+                                  ),
+                                ),
+                                _buildFormField(
+                                  context,
                                   label: 'City',
                                   isLast: true,
                                   child: _buildTextInput(

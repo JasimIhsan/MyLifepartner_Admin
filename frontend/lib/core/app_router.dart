@@ -260,9 +260,6 @@ GoRouter createRouter(AuthProvider authProvider) {
             path: AppRoutes.editProfile,
             builder: (context, state) {
               final user = state.extra as User?;
-              if (user == null) {
-                return _buildErrorScreen(context, 'User data not found.');
-              }
               return EditProfileScreen(user: user);
             },
           ),

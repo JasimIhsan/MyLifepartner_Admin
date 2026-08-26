@@ -23,6 +23,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
   late TextEditingController dateController;
   late TextEditingController emailController;
   late TextEditingController cityController;
+  late TextEditingController stateController;
   late TextEditingController occupationController;
   late TextEditingController bioController;
 
@@ -52,6 +53,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
     dateController = TextEditingController(text: formatDate(dateOfBirth));
     emailController = TextEditingController(text: user.email ?? '');
     cityController = TextEditingController(text: user.city ?? '');
+    stateController = TextEditingController(text: user.state ?? '');
     occupationController = TextEditingController(text: user.occupation ?? '');
     bioController = TextEditingController(text: user.bio ?? '');
     country = user.country;
@@ -67,6 +69,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
 
     nameController.addListener(checkIfDirty);
     cityController.addListener(checkIfDirty);
+    stateController.addListener(checkIfDirty);
     occupationController.addListener(checkIfDirty);
     bioController.addListener(checkIfDirty);
 
@@ -79,6 +82,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
   void dispose() {
     nameController.removeListener(checkIfDirty);
     cityController.removeListener(checkIfDirty);
+    stateController.removeListener(checkIfDirty);
     occupationController.removeListener(checkIfDirty);
     bioController.removeListener(checkIfDirty);
     nameController.dispose();
@@ -86,6 +90,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
     dateController.dispose();
     emailController.dispose();
     cityController.dispose();
+    stateController.dispose();
     occupationController.dispose();
     bioController.dispose();
     super.dispose();
@@ -112,6 +117,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
         nameController.text = freshUser.name ?? '';
         emailController.text = freshUser.email ?? '';
         cityController.text = freshUser.city ?? '';
+        stateController.text = freshUser.state ?? '';
         occupationController.text = freshUser.occupation ?? '';
         bioController.text = freshUser.bio ?? '';
 
@@ -205,6 +211,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
   bool hasUnsavedChanges() {
     final originalName = user.name ?? '';
     final originalCity = user.city ?? '';
+    final originalState = user.state ?? '';
     final originalOccupation = user.occupation ?? '';
     final originalBio = user.bio ?? '';
     final originalCountry = user.country;
@@ -212,6 +219,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
 
     final isNameChanged = nameController.text.trim() != originalName;
     final isCityChanged = cityController.text.trim() != originalCity;
+    final isStateChanged = stateController.text.trim() != originalState;
     final isOccupationChanged =
         occupationController.text.trim() != originalOccupation;
     final isBioChanged = bioController.text.trim() != originalBio;
@@ -239,6 +247,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
 
     return isNameChanged ||
         isCityChanged ||
+        isStateChanged ||
         isOccupationChanged ||
         isBioChanged ||
         isCountryChanged ||
@@ -388,6 +397,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
         'name': nameController.text.trim(),
         'country': country,
         'city': cityController.text.trim(),
+        'state': stateController.text.trim(),
         'dateOfBirth': dateOfBirth?.toIso8601String(),
         'occupation': occupationController.text.trim(),
         'bio': bioController.text.trim(),
