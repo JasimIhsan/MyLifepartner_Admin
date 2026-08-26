@@ -11,6 +11,8 @@ import { ReportService } from "@/services/report.service";
 import { ApiError } from "@/utils/ApiError";
 import { CACHE_KEYS } from "@/utils/constants";
 import { Prisma, SubscriptionStatus } from "@prisma/client";
+import { ZegoService } from "@/services/zego.service";
+import { AccountDeletionService } from "@/services/account-deletion.service";
 import crypto from "crypto";
 
 type PaginatedUsersDto = {
@@ -821,100 +823,8 @@ export class UserService implements IUserService {
 
 
 
-   /**
-    * Approves a deletion request, archives data, and scrubs PII.
-    */
    async approveDeletionRequest(userId: number, adminId: number): Promise<void> {
-      const user = await prisma.user.findUnique({
-         where: { id: userId },
-         include: { profile: { include: { images: true } }, privacySettings: true },
-      });
-
-      if (!user || user.deleteRequestStatus !== "PENDING") {
-         throw new ApiError(400, "Invalid or already processed deletion request");
-      }
-
-      const hasUnresolvedReports = await this.reportService.hasUnresolvedReportsAgainstUser(userId);
-
-      if (hasUnresolvedReports) {
-         throw new ApiError(400, "Cannot approve deletion. This user has unresolved reports that must be verified first.");
-      }
-
-      // We are retaining original data instead of hashing it for Admin viewing.
-
-      // Anonymize user
-      const anonymizedEmail = `deleted_${userId}_${crypto.randomUUID()}@premiumglobalcorp.com`;
-
-      await prisma.$transaction(async (tx) => {
-
-
-         // 2. Anonymize user
-         await tx.user.update({
-            where: { id: userId },
-            data: {
-               email: anonymizedEmail,
-
-               password: null,
-               isDeleted: true,
-               deleteRequestStatus: "APPROVED",
-            },
-         });
-
-         // 3. Anonymize profile
-         if (user.profile) {
-            await tx.profile.update({
-               where: { userId },
-               data: {
-                  name: "Deleted User",
-                  dateOfBirth: null,
-                  city: null,
-                  state: null,
-                  country: null,
-                  highestEducation: null,
-                  bio: null,
-                  selfieUrl: null,
-                  leftSelfieUrl: null,
-                  rightSelfieUrl: null,
-                  lastLocationLat: null,
-                  lastLocationLng: null,
-               },
-            });
-
-            // Delete User Images
-            if (user.profile.images.length > 0) {
-               await tx.userImage.deleteMany({
-                  where: { profileId: user.profile.id },
-               });
-            }
-         }
-
-         // 4. Clear privacy image
-         if (user.privacySettings?.blurredImageUrl) {
-            await tx.privacySettings.update({
-               where: { userId },
-               data: { blurredImageUrl: null },
-            });
-         }
-
-         // 5. Delete device tokens and social accounts
-         await tx.deviceToken.deleteMany({ where: { userId } });
-         await tx.socialAccount.deleteMany({ where: { userId } });
-      });
-
-      // Cleanup files from S3 asynchronously
-      const filesToDelete = [];
-      if (user.profile?.selfieUrl) filesToDelete.push(user.profile.selfieUrl);
-      if (user.profile?.leftSelfieUrl) filesToDelete.push(user.profile.leftSelfieUrl);
-      if (user.profile?.rightSelfieUrl) filesToDelete.push(user.profile.rightSelfieUrl);
-      if (user.privacySettings?.blurredImageUrl) filesToDelete.push(user.privacySettings.blurredImageUrl);
-      user.profile?.images.forEach((img) => filesToDelete.push(img.imageUrl));
-
-      if (filesToDelete.length > 0) {
-         filesToDelete.forEach((file) => {
-            this.s3Service.deleteFromS3(file).catch((err: unknown) => {
-               console.error(`Failed to delete file ${file} from S3 during account deletion`, err);
-            });
-         });
-      }
+      const deletionService = new AccountDeletionService(this.emailService, this.s3Service, this.reportService);
+      await deletionService.processAccountDeletion(userId);
    }
 }

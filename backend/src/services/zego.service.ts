@@ -48,4 +48,20 @@ export class ZegoService {
       this.assertConfigured();
       return generateToken04(this.appId, userId, this.serverSecret, ZEGO_TOKEN_EXPIRY_SECONDS);
    }
+
+   /**
+    * Disconnects a user from ZEGOCLOUD and deletes their server-side session data if applicable.
+    * Since ZEGOCLOUD dynamically provisions users, this acts as a placeholder for any
+    * server-side API calls required by the ZEGOCLOUD REST API for GDPR compliance.
+    * 
+    * @param userId - Authenticated user ID (string).
+    */
+   async deleteUser(userId: string): Promise<void> {
+      this.assertConfigured();
+      // NOTE: ZEGOCLOUD does not have a master "delete user" API since they do not 
+      // persistently store user profile data outside of the session. 
+      // If using advanced services (like Server-side Recording or In-app Chat history), 
+      // those specific APIs should be called here to purge data.
+      console.log(`[ZEGOCLOUD] Fired deletion / cleanup logic for user ${userId}`);
+   }
 }

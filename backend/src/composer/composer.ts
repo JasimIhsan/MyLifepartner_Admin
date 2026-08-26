@@ -15,6 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Repositories
 // ─────────────────────────────────────────────────────────────────────────────
+import { AccountDeletionService } from "@/services/account-deletion.service";
 
 import { AdminRepository } from "@/repositories/admin.repository";
 import { BlockRepository } from "@/repositories/block.repository";
@@ -153,6 +154,7 @@ export const legalDocumentService = new LegalDocumentService();
 
 export const otpService = new OtpService(cacheService, emailService);
 export const reportService = new ReportService(s3Service, emailService, reportRepository, moderationRepository);
+export const accountDeletionService = new AccountDeletionService(emailService, s3Service, reportService);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 3. Domain Service Instances
