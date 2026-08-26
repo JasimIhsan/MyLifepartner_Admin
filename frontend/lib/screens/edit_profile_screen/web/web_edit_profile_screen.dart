@@ -75,7 +75,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
         _handleWebBackPress();
       },
       child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
+        backgroundColor: theme.canvasColor,
         body: LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 1024;
@@ -529,103 +529,104 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
             ],
           ),
         ),
-        const SizedBox(height: 20),
-
-        // Section Anchor Navigator Card
-        Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: theme.dividerColor.withValues(alpha: 0.6),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.03),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
+        if (isWide) ...[
+          const SizedBox(height: 20),
+          // Section Anchor Navigator Card
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: theme.dividerColor.withValues(alpha: 0.6),
               ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
-                child: Text(
-                  'SECTIONS',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: theme.textTheme.bodySmall?.color,
-                    letterSpacing: 1.0,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.03),
+                  blurRadius: 16,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+                  child: Text(
+                    'SECTIONS',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: theme.textTheme.bodySmall?.color,
+                      letterSpacing: 1.0,
+                    ),
                   ),
                 ),
-              ),
-              ...List.generate(navItems.length, (idx) {
-                final item = navItems[idx];
-                final isSelected = _selectedNavIndex == idx;
+                ...List.generate(navItems.length, (idx) {
+                  final item = navItems[idx];
+                  final isSelected = _selectedNavIndex == idx;
 
-                return InkWell(
-                  onTap: () => _scrollToSection(navKeys[idx], idx),
-                  borderRadius: BorderRadius.circular(10),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 10,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? theme.primaryColor.withValues(alpha: 0.1)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          item['icon'] as IconData,
-                          size: 18,
-                          color: isSelected
-                              ? theme.primaryColor
-                              : theme.textTheme.bodySmall?.color,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            item['title'] as String,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? theme.primaryColor
-                                  : theme.textTheme.bodyLarge?.color,
+                  return InkWell(
+                    onTap: () => _scrollToSection(navKeys[idx], idx),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? theme.primaryColor.withValues(alpha: 0.1)
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            item['icon'] as IconData,
+                            size: 18,
+                            color: isSelected
+                                ? theme.primaryColor
+                                : theme.textTheme.bodySmall?.color,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              item['title'] as String,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? theme.primaryColor
+                                    : theme.textTheme.bodyLarge?.color,
+                              ),
                             ),
                           ),
-                        ),
-                        if (isSelected)
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: theme.primaryColor,
-                              shape: BoxShape.circle,
+                          if (isSelected)
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: theme.primaryColor,
+                                shape: BoxShape.circle,
+                              ),
                             ),
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }),
-            ],
+                  );
+                }),
+              ],
+            ),
           ),
-        ),
+        ],
         // ),
         if (isWide) ...[
           const SizedBox(height: 24),
@@ -1292,7 +1293,7 @@ class _WebEditProfileScreenState extends State<WebEditProfileScreen>
                     decoration: BoxDecoration(
                       color: Theme.of(
                         context,
-                      ).scaffoldBackgroundColor.withValues(alpha: 0.5),
+                      ).canvasColor.withValues(alpha: 0.5),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: Theme.of(

@@ -398,7 +398,7 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
         'country': country,
         'city': cityController.text.trim(),
         'state': stateController.text.trim(),
-        'dateOfBirth': dateOfBirth?.toIso8601String(),
+        'dateOfBirth': dateOfBirth?.toUtc().toIso8601String(),
         'occupation': occupationController.text.trim(),
         'bio': bioController.text.trim(),
         'gender': gender,
@@ -467,20 +467,25 @@ mixin EditProfileControllerState<T extends StatefulWidget> on State<T> {
           backgroundColor: Colors.transparent,
           elevation: 0,
           insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-          child: PrimayDatePicker(
-            initialDate: tempDate,
-            minDate: DateTime(1920, 1, 1),
-            maxDate: eighteenYearsAgo,
-            onDateChanged: (d) {
-              if (d != dateOfBirth) {
-                setState(() {
-                  dateOfBirth = d;
-                  dateController.text = formatDate(d);
-                  ageController.text = calculateAge(d);
-                });
-                checkIfDirty();
-              }
-            },
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: PrimayDatePicker(
+                initialDate: tempDate,
+                minDate: DateTime(1920, 1, 1),
+                maxDate: eighteenYearsAgo,
+                onDateChanged: (d) {
+                  if (d != dateOfBirth) {
+                    setState(() {
+                      dateOfBirth = d;
+                      dateController.text = formatDate(d);
+                      ageController.text = calculateAge(d);
+                    });
+                    checkIfDirty();
+                  }
+                },
+              ),
+            ),
           ),
         );
       },
