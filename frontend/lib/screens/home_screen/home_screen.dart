@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -31,6 +32,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late int _selectedIndex;
+  bool _isBottomNavVisible = true;
   bool _showNotifications = false;
 
   bool get _isPrefixedWebAppRoute {
@@ -185,7 +187,13 @@ class _HomePageState extends State<HomePage> {
         extendBody: !isDesktop,
         appBar: isDesktop ? null : _buildAppBar(),
         body: _buildBody(),
-        bottomNavigationBar: isDesktop ? null : _buildBottomNavigationBar(),
+        bottomNavigationBar: isDesktop
+            ? null
+            : AnimatedSlide(
+                duration: const Duration(milliseconds: 300),
+                offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 2),
+                child: _buildBottomNavigationBar(),
+              ),
       ),
     );
   }
@@ -277,26 +285,48 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
+    Widget content;
     if (_showNotifications) {
-      return NotificationScreen(
+      content = NotificationScreen(
         onBack: () {
           setState(() {
             _showNotifications = false;
           });
         },
       );
+    } else {
+      switch (_selectedIndex) {
+        case 0:
+          content = const DiscoverScreen();
+          break;
+        case 1:
+          content = const LikedMatchesScreen();
+          break;
+        case 2:
+          content = const ChatPlaceholderScreen();
+          break;
+        case 3:
+          content = const ProfileScreen();
+          break;
+        default:
+          content = const DiscoverScreen();
+      }
     }
-    switch (_selectedIndex) {
-      case 0:
-        return const DiscoverScreen();
-      case 1:
-        return const LikedMatchesScreen();
-      case 2:
-        return const ChatPlaceholderScreen();
-      case 3:
-        return const ProfileScreen();
-      default:
-        return const DiscoverScreen();
-    }
+
+    return NotificationListener<UserScrollNotification>(
+      onNotification: (notification) {
+        if (notification.direction == ScrollDirection.reverse) {
+          if (_isBottomNavVisible) {
+            setState(() => _isBottomNavVisible = false);
+          }
+        } else if (notification.direction == ScrollDirection.forward) {
+          if (!_isBottomNavVisible) {
+            setState(() => _isBottomNavVisible = true);
+          }
+        }
+        return false;
+      },
+      child: content,
+    );
   }
 }

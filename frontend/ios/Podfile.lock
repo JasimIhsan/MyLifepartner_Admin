@@ -168,6 +168,8 @@ PODS:
   - nanopb/encode (3.30910.0)
   - native_device_orientation (0.0.1):
     - Flutter
+  - no_screenshot (1.2.0):
+    - Flutter
   - package_info_plus (0.4.5):
     - Flutter
   - permission_handler_apple (9.4.8):
@@ -267,6 +269,7 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - just_audio (from `.symlinks/plugins/just_audio/darwin`)
   - native_device_orientation (from `.symlinks/plugins/native_device_orientation/ios`)
+  - no_screenshot (from `.symlinks/plugins/no_screenshot/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - proximity_sensor (from `.symlinks/plugins/proximity_sensor/ios`)
@@ -367,6 +370,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/just_audio/darwin"
   native_device_orientation:
     :path: ".symlinks/plugins/native_device_orientation/ios"
+  no_screenshot:
+    :path: ".symlinks/plugins/no_screenshot/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   permission_handler_apple:
@@ -451,6 +456,7 @@ SPEC CHECKSUMS:
   Masonry: 678fab65091a9290e40e2832a55e7ab731aad201
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   native_device_orientation: f3ba5f2ddbab3deee23a5f6693b4f97b02dafea2
+  no_screenshot: bd925a9ff0aaa3841cc46b0e9b7ef5cc5ae0a0bd
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   permission_handler_apple: 92d754bbaa7361d436db2d6c3c1c2a0fdcec462e
   PromisesObjC: 752c3227f599e3467650e47ea36f433eeb10c273

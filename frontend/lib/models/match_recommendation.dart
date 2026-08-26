@@ -69,6 +69,18 @@ class MatchRecommendation {
   final bool viewerPrivacyEnabled;
   final bool targetPrivacyEnabled;
   final String? imageAccessRequestStatus;
+  // Extended profile-detail fields
+  final String? gender;
+  final String? motherTongue;
+  final String? highestEducation;
+  final String? bio;
+  final String? childrenStatus;
+  final String? drinkingHabit;
+  final String? emotionalReadiness;
+  final List<String> languages;
+  final String? lookingFor;
+  final String? relationshipTimeline;
+  final String? smokingHabit;
 
   MatchRecommendation({
     required this.id,
@@ -93,6 +105,17 @@ class MatchRecommendation {
     this.viewerPrivacyEnabled = false,
     this.targetPrivacyEnabled = false,
     this.imageAccessRequestStatus,
+    this.gender,
+    this.motherTongue,
+    this.highestEducation,
+    this.bio,
+    this.childrenStatus,
+    this.drinkingHabit,
+    this.emotionalReadiness,
+    this.languages = const [],
+    this.lookingFor,
+    this.relationshipTimeline,
+    this.smokingHabit,
   });
 
   factory MatchRecommendation.fromJson(Map<String, dynamic> json) {
@@ -128,6 +151,20 @@ class MatchRecommendation {
       viewerPrivacyEnabled: json['viewerPrivacyEnabled'] as bool? ?? false,
       targetPrivacyEnabled: json['targetPrivacyEnabled'] as bool? ?? false,
       imageAccessRequestStatus: json['imageAccessRequestStatus'] as String?,
+      // Extended profile-detail fields
+      gender: json['gender'] as String?,
+      motherTongue: json['motherTongue'] as String?,
+      highestEducation: json['highestEducation'] as String?,
+      bio: json['bio'] as String?,
+      childrenStatus: json['childrenStatus'] as String?,
+      drinkingHabit: json['drinkingHabit'] as String?,
+      emotionalReadiness: json['emotionalReadiness'] as String?,
+      languages: (json['languages'] as List<dynamic>? ?? [])
+          .map((e) => e.toString())
+          .toList(),
+      lookingFor: json['lookingFor'] as String?,
+      relationshipTimeline: json['relationshipTimeline'] as String?,
+      smokingHabit: json['smokingHabit'] as String?,
     );
   }
 
@@ -136,5 +173,54 @@ class MatchRecommendation {
     if (primaryImages.isNotEmpty) return primaryImages.first;
     if (images.isNotEmpty) return images.first;
     return null;
+  }
+
+  /// Converts this recommendation to a [Map] compatible with
+  /// the profile detail UI widgets (which consume a raw map from the API).
+  Map<String, dynamic> toDetailMap() {
+    return {
+      'id': id,
+      'userId': userId,
+      'name': name,
+      'age': age,
+      'isVerified': isVerified,
+      'isFoundingMember': isFoundingMember,
+      'isPremium': isPremium,
+      'heightCm': heightCm,
+      'city': city,
+      'state': state,
+      'country': country,
+      'occupation': occupation,
+      'maritalStatus': maritalStatus,
+      'matchPercentage': matchPercentage,
+      'compatibilityHighlights': compatibilityHighlights,
+      'images': images
+          .map((img) => {
+                'id': img.imageId,
+                'imageId': img.imageId,
+                'imageUrl': img.presignedImageUrl,
+                'presignedImageUrl': img.presignedImageUrl,
+                'isPrimary': img.isPrimary,
+                'isBlurred': img.isBlurred,
+              })
+          .toList(),
+      'interactionState': interactionState.value,
+      'createdAt': createdAt,
+      'lastLoginAt': lastLoginAt,
+      'viewerPrivacyEnabled': viewerPrivacyEnabled,
+      'targetPrivacyEnabled': targetPrivacyEnabled,
+      'imageAccessRequestStatus': imageAccessRequestStatus,
+      'gender': gender,
+      'motherTongue': motherTongue,
+      'highestEducation': highestEducation,
+      'bio': bio,
+      'childrenStatus': childrenStatus,
+      'drinkingHabit': drinkingHabit,
+      'emotionalReadiness': emotionalReadiness,
+      'languages': languages,
+      'lookingFor': lookingFor,
+      'relationshipTimeline': relationshipTimeline,
+      'smokingHabit': smokingHabit,
+    };
   }
 }

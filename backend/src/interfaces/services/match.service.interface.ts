@@ -33,6 +33,18 @@ export interface MatchRecommendationItem {
    country: string | null;
    occupation: string | null;
    maritalStatus: string | null;
+   // Extended profile-detail fields
+   gender: string | null;
+   motherTongue: string | null;
+   highestEducation: string | null;
+   bio: string | null;
+   childrenStatus: string | null;
+   drinkingHabit: string | null;
+   emotionalReadiness: string | null;
+   languages: string[];
+   lookingFor: string | null;
+   relationshipTimeline: string | null;
+   smokingHabit: string | null;
    matchPercentage: number;
    compatibilityHighlights: string[];
    images: ProfileImageResponse[];

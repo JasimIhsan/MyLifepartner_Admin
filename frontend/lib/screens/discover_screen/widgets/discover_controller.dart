@@ -21,10 +21,20 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fetchRecommendations();
+      // Keep localProfiles in sync when ProfileActionBar performs swipes
+      // that remove profiles directly via MatchProvider.
+      context.read<MatchProvider>().addListener(_onProviderChanged);
     });
   }
 
+  void _onProviderChanged() {
+    // Sync whenever the provider's profile list changes (e.g. after a swipe
+    // done by ProfileActionBar inside the inline detail view).
+    syncWithProvider();
+  }
+
   @override
+
   void didChangeDependencies() {
     super.didChangeDependencies();
     routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
@@ -34,6 +44,8 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
   void dispose() {
     routeObserver.unsubscribe(this);
     pageController.dispose();
+    // Remove the MatchProvider listener we added in initState
+    context.read<MatchProvider>().removeListener(_onProviderChanged);
     super.dispose();
   }
 
