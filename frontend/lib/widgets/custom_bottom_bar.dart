@@ -40,13 +40,19 @@ class CustomBottomBar extends StatelessWidget {
         Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ??
         Theme.of(context).unselectedWidgetColor;
 
+    final double topOverflow = showCenterButton ? (fabSize / 2) : 0.0;
+
     return SizedBox(
-      height: barContentHeight + bottomPadding,
+      height: barContentHeight + bottomPadding + topOverflow,
       child: Stack(
-        clipBehavior: Clip.none, // Allows the FAB to overflow above
+        clipBehavior: Clip.none,
         children: [
           // ── Bar background with notch ─────────────────────────────────
-          Positioned.fill(
+          Positioned(
+            top: topOverflow,
+            left: 0,
+            right: 0,
+            bottom: 0,
             child: showCenterButton
                 ? CustomPaint(
                     painter: _BottomBarNotchPainter(
@@ -75,7 +81,7 @@ class CustomBottomBar extends StatelessWidget {
           Positioned(
             left: 0,
             right: 0,
-            top: 0,
+            top: topOverflow,
             bottom: bottomPadding,
             child: Row(
               children: _buildItems(
@@ -86,14 +92,15 @@ class CustomBottomBar extends StatelessWidget {
             ),
           ),
 
-          // ── Floating center "+" button (overflows above the bar) ──────
+          // ── Floating center button (overflows above the bar) ──────────
           if (showCenterButton)
             Positioned(
-              top: -(fabSize / 2) + 4, // Half the FAB sticks above the bar
+              top: 4, // Shifted down by topOverflow (fabSize / 2) so it stays within bounds
               left: 0,
               right: 0,
               child: Center(
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: onCenterTap,
                   child: Container(
                     width: fabSize,
