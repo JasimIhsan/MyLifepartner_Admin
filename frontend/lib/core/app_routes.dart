@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
+import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
+import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/edit_partner_preference_screen/edit_partner_preference_screen.dart';
+import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
 import 'package:life_partner_again/screens/landing_screen/landing_screen.dart';
 import 'package:life_partner_again/screens/login_screen/login_screen.dart';
 import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
+import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/onboarding/onboarding_flow_screen.dart';
 import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/screens/password_screen/password_screen.dart';
 import 'package:life_partner_again/screens/profile_completion/profile_completion_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
-import 'package:life_partner_again/screens/edit_partner_preference_screen/edit_partner_preference_screen.dart';
-import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
-import 'package:life_partner_again/screens/manage_profile_images_screens/manage_profile_pictures_screen.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
-import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
-import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
-import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/billing_history_screen.dart';
+import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
 import 'package:life_partner_again/screens/support_screen/support_screen.dart';
 
 class AppRoutes {
   static const String splash = '/splash';
+  static const String public = '/';
   static const String landing = '/landing';
   static const String login = '/login';
   static const String otp = '/otp';

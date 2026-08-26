@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
@@ -126,158 +125,223 @@ class _WebMainLayoutState extends State<WebMainLayout> {
 
   Widget _buildWebNavBar() {
     final int selectedIndex = _getSelectedIndex();
+    final theme = Theme.of(context);
 
     return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      height: 66,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: theme.colorScheme.surface.withValues(alpha: 0.96),
+        border: Border(
+          bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.9)),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).shadowColor.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.055),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
           ),
         ],
-        border: Border(
-          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 1),
-        ),
       ),
-      child: Row(
-        children: [
-          // Brand Logo and Title
-          Row(
-            children: [
-              Image.asset(
-                Theme.of(context).brightness == Brightness.dark
-                    ? 'assets/icons/app_logo_dark.png'
-                    : 'assets/icons/app_logo.png',
-                height: 36,
-                width: 36,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  Icons.favorite,
-                  color: Theme.of(context).primaryColor,
-                  size: 24,
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1480),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                // Brand Logo
+                InkWell(
+                  onTap: () => context.go(AppRoutes.public),
+                  borderRadius: BorderRadius.circular(8),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 4,
+                      ),
+                      child: Image.asset(
+                        theme.brightness == Brightness.dark
+                            ? 'assets/icons/app_logo_dark.png'
+                            : 'assets/icons/app_logo.png',
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Icon(
+                          Icons.favorite,
+                          color: theme.primaryColor,
+                          size: 30,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                "Life Partner Again",
-                style: GoogleFonts.outfit(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                  letterSpacing: -0.5,
+                // Center Nav
+                Expanded(
+                  child: Center(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        _WebNavLink(
+                          index: 0,
+                          selectedIndex: selectedIndex,
+                          showNotifications: _showNotifications,
+                          icon: Icons.explore_outlined,
+                          label: 'Discover',
+                          onTabTapped: _onTabTapped,
+                        ),
+                        _WebNavLink(
+                          index: 1,
+                          selectedIndex: selectedIndex,
+                          showNotifications: _showNotifications,
+                          icon: Icons.favorite_border,
+                          label: 'Matches',
+                          onTabTapped: _onTabTapped,
+                        ),
+                        _WebNavLink(
+                          index: 2,
+                          selectedIndex: selectedIndex,
+                          showNotifications: _showNotifications,
+                          icon: Icons.chat_bubble_outline,
+                          label: 'Chat',
+                          onTabTapped: _onTabTapped,
+                        ),
+                        _WebNavLink(
+                          index: 3,
+                          selectedIndex: selectedIndex,
+                          showNotifications: _showNotifications,
+                          icon: Icons.person_outline,
+                          label: 'Profile',
+                          onTabTapped: _onTabTapped,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const Spacer(),
-          // Navigation Tabs
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildWebNavItem(
-                0,
-                selectedIndex,
-                Icons.explore_outlined,
-                'Discover',
-              ),
-              _buildWebNavItem(
-                1,
-                selectedIndex,
-                Icons.favorite_border,
-                'Matches',
-              ),
-              _buildWebNavItem(
-                2,
-                selectedIndex,
-                Icons.chat_bubble_outline,
-                'Chat',
-              ),
-              _buildWebNavItem(
-                3,
-                selectedIndex,
-                Icons.person_outline,
-                'Profile',
-              ),
-            ],
-          ),
-          const Spacer(),
-          // Right Side Actions
-          Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  _showNotifications
-                      ? Icons.notifications
-                      : Icons.notifications_active_outlined,
-                  color: _showNotifications
-                      ? Theme.of(context).primaryColor
-                      : Theme.of(context).textTheme.bodyMedium?.color ??
-                            AppColors.textSecondary,
+                // Right Side Actions
+                Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        _showNotifications
+                            ? Icons.notifications
+                            : Icons.notifications_active_outlined,
+                        color: _showNotifications
+                            ? theme.primaryColor
+                            : theme.textTheme.bodyMedium?.color ??
+                                  AppColors.textSecondary,
+                      ),
+                      tooltip: 'Notifications',
+                      onPressed: () {
+                        setState(() {
+                          _showNotifications = !_showNotifications;
+                        });
+                      },
+                    ),
+                  ],
                 ),
-                tooltip: 'Notifications',
-                onPressed: () {
-                  setState(() {
-                    _showNotifications = !_showNotifications;
-                  });
-                },
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildWebNavItem(
-    int index,
-    int selectedIndex,
-    IconData icon,
-    String label,
-  ) {
-    // Only highlight if no notifications are showing and we match the index
-    final bool isSelected = selectedIndex == index && !_showNotifications;
-    return InkWell(
-      onTap: () => _onTabTapped(index),
-      hoverColor: Theme.of(context).primaryColor.withValues(alpha: 0.05),
-      child: Container(
-        height: 72,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isSelected
-                  ? Theme.of(context).primaryColor
-                  : Colors.transparent,
-              width: 3,
+class _WebNavLink extends StatefulWidget {
+  final int index;
+  final int selectedIndex;
+  final bool showNotifications;
+  final IconData icon;
+  final String label;
+  final ValueChanged<int> onTabTapped;
+
+  const _WebNavLink({
+    required this.index,
+    required this.selectedIndex,
+    required this.showNotifications,
+    required this.icon,
+    required this.label,
+    required this.onTabTapped,
+  });
+
+  @override
+  State<_WebNavLink> createState() => _WebNavLinkState();
+}
+
+class _WebNavLinkState extends State<_WebNavLink> {
+  bool _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isActive =
+        widget.selectedIndex == widget.index && !widget.showNotifications;
+    final foreground = isActive
+        ? theme.colorScheme.primary
+        : _isHovered
+        ? theme.colorScheme.primary.withValues(alpha: 0.85)
+        : theme.textTheme.bodyMedium?.color ?? AppColors.textSecondary;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: InkWell(
+          onTap: () => widget.onTabTapped(widget.index),
+          borderRadius: BorderRadius.circular(8),
+          hoverColor: Colors.transparent,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          child: SizedBox(
+            height: 66,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(widget.icon, color: foreground, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.label,
+                        style: TextStyle(
+                          color: foreground,
+                          fontWeight: isActive
+                              ? FontWeight.w900
+                              : FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    height: isActive ? 3.5 : 0,
+                    decoration: BoxDecoration(
+                      color: isActive
+                          ? theme.colorScheme.primary
+                          : Colors.transparent,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(4),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              color: isSelected
-                  ? Theme.of(context).primaryColor
-                  : Theme.of(context).textTheme.bodyMedium?.color ??
-                        AppColors.textSecondary,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: GoogleFonts.outfit(
-                color: isSelected
-                    ? Theme.of(context).primaryColor
-                    : Theme.of(context).textTheme.bodyMedium?.color ??
-                          AppColors.textSecondary,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 15,
-              ),
-            ),
-          ],
         ),
       ),
     );

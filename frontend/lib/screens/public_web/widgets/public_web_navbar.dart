@@ -152,18 +152,6 @@ class _AuthActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final buttonStyle = FilledButton.styleFrom(
-      minimumSize: const Size(100, 44),
-      padding: EdgeInsets.symmetric(horizontal: compact ? 20 : 24),
-      textStyle: const TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 0.3,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      elevation: 0,
-    );
-
     return Consumer<AuthProvider>(
       builder: (context, auth, _) {
         if (auth.isLoggedIn) {
