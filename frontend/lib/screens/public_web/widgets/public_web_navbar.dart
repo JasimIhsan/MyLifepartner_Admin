@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
+import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/public_web/public_web_routes.dart';
-import 'package:life_partner_again/screens/public_web/widgets/download_app_buttons.dart';
 import 'package:life_partner_again/screens/public_web/widgets/responsive_web_container.dart';
+import 'package:provider/provider.dart';
 
 class PublicWebNavbar extends StatelessWidget {
   final String currentRoute;
@@ -88,7 +90,7 @@ class PublicWebNavbar extends StatelessWidget {
                   ),
 
                   // Right Zone: Download Action Buttons
-                  const DownloadAppButtons(compact: true),
+                  const _AuthActionButtons(compact: true),
                 ],
               );
             },
@@ -125,12 +127,73 @@ class PublicWebNavbar extends StatelessWidget {
                       isActive: currentRoute == item.route,
                     ),
                   const SizedBox(height: 18),
-                  const DownloadAppButtons(
+                  const _AuthActionButtons(
                     compact: true,
                     alignment: WrapAlignment.center,
                   ),
                 ],
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AuthActionButtons extends StatelessWidget {
+  final bool compact;
+  final WrapAlignment alignment;
+
+  const _AuthActionButtons({
+    this.compact = false,
+    this.alignment = WrapAlignment.start,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final buttonStyle = FilledButton.styleFrom(
+      minimumSize: const Size(100, 44),
+      padding: EdgeInsets.symmetric(horizontal: compact ? 20 : 24),
+      textStyle: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.3,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      elevation: 0,
+    );
+
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        if (auth.isLoggedIn) {
+          return TextButton.icon(
+            onPressed: () => context.go(AppRoutes.discover),
+            icon: const Icon(LucideIcons.user, size: 18),
+            label: const Text('My Profile'),
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16),
+              minimumSize: const Size(0, 44),
+              textStyle: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.3,
+              ),
+            ),
+          );
+        }
+
+        return TextButton.icon(
+          onPressed: () => context.go(AppRoutes.login),
+          icon: const Icon(LucideIcons.log_in, size: 18),
+          label: const Text('Login'),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16),
+            minimumSize: const Size(0, 44),
+            textStyle: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.3,
             ),
           ),
         );

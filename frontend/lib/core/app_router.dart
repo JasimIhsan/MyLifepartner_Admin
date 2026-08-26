@@ -8,8 +8,6 @@ import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
-import 'package:life_partner_again/screens/support_screen/support_screen.dart';
-import 'package:life_partner_again/screens/support_screen/accepted_legal_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
 import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
@@ -25,19 +23,19 @@ import 'package:life_partner_again/screens/onboarding/onboarding_flow_screen.dar
 import 'package:life_partner_again/screens/otp_screen/otp_screen.dart';
 import 'package:life_partner_again/screens/partner_preference/partner_preference_screen.dart';
 import 'package:life_partner_again/screens/password_screen/password_screen.dart';
-import 'package:life_partner_again/screens/public_web/public_web_router.dart';
-import 'package:life_partner_again/screens/public_web/public_web_routes.dart';
 import 'package:life_partner_again/screens/profile_completion/profile_completion_screen.dart';
 import 'package:life_partner_again/screens/profile_detail_screen/profile_detail_screen.dart';
 import 'package:life_partner_again/screens/profile_image_upload/profile_image_upload_screen.dart';
+import 'package:life_partner_again/screens/public_web/pages/not_found/web_not_found_page.dart';
+import 'package:life_partner_again/screens/public_web/public_web_router.dart';
+import 'package:life_partner_again/screens/public_web/public_web_routes.dart';
 import 'package:life_partner_again/screens/selfie_verification/selfie_verification_screen.dart';
 import 'package:life_partner_again/screens/splash_screen/splash_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/billing_history_screen.dart';
 import 'package:life_partner_again/screens/subscription_screen/subscription_screen.dart';
+import 'package:life_partner_again/screens/support_screen/accepted_legal_screen.dart';
+import 'package:life_partner_again/screens/support_screen/support_screen.dart';
 import 'package:life_partner_again/widgets/web_main_layout.dart';
-import 'package:life_partner_again/screens/public_web/pages/not_found/web_not_found_page.dart';
-
-
 
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
@@ -52,13 +50,11 @@ GoRouter createRouter(AuthProvider authProvider) {
       return _buildErrorScreen(context, 'Page not found.');
     },
     redirect: (context, state) {
-      if (kIsWeb) {
-        return null;
-      }
-
       final auth = authProvider;
       final appLocation = state.matchedLocation;
-      final isPublicWebsiteRoute = PublicWebRoutes.isPublicWebsiteRoute(appLocation);
+      final isPublicWebsiteRoute = PublicWebRoutes.isPublicWebsiteRoute(
+        appLocation,
+      );
 
       // 1. Initialization Guard
       if (!auth.isInitialized) {
@@ -69,7 +65,7 @@ GoRouter createRouter(AuthProvider authProvider) {
       }
 
       if (isPublicWebsiteRoute) {
-        return AppRoutes.landing;
+        return null;
       }
 
       final isLoggedIn = auth.isLoggedIn;
@@ -87,14 +83,20 @@ GoRouter createRouter(AuthProvider authProvider) {
 
       // 2. Unauthenticated User Guard
       if (!isLoggedIn) {
+        if (kIsWeb && appLocation == AppRoutes.landing) {
+          return PublicWebRoutes.home;
+        }
         if (!isPublicRoute || appLocation == AppRoutes.splash) {
-          return AppRoutes.landing;
+          return kIsWeb ? PublicWebRoutes.home : AppRoutes.landing;
         }
         return null;
       }
 
       // 3. Authenticated User Guard — redirect away from public routes to home
       if (isPublicRoute) {
+        if (kIsWeb && appLocation == AppRoutes.splash) {
+          return PublicWebRoutes.home;
+        }
         return AppRoutes.home;
       }
 
@@ -135,7 +137,6 @@ GoRouter createRouter(AuthProvider authProvider) {
     },
     routes: [
       ...buildPublicWebRoutes(),
-      if (!kIsWeb) ...[
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
@@ -364,8 +365,7 @@ GoRouter createRouter(AuthProvider authProvider) {
         },
       ),
     ],
-  ],
-);
+  );
 }
 
 Widget _buildErrorScreen(BuildContext context, String message) {

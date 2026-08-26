@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance, type InternalAxiosRequestConfig } from "axios";
 
-const server_url = import.meta.env.VITE_SERVER_URL as string;
-// const server_url = "https://api.lifepartneragain.ciltriq.com";
+// const server_url = import.meta.env.VITE_SERVER_URL as string;
+const server_url = "https://api.lifepartneragain.ciltriq.com";
 const baseURL = `${server_url}/api`;
 
 // // ===== TOKEN STORAGE =====
