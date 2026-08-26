@@ -10,7 +10,7 @@ import 'package:life_partner_again/screens/chat_screen/call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/outgoing_call_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/widgets/media_preview_screen.dart';
-import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/discover_screen/search_screen.dart';
 import 'package:life_partner_again/screens/edit_partner_preference_screen/edit_partner_preference_screen.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
@@ -284,7 +284,7 @@ GoRouter createRouter(AuthProvider authProvider) {
           ),
           GoRoute(
             path: AppRoutes.browseProfiles,
-            builder: (context, state) => const BrowseProfilesScreen(),
+            builder: (context, state) => const SearchScreen(),
           ),
           GoRoute(
             path: AppRoutes.billingHistory,

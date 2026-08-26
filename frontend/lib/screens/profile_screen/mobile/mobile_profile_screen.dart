@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
@@ -409,71 +410,73 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
               ),
             ]),
 
-            _buildSectionHeader("Subscription"),
-            _buildActionGroup([
-              _buildActionItem(
-                icon: Icons.star_outline,
-                title: "My Subscription",
-                showDivider: false,
-                onTap: () {
-                  context.push(AppRoutes.subscription);
-                },
-              ),
-            ]),
-            _buildSectionHeader("Privacy & Security"),
-            _buildActionGroup([
-              _buildSwitchItem(
-                icon: Icons.shield_outlined,
-                title: "Private Account",
-                subtitle: "Only approved matches can see your photos",
-                value: user?.privacyEnabled ?? false,
-                isItemLoading: isUpdatingPrivacy,
-                onChanged: (value) => togglePrivacy(value),
-                showDivider: true,
-              ),
-              _buildActionItem(
-                icon: Icons.lock_open_outlined,
-                title: "Image Access Requests",
-                showDivider: true,
-                onTap: () {
-                  context.push(AppRoutes.imageAccessRequests);
-                },
-              ),
-              _buildActionItem(
-                icon: Icons.block,
-                title: "Blocked Users",
-                showDivider: false,
-                onTap: () {
-                  context.push(AppRoutes.blockedUsers);
-                },
-              ),
-            ]),
+            if (!kIsWeb) ...[
+              _buildSectionHeader("Subscription"),
+              _buildActionGroup([
+                _buildActionItem(
+                  icon: Icons.star_outline,
+                  title: "My Subscription",
+                  showDivider: false,
+                  onTap: () {
+                    context.push(AppRoutes.subscription);
+                  },
+                ),
+              ]),
+              _buildSectionHeader("Privacy & Security"),
+              _buildActionGroup([
+                _buildSwitchItem(
+                  icon: Icons.shield_outlined,
+                  title: "Private Account",
+                  subtitle: "Only approved matches can see your photos",
+                  value: user?.privacyEnabled ?? false,
+                  isItemLoading: isUpdatingPrivacy,
+                  onChanged: (value) => togglePrivacy(value),
+                  showDivider: true,
+                ),
+                _buildActionItem(
+                  icon: Icons.lock_open_outlined,
+                  title: "Image Access Requests",
+                  showDivider: true,
+                  onTap: () {
+                    context.push(AppRoutes.imageAccessRequests);
+                  },
+                ),
+                _buildActionItem(
+                  icon: Icons.block,
+                  title: "Blocked Users",
+                  showDivider: false,
+                  onTap: () {
+                    context.push(AppRoutes.blockedUsers);
+                  },
+                ),
+              ]),
 
-            _buildSectionHeader("Appearance"),
-            _buildActionGroup([
-              _buildSwitchItem(
-                icon: Icons.dark_mode_outlined,
-                title: "Dark Mode",
-                subtitle: "Toggle dark theme for the app",
-                value: context.watch<ThemeProvider>().isDarkMode,
-                isItemLoading: false,
-                onChanged: (value) =>
-                    context.read<ThemeProvider>().toggleTheme(value),
-                showDivider: false,
-              ),
-            ]),
+              _buildSectionHeader("Appearance"),
+              _buildActionGroup([
+                _buildSwitchItem(
+                  icon: Icons.dark_mode_outlined,
+                  title: "Dark Mode",
+                  subtitle: "Toggle dark theme for the app",
+                  value: context.watch<ThemeProvider>().isDarkMode,
+                  isItemLoading: false,
+                  onChanged: (value) =>
+                      context.read<ThemeProvider>().toggleTheme(value),
+                  showDivider: false,
+                ),
+              ]),
 
-            _buildSectionHeader("Support"),
-            _buildActionGroup([
-              _buildActionItem(
-                icon: Icons.help_outline,
-                title: "Help & Support",
-                showDivider: false,
-                onTap: () {
-                  context.push(AppRoutes.support);
-                },
-              ),
-            ]),
+              _buildSectionHeader("Support"),
+              _buildActionGroup([
+                _buildActionItem(
+                  icon: Icons.help_outline,
+                  title: "Help & Support",
+                  showDivider: false,
+                  onTap: () {
+                    context.push(AppRoutes.support);
+                  },
+                ),
+              ]),
+            ],
 
             const SizedBox(height: 24),
             SizedBox(

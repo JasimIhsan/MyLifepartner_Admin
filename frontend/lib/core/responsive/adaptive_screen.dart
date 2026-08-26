@@ -11,10 +11,6 @@ class AdaptiveScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (!kIsWeb) {
-          return mobile;
-        }
-
         if (constraints.maxWidth < 800) {
           return mobile;
         }

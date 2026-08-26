@@ -257,6 +257,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNavigationBar() {
+    if (kIsWeb && MediaQuery.of(context).size.width < 800) {
+      // Mobile Web Navigation Items
+      return CustomBottomBar(
+        selectedIndex: _selectedIndex,
+        onTap: _onTabTapped,
+        onCenterTap: () {
+          context.push(_targetRoute(AppRoutes.lpaGuide));
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore_outlined),
+            label: 'Discover',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            label: 'Profile',
+          ),
+        ],
+      );
+    }
+
+    // Native Mobile Navigation Items
     return CustomBottomBar(
       selectedIndex: _selectedIndex,
       onTap: _onTabTapped,
@@ -295,21 +317,36 @@ class _HomePageState extends State<HomePage> {
         },
       );
     } else {
-      switch (_selectedIndex) {
-        case 0:
-          content = const DiscoverScreen();
-          break;
-        case 1:
-          content = const LikedMatchesScreen();
-          break;
-        case 2:
-          content = const ChatPlaceholderScreen();
-          break;
-        case 3:
-          content = const ProfileScreen();
-          break;
-        default:
-          content = const DiscoverScreen();
+      if (kIsWeb && MediaQuery.of(context).size.width < 800) {
+        // Mobile Web screens mapping (2 tabs)
+        switch (_selectedIndex) {
+          case 0:
+            content = const DiscoverScreen();
+            break;
+          case 1:
+            content = const ProfileScreen();
+            break;
+          default:
+            content = const DiscoverScreen();
+        }
+      } else {
+        // Native Mobile screens mapping (4 tabs)
+        switch (_selectedIndex) {
+          case 0:
+            content = const DiscoverScreen();
+            break;
+          case 1:
+            content = const LikedMatchesScreen();
+            break;
+          case 2:
+            content = const ChatPlaceholderScreen();
+            break;
+          case 3:
+            content = const ProfileScreen();
+            break;
+          default:
+            content = const DiscoverScreen();
+        }
       }
     }
 

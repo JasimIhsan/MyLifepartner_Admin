@@ -5,6 +5,13 @@ import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
 import 'package:life_partner_again/screens/notification_screen/notification_screen.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/services/user_repository.dart';
+import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 class WebMainLayout extends StatefulWidget {
   final Widget child;
@@ -18,6 +25,78 @@ class WebMainLayout extends StatefulWidget {
 class _WebMainLayoutState extends State<WebMainLayout> {
   bool _showNotifications = false;
   bool _showGuideOverlay = false;
+  UserImage? _primaryImage;
+  bool _isLoadingImage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserImage();
+  }
+
+  Future<void> _fetchUserImage() async {
+    setState(() => _isLoadingImage = true);
+    try {
+      final images = await ProfileRepository().getUserImages();
+      if (images.isNotEmpty) {
+        setState(() {
+          _primaryImage = images.firstWhere(
+            (img) => img.isPrimary == true,
+            orElse: () => images.first,
+          );
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching user image for navbar: $e');
+    } finally {
+      if (mounted) setState(() => _isLoadingImage = false);
+    }
+  }
+
+  void _handleLogout() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          'Logout',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        content: const Text(
+          'Are you sure you want to log out of your account?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () async {
+              Navigator.of(ctx).pop();
+              final sharedPrefs = await SharedPreferences.getInstance();
+              await sharedPrefs.clear();
+              if (mounted) {
+                await context.read<AuthProvider>().logout();
+              }
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
 
   bool get _isPrefixedWebAppRoute {
     final location = GoRouterState.of(context).matchedLocation;
@@ -38,9 +117,7 @@ class _WebMainLayoutState extends State<WebMainLayout> {
   void _onTabTapped(int index) {
     String targetRoute = AppRoutes.home;
     if (index == 0) targetRoute = AppRoutes.discover;
-    if (index == 1) targetRoute = AppRoutes.matches;
-    if (index == 2) targetRoute = AppRoutes.chat;
-    if (index == 3) targetRoute = AppRoutes.profile;
+    if (index == 1) targetRoute = AppRoutes.browseProfiles;
 
     setState(() {
       _showNotifications = false;
@@ -50,12 +127,7 @@ class _WebMainLayoutState extends State<WebMainLayout> {
 
   int _getSelectedIndex() {
     final location = _currentAppLocation();
-    if (location.startsWith(AppRoutes.matches)) return 1;
-    if (location.startsWith(AppRoutes.chat)) return 2;
-    if (location.startsWith(AppRoutes.profile) && !location.contains(':')) {
-      return 3;
-    }
-    // For anything else including discover, default to 0 if it's a root route
+    if (location.startsWith(AppRoutes.browseProfiles)) return 1;
     return 0;
   }
 
@@ -116,9 +188,18 @@ class _WebMainLayoutState extends State<WebMainLayout> {
             _showGuideOverlay = !_showGuideOverlay;
           });
         },
-        child: Icon(
-          _showGuideOverlay ? Icons.close_rounded : Icons.support_agent_rounded,
-        ),
+        child: _showGuideOverlay
+            ? const Icon(Icons.close_rounded)
+            : Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: Image.asset(
+                  'assets/icons/app_icon_foreground.png',
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  width: 70,
+                  height: 70,
+                  fit: BoxFit.contain,
+                ),
+              ),
       ),
     );
   }
@@ -146,7 +227,7 @@ class _WebMainLayoutState extends State<WebMainLayout> {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 1480),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 64),
             child: Row(
               children: [
                 // Brand Logo
@@ -194,24 +275,8 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                           index: 1,
                           selectedIndex: selectedIndex,
                           showNotifications: _showNotifications,
-                          icon: Icons.favorite_border,
-                          label: 'Matches',
-                          onTabTapped: _onTabTapped,
-                        ),
-                        _WebNavLink(
-                          index: 2,
-                          selectedIndex: selectedIndex,
-                          showNotifications: _showNotifications,
-                          icon: Icons.chat_bubble_outline,
-                          label: 'Chat',
-                          onTabTapped: _onTabTapped,
-                        ),
-                        _WebNavLink(
-                          index: 3,
-                          selectedIndex: selectedIndex,
-                          showNotifications: _showNotifications,
-                          icon: Icons.person_outline,
-                          label: 'Profile',
+                          icon: Icons.search_rounded,
+                          label: 'Search',
                           onTabTapped: _onTabTapped,
                         ),
                       ],
@@ -237,6 +302,185 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                           _showNotifications = !_showNotifications;
                         });
                       },
+                    ),
+                    const SizedBox(width: 8),
+                    PopupMenuButton<String>(
+                      offset: const Offset(0, 56),
+                      color: theme.colorScheme.surface,
+                      // surfaceTintColor: theme.primaryColor.withValues(alpha: 0.05),
+                      elevation: 12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide(
+                          color: theme.dividerColor.withValues(alpha: 0.4),
+                          width: 1,
+                        ),
+                      ),
+                      tooltip: 'Profile Options',
+                      onSelected: (value) async {
+                        if (value == 'edit_profile') {
+                          try {
+                            final user = await UserRepository().getUser();
+                            if (!context.mounted) return;
+                            final result = await context.push(
+                              AppRoutes.editProfile,
+                              extra: user,
+                            );
+                            if (result == true) _fetchUserImage();
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Failed to load user data.'),
+                              ),
+                            );
+                          }
+
+                        } else if (value == 'manage_images') {
+                          final result = await context.push(
+                            AppRoutes.manageProfilePictures,
+                          );
+                          if (result == true) _fetchUserImage();
+                        } else if (value == 'edit_preference') {
+                          context.push(AppRoutes.editPartnerPreference);
+                        } else if (value == 'logout') {
+                          _handleLogout();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit_profile',
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          height: 48,
+                          child: Row(
+                            children: [
+                              Icon(Icons.person_outline_rounded, size: 22),
+                              SizedBox(width: 16),
+                              Text(
+                                'Edit Profile',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'manage_images',
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          height: 48,
+                          child: Row(
+                            children: [
+                              Icon(Icons.photo_library_outlined, size: 22),
+                              SizedBox(width: 16),
+                              Text(
+                                'Manage Images',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'edit_preference',
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          height: 48,
+                          child: Row(
+                            children: [
+                              Icon(Icons.tune_rounded, size: 22),
+                              SizedBox(width: 16),
+                              Text(
+                                'Edit Preference',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        const PopupMenuItem(
+                          value: 'logout',
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 14,
+                          ),
+                          height: 48,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.logout_rounded,
+                                size: 22,
+                                color: Colors.red,
+                              ),
+                              SizedBox(width: 16),
+                              Text(
+                                'Logout',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 8),
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: theme.dividerColor,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: ClipOval(
+                          child: _isLoadingImage
+                              ? const Padding(
+                                  padding: EdgeInsets.all(10.0),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : _primaryImage != null
+                              ? CachedAppImage(
+                                  imageId: _primaryImage!.imageId,
+                                  presignedImageUrl:
+                                      _primaryImage!.presignedImageUrl,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (_, __, ___) => Icon(
+                                    Icons.person,
+                                    size: 24,
+                                    color:
+                                        theme.textTheme.bodyMedium?.color ??
+                                        AppColors.textSecondary,
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.person,
+                                  size: 24,
+                                  color:
+                                      theme.textTheme.bodyMedium?.color ??
+                                      AppColors.textSecondary,
+                                ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

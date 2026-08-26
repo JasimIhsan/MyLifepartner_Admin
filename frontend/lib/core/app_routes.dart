@@ -3,7 +3,7 @@ import 'package:life_partner_again/models/auth_response.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/screens/blocked_users_screen/blocked_users_screen.dart';
 import 'package:life_partner_again/screens/chat_screen/chat_detail_screen.dart';
-import 'package:life_partner_again/screens/discover_screen/mobile/browse_profiles_screen.dart';
+import 'package:life_partner_again/screens/discover_screen/search_screen.dart';
 import 'package:life_partner_again/screens/edit_partner_preference_screen/edit_partner_preference_screen.dart';
 import 'package:life_partner_again/screens/edit_profile_screen/edit_profile_screen.dart';
 import 'package:life_partner_again/screens/home_screen/home_screen.dart';
@@ -171,7 +171,7 @@ class AppRoutes {
         );
       case browseProfiles:
         return MaterialPageRoute(
-          builder: (_) => const BrowseProfilesScreen(),
+          builder: (_) => const SearchScreen(),
           settings: settings,
         );
       case billingHistory:
