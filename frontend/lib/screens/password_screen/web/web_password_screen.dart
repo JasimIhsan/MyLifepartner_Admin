@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
 import '../widgets/password_controller.dart';
@@ -46,15 +45,9 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                         ),
                       ),
                       Positioned.fill(
-                        child: Container(
-                          color: Colors.black.withOpacity(0.3),
-                        ),
+                        child: Container(color: Colors.black.withOpacity(0.3)),
                       ),
-                      Positioned(
-                        top: 60,
-                        left: 60,
-                        child: _buildLogoHeader(),
-                      ),
+                      Positioned(top: 60, left: 60, child: _buildLogoHeader()),
                     ],
                   ),
                 ),
@@ -63,7 +56,9 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                   child: Container(
                     color: backgroundColor,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 80, vertical: 60),
+                      horizontal: 80,
+                      vertical: 60,
+                    ),
                     child: Center(
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(maxWidth: 420),
@@ -87,7 +82,9 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
               ),
               Positioned.fill(
                 child: Container(
-                  color: backgroundColor.withOpacity(0.95), // Minimalist solid overlay
+                  color: backgroundColor.withOpacity(
+                    0.95,
+                  ), // Minimalist solid overlay
                 ),
               ),
               Positioned(
@@ -159,7 +156,9 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
           Text(
             widget.isPasswordReset
                 ? "Reset Password"
-                : (widget.isExistingUser ? "Enter Password" : "Create Password"),
+                : (widget.isExistingUser
+                      ? "Enter Password"
+                      : "Create Password"),
             style: TextStyle(
               fontSize: 40,
               fontWeight: FontWeight.w900,
@@ -177,7 +176,7 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
             ),
           ),
           const SizedBox(height: 40),
-          
+
           if (authErrorMessage != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
@@ -187,12 +186,16 @@ class _WebPasswordScreenState extends State<WebPasswordScreen>
                   color: Theme.of(context).colorScheme.errorContainer,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: Theme.of(context).colorScheme.error, width: 1),
+                    color: Theme.of(context).colorScheme.error,
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.error_outline,
-                        color: Theme.of(context).colorScheme.error),
+                    Icon(
+                      Icons.error_outline,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
 import '../widgets/consent_controller.dart';
-import '../consent_privacy_screen.dart';
 
 class WebConsentScreen extends ConsentScreenBase {
   const WebConsentScreen({super.key, required super.config});
