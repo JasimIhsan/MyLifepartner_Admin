@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/models/location_prediction.dart';
@@ -62,6 +63,7 @@ class _LocationStepState extends State<LocationStep>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      constraints: const BoxConstraints(maxWidth: 600),
       builder: (_) => Consumer<LocationProvider>(
         builder: (context, provider, _) {
           return SearchableLocationSelector(
@@ -210,8 +212,10 @@ class _LocationStepState extends State<LocationStep>
 
     if (provider.currentLocationStatus ==
         CurrentLocationStatus.serviceDisabled) {
-      buttonLabel = "Turn On Location";
-      onPressed = () => LocationService().openLocationSettings();
+      buttonLabel = kIsWeb ? "Retry Location" : "Turn On Location";
+      onPressed = kIsWeb
+          ? () => provider.detectAndFillCurrentLocation(forceReplace: true)
+          : () => LocationService().openLocationSettings();
       icon = Icons.settings;
     } else if (provider.currentLocationStatus ==
         CurrentLocationStatus.permissionDenied) {
@@ -221,8 +225,10 @@ class _LocationStepState extends State<LocationStep>
       icon = Icons.location_off;
     } else if (provider.currentLocationStatus ==
         CurrentLocationStatus.permissionDeniedForever) {
-      buttonLabel = "Open App Settings";
-      onPressed = () => LocationService().openAppSettings();
+      buttonLabel = kIsWeb ? "Retry Location" : "Open App Settings";
+      onPressed = kIsWeb
+          ? () => provider.detectAndFillCurrentLocation(forceReplace: true)
+          : () => LocationService().openAppSettings();
       icon = Icons.settings_applications;
     } else if (provider.currentLocationStatus == CurrentLocationStatus.failed) {
       buttonLabel = "Retry Location";

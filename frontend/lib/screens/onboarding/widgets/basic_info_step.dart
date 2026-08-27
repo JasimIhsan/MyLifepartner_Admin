@@ -85,14 +85,19 @@ class _BasicInfoStepState extends State<BasicInfoStep> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             insetPadding: const EdgeInsets.symmetric(horizontal: 24),
-            child: PrimayDatePicker(
-              initialDate: widget.dateOfBirth,
-              onDateChanged: (date) {
-                widget.onDateOfBirthChanged(date);
-                setState(() {
-                  _dobCtrl.text = _formatDate(date);
-                });
-              },
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: PrimayDatePicker(
+                  initialDate: widget.dateOfBirth,
+                  onDateChanged: (date) {
+                    widget.onDateOfBirthChanged(date);
+                    setState(() {
+                      _dobCtrl.text = _formatDate(date);
+                    });
+                  },
+                ),
+              ),
             ),
           ),
         );

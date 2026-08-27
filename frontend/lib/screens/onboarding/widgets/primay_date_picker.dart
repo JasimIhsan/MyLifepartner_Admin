@@ -252,22 +252,25 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
     final totalYears = _effectiveMaxDate.year - _effectiveMinDate.year + 1;
     final totalDays = _getDaysInMonth(_selectedYear, _selectedMonth);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 420),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
           // Drag Handle
           Container(
             width: 36,
@@ -519,6 +522,8 @@ class _PrimayDatePickerState extends State<PrimayDatePicker> {
           ),
         ],
       ),
-    );
+    ),
+  ),
+);
   }
 }

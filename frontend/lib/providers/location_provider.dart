@@ -92,7 +92,8 @@ class LocationProvider extends ChangeNotifier {
 
       if (permission == CurrentLocationStatus.permissionDeniedForever) {
         _currentLocationStatus = CurrentLocationStatus.permissionDeniedForever;
-        _currentLocationError = "Location permission permanently denied.";
+        _currentLocationError =
+            "Location permission is blocked. Please allow location access in your browser/device settings.";
         notifyListeners();
         return;
       } else if (permission != CurrentLocationStatus.success) {

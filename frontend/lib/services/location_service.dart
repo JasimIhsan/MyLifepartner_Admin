@@ -1,7 +1,5 @@
-// ignore_for_file: deprecated_member_use
-
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 enum CurrentLocationStatus {
   initial,
@@ -25,18 +23,24 @@ class LocationService {
   LocationService._internal();
 
   Future<CurrentLocationStatus> checkPermission() async {
-    final status = await Permission.locationWhenInUse.status;
-    if (status.isGranted) return CurrentLocationStatus.success;
-    if (status.isPermanentlyDenied) {
+    final permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      return CurrentLocationStatus.success;
+    }
+    if (permission == LocationPermission.deniedForever) {
       return CurrentLocationStatus.permissionDeniedForever;
     }
     return CurrentLocationStatus.permissionDenied;
   }
 
   Future<CurrentLocationStatus> requestPermission() async {
-    final status = await Permission.locationWhenInUse.request();
-    if (status.isGranted) return CurrentLocationStatus.success;
-    if (status.isPermanentlyDenied) {
+    final permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.always ||
+        permission == LocationPermission.whileInUse) {
+      return CurrentLocationStatus.success;
+    }
+    if (permission == LocationPermission.deniedForever) {
       return CurrentLocationStatus.permissionDeniedForever;
     }
     return CurrentLocationStatus.permissionDenied;
@@ -58,16 +62,23 @@ class LocationService {
     }
 
     return await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low,
-      timeLimit: const Duration(seconds: 15),
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.low,
+        timeLimit: Duration(seconds: 15),
+      ),
     );
   }
 
   Future<void> openAppSettings() async {
-    await Geolocator.openAppSettings();
+    if (!kIsWeb) {
+      await Geolocator.openAppSettings();
+    }
   }
 
   Future<void> openLocationSettings() async {
-    await Geolocator.openLocationSettings();
+    if (!kIsWeb) {
+      await Geolocator.openLocationSettings();
+    }
   }
 }
+
