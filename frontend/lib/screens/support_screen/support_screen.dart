@@ -120,14 +120,14 @@ class _SupportScreenState extends State<SupportScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [theme.primaryColor.withOpacity(0.8), theme.primaryColor],
+          colors: [theme.primaryColor.withValues(alpha: 0.8), theme.primaryColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: theme.primaryColor.withOpacity(0.3),
+            color: theme.primaryColor.withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -138,7 +138,7 @@ class _SupportScreenState extends State<SupportScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -163,7 +163,7 @@ class _SupportScreenState extends State<SupportScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
-              color: Colors.white.withOpacity(0.9),
+              color: Colors.white.withValues(alpha: 0.9),
               height: 1.4,
             ),
           ),
@@ -197,12 +197,12 @@ class _SupportScreenState extends State<SupportScreen> {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: theme.dividerColor.withOpacity(0.5),
+          color: theme.dividerColor.withValues(alpha: 0.5),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -240,7 +240,7 @@ class _SupportScreenState extends State<SupportScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: effectiveIconColor.withOpacity(0.1),
+                    color: effectiveIconColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(icon, color: effectiveIconColor, size: 24),
@@ -269,7 +269,7 @@ class _SupportScreenState extends State<SupportScreen> {
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   size: 16,
-                  color: subtitleColor.withOpacity(0.5),
+                  color: subtitleColor.withValues(alpha: 0.5),
                 ),
               ],
             ),
@@ -280,7 +280,7 @@ class _SupportScreenState extends State<SupportScreen> {
             height: 1,
             thickness: 1,
             indent: 76,
-            color: theme.dividerColor.withOpacity(0.5),
+            color: theme.dividerColor.withValues(alpha: 0.5),
           ),
       ],
     );
@@ -310,7 +310,7 @@ class _SupportScreenState extends State<SupportScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.18),
+                  color: Colors.black.withValues(alpha: 0.18),
                   blurRadius: 24,
                   offset: const Offset(0, -8),
                 ),
@@ -465,7 +465,7 @@ class _SupportScreenState extends State<SupportScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.18),
+                      color: Colors.black.withValues(alpha: 0.18),
                       blurRadius: 24,
                       offset: const Offset(0, -8),
                     ),
@@ -500,7 +500,7 @@ class _SupportScreenState extends State<SupportScreen> {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: (isSent ? successColor : dangerColor)
-                                .withOpacity(0.12),
+                                .withValues(alpha: 0.12),
                           ),
                           child: Icon(
                             isSent
@@ -561,10 +561,10 @@ class _SupportScreenState extends State<SupportScreen> {
                         Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            color: dangerColor.withOpacity(0.08),
+                            color: dangerColor.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: dangerColor.withOpacity(0.16),
+                              color: dangerColor.withValues(alpha: 0.16),
                             ),
                           ),
                           child: Row(
@@ -626,11 +626,11 @@ class _SupportScreenState extends State<SupportScreen> {
                                     : FontWeight.w500,
                                 fontSize: 13,
                               ),
-                              selectedColor: dangerColor.withOpacity(0.12),
+                              selectedColor: dangerColor.withValues(alpha: 0.12),
                               backgroundColor: theme.colorScheme.surface,
                               side: BorderSide(
                                 color: isSelected
-                                    ? dangerColor.withOpacity(0.55)
+                                    ? dangerColor.withValues(alpha: 0.55)
                                     : theme.dividerColor,
                               ),
                               shape: RoundedRectangleBorder(

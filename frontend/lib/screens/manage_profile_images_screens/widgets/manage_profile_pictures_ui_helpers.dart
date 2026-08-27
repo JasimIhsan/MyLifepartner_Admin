@@ -41,12 +41,16 @@ class CustomEmptySlot extends StatelessWidget {
 class PrimaryImageSlot extends StatelessWidget {
   final UserImage image;
   final VoidCallback onTap;
+  final VoidCallback onManageTap;
+  final Widget? customManageButton;
   final bool isProcessing;
 
   const PrimaryImageSlot({
     super.key,
     required this.image,
     required this.onTap,
+    required this.onManageTap,
+    this.customManageButton,
     required this.isProcessing,
   });
 
@@ -94,48 +98,52 @@ class PrimaryImageSlot extends StatelessWidget {
                 ),
               ),
             Positioned(
-              bottom: 12,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Icon(Icons.star, color: Colors.white, size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        'Primary',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
+              top: 12,
+              left: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF74B72),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.star, color: Colors.white, size: 14),
+                    SizedBox(width: 6),
+                    Text(
+                      'Primary',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
             Positioned(
               top: 12,
               right: 12,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  shape: BoxShape.circle,
+              child: customManageButton ?? GestureDetector(
+                onTap: onManageTap,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.more_horiz,
+                    color: Colors.black87,
+                    size: 16,
+                  ),
                 ),
-                child: const Icon(Icons.done, color: Colors.white, size: 16),
               ),
             ),
           ],
@@ -149,6 +157,8 @@ class SmallImageSlot extends StatelessWidget {
   final UserImage image;
   final int index;
   final VoidCallback onTap;
+  final VoidCallback onManageTap;
+  final Widget? customManageButton;
   final bool isProcessing;
 
   const SmallImageSlot({
@@ -156,6 +166,8 @@ class SmallImageSlot extends StatelessWidget {
     required this.image,
     required this.index,
     required this.onTap,
+    required this.onManageTap,
+    this.customManageButton,
     required this.isProcessing,
   });
 
@@ -203,39 +215,22 @@ class SmallImageSlot extends StatelessWidget {
                 ),
               ),
             Positioned(
-              top: 8,
-              left: 8,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    '$index',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+              top: 12,
+              right: 12,
+              child: customManageButton ?? GestureDetector(
+                onTap: onManageTap,
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                ),
-              ),
-            ),
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  shape: BoxShape.circle,
-                ),
-                child: const Center(
-                  child: Icon(Icons.more_horiz, color: Colors.white, size: 14),
+                  child: const Icon(
+                    Icons.more_horiz,
+                    color: Colors.black87,
+                    size: 16,
+                  ),
                 ),
               ),
             ),
@@ -400,4 +395,133 @@ class _TrianglePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class CustomWebCropperDialog extends StatefulWidget {
+  final Widget cropper;
+  final void Function() initCropper;
+  final Future<String?> Function() crop;
+
+  const CustomWebCropperDialog({
+    super.key,
+    required this.cropper,
+    required this.initCropper,
+    required this.crop,
+  });
+
+  @override
+  State<CustomWebCropperDialog> createState() => _CustomWebCropperDialogState();
+}
+
+class _CustomWebCropperDialogState extends State<CustomWebCropperDialog> {
+  bool _isCropping = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Delay initialization to ensure the dialog and HtmlElementView are fully mounted in the DOM
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) {
+        widget.initCropper();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Container(
+        width: 600,
+        height: 600,
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Text(
+              "Crop Photo",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color:
+                    Theme.of(context).textTheme.bodyLarge?.color ??
+                    AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: widget.cropper,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: _isCropping
+                      ? null
+                      : () => Navigator.of(context).pop(),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                  ),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton(
+                  onPressed: _isCropping
+                      ? null
+                      : () async {
+                          setState(() => _isCropping = true);
+                          try {
+                            final result = await widget.crop();
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop(result);
+                          } catch (e) {
+                            debugPrint("Crop error: $e");
+                            if (mounted) {
+                              setState(() => _isCropping = false);
+                            }
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: _isCropping
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Crop Image',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

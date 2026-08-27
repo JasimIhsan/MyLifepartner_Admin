@@ -207,7 +207,6 @@ class _PromotionContentSide extends StatelessWidget {
   final bool isMobile;
 
   const _PromotionContentSide({
-    super.key,
     required this.audience,
     required this.onDismiss,
     this.isMobile = false,
@@ -352,7 +351,6 @@ class _BenefitItem extends StatelessWidget {
   final bool isMobile;
 
   const _BenefitItem({
-    super.key,
     required this.icon,
     required this.text,
     this.isMobile = false,
@@ -395,7 +393,7 @@ class _BenefitItem extends StatelessWidget {
 }
 
 class _PromotionImageSide extends StatelessWidget {
-  const _PromotionImageSide({super.key});
+  const _PromotionImageSide();
 
   @override
   Widget build(BuildContext context) {

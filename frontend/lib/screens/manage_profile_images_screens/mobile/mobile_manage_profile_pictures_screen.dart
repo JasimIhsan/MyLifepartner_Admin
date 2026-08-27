@@ -27,6 +27,7 @@ class _MobileManageProfilePicturesScreenState
         image: images[index],
         index: index + 1,
         onTap: () => showImageOptions(images[index]),
+        onManageTap: () => showImageOptions(images[index]),
         isProcessing: processingImageId == images[index].id,
       );
     } else {
@@ -73,6 +74,7 @@ class _MobileManageProfilePicturesScreenState
                   child: PrimaryImageSlot(
                     image: images[0],
                     onTap: () => showImageOptions(images[0]),
+                    onManageTap: () => showImageOptions(images[0]),
                     isProcessing: processingImageId == images[0].id,
                   ),
                 ).animate().fade(duration: 400.ms).slideY(begin: 0.05),

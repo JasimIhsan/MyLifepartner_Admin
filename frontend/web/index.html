@@ -18,16 +18,10 @@
 
       <meta charset="UTF-8" />
       <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
-      <meta
-         name="description"
-         content="Life Partner Again is a Canadian relationship platform for mature people seeking serious companionship, safety, and long-term commitment."
-      />
+      <meta name="description" content="Life Partner Again is a Canadian relationship platform for mature people seeking serious companionship, safety, and long-term commitment." />
       <meta name="theme-color" content="#FF3F3F" />
       <meta property="og:title" content="Life Partner Again" />
-      <meta
-         property="og:description"
-         content="Love deserves another chance. Discover a calmer, trust-focused relationship platform built in Canada."
-      />
+      <meta property="og:description" content="Love deserves another chance. Discover a calmer, trust-focused relationship platform built in Canada." />
       <meta property="og:type" content="website" />
       <meta property="og:image" content="icons/Icon-512.png" />
       <meta name="twitter:card" content="summary_large_image" />
@@ -51,9 +45,20 @@
       <link rel="manifest" href="manifest.json" />
 
       <!-- Required by image_cropper for Web -->
-      <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.css" />
-      <script defer src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js"></script>
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.css" />
+      <script>
+         var __original_define_amd;
+         if (typeof define !== "undefined" && define.amd) {
+            __original_define_amd = define.amd;
+            define.amd = false;
+         }
+      </script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.js"></script>
+      <script>
+         if (typeof define !== "undefined" && typeof __original_define_amd !== "undefined") {
+            define.amd = __original_define_amd;
+         }
+      </script>
    </head>
    <body>
       <!-- ZIM SDK — messaging & signaling -->

@@ -63,7 +63,7 @@ class _FoundingMemberBadgeState extends State<FoundingMemberBadge>
     final logoSize = widget.size * 1.6;
 
     final image = Image.asset(
-      'assets/icons/founding_icon.png',
+      'assets/icons/founding_icon_2.png',
       width: logoSize,
       height: logoSize,
       fit: BoxFit.contain,
@@ -97,7 +97,8 @@ class _FoundingMemberBadgeState extends State<FoundingMemberBadge>
     if (widget.enableTooltip) {
       return CustomPopoverTooltip(
         title: 'Founding Member',
-        description: 'One of the early and distinguished members of our community.',
+        description:
+            'One of the early and distinguished members of our community.',
         child: badgeWidget,
       );
     }

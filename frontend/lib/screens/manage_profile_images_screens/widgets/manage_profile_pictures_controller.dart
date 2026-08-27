@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:life_partner_again/models/user_image.dart';
-import 'package:life_partner_again/services/profile_repository.dart';
+import 'package:life_partner_again/screens/manage_profile_images_screens/widgets/manage_profile_pictures_ui_helpers.dart';
 import 'package:life_partner_again/screens/profile_image_upload/widgets/image_options_sheet.dart';
+import 'package:life_partner_again/services/profile_repository.dart';
 
 mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
     on State<T> {
@@ -70,7 +71,17 @@ mixin ManageProfilePicturesControllerState<T extends StatefulWidget>
             lockAspectRatio: false,
           ),
           IOSUiSettings(title: 'Crop Image'),
-          WebUiSettings(context: context, presentStyle: WebPresentStyle.dialog),
+          WebUiSettings(
+            context: context,
+            presentStyle: WebPresentStyle.dialog,
+            customDialogBuilder: (cropper, initCropper, crop, rotate, scale) {
+              return CustomWebCropperDialog(
+                cropper: cropper,
+                initCropper: initCropper,
+                crop: crop,
+              );
+            },
+          ),
         ],
       );
       if (croppedFile != null) {

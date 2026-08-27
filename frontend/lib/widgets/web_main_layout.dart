@@ -321,15 +321,15 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                         if (value == 'edit_profile') {
                           try {
                             final user = await UserRepository().getUser();
-                            if (!context.mounted) return;
-                            final result = await context.push(
+                            if (!mounted) return;
+                            final result = await this.context.push(
                               AppRoutes.editProfile,
                               extra: user,
                             );
                             if (result == true) _fetchUserImage();
                           } catch (e) {
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(this.context).showSnackBar(
                               const SnackBar(
                                 content: Text('Failed to load user data.'),
                               ),
