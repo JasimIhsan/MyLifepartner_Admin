@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_web/web_only.dart' as web_only;
 import 'package:life_partner_again/services/google_auth_service.dart';
 import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
@@ -247,19 +248,34 @@ class _WebLoginScreenState extends State<WebLoginScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _buildEditorialButton(
-          icon: isGoogleLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : SvgPicture.string(_googleSvg, width: 24, height: 24),
-          label: isGoogleLoading
-              ? "Continuing..."
-              : "Continue with Google",
-          onPressed: isGoogleLoading ? null : initiateGoogleAuth,
-          isPrimary: true,
+        Stack(
+          children: [
+            _buildEditorialButton(
+              icon: isGoogleLoading
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : SvgPicture.string(_googleSvg, width: 24, height: 24),
+              label: isGoogleLoading
+                  ? "Continuing..."
+                  : "Continue with Google",
+              onPressed: isGoogleLoading ? null : initiateGoogleAuth, // Kept for mobile/non-web cases if ever compiled differently, but on web it's ignored due to overlay
+              isPrimary: true,
+            ),
+            if (!isGoogleLoading)
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.01,
+                  child: web_only.renderButton(
+                    configuration: web_only.GSIButtonConfiguration(
+                      minimumWidth: 400,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 16),
         _buildEditorialButton(
