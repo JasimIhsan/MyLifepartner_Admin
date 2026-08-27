@@ -22,18 +22,15 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _initializeApp() async {
     final authProvider = context.read<AuthProvider>();
 
-    // 1. Minimum 3-second splash duration
-    final minimum3SecondDelay = Future.delayed(const Duration(seconds: 3));
-
-    // 2. All required startup API/data fetching in parallel
-    final startupDataInitialization = Future(() async {
-      // Initialize Firebase notifications first as Auth bootstrap might depend on it.
-      await FirebaseNotificationService().initialize();
-      await authProvider.bootstrap();
-    });
-
-    // Wait for BOTH conditions to complete
-    await Future.wait([minimum3SecondDelay, startupDataInitialization]);
+    // Run all initialization tasks concurrently
+    await Future.wait([
+      // 1. Minimum 3-second splash duration
+      Future.delayed(const Duration(seconds: 3)),
+      // 2. Initialize Firebase notifications
+      FirebaseNotificationService().initialize(),
+      // 3. Auth bootstrap (API calls, data fetching)
+      authProvider.bootstrap(),
+    ]);
 
     if (!mounted) return;
 
