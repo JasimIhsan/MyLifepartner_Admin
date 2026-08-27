@@ -147,18 +147,39 @@ class _WebMainLayoutState extends State<WebMainLayout> {
             children: [
               _buildWebNavBar(),
               Expanded(
-                child: _showNotifications
-                    ? NotificationScreen(
-                        onBack: () {
-                          setState(() {
-                            _showNotifications = false;
-                          });
-                        },
-                      )
-                    : widget.child,
+                child: GestureDetector(
+                  onTap: () {
+                    if (_showNotifications) {
+                      setState(() {
+                        _showNotifications = false;
+                      });
+                    }
+                  },
+                  child: widget.child,
+                ),
               ),
             ],
           ),
+          if (_showNotifications)
+            Positioned(
+              top: 70,
+              right: 120, // Near the notification bell icon
+              child: TapRegion(
+                groupId: 'notifications',
+                onTapOutside: (_) {
+                  setState(() {
+                    _showNotifications = false;
+                  });
+                },
+                child: NotificationScreen(
+                  onBack: () {
+                    setState(() {
+                      _showNotifications = false;
+                    });
+                  },
+                ),
+              ),
+            ),
           if (_showGuideOverlay)
             Positioned(
               right: 32,
@@ -286,8 +307,10 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                 // Right Side Actions
                 Row(
                   children: [
-                    IconButton(
-                      icon: Icon(
+                    TapRegion(
+                      groupId: 'notifications',
+                      child: IconButton(
+                        icon: Icon(
                         _showNotifications
                             ? Icons.notifications
                             : Icons.notifications_active_outlined,
@@ -303,12 +326,11 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                         });
                       },
                     ),
+                    ),
                     const SizedBox(width: 8),
                     PopupMenuButton<String>(
                       offset: const Offset(0, 56),
                       color: theme.colorScheme.surface,
-                      // surfaceTintColor: theme.primaryColor.withValues(alpha: 0.05),
-                      elevation: 12,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(20),
                         side: BorderSide(
