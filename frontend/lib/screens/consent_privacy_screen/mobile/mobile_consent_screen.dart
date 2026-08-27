@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../widgets/consent_controller.dart';
 
-class MobileConsentScreen extends StatefulWidget {
-  const MobileConsentScreen({super.key});
+class MobileConsentScreen extends ConsentScreenBase {
+  const MobileConsentScreen({super.key, required super.config});
 
   @override
   State<MobileConsentScreen> createState() => _MobileConsentScreenState();

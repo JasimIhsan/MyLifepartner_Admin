@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
 import '../widgets/consent_controller.dart';
+import '../consent_privacy_screen.dart';
 
-class WebConsentScreen extends StatefulWidget {
-  const WebConsentScreen({super.key});
+class WebConsentScreen extends ConsentScreenBase {
+  const WebConsentScreen({super.key, required super.config});
 
   @override
   State<WebConsentScreen> createState() => _WebConsentScreenState();
@@ -51,9 +52,11 @@ class _WebConsentScreenState extends State<WebConsentScreen>
                       vertical: 60,
                     ),
                     child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 480),
-                        child: _buildFormContent(),
+                      child: SingleChildScrollView(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 480),
+                          child: _buildFormContent(),
+                        ),
                       ),
                     ),
                   ),

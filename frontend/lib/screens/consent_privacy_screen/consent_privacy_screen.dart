@@ -34,9 +34,9 @@ class ConsentPrivacyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const AdaptiveScreen(
-      mobile: MobileConsentScreen(),
-      web: WebConsentScreen(),
+    return AdaptiveScreen(
+      mobile: MobileConsentScreen(config: this),
+      web: WebConsentScreen(config: this),
     );
   }
 }

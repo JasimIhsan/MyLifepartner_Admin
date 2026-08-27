@@ -11,7 +11,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../consent_privacy_screen.dart';
 import 'full_text_screen.dart';
 
-mixin ConsentControllerState<T extends StatefulWidget> on State<T> {
+abstract class ConsentScreenBase extends StatefulWidget {
+  final ConsentPrivacyScreen config;
+  const ConsentScreenBase({super.key, required this.config});
+}
+
+mixin ConsentControllerState<T extends ConsentScreenBase> on State<T> {
   bool isLoading = true;
   bool isRegistering = false;
 
@@ -24,7 +29,7 @@ mixin ConsentControllerState<T extends StatefulWidget> on State<T> {
   String privacyContent = "Loading privacy policy...";
   String? authErrorMessage;
 
-  ConsentPrivacyScreen get consentWidget => widget as ConsentPrivacyScreen;
+  ConsentPrivacyScreen get consentWidget => widget.config;
 
   @override
   void initState() {
