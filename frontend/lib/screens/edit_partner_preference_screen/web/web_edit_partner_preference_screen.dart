@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/screens/edit_partner_preference_screen/widgets/edit_partner_preference_controller.dart';
-import 'package:life_partner_again/screens/edit_partner_preference_screen/widgets/edit_partner_preference_form.dart';
-import 'package:life_partner_again/widgets/custom_app_bar.dart';
+import 'package:life_partner_again/screens/edit_partner_preference_screen/widgets/web_edit_partner_preference_form.dart';
 
 class WebEditPartnerPreferenceScreen extends StatefulWidget {
   const WebEditPartnerPreferenceScreen({super.key});
@@ -18,6 +16,7 @@ class _WebEditPartnerPreferenceScreenState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primary = const Color(0xFFFF3B30); // Red
 
     return PopScope(
       canPop: !isDirty && !isSaving,
@@ -26,147 +25,150 @@ class _WebEditPartnerPreferenceScreenState
         handleBackPress();
       },
       child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: CustomAppBar(
-          title: 'Edit Partner Preferences',
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back,
-              color: theme.textTheme.bodyLarge?.color ?? AppColors.textPrimary,
-            ),
-            onPressed: handleBackPress,
-          ),
-        ),
+        backgroundColor: const Color(0xFFF5F5F5), // grey background
         body: isInitialLoading
             ? Center(
                 child: CircularProgressIndicator(color: theme.primaryColor),
               )
             : Center(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 48,
-                  ),
                   child: Container(
-                    constraints: const BoxConstraints(maxWidth: 820),
-                    padding: const EdgeInsets.all(40),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                      border: Border.all(
-                        color: theme.dividerColor.withValues(alpha: 0.5),
-                      ),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: theme.primaryColor.withValues(
-                                  alpha: 0.1,
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Icon(
-                                Icons.tune_rounded,
-                                color: theme.primaryColor,
-                                size: 26,
-                              ),
+                    clipBehavior: Clip.antiAlias,
+                    child: IntrinsicHeight(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Left Side Banner
+                          Container(
+                            width: 320,
+                            constraints: BoxConstraints(
+                              minHeight: MediaQuery.of(context).size.height - 80, // rough height minus appbar
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
+                            color: const Color(0xFFFFF0F0),
+                            padding: const EdgeInsets.all(40),
+                            child: Stack(
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const SizedBox(height: 60),
+                                    Text(
+                                      "Let's find\nyour perfect\nmatch",
+                                      style: TextStyle(
+                                        fontSize: 32,
+                                        height: 1.2,
+                                        fontWeight: FontWeight.w800,
+                                        color: theme.textTheme.titleLarge?.color ??
+                                            Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                // Decorative Hearts
+                                Positioned(
+                                  bottom: 80,
+                                  right: 30,
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: primary.withValues(alpha: 0.15),
+                                    ),
+                                    child: Center(
+                                      child: Icon(Icons.favorite, size: 40, color: primary.withValues(alpha: 0.8)),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 60,
+                                  left: 20,
+                                  child: Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: primary.withValues(alpha: 0.1),
+                                    ),
+                                    child: Center(
+                                      child: Icon(Icons.favorite, size: 24, color: primary.withValues(alpha: 0.6)),
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 150,
+                                  left: 100,
+                                  child: Icon(Icons.favorite, size: 20, color: primary.withValues(alpha: 0.3)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Divider
+                          Container(
+                            width: 1,
+                            color: theme.dividerColor.withValues(alpha: 0.2),
+                          ),
+                          // Right Side Form
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(48.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Partner Preferences',
-                                    style: TextStyle(
-                                      color: theme.textTheme.titleLarge?.color,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                    ),
+                                  WebEditPartnerPreferenceForm(
+                                    ageRange: ageRange,
+                                    onAgeChanged: updateAgeRange,
+                                    selectedMaritalStatus: maritalStatus,
+                                    onMaritalStatusToggle: toggleMaritalStatus,
+                                    selectedLanguages: languages,
+                                    onLanguageToggle: toggleLanguage,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'Fine tune the matches recommended for you.',
-                                    style: TextStyle(
-                                      color:
-                                          theme.textTheme.bodyMedium?.color ??
-                                          AppColors.textSecondary,
-                                      fontSize: 15,
+                                  const SizedBox(height: 48),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: SizedBox(
+                                      width: 180,
+                                      height: 48,
+                                      child: ElevatedButton(
+                                        onPressed: canSave ? savePartnerPreference : null,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: primary,
+                                          foregroundColor: Colors.white,
+                                          disabledBackgroundColor: primary
+                                              .withValues(alpha: 0.5),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(12),
+                                          ),
+                                          elevation: 0,
+                                        ),
+                                        child: isSaving
+                                            ? const SizedBox(
+                                                height: 22,
+                                                width: 22,
+                                                child: CircularProgressIndicator(
+                                                  color: Colors.white,
+                                                  strokeWidth: 2.5,
+                                                ),
+                                              )
+                                            : const Text(
+                                                'Save Changes',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 32),
-                        EditPartnerPreferenceForm(
-                          ageRange: ageRange,
-                          onAgeChanged: updateAgeRange,
-                          selectedMaritalStatus: maritalStatus,
-                          onMaritalStatusToggle: toggleMaritalStatus,
-                          selectedLanguages: languages,
-                          onLanguageToggle: toggleLanguage,
-                        ),
-                        const SizedBox(height: 32),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: SizedBox(
-                            width: 210,
-                            height: 54,
-                            child: ElevatedButton(
-                              onPressed: canSave ? savePartnerPreference : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.primaryColor,
-                                foregroundColor: theme.colorScheme.onPrimary,
-                                disabledBackgroundColor: theme.primaryColor
-                                    .withValues(alpha: 0.5),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(27),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: isSaving
-                                  ? SizedBox(
-                                      height: 22,
-                                      width: 22,
-                                      child: CircularProgressIndicator(
-                                        color: theme.colorScheme.onPrimary,
-                                        strokeWidth: 2.5,
-                                      ),
-                                    )
-                                  : const Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.save_outlined, size: 21),
-                                        SizedBox(width: 10),
-                                        Text(
-                                          'Save Changes',
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

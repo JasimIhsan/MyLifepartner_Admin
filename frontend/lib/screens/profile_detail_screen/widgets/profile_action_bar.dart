@@ -7,6 +7,7 @@ import 'package:life_partner_again/core/app_routes.dart';
 import 'package:life_partner_again/models/match_recommendation.dart';
 import 'package:life_partner_again/providers/match_provider.dart';
 import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.dart';
+import 'package:life_partner_again/widgets/feature_download_prompt.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -164,6 +165,7 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                 child: GestureDetector(
                   onTap: canPass
                       ? () async {
+                          if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
                           if (isBusy) return;
                           _closeMore();
                           setState(() => _isPassing = true);
@@ -245,6 +247,7 @@ class _ProfileActionBarState extends State<ProfileActionBar> {
                 child: GestureDetector(
                   onTap: canAction && !isInterestSent
                       ? () async {
+                          if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
                           if (isBusy) return;
                           _closeMore();
 

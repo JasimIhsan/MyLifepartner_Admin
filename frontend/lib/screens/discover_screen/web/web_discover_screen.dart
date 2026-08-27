@@ -12,6 +12,7 @@ import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_icon.dart';
+import 'package:life_partner_again/widgets/feature_download_prompt.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/discover_controller.dart';
@@ -68,10 +69,14 @@ class _WebDiscoverScreenState extends State<WebDiscoverScreen>
                           flex: 5,
                           child: _WebPhotoGallery(
                             profileMap: profileMap,
-                            onPass: () =>
-                                handleInteraction(selectedProfile, 'LEFT'),
-                            onLike: () =>
-                                handleInteraction(selectedProfile, 'RIGHT'),
+                            onPass: () {
+                              if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
+                              handleInteraction(selectedProfile, 'LEFT');
+                            },
+                            onLike: () {
+                              if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
+                              handleInteraction(selectedProfile, 'RIGHT');
+                            },
                             isLoading: loadingAction != null,
                           ),
                         ),

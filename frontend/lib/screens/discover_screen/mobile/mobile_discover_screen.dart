@@ -10,6 +10,7 @@ import 'package:life_partner_again/services/image_access_service.dart';
 import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom_sheet.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
+import 'package:life_partner_again/widgets/feature_download_prompt.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:provider/provider.dart';
@@ -124,10 +125,13 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                         heroTag: 'pass_btn',
                         onPressed: loadingAction != null
                             ? null
-                            : () => handleInteraction(
-                                localProfiles[currentIndex],
-                                'LEFT',
-                              ),
+                            : () {
+                                if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
+                                handleInteraction(
+                                  localProfiles[currentIndex],
+                                  'LEFT',
+                                );
+                              },
                         backgroundColor: Theme.of(context).cardColor,
                         foregroundColor: Colors.black,
                         elevation: 4,
@@ -154,10 +158,13 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                         heroTag: 'favorite_btn',
                         onPressed: loadingAction != null
                             ? null
-                            : () => handleInteraction(
-                                localProfiles[currentIndex],
-                                'RIGHT',
-                              ),
+                            : () {
+                                if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
+                                handleInteraction(
+                                  localProfiles[currentIndex],
+                                  'RIGHT',
+                                );
+                              },
                         backgroundColor: Theme.of(context).cardColor,
                         foregroundColor: Theme.of(context).primaryColor,
                         elevation: 4,
