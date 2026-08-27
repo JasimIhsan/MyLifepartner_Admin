@@ -11,67 +11,61 @@ import 'package:life_partner_again/screens/public_web/pages/safety/web_safety_pa
 import 'package:life_partner_again/screens/public_web/pages/terms/web_terms_page.dart';
 import 'package:life_partner_again/screens/public_web/public_web_routes.dart';
 
+Widget buildPublicWebLayout(
+  BuildContext context,
+  GoRouterState state,
+  Widget child,
+) {
+  final currentRoute = _currentPublicRoute(state);
+  return PublicWebLayout(
+    currentRoute: currentRoute,
+    showGlobalDownloadCta: _showGlobalDownloadCta(currentRoute),
+    child: child,
+  );
+}
+
 List<RouteBase> buildPublicWebRoutes() {
   return [
-    ShellRoute(
-      builder: (context, state, child) {
-        final currentRoute = _currentPublicRoute(state);
-        return PublicWebLayout(
-          currentRoute: currentRoute,
-          showGlobalDownloadCta: _showGlobalDownloadCta(currentRoute),
-          child: child,
-        );
-      },
-      routes: [
-        _publicRoute(path: PublicWebRoutes.home, child: const WebHomePage()),
-        _publicRoute(path: PublicWebRoutes.about, child: const WebAboutPage()),
-        _publicRoute(
-          path: PublicWebRoutes.membership,
-          child: const WebMembershipPage(),
-        ),
-        _publicRoute(
-          path: PublicWebRoutes.findYourself,
-          child: const WebFindYourselfPage(),
-        ),
-        _publicRoute(
-          path: PublicWebRoutes.safety,
-          child: const WebSafetyPage(),
-        ),
-        GoRoute(
-          path: PublicWebRoutes.faq,
-          pageBuilder: (context, state) {
-            final section = state.uri.queryParameters['question'];
-            return CustomTransitionPage(
-              key: state.pageKey,
-              child: WebFaqPage(initialExpandedId: section),
-              transitionDuration: const Duration(milliseconds: 300),
-              reverseTransitionDuration: const Duration(milliseconds: 250),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                    final fadeAnimation = CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                      reverseCurve: Curves.easeInCubic,
-                    );
+    _publicRoute(path: PublicWebRoutes.home, child: const WebHomePage()),
+    _publicRoute(path: PublicWebRoutes.about, child: const WebAboutPage()),
+    _publicRoute(
+      path: PublicWebRoutes.membership,
+      child: const WebMembershipPage(),
+    ),
+    _publicRoute(
+      path: PublicWebRoutes.findYourself,
+      child: const WebFindYourselfPage(),
+    ),
+    _publicRoute(path: PublicWebRoutes.safety, child: const WebSafetyPage()),
+    GoRoute(
+      path: PublicWebRoutes.faq,
+      pageBuilder: (context, state) {
+        final section = state.uri.queryParameters['question'];
+        return CustomTransitionPage(
+          key: state.pageKey,
+          child: WebFaqPage(initialExpandedId: section),
+          transitionDuration: const Duration(milliseconds: 300),
+          reverseTransitionDuration: const Duration(milliseconds: 250),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final fadeAnimation = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
 
-                    return FadeTransition(
-                      opacity: fadeAnimation,
-                      child: ColoredBox(
-                        color: Theme.of(context).colorScheme.surface,
-                        child: child,
-                      ),
-                    );
-                  },
+            return FadeTransition(
+              opacity: fadeAnimation,
+              child: ColoredBox(
+                color: Theme.of(context).colorScheme.surface,
+                child: child,
+              ),
             );
           },
-        ),
-        _publicRoute(
-          path: PublicWebRoutes.privacy,
-          child: const WebPrivacyPage(),
-        ),
-        _publicRoute(path: PublicWebRoutes.terms, child: const WebTermsPage()),
-      ],
+        );
+      },
     ),
+    _publicRoute(path: PublicWebRoutes.privacy, child: const WebPrivacyPage()),
+    _publicRoute(path: PublicWebRoutes.terms, child: const WebTermsPage()),
   ];
 }
 

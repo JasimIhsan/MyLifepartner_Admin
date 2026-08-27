@@ -37,6 +37,8 @@ import 'package:life_partner_again/screens/support_screen/accepted_legal_screen.
 import 'package:life_partner_again/screens/support_screen/support_screen.dart';
 import 'package:life_partner_again/widgets/web_main_layout.dart';
 
+final GlobalKey<NavigatorState> appShellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'appShell');
+
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
     navigatorKey: navigatorKey,
@@ -136,7 +138,6 @@ GoRouter createRouter(AuthProvider authProvider) {
       return null;
     },
     routes: [
-      ...buildPublicWebRoutes(),
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
@@ -205,8 +206,15 @@ GoRouter createRouter(AuthProvider authProvider) {
       ),
       // Home / Bottom Navigation Tabs Routes
       ShellRoute(
-        builder: (context, state, child) => WebMainLayout(child: child),
+        navigatorKey: appShellNavigatorKey,
+        builder: (context, state, child) {
+          if (PublicWebRoutes.isPublicWebsiteRoute(state.matchedLocation)) {
+            return buildPublicWebLayout(context, state, child);
+          }
+          return WebMainLayout(child: child);
+        },
         routes: [
+          ...buildPublicWebRoutes(),
           GoRoute(
             path: AppRoutes.home,
             pageBuilder: (context, state) =>
