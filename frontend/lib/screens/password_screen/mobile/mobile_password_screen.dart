@@ -209,6 +209,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                       fontSize: 17,
                                     ),
                                     decoration: InputDecoration(
+                                      errorMaxLines: 3,
                                       filled: true,
                                       fillColor: inputFillColor,
                                       contentPadding:
@@ -326,6 +327,7 @@ class _MobilePasswordScreenState extends State<MobilePasswordScreen>
                                         fontSize: 17,
                                       ),
                                       decoration: InputDecoration(
+                                        errorMaxLines: 3,
                                         filled: true,
                                         fillColor: inputFillColor,
                                         contentPadding:

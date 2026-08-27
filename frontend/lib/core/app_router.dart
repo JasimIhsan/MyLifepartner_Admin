@@ -152,13 +152,13 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.otp,
         builder: (context, state) {
-          final args = state.extra as OtpArguments?;
-          if (args == null) {
-            return _buildErrorScreen(
-              context,
-              'Session expired or invalid arguments.',
-            );
+          if (state.extra is! OtpArguments) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) context.go(AppRoutes.login);
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
+          final args = state.extra as OtpArguments;
           return OtpPage(
             email: args.email,
             isExistingUser: args.isExistingUser,
@@ -169,13 +169,13 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.password,
         builder: (context, state) {
-          final args = state.extra as PasswordArguments?;
-          if (args == null) {
-            return _buildErrorScreen(
-              context,
-              'Session expired or invalid arguments.',
-            );
+          if (state.extra is! PasswordArguments) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) context.go(AppRoutes.otp);
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
+          final args = state.extra as PasswordArguments;
           return PasswordScreen(
             email: args.email,
             isExistingUser: args.isExistingUser,
@@ -240,10 +240,13 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.chatDetail,
             builder: (context, state) {
-              final args = state.extra as ChatDetailArguments?;
-              if (args == null) {
-                return _buildErrorScreen(context, 'Chat data not found.');
+              if (state.extra is! ChatDetailArguments) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) context.go(AppRoutes.chat);
+                });
+                return const Scaffold(body: Center(child: CircularProgressIndicator()));
               }
+              final args = state.extra as ChatDetailArguments;
               return ChatDetailScreen(
                 profile: args.profile,
                 currentUserId: args.currentUserId,
@@ -298,10 +301,13 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: AppRoutes.acceptedLegal,
             builder: (context, state) {
-              final docType = state.extra as LegalDocType?;
-              if (docType == null) {
-                return _buildErrorScreen(context, 'Document type not found.');
+              if (state.extra is! LegalDocType) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) context.go(AppRoutes.support);
+                });
+                return const Scaffold(body: Center(child: CircularProgressIndicator()));
               }
+              final docType = state.extra as LegalDocType;
               return AcceptedLegalScreen(docType: docType);
             },
           ),
@@ -310,10 +316,13 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.mediaPreview,
         builder: (context, state) {
-          final args = state.extra as MediaPreviewArguments?;
-          if (args == null) {
-            return _buildErrorScreen(context, 'Media data not found.');
+          if (state.extra is! MediaPreviewArguments) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) context.go(AppRoutes.chat);
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
+          final args = state.extra as MediaPreviewArguments;
           return MediaPreviewScreen(
             path: args.path,
             type: args.type,
@@ -324,10 +333,13 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.outgoingCall,
         builder: (context, state) {
-          final args = state.extra as OutgoingCallArguments?;
-          if (args == null) {
-            return _buildErrorScreen(context, 'Call data not found.');
+          if (state.extra is! OutgoingCallArguments) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) context.go(AppRoutes.home);
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
+          final args = state.extra as OutgoingCallArguments;
           return OutgoingCallScreen(
             calleeName: args.calleeName,
             calleeAvatarImageId: args.calleeAvatarImageId,
@@ -341,10 +353,13 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: AppRoutes.call,
         builder: (context, state) {
-          final args = state.extra as CallArguments?;
-          if (args == null) {
-            return _buildErrorScreen(context, 'Call data not found.');
+          if (state.extra is! CallArguments) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) context.go(AppRoutes.home);
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
+          final args = state.extra as CallArguments;
           return CallScreen(
             callID: args.callID,
             userID: args.userID,

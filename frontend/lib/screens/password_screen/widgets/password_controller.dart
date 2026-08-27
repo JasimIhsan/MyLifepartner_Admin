@@ -20,6 +20,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
   bool isLoading = false;
   bool obscureText = true;
   bool obscureConfirmText = true;
+  String? authErrorMessage;
 
   String get email => (widget as dynamic).email;
   bool get isExistingUser => (widget as dynamic).isExistingUser;
@@ -45,6 +46,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
 
     setState(() {
       isLoading = true;
+      authErrorMessage = null;
     });
 
     try {
@@ -133,12 +135,9 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
         errorMessage = getDioErrorMessage(e);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        setState(() {
+          authErrorMessage = errorMessage;
+        });
       }
     } finally {
       if (mounted) {
@@ -180,6 +179,7 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
     if (!mounted) return;
     setState(() {
       isLoading = true;
+      authErrorMessage = null;
     });
 
     try {
@@ -201,12 +201,9 @@ mixin PasswordControllerState<T extends StatefulWidget> on State<T> {
         errorMessage = getDioErrorMessage(e);
       }
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
+        setState(() {
+          authErrorMessage = errorMessage;
+        });
       }
     } finally {
       if (mounted) {

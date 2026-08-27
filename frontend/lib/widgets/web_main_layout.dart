@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/core/app_routes.dart';
+import 'package:life_partner_again/models/user_image.dart';
+import 'package:life_partner_again/providers/auth_provider.dart';
 import 'package:life_partner_again/screens/lpa_guide_screen/lpa_guide_screen.dart';
 import 'package:life_partner_again/screens/notification_screen/notification_screen.dart';
-import 'package:life_partner_again/providers/auth_provider.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:life_partner_again/models/user_image.dart';
 import 'package:life_partner_again/services/profile_repository.dart';
 import 'package:life_partner_again/services/user_repository.dart';
 import 'package:life_partner_again/widgets/cached_app_image.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class WebMainLayout extends StatefulWidget {
   final Widget child;
@@ -232,7 +232,7 @@ class _WebMainLayoutState extends State<WebMainLayout> {
               children: [
                 // Brand Logo
                 InkWell(
-                  onTap: () => context.go(AppRoutes.public),
+                  onTap: () => context.go(AppRoutes.discover),
                   borderRadius: BorderRadius.circular(8),
                   child: MouseRegion(
                     cursor: SystemMouseCursors.click,
@@ -335,7 +335,6 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                               ),
                             );
                           }
-
                         } else if (value == 'manage_images') {
                           final result = await context.push(
                             AppRoutes.manageProfilePictures,
