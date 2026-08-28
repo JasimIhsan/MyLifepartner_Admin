@@ -8,6 +8,7 @@ class CustomBottomBar extends StatelessWidget {
   final Color? selectedItemColor;
   final Color? unselectedItemColor;
   final VoidCallback? onCenterTap;
+  final Key? centerButtonKey;
 
   const CustomBottomBar({
     super.key,
@@ -18,6 +19,7 @@ class CustomBottomBar extends StatelessWidget {
     this.selectedItemColor,
     this.unselectedItemColor,
     this.onCenterTap,
+    this.centerButtonKey,
   });
 
   @override
@@ -103,6 +105,7 @@ class CustomBottomBar extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   onTap: onCenterTap,
                   child: Container(
+                    key: centerButtonKey,
                     width: fabSize,
                     height: fabSize,
                     decoration: BoxDecoration(

@@ -36,81 +36,81 @@ class _MobileChatScreenState extends State<MobileChatScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).canvasColor,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            backgroundColor: Theme.of(context).canvasColor,
-            elevation: 0,
-            pinned: true,
-            centerTitle: false,
-            expandedHeight: 100,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
+        body: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              backgroundColor: Theme.of(context).canvasColor,
+              elevation: 0,
+              pinned: true,
               centerTitle: false,
-              titlePadding: EdgeInsets.only(left: 20, bottom: 16),
-              title: Text(
-                'Messages',
-                style: TextStyle(
-                  color:
-                      Theme.of(context).textTheme.bodyLarge?.color ??
-                      AppColors.textPrimary,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
+              expandedHeight: 100,
+              automaticallyImplyLeading: false,
+              flexibleSpace: FlexibleSpaceBar(
+                centerTitle: false,
+                titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
+                title: Text(
+                  'Messages',
+                  style: TextStyle(
+                      color:
+                          Theme.of(context).textTheme.bodyLarge?.color ??
+                          AppColors.textPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
               ),
             ),
-          ),
-          SliverFillRemaining(
-            hasScrollBody: true,
-            child: Consumer<MatchProvider>(
-              builder: (context, provider, child) {
-                if (provider.state == MatchLoadState.loading &&
-                    provider.mutualMatches.isEmpty) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: Theme.of(context).primaryColor,
-                      strokeWidth: 3,
-                    ),
-                  );
-                }
-
-                final mutualMatches = provider.mutualMatches;
-
-                if (mutualMatches.isEmpty) {
-                  return _buildEmptyState();
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.only(top: 8, bottom: 40),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: mutualMatches.length,
-                  itemBuilder: (context, index) {
-                    final match = mutualMatches[index];
-                    return ChatListTile(
-                      profile: match,
-                      delay: Duration(milliseconds: index * 50),
-                      onTap: () async {
-                        final prefs = await SharedPreferences.getInstance();
-                        final currentUserId = prefs.getInt('userId') ?? 0;
-                        if (!context.mounted) return;
-                        context.push(
-                          '/chat-detail/${match.id}',
-                          extra: ChatDetailArguments(
-                            profile: match,
-                            currentUserId: currentUserId,
-                          ),
-                        );
-                      },
+            SliverFillRemaining(
+              hasScrollBody: true,
+              child: Consumer<MatchProvider>(
+                builder: (context, provider, child) {
+                  if (provider.state == MatchLoadState.loading &&
+                      provider.mutualMatches.isEmpty) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: Theme.of(context).primaryColor,
+                        strokeWidth: 3,
+                      ),
                     );
-                  },
-                );
-              },
+                  }
+
+                  final mutualMatches = provider.mutualMatches;
+
+                  if (mutualMatches.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.only(top: 8, bottom: 40),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: mutualMatches.length,
+                    itemBuilder: (context, index) {
+                      final match = mutualMatches[index];
+                      return ChatListTile(
+                        profile: match,
+                        delay: Duration(milliseconds: index * 50),
+                        onTap: () async {
+                          final prefs = await SharedPreferences.getInstance();
+                          final currentUserId = prefs.getInt('userId') ?? 0;
+                          if (!context.mounted) return;
+                          context.push(
+                            '/chat-detail/${match.id}',
+                            extra: ChatDetailArguments(
+                              profile: match,
+                              currentUserId: currentUserId,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
   }
 
   Widget _buildEmptyState() {

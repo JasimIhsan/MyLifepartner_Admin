@@ -17,6 +17,8 @@ import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:provider/provider.dart';
 
 import '../widgets/discover_components.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_overlay.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_step.dart';
 import '../widgets/discover_controller.dart';
 
 class MobileDiscoverScreen extends StatefulWidget {
@@ -31,13 +33,58 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
   final BlockService _blockService = BlockService();
   bool _isBottomNavVisible = true;
 
+  final GlobalKey _passBtnKey = GlobalKey();
+  final GlobalKey _likeBtnKey = GlobalKey();
+
+  List<AppTourStep> get _discoverTourSteps => [
+        AppTourStep(
+          targetKey: _likeBtnKey,
+          title: 'Like Profiles',
+          description: 'Tap the heart icon to send a like to profiles you feel connected with.',
+          borderRadius: const BorderRadius.all(Radius.circular(40)),
+          preferredPosition: TourCardPosition.top,
+        ),
+        AppTourStep(
+          targetKey: _passBtnKey,
+          title: 'Pass Profiles',
+          description: 'Tap the broken heart icon to pass on a profile and view the next match.',
+          borderRadius: const BorderRadius.all(Radius.circular(40)),
+          preferredPosition: TourCardPosition.top,
+        ),
+      ];
+
+  final GlobalKey _nextBtnKey = GlobalKey();
+  final GlobalKey _prevBtnKey = GlobalKey();
+
+  List<AppTourStep> get _discoverNextTourSteps => [
+        AppTourStep(
+          targetKey: _nextBtnKey,
+          title: 'Next Profile',
+          description: 'Tap here to quickly view the next profile.',
+          borderRadius: const BorderRadius.all(Radius.circular(40)),
+          preferredPosition: TourCardPosition.left,
+        ),
+      ];
+
+  List<AppTourStep> get _discoverPrevTourSteps => [
+        AppTourStep(
+          targetKey: _prevBtnKey,
+          title: 'Previous Profile',
+          description: 'Tap here to go back to the previous profile.',
+          borderRadius: const BorderRadius.all(Radius.circular(40)),
+          preferredPosition: TourCardPosition.right,
+        ),
+      ];
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final bool canGoNext = localProfiles.length > 1 && currentIndex < localProfiles.length - 1;
+
+    Widget content = Scaffold(
       backgroundColor: Theme.of(context).canvasColor,
-      body: SafeArea(
-        bottom: false,
-        child: Consumer<MatchProvider>(
+        body: SafeArea(
+          bottom: false,
+          child: Consumer<MatchProvider>(
           builder: (context, provider, _) {
             if (provider.state == MatchLoadState.loading &&
                 localProfiles.isEmpty) {
@@ -101,6 +148,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                         Align(
                           alignment: Alignment.centerLeft,
                           child: SideNavigationButton(
+                            buttonKey: _prevBtnKey,
                             icon: Icons.chevron_left_rounded,
                             onTap: goToPrevious,
                             isLeft: true,
@@ -112,6 +160,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: SideNavigationButton(
+                            buttonKey: _nextBtnKey,
                             icon: Icons.chevron_right_rounded,
                             onTap: goToNext,
                             isLeft: false,
@@ -127,6 +176,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                             : 32,
                         left: _isBottomNavVisible ? 24 : hiddenCenterOffset,
                         child: SizedBox(
+                          key: _passBtnKey,
                           width: btnSize,
                           height: btnSize,
                           child: FloatingActionButton(
@@ -163,6 +213,7 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
                             : 32,
                         right: _isBottomNavVisible ? 24 : hiddenCenterOffset,
                         child: SizedBox(
+                          key: _likeBtnKey,
                           width: btnSize,
                           height: btnSize,
                           child: FloatingActionButton(
@@ -198,6 +249,31 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
         ),
       ),
     );
+
+    content = AppTourOverlay(
+      pageId: 'discover_prev',
+      dependsOn: const ['discover_next'],
+      steps: _discoverPrevTourSteps,
+      enabled: currentIndex > 0,
+      child: content,
+    );
+
+    content = AppTourOverlay(
+      pageId: 'discover_next',
+      dependsOn: const ['discover'],
+      steps: _discoverNextTourSteps,
+      enabled: canGoNext,
+      child: content,
+    );
+
+    content = AppTourOverlay(
+      pageId: 'discover',
+      dependsOn: const ['home'],
+      steps: _discoverTourSteps,
+      child: content,
+    );
+
+    return content;
   }
 
   void _showBlockConfirmation(

@@ -3,6 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/main.dart';
 
+import 'package:life_partner_again/widgets/tour/app_tour_overlay.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_step.dart';
 import '../widgets/animated_header.dart';
 import '../widgets/likes_controller.dart';
 import '../widgets/matches_list.dart';
@@ -20,6 +22,18 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
         TickerProviderStateMixin,
         RouteAware,
         LikesControllerState<MobileLikedMatchesScreen> {
+  final GlobalKey _tabBarKey = GlobalKey();
+
+  List<AppTourStep> get _matchesTourSteps => [
+        AppTourStep(
+          targetKey: _tabBarKey,
+          title: 'Connections & Matches',
+          description: 'Switch between Likes Sent, Mutual Matches, and Received Likes.',
+          borderRadius: BorderRadius.circular(26),
+          preferredPosition: TourCardPosition.bottom,
+        ),
+      ];
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -34,8 +48,12 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).canvasColor,
+    return AppTourOverlay(
+      pageId: 'matches',
+      dependsOn: const ['home'],
+      steps: _matchesTourSteps,
+      child: Scaffold(
+        backgroundColor: Theme.of(context).canvasColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -77,11 +95,13 @@ class _MobileLikedMatchesScreenState extends State<MobileLikedMatchesScreen>
           ],
         ),
       ),
+    ),
     );
   }
 
   Widget _buildCustomTabBar() {
     return Container(
+      key: _tabBarKey,
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       height: 52,
       padding: const EdgeInsets.all(4),

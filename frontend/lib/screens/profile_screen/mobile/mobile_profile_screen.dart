@@ -13,6 +13,10 @@ import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:life_partner_again/widgets/tour/app_tour_controller.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_overlay.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_step.dart';
+
 import '../../../widgets/bottomsheet/logout_bottom_sheet.dart';
 import '../../../widgets/custom_button.dart';
 import '../widgets/profile_controller.dart';
@@ -26,6 +30,41 @@ class MobileProfileScreen extends StatefulWidget {
 
 class _MobileProfileScreenState extends State<MobileProfileScreen>
     with RouteAware, ProfileControllerState<MobileProfileScreen> {
+  final GlobalKey _avatarKey = GlobalKey();
+  final GlobalKey _privateAccountKey = GlobalKey();
+  final GlobalKey _imageAccessKey = GlobalKey();
+  final GlobalKey _blockedUsersKey = GlobalKey();
+
+  List<AppTourStep> get _profileTourSteps => [
+        AppTourStep(
+          targetKey: _avatarKey,
+          title: 'Profile & Photos',
+          description: 'View and update your profile pictures and personal details here.',
+          borderRadius: const BorderRadius.all(Radius.circular(70)),
+          preferredPosition: TourCardPosition.bottom,
+        ),
+        AppTourStep(
+          targetKey: _privateAccountKey,
+          title: 'Private Account',
+          description: 'Enable privacy to hide your photos until you approve access requests.',
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          preferredPosition: TourCardPosition.top,
+        ),
+        AppTourStep(
+          targetKey: _imageAccessKey,
+          title: 'Image Access Requests',
+          description: 'Manage permissions for matches who request to view your private images.',
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          preferredPosition: TourCardPosition.top,
+        ),
+        AppTourStep(
+          targetKey: _blockedUsersKey,
+          title: 'Blocked Users',
+          description: 'View and manage users you have blocked on the platform.',
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
+          preferredPosition: TourCardPosition.top,
+        ),
+      ];
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -246,17 +285,22 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
       return _buildSkeleton();
     }
 
-    return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            Center(
-              child: Container(
-                width: 140,
-                height: 140,
+    return AppTourOverlay(
+      pageId: 'profile',
+      dependsOn: const ['home'],
+      steps: _profileTourSteps,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              Center(
+                child: Container(
+                  key: _avatarKey,
+                  width: 140,
+                  height: 140,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
@@ -425,6 +469,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
               _buildSectionHeader("Privacy & Security"),
               _buildActionGroup([
                 _buildSwitchItem(
+                  itemKey: _privateAccountKey,
                   icon: Icons.shield_outlined,
                   title: "Private Account",
                   subtitle: "Only approved matches can see your photos",
@@ -434,6 +479,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                   showDivider: true,
                 ),
                 _buildActionItem(
+                  itemKey: _imageAccessKey,
                   icon: Icons.lock_open_outlined,
                   title: "Image Access Requests",
                   showDivider: true,
@@ -442,6 +488,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
                   },
                 ),
                 _buildActionItem(
+                  itemKey: _blockedUsersKey,
                   icon: Icons.block,
                   title: "Blocked Users",
                   showDivider: false,
@@ -467,6 +514,22 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
 
               _buildSectionHeader("Support"),
               _buildActionGroup([
+                _buildActionItem(
+                  icon: Icons.tour_outlined,
+                  title: "Replay Feature Tours",
+                  showDivider: true,
+                  onTap: () async {
+                    await AppTourController.resetAllTours();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Feature tours reset! Visit pages to replay them."),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                ),
                 _buildActionItem(
                   icon: Icons.help_outline,
                   title: "Help & Support",
@@ -507,6 +570,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
           ],
         ),
       ),
+    ),
     );
   }
 
@@ -544,12 +608,14 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
   }
 
   Widget _buildActionItem({
+    Key? itemKey,
     required IconData icon,
     required String title,
     required VoidCallback onTap,
     bool showDivider = true,
   }) {
     return Column(
+      key: itemKey,
       children: [
         InkWell(
           onTap: onTap,
@@ -597,6 +663,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
   }
 
   Widget _buildSwitchItem({
+    Key? itemKey,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -606,6 +673,7 @@ class _MobileProfileScreenState extends State<MobileProfileScreen>
     bool showDivider = false,
   }) {
     return Column(
+      key: itemKey,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

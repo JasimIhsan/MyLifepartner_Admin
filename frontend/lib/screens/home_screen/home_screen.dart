@@ -21,6 +21,9 @@ import 'package:life_partner_again/widgets/custom_app_bar.dart';
 import 'package:life_partner_again/widgets/custom_bottom_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_overlay.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_step.dart';
+import 'package:life_partner_again/widgets/founding_member_badge.dart';
 
 class HomePage extends StatefulWidget {
   final int initialIndex;
@@ -34,6 +37,31 @@ class _HomePageState extends State<HomePage> {
   late int _selectedIndex;
   bool _isBottomNavVisible = true;
   bool _showNotifications = false;
+  final GlobalKey _centerButtonKey = GlobalKey();
+  final GlobalKey _searchBtnKey = GlobalKey();
+
+  List<AppTourStep> get _homeTourSteps => [
+        AppTourStep(
+          targetKey: _centerButtonKey,
+          title: 'Find Your Self',
+          description: 'Get matched with perfect people for you using LPA Assist.',
+          borderRadius: const BorderRadius.all(Radius.circular(40)),
+          preferredPosition: TourCardPosition.top,
+        ),
+        AppTourStep(
+          targetKey: _searchBtnKey,
+          title: 'Browse Profiles',
+          description: 'Tap the search icon to explore and search for profiles across the platform.',
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          preferredPosition: TourCardPosition.bottom,
+        ),
+        const AppTourStep(
+          targetKey: null,
+          title: 'Member Verification Badges',
+          description: 'Recognize these verification and status badges across member profiles:',
+          customContent: BadgesExplanationWidget(),
+        ),
+      ];
 
   bool get _isPrefixedWebAppRoute {
     if (!kIsWeb) return false;
@@ -182,8 +210,11 @@ class _HomePageState extends State<HomePage> {
         if (didPop) return;
         _handleBackPress();
       },
-      child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
+      child: AppTourOverlay(
+        pageId: 'home',
+        steps: _homeTourSteps,
+        child: Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
         extendBody: !isDesktop,
         appBar: isDesktop ? null : _buildAppBar(),
         body: _buildBody(),
@@ -194,6 +225,7 @@ class _HomePageState extends State<HomePage> {
                 offset: _isBottomNavVisible ? Offset.zero : const Offset(0, 2),
                 child: _buildBottomNavigationBar(),
               ),
+        ),
       ),
     );
   }
@@ -210,6 +242,7 @@ class _HomePageState extends State<HomePage> {
       showLeading: false,
       actions: [
         IconButton(
+          key: _searchBtnKey,
           icon: Icon(
             Icons.search,
             color:
@@ -265,6 +298,7 @@ class _HomePageState extends State<HomePage> {
         onCenterTap: () {
           context.push(_targetRoute(AppRoutes.lpaGuide));
         },
+        centerButtonKey: _centerButtonKey,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.explore_outlined),
@@ -285,6 +319,7 @@ class _HomePageState extends State<HomePage> {
       onCenterTap: () {
         context.push(_targetRoute(AppRoutes.lpaGuide));
       },
+      centerButtonKey: _centerButtonKey,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.explore_outlined),
@@ -364,6 +399,128 @@ class _HomePageState extends State<HomePage> {
         return false;
       },
       child: content,
+    );
+  }
+}
+
+class BadgesExplanationWidget extends StatelessWidget {
+  const BadgesExplanationWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : AppColors.textPrimary;
+    final subColor = isDark ? const Color(0xFFB0B8C4) : AppColors.textSecondary;
+    final cardBg = isDark
+        ? const Color(0x1AFFFFFF)
+        : AppColors.primary.withValues(alpha: 0.04);
+    final borderColor = isDark
+        ? const Color(0x26FFFFFF)
+        : AppColors.primary.withValues(alpha: 0.12);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildBadgeTile(
+          context: context,
+          icon: Image.asset(
+            'assets/icons/verified_icon.png',
+            width: 24,
+            height: 24,
+            fit: BoxFit.contain,
+          ),
+          title: 'Verified Profile',
+          description: 'Profiles authenticated and verified by admin.',
+          textColor: textColor,
+          subColor: subColor,
+          cardBg: cardBg,
+          borderColor: borderColor,
+        ),
+        const SizedBox(height: 8),
+        _buildBadgeTile(
+          context: context,
+          icon: Image.asset(
+            'assets/icons/verified_premium_icon.png',
+            width: 24,
+            height: 24,
+            fit: BoxFit.contain,
+          ),
+          title: 'Premium Verified',
+          description: 'Verified by admin with active premium feature access.',
+          textColor: textColor,
+          subColor: subColor,
+          cardBg: cardBg,
+          borderColor: borderColor,
+        ),
+        const SizedBox(height: 8),
+        _buildBadgeTile(
+          context: context,
+          icon: const FoundingMemberBadge(size: 24, enableTooltip: false),
+          title: 'Founding Member',
+          description: 'Initial platform members who enjoy lifetime full access.',
+          textColor: textColor,
+          subColor: subColor,
+          cardBg: cardBg,
+          borderColor: borderColor,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBadgeTile({
+    required BuildContext context,
+    required Widget icon,
+    required String title,
+    required String description,
+    required Color textColor,
+    required Color subColor,
+    required Color cardBg,
+    required Color borderColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: borderColor, width: 1.0),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: Center(child: icon),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.1,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: subColor,
+                    fontSize: 11.5,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

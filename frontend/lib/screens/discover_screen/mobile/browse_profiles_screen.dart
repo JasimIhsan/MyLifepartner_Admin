@@ -11,6 +11,9 @@ import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
 import 'package:provider/provider.dart';
 
+import 'package:life_partner_again/widgets/tour/app_tour_overlay.dart';
+import 'package:life_partner_again/widgets/tour/app_tour_step.dart';
+
 import 'advanced_search_screen.dart';
 
 class BrowseProfilesScreen extends StatefulWidget {
@@ -24,6 +27,17 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   Timer? _debounce;
+  final GlobalKey _filterBtnKey = GlobalKey();
+
+  List<AppTourStep> get _browseProfilesTourSteps => [
+        AppTourStep(
+          targetKey: _filterBtnKey,
+          title: 'Advanced Search',
+          description: 'Filter profiles by detailed criteria like age, location, education, and interests.',
+          borderRadius: const BorderRadius.all(Radius.circular(25)),
+          preferredPosition: TourCardPosition.bottom,
+        ),
+      ];
 
   @override
   void initState() {
@@ -103,8 +117,12 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).canvasColor,
+    return AppTourOverlay(
+      pageId: 'browse_profiles',
+      dependsOn: const ['home'],
+      steps: _browseProfilesTourSteps,
+      child: Scaffold(
+        backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
         title: const Text(
           'Browse Profiles',
@@ -127,6 +145,7 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
               shape: BoxShape.circle,
             ),
             child: IconButton(
+              key: _filterBtnKey,
               icon: Icon(
                 Icons.tune_rounded,
                 color:
@@ -515,6 +534,7 @@ class _BrowseProfilesScreenState extends State<BrowseProfilesScreen> {
           );
         },
       ),
+    ),
     );
   }
 }
