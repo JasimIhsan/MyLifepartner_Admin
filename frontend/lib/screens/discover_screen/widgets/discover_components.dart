@@ -272,7 +272,9 @@ class ProfileBrowserCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (profile.isVerified || profile.isPremium || profile.isFoundingMember) ...[
+            if (profile.isVerified ||
+                profile.isPremium ||
+                profile.isFoundingMember) ...[
               const SizedBox(width: 8),
               VerifiedIconWidget(
                 isVerified: profile.isVerified,
@@ -377,35 +379,39 @@ class SideNavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        margin: EdgeInsets.only(
-          left: isLeft ? 25 : 0,
-          right: !isLeft ? 25 : 0,
-        ),
-        child: Container(
-          key: buttonKey,
-          width: 55,
-          height: 55,
-          child: ClipOval(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.black.withValues(alpha: 0.4),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    width: 1.0,
+      child:
+          Container(
+                margin: EdgeInsets.only(
+                  left: isLeft ? 25 : 0,
+                  right: !isLeft ? 25 : 0,
+                ),
+                child: SizedBox(
+                  key: buttonKey,
+                  width: 55,
+                  height: 55,
+                  child: ClipOval(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black.withValues(alpha: 0.4),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(icon, color: Colors.white, size: 24),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                child: Center(
-                  child: Icon(icon, color: Colors.white, size: 24),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ).animate().fadeIn(duration: 400.ms).scale(
+              )
+              .animate()
+              .fadeIn(duration: 400.ms)
+              .scale(
                 begin: const Offset(0.8, 0.8),
                 end: const Offset(1.0, 1.0),
                 curve: Curves.easeOutBack,

@@ -311,21 +311,21 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                       groupId: 'notifications',
                       child: IconButton(
                         icon: Icon(
-                        _showNotifications
-                            ? Icons.notifications
-                            : Icons.notifications_active_outlined,
-                        color: _showNotifications
-                            ? theme.primaryColor
-                            : theme.textTheme.bodyMedium?.color ??
-                                  AppColors.textSecondary,
+                          _showNotifications
+                              ? Icons.notifications
+                              : Icons.notifications_active_outlined,
+                          color: _showNotifications
+                              ? theme.primaryColor
+                              : theme.textTheme.bodyMedium?.color ??
+                                    AppColors.textSecondary,
+                        ),
+                        tooltip: 'Notifications',
+                        onPressed: () {
+                          setState(() {
+                            _showNotifications = !_showNotifications;
+                          });
+                        },
                       ),
-                      tooltip: 'Notifications',
-                      onPressed: () {
-                        setState(() {
-                          _showNotifications = !_showNotifications;
-                        });
-                      },
-                    ),
                     ),
                     const SizedBox(width: 8),
                     PopupMenuButton<String>(
@@ -344,14 +344,14 @@ class _WebMainLayoutState extends State<WebMainLayout> {
                           try {
                             final user = await UserRepository().getUser();
                             if (!mounted) return;
-                            final result = await this.context.push(
+                            final result = await context.push(
                               AppRoutes.editProfile,
                               extra: user,
                             );
                             if (result == true) _fetchUserImage();
                           } catch (e) {
                             if (!mounted) return;
-                            ScaffoldMessenger.of(this.context).showSnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Failed to load user data.'),
                               ),

@@ -94,9 +94,12 @@ class _WebManageProfilePicturesScreenState
         ),
       ),
       onSelected: (value) {
-        if (value == 'primary') setPrimaryImage(image.id);
-        else if (value == 'replace') replaceImage(image.id);
-        else if (value == 'delete') deleteImage(image.id);
+        if (value == 'primary') {
+          setPrimaryImage(image.id);
+        } else if (value == 'replace')
+          replaceImage(image.id);
+        else if (value == 'delete')
+          deleteImage(image.id);
       },
       itemBuilder: (context) => [
         if (!image.isPrimary)
@@ -106,7 +109,10 @@ class _WebManageProfilePicturesScreenState
               children: [
                 Icon(Icons.star_rounded, color: Color(0xFFF74B72), size: 20),
                 SizedBox(width: 12),
-                Text('Set as Main Photo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                Text(
+                  'Set as Main Photo',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
               ],
             ),
           ),
@@ -116,7 +122,10 @@ class _WebManageProfilePicturesScreenState
             children: [
               Icon(Icons.sync_rounded, color: Color(0xFFF74B72), size: 20),
               SizedBox(width: 12),
-              Text('Replace Photo', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              Text(
+                'Replace Photo',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
             ],
           ),
         ),
@@ -127,7 +136,14 @@ class _WebManageProfilePicturesScreenState
               children: [
                 Icon(Icons.delete_outline_rounded, color: Colors.red, size: 20),
                 SizedBox(width: 12),
-                Text('Delete Photo', style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600, fontSize: 14)),
+                Text(
+                  'Delete Photo',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
               ],
             ),
           ),
@@ -146,11 +162,7 @@ class _WebManageProfilePicturesScreenState
             ),
           ],
         ),
-        child: const Icon(
-          Icons.more_horiz,
-          color: Colors.black87,
-          size: 16,
-        ),
+        child: const Icon(Icons.more_horiz, color: Colors.black87, size: 16),
       ),
     );
   }

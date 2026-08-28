@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:google_sign_in_web/web_only.dart' as web_only;
 import 'package:life_partner_again/core/app_colors.dart';
 import 'package:life_partner_again/services/google_auth_service.dart';
 import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
+import '../widgets/google_web_button.dart';
 import '../widgets/login_controller.dart';
 
 class MobileLoginScreen extends StatefulWidget {
@@ -347,14 +347,12 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
               onPressed: isGoogleLoading ? null : initiateGoogleAuth,
               isPrimary: true,
             ),
-            if (!isGoogleLoading)
+            if (kIsWeb && !isGoogleLoading)
               Positioned.fill(
                 child: Opacity(
                   opacity: 0.01,
-                  child: web_only.renderButton(
-                    configuration: web_only.GSIButtonConfiguration(
-                      minimumWidth: 400,
-                    ),
+                  child: getGoogleWebButton(
+                    minimumWidth: 400,
                   ),
                 ),
               ),

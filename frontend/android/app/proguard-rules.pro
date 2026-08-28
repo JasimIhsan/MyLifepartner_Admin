@@ -44,3 +44,9 @@
 -keepclassmembers class * implements android.os.Parcelable {
     static ** CREATOR;
 }
+
+# ─── Flutter CallKit Incoming & Coil ──────────────────────────────────────────
+-keep class com.hiennv.flutter_callkit_incoming.** { *; }
+-dontwarn com.hiennv.flutter_callkit_incoming.**
+-dontwarn coil.**
+
