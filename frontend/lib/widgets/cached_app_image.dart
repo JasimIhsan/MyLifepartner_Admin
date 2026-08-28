@@ -133,6 +133,7 @@ class _CachedAppImageState extends State<CachedAppImage> {
     if (imageId == null || imageId <= 0) return;
 
     _hasRetriedWithFreshUrl = true;
+    await _imageCacheService.evictProfileImage(imageId);
     final refreshedUrl = await _imageCacheService.refreshPresignedUrl(imageId);
     if (!mounted) return;
 

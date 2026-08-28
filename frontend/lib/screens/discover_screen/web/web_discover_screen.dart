@@ -608,12 +608,16 @@ class _WebPhotoGalleryState extends State<_WebPhotoGallery> {
   }
 
   Widget _buildPlaceholder({IconData? icon, double size = 48}) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Container(
-      color: Colors.grey.shade900,
+      color: isDark ? const Color(0xFF1E1E2C) : Colors.grey.shade200,
       child: Center(
         child: Icon(
           icon ?? LucideIcons.image,
-          color: Colors.white.withValues(alpha: 0.2),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.3)
+              : Colors.grey.shade400,
           size: size,
         ),
       ),

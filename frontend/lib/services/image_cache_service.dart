@@ -114,6 +114,11 @@ class ImageCacheService {
 
     if (knownFingerprint != null && newFingerprint != null) {
       if (knownFingerprint == newFingerprint) {
+        if (knownUrl != null && knownUrl != normalizedUrl) {
+          // The presigned URL query parameter/signature changed.
+          // Evict old URL from provider cache so fresh URL is fetched.
+          _evictCacheKey(cacheKey, urlsToEvict: [knownUrl]);
+        }
         _rememberProfileImageUrl(cacheKey, normalizedUrl, newFingerprint);
         return ProfileImageCachePreparation.immediate();
       }

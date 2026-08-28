@@ -63,6 +63,9 @@ class _S3CachedImageState extends State<S3CachedImage> {
     try {
       final newUrl = await ImageUrlService.getPresignedUrl(_cacheKey);
       if (newUrl != null && newUrl.isNotEmpty && mounted) {
+        try {
+          await CachedNetworkImageProvider(_cacheKey, cacheKey: _cacheKey).evict();
+        } catch (_) {}
         setState(() {
           _currentUrl = newUrl;
           _retryKey++;
