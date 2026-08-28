@@ -402,6 +402,58 @@ export class UserService implements IUserService {
    }
 
    /**
+    * Gets user data formatted for export (GDPR / PIPEDA compliance).
+    *
+    * @param userId - User ID.
+    * @returns User data for export.
+    */
+   async getUserDataForExport(userId: number): Promise<any> {
+      const user = await prisma.user.findUnique({
+         where: { id: userId },
+         select: {
+            id: true,
+            email: true,
+            isVerified: true,
+            isFoundingMember: true,
+            isBanned: true,
+            isSuspended: true,
+            createdAt: true,
+            updatedAt: true,
+            profile: {
+               select: {
+                  name: true,
+                  gender: true,
+                  dateOfBirth: true,
+                  maritalStatus: true,
+                  motherTongue: true,
+                  city: true,
+                  state: true,
+                  country: true,
+                  highestEducation: true,
+                  bio: true,
+                  childrenStatus: true,
+                  drinkingHabit: true,
+                  emotionalReadiness: true,
+                  languages: true,
+                  lookingFor: true,
+                  relationshipTimeline: true,
+                  smokingHabit: true,
+                  job: true,
+               },
+            },
+            partnerPreference: true,
+            privacySettings: true,
+         }
+      });
+
+      if (!user) {
+         throw new ApiError(404, "User not found");
+      }
+
+      return user;
+   }
+
+   /**
     * Gets user onboarding status.
     *
     * @param userId - User ID.

@@ -16,36 +16,47 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
   int currentIndex = 0;
   String? loadingAction;
 
+  MatchProvider? _matchProvider;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchRecommendations();
-      // Keep localProfiles in sync when ProfileActionBar performs swipes
-      // that remove profiles directly via MatchProvider.
-      context.read<MatchProvider>().addListener(_onProviderChanged);
+      if (mounted) {
+        fetchRecommendations();
+      }
     });
   }
 
   void _onProviderChanged() {
     // Sync whenever the provider's profile list changes (e.g. after a swipe
     // done by ProfileActionBar inside the inline detail view).
+    if (!mounted) return;
     syncWithProvider();
   }
 
   @override
-
   void didChangeDependencies() {
     super.didChangeDependencies();
-    routeObserver.subscribe(this, ModalRoute.of(context) as PageRoute);
+    final modalRoute = ModalRoute.of(context);
+    if (modalRoute is PageRoute) {
+      routeObserver.subscribe(this, modalRoute);
+    }
+
+    final provider = Provider.of<MatchProvider>(context, listen: false);
+    if (_matchProvider != provider) {
+      _matchProvider?.removeListener(_onProviderChanged);
+      _matchProvider = provider;
+      _matchProvider?.addListener(_onProviderChanged);
+    }
   }
 
   @override
   void dispose() {
     routeObserver.unsubscribe(this);
     pageController.dispose();
-    // Remove the MatchProvider listener we added in initState
-    context.read<MatchProvider>().removeListener(_onProviderChanged);
+    _matchProvider?.removeListener(_onProviderChanged);
+    _matchProvider = null;
     super.dispose();
   }
 
@@ -64,16 +75,20 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
   void didPushNext() {}
 
   void fetchRecommendations() {
-    if (mounted) {
-      context.read<MatchProvider>().loadRecommendations().then(
-        (_) => syncWithProvider(resetIndex: true),
-      );
-    }
+    if (!mounted) return;
+    final provider =
+        _matchProvider ?? Provider.of<MatchProvider>(context, listen: false);
+    provider.loadRecommendations().then((_) {
+      if (mounted) {
+        syncWithProvider(resetIndex: true);
+      }
+    });
   }
 
   void syncWithProvider({bool resetIndex = false}) {
     if (!mounted) return;
-    final provider = context.read<MatchProvider>();
+    final provider = _matchProvider;
+    if (provider == null) return;
     setState(() {
       localProfiles = List.from(provider.profiles);
       if (resetIndex) {
@@ -105,8 +120,12 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
         });
       }
     } else {
-      context.read<MatchProvider>().loadRecommendations().then((_) {
-        syncWithProvider();
+      final provider = _matchProvider ??
+          (mounted ? Provider.of<MatchProvider>(context, listen: false) : null);
+      provider?.loadRecommendations().then((_) {
+        if (mounted) {
+          syncWithProvider();
+        }
       });
     }
   }
@@ -157,7 +176,7 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
       await MatchService.swipe(targetProfileId: profile.id, action: action);
 
       if (mounted) {
-        context.read<MatchProvider>().removeProfile(profile.id);
+        _matchProvider?.removeProfile(profile.id);
 
         setState(() {
           actionedProfileIds.add(profile.id);
@@ -175,8 +194,10 @@ mixin DiscoverControllerState<T extends StatefulWidget> on State<T>
         }
 
         if (localProfiles.isEmpty) {
-          context.read<MatchProvider>().loadRecommendations().then((_) {
-            syncWithProvider();
+          _matchProvider?.loadRecommendations().then((_) {
+            if (mounted) {
+              syncWithProvider();
+            }
           });
         }
       }

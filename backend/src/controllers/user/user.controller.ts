@@ -9,6 +9,7 @@ import { HTTP_STATUS } from "@/utils/constants";
 import logger from "@/utils/logger";
 import { ActorType, AuditModule, AuditSeverity, AuditSource, AuditStatus } from "@prisma/client";
 import { Request, Response } from "express";
+import { generateUserExportPdf } from "@/utils/pdfGenerator";
 
 export class UserController {
    constructor(private readonly userService: IUserService) {}
@@ -178,5 +179,33 @@ export class UserController {
       `;
 
       return res.status(200).send(html);
+   });
+
+   /**
+    * @route GET /api/v1/user/export-data
+    * @purpose Generates a PDF of user's data for download.
+    */
+   public exportUserData = asyncHandler(async (req: AuthRequest, res: Response) => {
+      const authUserId = this.getAuthenticatedUserId(req);
+
+      const userData = await this.userService.getUserDataForExport(authUserId);
+
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="user_data_export_${authUserId}.pdf"`);
+
+      await generateUserExportPdf(userData, res);
+      
+      await auditService.log({
+         userId: authUserId,
+         actorType: ActorType.USER,
+         module: AuditModule.ACCOUNT,
+         action: "EXPORT_USER_DATA",
+         status: AuditStatus.SUCCESS,
+         severity: AuditSeverity.INFO,
+         message: `User downloaded their data export (PDF).`,
+         entityType: "User",
+         entityId: authUserId.toString(),
+         source: AuditSource.API,
+      });
    });
 }

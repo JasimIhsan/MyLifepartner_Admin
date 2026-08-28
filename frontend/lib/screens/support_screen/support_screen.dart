@@ -7,6 +7,7 @@ import 'package:life_partner_again/services/api_service.dart';
 import 'package:life_partner_again/services/user_repository.dart';
 
 import 'accepted_legal_screen.dart';
+import 'download_data_bottom_sheet.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({super.key});
@@ -93,6 +94,30 @@ class _SupportScreenState extends State<SupportScreen> {
               ]),
 
               const SizedBox(height: 16),
+              _buildSectionHeader(theme, "Data & Privacy"),
+              _buildActionGroup(theme, [
+                _buildActionItem(
+                  theme: theme,
+                  icon: Icons.download_rounded,
+                  title: "Download My Data",
+                  subtitle: "Export your personal data as PDF",
+                  showDivider: false,
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      enableDrag: false,
+                      isDismissible: false,
+                      builder: (BuildContext sheetContext) {
+                        return const DownloadDataBottomSheet();
+                      },
+                    );
+                  },
+                ),
+              ]),
+
+              const SizedBox(height: 16),
               _buildSectionHeader(theme, "Danger Zone", color: AppColors.error),
               _buildActionGroup(theme, [
                 _buildActionItem(
@@ -120,7 +145,10 @@ class _SupportScreenState extends State<SupportScreen> {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [theme.primaryColor.withValues(alpha: 0.8), theme.primaryColor],
+          colors: [
+            theme.primaryColor.withValues(alpha: 0.8),
+            theme.primaryColor,
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -234,18 +262,18 @@ class _SupportScreenState extends State<SupportScreen> {
           onTap: onTap,
           borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: effectiveIconColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: effectiveIconColor, size: 24),
+                  child: Icon(icon, color: effectiveIconColor, size: 20),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -253,22 +281,22 @@ class _SupportScreenState extends State<SupportScreen> {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: effectiveTitleColor,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Text(
                         subtitle,
-                        style: TextStyle(fontSize: 13, color: subtitleColor),
+                        style: TextStyle(fontSize: 12, color: subtitleColor),
                       ),
                     ],
                   ),
                 ),
                 Icon(
                   Icons.arrow_forward_ios_rounded,
-                  size: 16,
+                  size: 14,
                   color: subtitleColor.withValues(alpha: 0.5),
                 ),
               ],
@@ -626,7 +654,9 @@ class _SupportScreenState extends State<SupportScreen> {
                                     : FontWeight.w500,
                                 fontSize: 13,
                               ),
-                              selectedColor: dangerColor.withValues(alpha: 0.12),
+                              selectedColor: dangerColor.withValues(
+                                alpha: 0.12,
+                              ),
                               backgroundColor: theme.colorScheme.surface,
                               side: BorderSide(
                                 color: isSelected
@@ -657,8 +687,10 @@ class _SupportScreenState extends State<SupportScreen> {
                             errorText: reasonError,
                             alignLabelWithHint: true,
                             filled: true,
-                            fillColor: theme.canvasColor.withOpacity(
-                              theme.brightness == Brightness.dark ? 0.2 : 0.7,
+                            fillColor: theme.canvasColor.withValues(
+                              alpha: theme.brightness == Brightness.dark
+                                  ? 0.2
+                                  : 0.7,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -686,8 +718,8 @@ class _SupportScreenState extends State<SupportScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: dangerColor,
                               foregroundColor: Colors.white,
-                              disabledBackgroundColor: dangerColor.withOpacity(
-                                0.45,
+                              disabledBackgroundColor: dangerColor.withValues(
+                                alpha: 0.45,
                               ),
                               elevation: 0,
                               shape: RoundedRectangleBorder(

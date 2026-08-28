@@ -21,6 +21,13 @@ router.use(verifyJWT);
 router.post("/account-deletion/request", userController.requestAccountDeletion);
 
 /**
+ * @route   GET /api/v1/user/export-data
+ * @desc    Export user data to PDF
+ * @access  Private
+ */
+router.get("/export-data", userController.exportUserData);
+
+/**
  * @route   GET /api/v1/user/profile
  * @desc    Get current authenticated user profile
  * @access  Private

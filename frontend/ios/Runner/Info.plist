@@ -57,6 +57,10 @@
 	<string>Your location is used to suggest your country, state, and city. You can edit these values at any time.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Life Partner Again needs access to your photo library so you can upload profile pictures and share photos with your matches.</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

@@ -12,6 +12,7 @@ export interface IUserService {
    getSubscriptionUsers(query: { search?: string; page?: number; limit?: number; status?: string; planId?: number }): Promise<{ data: UserDto[]; total: number }>;
    getUserById(userId: number): Promise<UserDto>;
    getCompleteUserDetailsForAdmin(userId: number): Promise<any>;
+   getUserDataForExport(userId: number): Promise<any>;
    getOnboardingStatus(userId: number): Promise<UserOnboardingStatusDto>;
    updateUser(userId: number, updateData: UpdateUserDto): Promise<UserDto>;
    toggleFoundingMemberStatus(userId: number): Promise<{ user: UserDto; previousIsFoundingMember: boolean; previousFoundingMemberSince: Date | null }>;
