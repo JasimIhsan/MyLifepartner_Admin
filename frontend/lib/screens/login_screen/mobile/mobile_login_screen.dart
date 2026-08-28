@@ -1,9 +1,13 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in_web/web_only.dart' as web_only;
 import 'package:life_partner_again/core/app_colors.dart';
+import 'package:life_partner_again/services/google_auth_service.dart';
 import 'package:life_partner_again/widgets/onboarding_background_image.dart';
 
 import '../widgets/login_controller.dart';
@@ -26,6 +30,31 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
   <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
   <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
 </svg>''';
+
+  @override
+  void initState() {
+    super.initState();
+    if (kIsWeb) {
+      _initWebGoogleSignIn();
+    }
+  }
+
+  Future<void> _initWebGoogleSignIn() async {
+    await GoogleAuthService.instance.ensureInitialized();
+    GoogleSignIn.instance.authenticationEvents.listen(
+      (event) {
+        if (event is GoogleSignInAuthenticationEventSignIn) {
+          final String? idToken = event.user.authentication.idToken;
+          if (idToken != null && idToken.isNotEmpty) {
+            processGoogleIdToken(idToken);
+          }
+        }
+      },
+      onError: (error) {
+        debugPrint("Google Web Sign-In event error: $error");
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -302,17 +331,34 @@ class _MobileLoginScreenState extends State<MobileLoginScreen>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Primary (Google) - Enabled
-        _buildEditorialButton(
-          icon: isGoogleLoading
-              ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : SvgPicture.string(_googleSvg, width: 22, height: 22),
-          label: "Continue with Google",
-          onPressed: isGoogleLoading ? null : initiateGoogleAuth,
-          isPrimary: true,
+        Stack(
+          children: [
+            _buildEditorialButton(
+              icon: isGoogleLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : SvgPicture.string(_googleSvg, width: 22, height: 22),
+              label: isGoogleLoading
+                  ? "Continuing..."
+                  : "Continue with Google",
+              onPressed: isGoogleLoading ? null : initiateGoogleAuth,
+              isPrimary: true,
+            ),
+            if (!isGoogleLoading)
+              Positioned.fill(
+                child: Opacity(
+                  opacity: 0.01,
+                  child: web_only.renderButton(
+                    configuration: web_only.GSIButtonConfiguration(
+                      minimumWidth: 400,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 16),
 
