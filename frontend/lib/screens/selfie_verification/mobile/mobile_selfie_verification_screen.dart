@@ -346,250 +346,271 @@ class _MobileSelfieVerificationScreenState
         ),
         body: SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 8),
-                Text(
-                  'Verify your identity',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color:
-                        Theme.of(context).textTheme.bodyLarge?.color ??
-                        AppColors.textPrimary,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Take a clear selfie to help us keep\nthe community safe and authentic.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color:
-                        Theme.of(context).textTheme.bodyMedium?.color ??
-                        AppColors.textSecondary,
-                    height: 1.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Theme.of(context).dividerColor),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.shield_outlined,
-                        color:
-                            Theme.of(context).textTheme.bodyLarge?.color ??
-                            AppColors.textPrimary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Your selfies are only used for verification and will remain secure. We also request location service access when submitting the selfies.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).textTheme.bodySmall?.color,
-                            height: 1.4,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 36),
-                Expanded(
-                  child: Center(
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Container(
-                          width: circleDia + 10,
-                          height: circleDia + 10,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: (_currentImage != null ||
-                                      _isCameraInitialized)
-                                  ? Theme.of(context).textTheme.bodyLarge
-                                          ?.color ??
-                                      AppColors.textPrimary.withValues(
-                                        alpha: 0.2,
-                                      )
-                                  : Theme.of(context).dividerColor,
-                              width: 5,
+                  child: IntrinsicHeight(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 8),
+                          Text(
+                            'Verify your identity',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color ??
+                                  AppColors.textPrimary,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                        ),
-                        Container(
-                          width: circleDia,
-                          height: circleDia,
-                          decoration:
-                              const BoxDecoration(shape: BoxShape.circle),
-                          child: ClipOval(
-                            child: _currentImage != null
-                                ? (kIsWeb
-                                      ? Image.network(
-                                          _currentImage!.path,
-                                          width: circleDia,
-                                          height: circleDia,
-                                          fit: BoxFit.cover,
-                                        )
-                                      : Image.file(
-                                          File(_currentImage!.path),
-                                          width: circleDia,
-                                          height: circleDia,
-                                          fit: BoxFit.cover,
-                                        ))
-                                : _isCameraInitialized
-                                ? _buildCameraFill(circleDia)
-                                : _errorMessage != null
-                                ? Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(24),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            _isPermissionDenied
-                                                ? Icons.videocam_off_outlined
-                                                : Icons.error_outline,
-                                            color:
-                                                Theme.of(context)
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.color ??
-                                                AppColors.textSecondary,
-                                            size: 32,
-                                          ),
-                                          const SizedBox(height: 12),
-                                          Text(
-                                            _errorMessage!,
-                                            style: TextStyle(
-                                              fontSize: 13,
-                                              color:
-                                                  Theme.of(context)
-                                                      .textTheme
-                                                      .bodyMedium
-                                                      ?.color ??
-                                                  AppColors.textSecondary,
-                                            ),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          if (_isPermissionDenied) ...[
-                                            const SizedBox(height: 16),
-                                            ElevatedButton(
-                                              onPressed: () async {
-                                                await Geolocator
-                                                    .openAppSettings();
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Theme.of(
-                                                  context,
-                                                ).primaryColor,
-                                                foregroundColor: Theme.of(
-                                                  context,
-                                                ).colorScheme.onPrimary,
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 20,
-                                                      vertical: 10,
-                                                    ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(20),
-                                                ),
-                                                elevation: 0,
-                                              ),
-                                              child: const Text(
-                                                'Grant Access',
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                                : Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color:
-                                          Theme.of(
-                                            context,
-                                          ).textTheme.bodyLarge?.color ??
-                                          AppColors.textPrimary,
+                          const SizedBox(height: 8),
+                          Text(
+                            'Take a clear selfie to help us keep\nthe community safe and authentic.',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color:
+                                  Theme.of(context).textTheme.bodyMedium?.color ??
+                                  AppColors.textSecondary,
+                              height: 1.5,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 24),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Theme.of(context).dividerColor),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.shield_outlined,
+                                  color:
+                                      Theme.of(context).textTheme.bodyLarge?.color ??
+                                      AppColors.textPrimary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'Your selfies are only used for verification and will remain secure. We also request location service access when submitting the selfies.',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Theme.of(context).textTheme.bodySmall?.color,
+                                      height: 1.4,
                                     ),
                                   ),
-                          ),
-                        ),
-                        if (_currentStep < 3 && _isCameraInitialized)
-                          IgnorePointer(
-                            child: FaceDirectionOverlay(
-                              step: _currentStep,
-                              size: circleDia,
+                                ),
+                              ],
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-                if (_currentStep < 3) ...[
-                  _buildShutterButton(),
-                ] else ...[
-                  _buildPreviewThumbnails(),
-                  const SizedBox(height: 32),
-                  _hasDeniedLocation
-                      ? _PrimaryButton(
-                          label: 'Grant Location Access',
-                          onPressed: () async {
-                            await Geolocator.openAppSettings();
-                          },
-                        )
-                      : _PrimaryButton(
-                          label: 'Complete Verification',
-                          isLoading: _isLoading,
-                          onPressed: _isLoading ? null : _submitVerification,
-                        ),
-                  const SizedBox(height: 14),
-                  TextButton(
-                    onPressed: _isLoading ? null : _retakeAll,
-                    child: Text(
-                      'Retake All',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                        color: _isLoading
-                            ? (Theme.of(context).textTheme.bodyMedium?.color ??
-                                      AppColors.textSecondary)
-                                  .withValues(alpha: 0.4)
-                            : Theme.of(context).textTheme.bodyMedium?.color ??
-                                  AppColors.textSecondary,
+                          const SizedBox(height: 24),
+                          Expanded(
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                child: SizedBox(
+                                  width: circleDia + 10,
+                                  height: circleDia + 10,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Container(
+                                        width: circleDia + 10,
+                                        height: circleDia + 10,
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                            color: (_currentImage != null ||
+                                                    _isCameraInitialized)
+                                                ? Theme.of(context).textTheme.bodyLarge
+                                                        ?.color ??
+                                                    AppColors.textPrimary.withValues(
+                                                      alpha: 0.2,
+                                                    )
+                                                : Theme.of(context).dividerColor,
+                                            width: 5,
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: circleDia,
+                                        height: circleDia,
+                                        decoration:
+                                            const BoxDecoration(shape: BoxShape.circle),
+                                        child: ClipOval(
+                                          child: _currentImage != null
+                                              ? (kIsWeb
+                                                    ? Image.network(
+                                                        _currentImage!.path,
+                                                        width: circleDia,
+                                                        height: circleDia,
+                                                        fit: BoxFit.cover,
+                                                      )
+                                                    : Image.file(
+                                                        File(_currentImage!.path),
+                                                        width: circleDia,
+                                                        height: circleDia,
+                                                        fit: BoxFit.cover,
+                                                      ))
+                                              : _isCameraInitialized
+                                              ? _buildCameraFill(circleDia)
+                                              : _errorMessage != null
+                                              ? Center(
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(24),
+                                                    child: Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.center,
+                                                      children: [
+                                                        Icon(
+                                                          _isPermissionDenied
+                                                              ? Icons.videocam_off_outlined
+                                                              : Icons.error_outline,
+                                                          color:
+                                                              Theme.of(context)
+                                                                  .textTheme
+                                                                  .bodyMedium
+                                                                  ?.color ??
+                                                              AppColors.textSecondary,
+                                                          size: 32,
+                                                        ),
+                                                        const SizedBox(height: 12),
+                                                        Text(
+                                                          _errorMessage!,
+                                                          style: TextStyle(
+                                                            fontSize: 13,
+                                                            color:
+                                                                Theme.of(context)
+                                                                    .textTheme
+                                                                    .bodyMedium
+                                                                    ?.color ??
+                                                                AppColors.textSecondary,
+                                                          ),
+                                                          textAlign: TextAlign.center,
+                                                        ),
+                                                        if (_isPermissionDenied) ...[
+                                                          const SizedBox(height: 16),
+                                                          ElevatedButton(
+                                                            onPressed: () async {
+                                                              await Geolocator
+                                                                  .openAppSettings();
+                                                            },
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: Theme.of(
+                                                                context,
+                                                              ).primaryColor,
+                                                              foregroundColor: Theme.of(
+                                                                context,
+                                                              ).colorScheme.onPrimary,
+                                                              padding:
+                                                                  const EdgeInsets.symmetric(
+                                                                    horizontal: 20,
+                                                                    vertical: 10,
+                                                                  ),
+                                                              shape: RoundedRectangleBorder(
+                                                                borderRadius:
+                                                                    BorderRadius.circular(20),
+                                                              ),
+                                                              elevation: 0,
+                                                            ),
+                                                            child: const Text(
+                                                              'Grant Access',
+                                                              style: TextStyle(
+                                                                fontSize: 13,
+                                                                fontWeight: FontWeight.w600,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                              : Center(
+                                                  child: CircularProgressIndicator(
+                                                    strokeWidth: 2,
+                                                    color:
+                                                        Theme.of(
+                                                          context,
+                                                        ).textTheme.bodyLarge?.color ??
+                                                        AppColors.textPrimary,
+                                                  ),
+                                                ),
+                                        ),
+                                      ),
+                                      if (_currentStep < 3 && _isCameraInitialized)
+                                        IgnorePointer(
+                                          child: FaceDirectionOverlay(
+                                            step: _currentStep,
+                                            size: circleDia,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          if (_currentStep < 3) ...[
+                            _buildShutterButton(),
+                          ] else ...[
+                            _buildPreviewThumbnails(),
+                            const SizedBox(height: 32),
+                            _hasDeniedLocation
+                                ? _PrimaryButton(
+                                    label: 'Grant Location Access',
+                                    onPressed: () async {
+                                      await Geolocator.openAppSettings();
+                                    },
+                                  )
+                                : _PrimaryButton(
+                                    label: 'Complete Verification',
+                                    isLoading: _isLoading,
+                                    onPressed: _isLoading ? null : _submitVerification,
+                                  ),
+                            const SizedBox(height: 14),
+                            TextButton(
+                              onPressed: _isLoading ? null : _retakeAll,
+                              child: Text(
+                                'Retake All',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                  color: _isLoading
+                                      ? (Theme.of(context).textTheme.bodyMedium?.color ??
+                                                AppColors.textSecondary)
+                                            .withValues(alpha: 0.4)
+                                      : Theme.of(context).textTheme.bodyMedium?.color ??
+                                            AppColors.textSecondary,
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 24),
+                        ],
                       ),
                     ),
                   ),
-                ],
-                const SizedBox(height: 24),
-              ],
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),

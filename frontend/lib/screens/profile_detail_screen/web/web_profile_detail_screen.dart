@@ -17,6 +17,7 @@ import 'package:life_partner_again/widgets/bottomsheet/feature_exhausted_modal.d
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
+import 'package:life_partner_again/widgets/fullscreen_image_preview.dart';
 import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:life_partner_again/widgets/feature_download_prompt.dart';
 import 'package:provider/provider.dart';
@@ -263,19 +264,30 @@ class _WebPhotoGalleryState extends State<_WebPhotoGallery> {
               children: [
                 // Main Image
                 displayImages.isNotEmpty
-                    ? AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: CachedAppImage.fromProfileImageMap(
-                          key: ValueKey(
-                            '${widget.profileMap['id']}_$_currentIndex',
+                    ? GestureDetector(
+                        onTap: isPrivate
+                            ? null
+                            : () {
+                                FullscreenImagePreview.show(
+                                  context,
+                                  images: displayImages,
+                                  initialIndex: _currentIndex,
+                                );
+                              },
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          child: CachedAppImage.fromProfileImageMap(
+                            key: ValueKey(
+                              '${widget.profileMap['id']}_$_currentIndex',
+                            ),
+                            image: displayImages[_currentIndex],
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: double.infinity,
+                            placeholder: (_, __) => _buildPlaceholder(),
+                            errorWidget: (_, __, ___) =>
+                                _buildPlaceholder(icon: LucideIcons.image_off),
                           ),
-                          image: displayImages[_currentIndex],
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: double.infinity,
-                          placeholder: (_, __) => _buildPlaceholder(),
-                          errorWidget: (_, __, ___) =>
-                              _buildPlaceholder(icon: LucideIcons.image_off),
                         ),
                       )
                     : _buildPlaceholder(icon: LucideIcons.user, size: 84),

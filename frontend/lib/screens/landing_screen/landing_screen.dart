@@ -199,15 +199,19 @@ class _MobileLandingScreenState extends State<MobileLandingScreen> {
   }
 
   Widget _buildTrustCards() {
-    return Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          children: [
-            _buildTrustCard(Icons.verified_user_rounded, 'Verified'),
-            _buildTrustCard(Icons.shield_rounded, 'Privacy'),
-            _buildTrustCard(Icons.lock_rounded, 'Secure'),
-          ],
-        )
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildTrustCard(Icons.verified_user_rounded, 'Verified'),
+          const SizedBox(width: 12),
+          _buildTrustCard(Icons.shield_rounded, 'Privacy'),
+          const SizedBox(width: 12),
+          _buildTrustCard(Icons.lock_rounded, 'Secure'),
+        ],
+      ),
+    )
         .animate()
         .fadeIn(duration: 800.ms, delay: 600.ms)
         .slideY(begin: 0.1, end: 0);

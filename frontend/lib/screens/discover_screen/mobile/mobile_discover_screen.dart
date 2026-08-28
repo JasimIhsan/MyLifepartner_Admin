@@ -12,6 +12,7 @@ import 'package:life_partner_again/widgets/cached_app_image.dart';
 import 'package:life_partner_again/widgets/custom_button.dart';
 import 'package:life_partner_again/widgets/feature_download_prompt.dart';
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
+import 'package:life_partner_again/widgets/fullscreen_image_preview.dart';
 import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:provider/provider.dart';
 
@@ -52,129 +53,146 @@ class _MobileDiscoverScreenState extends State<MobileDiscoverScreen>
               return _buildEmpty();
             }
 
-            return NotificationListener<UserScrollNotification>(
-              onNotification: (notification) {
-                if (notification.direction == ScrollDirection.reverse) {
-                  if (_isBottomNavVisible) {
-                    setState(() => _isBottomNavVisible = false);
-                  }
-                } else if (notification.direction == ScrollDirection.forward) {
-                  if (!_isBottomNavVisible) {
-                    setState(() => _isBottomNavVisible = true);
-                  }
-                }
-                return false;
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final screenWidth = constraints.maxWidth;
+                // Compute button size dynamically based on screen dimensions (e.g. 17% of width, clamped between 64 and 84)
+                final btnSize = (screenWidth * 0.17).clamp(64.0, 84.0);
+                final iconSize = btnSize * 0.58;
+                // When bottom nav is hidden and centered, calculate offset using exact btnSize
+                final hiddenCenterOffset = (screenWidth / 2) - btnSize - 12;
+
+                return NotificationListener<UserScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification.direction == ScrollDirection.reverse) {
+                      if (_isBottomNavVisible) {
+                        setState(() => _isBottomNavVisible = false);
+                      }
+                    } else if (notification.direction == ScrollDirection.forward) {
+                      if (!_isBottomNavVisible) {
+                        setState(() => _isBottomNavVisible = true);
+                      }
+                    }
+                    return false;
+                  },
+                  child: Stack(
+                    children: [
+                      // Full-screen scrollable profile detail pager
+                      PageView.builder(
+                        controller: pageController,
+                        onPageChanged: (idx) => setState(() => currentIndex = idx),
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: localProfiles.length,
+                        itemBuilder: (context, index) {
+                          final profile = localProfiles[index];
+                          final profileMap = profile.toDetailMap();
+                          return _InlineProfileDetail(
+                            profileMap: profileMap,
+                            onReportPressed: () =>
+                                ReportUserDialog.show(context, profileMap),
+                            onBlockPressed: () =>
+                                _showBlockConfirmation(context, profileMap),
+                          );
+                        },
+                      ),
+
+                      // Left Prev button – floats at vertical center of left edge
+                      if (currentIndex > 0)
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: SideNavigationButton(
+                            icon: Icons.chevron_left_rounded,
+                            onTap: goToPrevious,
+                            isLeft: true,
+                          ),
+                        ),
+
+                      // Right Next button – floats at vertical center of right edge
+                      if (currentIndex < localProfiles.length - 1)
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: SideNavigationButton(
+                            icon: Icons.chevron_right_rounded,
+                            onTap: goToNext,
+                            isLeft: false,
+                          ),
+                        ),
+
+                      // Left Action Floating Button (Pass)
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                        bottom: _isBottomNavVisible
+                            ? MediaQuery.of(context).padding.bottom - 4
+                            : 32,
+                        left: _isBottomNavVisible ? 24 : hiddenCenterOffset,
+                        child: SizedBox(
+                          width: btnSize,
+                          height: btnSize,
+                          child: FloatingActionButton(
+                            heroTag: 'pass_btn',
+                            onPressed: loadingAction != null
+                                ? null
+                                : () {
+                                    if (FeatureDownloadPrompt.intercept(
+                                      context,
+                                      featureName: 'Match & Connect',
+                                    )) {
+                                      return;
+                                    }
+                                    handleInteraction(
+                                      localProfiles[currentIndex],
+                                      'LEFT',
+                                    );
+                                  },
+                            backgroundColor: Theme.of(context).cardColor,
+                            foregroundColor: Colors.black,
+                            elevation: 4,
+                            shape: const CircleBorder(),
+                            child: Icon(Icons.heart_broken_rounded, size: iconSize),
+                          ),
+                        ),
+                      ),
+
+                      // Right Action Floating Button (Favorite)
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutCubic,
+                        bottom: _isBottomNavVisible
+                            ? MediaQuery.of(context).padding.bottom - 4
+                            : 32,
+                        right: _isBottomNavVisible ? 24 : hiddenCenterOffset,
+                        child: SizedBox(
+                          width: btnSize,
+                          height: btnSize,
+                          child: FloatingActionButton(
+                            heroTag: 'favorite_btn',
+                            onPressed: loadingAction != null
+                                ? null
+                                : () {
+                                    if (FeatureDownloadPrompt.intercept(
+                                      context,
+                                      featureName: 'Match & Connect',
+                                    )) {
+                                      return;
+                                    }
+                                    handleInteraction(
+                                      localProfiles[currentIndex],
+                                      'RIGHT',
+                                    );
+                                  },
+                            backgroundColor: Theme.of(context).cardColor,
+                            foregroundColor: Theme.of(context).primaryColor,
+                            elevation: 4,
+                            shape: const CircleBorder(),
+                            child: Icon(Icons.favorite_rounded, size: iconSize),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
               },
-              child: Stack(
-                children: [
-                  // Full-screen scrollable profile detail pager
-                  PageView.builder(
-                    controller: pageController,
-                    onPageChanged: (idx) => setState(() => currentIndex = idx),
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: localProfiles.length,
-                    itemBuilder: (context, index) {
-                      final profile = localProfiles[index];
-                      final profileMap = profile.toDetailMap();
-                      return _InlineProfileDetail(
-                        profileMap: profileMap,
-                        onReportPressed: () =>
-                            ReportUserDialog.show(context, profileMap),
-                        onBlockPressed: () =>
-                            _showBlockConfirmation(context, profileMap),
-                      );
-                    },
-                  ),
-
-                  // Left Prev button – floats at vertical center of left edge
-                  if (currentIndex > 0)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: SideNavigationButton(
-                        icon: Icons.chevron_left_rounded,
-                        onTap: goToPrevious,
-                        isLeft: true,
-                      ),
-                    ),
-
-                  // Right Next button – floats at vertical center of right edge
-                  if (currentIndex < localProfiles.length - 1)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: SideNavigationButton(
-                        icon: Icons.chevron_right_rounded,
-                        onTap: goToNext,
-                        isLeft: false,
-                      ),
-                    ),
-
-                  // Left Action Floating Button (Pass)
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    bottom: _isBottomNavVisible
-                        ? 16 + MediaQuery.of(context).padding.bottom
-                        : 32,
-                    left: _isBottomNavVisible
-                        ? 24
-                        : (MediaQuery.of(context).size.width / 2) - 76,
-                    child: SizedBox(
-                      width: 64,
-                      height: 64,
-                      child: FloatingActionButton(
-                        heroTag: 'pass_btn',
-                        onPressed: loadingAction != null
-                            ? null
-                            : () {
-                                if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
-                                handleInteraction(
-                                  localProfiles[currentIndex],
-                                  'LEFT',
-                                );
-                              },
-                        backgroundColor: Theme.of(context).cardColor,
-                        foregroundColor: Colors.black,
-                        elevation: 4,
-                        shape: const CircleBorder(),
-                        child: const Icon(Icons.heart_broken_rounded, size: 36),
-                      ),
-                    ),
-                  ),
-
-                  // Right Action Floating Button (Favorite)
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    bottom: _isBottomNavVisible
-                        ? 16 + MediaQuery.of(context).padding.bottom
-                        : 32,
-                    right: _isBottomNavVisible
-                        ? 24
-                        : (MediaQuery.of(context).size.width / 2) - 76,
-                    child: SizedBox(
-                      width: 64,
-                      height: 64,
-                      child: FloatingActionButton(
-                        heroTag: 'favorite_btn',
-                        onPressed: loadingAction != null
-                            ? null
-                            : () {
-                                if (FeatureDownloadPrompt.intercept(context, featureName: 'Match & Connect')) return;
-                                handleInteraction(
-                                  localProfiles[currentIndex],
-                                  'RIGHT',
-                                );
-                              },
-                        backgroundColor: Theme.of(context).cardColor,
-                        foregroundColor: Theme.of(context).primaryColor,
-                        elevation: 4,
-                        shape: const CircleBorder(),
-                        child: const Icon(Icons.favorite_rounded, size: 36),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             );
           },
         ),
@@ -422,38 +440,45 @@ class _InlineProfileDetail extends StatelessWidget {
         ? images.skip(1).toList()
         : [];
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
-      slivers: [
-        SliverToBoxAdapter(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _buildHero(context, profileMap, images),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
-                    child: _buildContent(
-                      context,
-                      profileMap,
-                      bodyImages,
-                      onReportPressed,
-                      onBlockPressed,
+    return RefreshIndicator(
+      onRefresh: () async {
+        await context.read<MatchProvider>().loadRecommendations();
+      },
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 430),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildHero(context, profileMap, images),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+                      child: _buildContent(
+                        context,
+                        profileMap,
+                        bodyImages,
+                        onReportPressed,
+                        onBlockPressed,
+                      ),
                     ),
-                  ),
-                  Builder(
-                    builder: (ctx) => SizedBox(
-                      height: MediaQuery.of(ctx).padding.bottom + 20,
+                    Builder(
+                      builder: (ctx) => SizedBox(
+                        height: MediaQuery.of(ctx).padding.bottom + 20,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -476,53 +501,85 @@ class _InlineProfileDetail extends StatelessWidget {
 
     final firstImage = images.first;
 
-    return Stack(
-      children: [
-        _ProfileAspectPhoto(
-          image: firstImage,
-          borderRadius: BorderRadius.zero,
-          fallbackAspectRatio: 0.78,
-        ),
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.78),
-                  Colors.black.withValues(alpha: 0.18),
-                  Colors.transparent,
-                ],
-                stops: const [0, 0.45, 1],
+    return GestureDetector(
+      onTap: (firstImage is Map && firstImage['isBlurred'] == true)
+          ? null
+          : () {
+              FullscreenImagePreview.show(
+                context,
+                images: images,
+                initialIndex: 0,
+              );
+            },
+      child: Stack(
+        children: [
+          _ProfileAspectPhoto(
+            image: firstImage,
+            borderRadius: BorderRadius.zero,
+            fallbackAspectRatio: 0.78,
+            allImages: images,
+            imageIndex: 0,
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.78),
+                      Colors.black.withValues(alpha: 0.18),
+                      Colors.transparent,
+                    ],
+                    stops: const [0, 0.45, 1],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-        Positioned.fill(
-          child: SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (firstImage is Map && firstImage['isBlurred'] == true) ...[
-                  const Spacer(flex: 4),
-                  _buildPrivacyOverlay(context, profile),
-                  const Spacer(flex: 1),
-                ] else
-                  const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _HeroProfileInfo(profile: profile),
-                  ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: SafeArea(
+                bottom: false,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: IntrinsicHeight(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (firstImage is Map &&
+                                  firstImage['isBlurred'] == true) ...[
+                                const Spacer(flex: 4),
+                                _buildPrivacyOverlay(context, profile),
+                                const Spacer(flex: 1),
+                              ] else
+                                const Spacer(),
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: _HeroProfileInfo(profile: profile),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -536,6 +593,8 @@ class _InlineProfileDetail extends StatelessWidget {
     final children = <Widget>[];
     int imageIndex = 0;
 
+    final allImagesList = (profile['images'] as List<dynamic>? ?? []);
+
     if (_hasText(profile['bio'])) {
       children.add(_buildSectionTitle(context, 'About'));
       children.add(const SizedBox(height: 10));
@@ -544,7 +603,9 @@ class _InlineProfileDetail extends StatelessWidget {
     }
 
     if (imageIndex < images.length) {
-      children.add(_buildInlinePhoto(images[imageIndex++]));
+      final img = images[imageIndex++];
+      final overallIdx = allImagesList.indexOf(img);
+      children.add(_buildInlinePhoto(img, allImagesList, overallIdx >= 0 ? overallIdx : imageIndex));
     }
 
     final basics = _basicItems(profile);
@@ -564,7 +625,9 @@ class _InlineProfileDetail extends StatelessWidget {
     }
 
     if (imageIndex < images.length) {
-      children.add(_buildInlinePhoto(images[imageIndex++]));
+      final img = images[imageIndex++];
+      final overallIdx = allImagesList.indexOf(img);
+      children.add(_buildInlinePhoto(img, allImagesList, overallIdx >= 0 ? overallIdx : imageIndex));
     }
 
     final lifestyle = _lifestyleItems(profile);
@@ -592,7 +655,9 @@ class _InlineProfileDetail extends StatelessWidget {
     }
 
     while (imageIndex < images.length) {
-      children.add(_buildInlinePhoto(images[imageIndex++]));
+      final img = images[imageIndex++];
+      final overallIdx = allImagesList.indexOf(img);
+      children.add(_buildInlinePhoto(img, allImagesList, overallIdx >= 0 ? overallIdx : imageIndex));
     }
 
     children.add(const SizedBox(height: 16));
@@ -608,7 +673,11 @@ class _InlineProfileDetail extends StatelessWidget {
               child: Text(
                 'Block User',
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.85) ?? Colors.black87,
+                  color:
+                      Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.color?.withValues(alpha: 0.85) ??
+                      Colors.black87,
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                   letterSpacing: 0.2,
@@ -679,13 +748,15 @@ class _InlineProfileDetail extends StatelessWidget {
     );
   }
 
-  Widget _buildInlinePhoto(dynamic image) {
+  Widget _buildInlinePhoto(dynamic image, List<dynamic> allImages, int index) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 26),
       child: _ProfileAspectPhoto(
         image: image,
         borderRadius: BorderRadius.circular(12),
         fallbackAspectRatio: 16 / 10,
+        allImages: allImages,
+        imageIndex: index,
       ),
     );
   }
@@ -899,42 +970,60 @@ class _ProfileAspectPhoto extends StatelessWidget {
   final dynamic image;
   final BorderRadius borderRadius;
   final double fallbackAspectRatio;
+  final List<dynamic>? allImages;
+  final int imageIndex;
 
   const _ProfileAspectPhoto({
     required this.image,
     required this.borderRadius,
     required this.fallbackAspectRatio,
+    this.allImages,
+    this.imageIndex = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: CachedAppImage.fromProfileImageMap(
-        image: image,
-        width: double.infinity,
-        fit: BoxFit.contain,
-        imageBuilder: (context, imageProvider) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth.isFinite
-                  ? constraints.maxWidth
-                  : MediaQuery.of(context).size.width;
+    final imagesList = allImages ?? [image];
+    final isBlurred = image is Map && image['isBlurred'] == true;
 
-              return Image(
-                image: imageProvider,
-                width: width,
-                fit: BoxFit.contain,
-                alignment: Alignment.center,
+    return GestureDetector(
+      onTap: isBlurred
+          ? null
+          : () {
+              FullscreenImagePreview.show(
+                context,
+                images: imagesList,
+                initialIndex: imageIndex,
               );
             },
-          );
-        },
-        placeholder: (context, url) =>
-            _PhotoPlaceholder(aspectRatio: fallbackAspectRatio),
-        errorWidget: (context, url, error) => _PhotoPlaceholder(
-          aspectRatio: fallbackAspectRatio,
-          icon: LucideIcons.image_off,
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: CachedAppImage.fromProfileImageMap(
+          image: image,
+          width: double.infinity,
+          fit: BoxFit.contain,
+          imageBuilder: (context, imageProvider) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth.isFinite
+                    ? constraints.maxWidth
+                    : MediaQuery.of(context).size.width;
+
+                return Image(
+                  image: imageProvider,
+                  width: width,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                );
+              },
+            );
+          },
+          placeholder: (context, url) =>
+              _PhotoPlaceholder(aspectRatio: fallbackAspectRatio),
+          errorWidget: (context, url, error) => _PhotoPlaceholder(
+            aspectRatio: fallbackAspectRatio,
+            icon: LucideIcons.image_off,
+          ),
         ),
       ),
     );

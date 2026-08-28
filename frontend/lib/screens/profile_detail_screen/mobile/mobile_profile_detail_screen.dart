@@ -13,6 +13,7 @@ import 'package:life_partner_again/widgets/bottomsheet/block_confirmation_bottom
 import 'package:life_partner_again/widgets/cached_app_image.dart';
 
 import 'package:life_partner_again/widgets/founding_member_badge.dart';
+import 'package:life_partner_again/widgets/fullscreen_image_preview.dart';
 import 'package:life_partner_again/widgets/verified_icon.dart';
 import 'package:provider/provider.dart';
 
@@ -106,59 +107,77 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
 
     final firstImage = images.first;
 
-    return Stack(
-      children: [
-        _ProfileAspectPhoto(
-          image: firstImage,
-          borderRadius: BorderRadius.zero,
-          fallbackAspectRatio: 0.78,
-        ),
-        Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.78),
-                  Colors.black.withValues(alpha: 0.18),
-                  Colors.transparent,
-                ],
-                stops: const [0, 0.45, 1],
+    return GestureDetector(
+      onTap: (firstImage is Map && firstImage['isBlurred'] == true)
+          ? null
+          : () {
+              FullscreenImagePreview.show(
+                context,
+                images: images,
+                initialIndex: 0,
+              );
+            },
+      child: Stack(
+        children: [
+          _ProfileAspectPhoto(
+            image: firstImage,
+            borderRadius: BorderRadius.zero,
+            fallbackAspectRatio: 0.78,
+            allImages: images,
+            imageIndex: 0,
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.78),
+                      Colors.black.withValues(alpha: 0.18),
+                      Colors.transparent,
+                    ],
+                    stops: const [0, 0.45, 1],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-        Positioned.fill(
-          child: SafeArea(
-            bottom: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (firstImage is Map && firstImage['isBlurred'] == true) ...[
-                  const Spacer(flex: 4),
-                  _buildPrivacyOverlay(profile),
-                  const Spacer(flex: 1),
-                ] else
-                  const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _HeroProfileInfo(profile: profile),
-                  ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: SafeArea(
+                bottom: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (firstImage is Map && firstImage['isBlurred'] == true) ...[
+                      const Spacer(flex: 4),
+                      _buildPrivacyOverlay(profile),
+                      const Spacer(flex: 1),
+                    ] else
+                      const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 22),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: _HeroProfileInfo(profile: profile),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildContent(Map<String, dynamic> profile, List<dynamic> images) {
     final children = <Widget>[];
     int imageIndex = 0;
+    final allImagesList = (profile['images'] as List<dynamic>? ?? []);
 
     if (_hasText(profile['bio'])) {
       children.add(_buildSectionTitle('About'));
@@ -168,7 +187,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
     }
 
     if (imageIndex < images.length) {
-      children.add(_buildInlinePhoto(images[imageIndex++]));
+      final img = images[imageIndex++];
+      final overallIdx = allImagesList.indexOf(img);
+      children.add(_buildInlinePhoto(img, allImagesList, overallIdx >= 0 ? overallIdx : imageIndex));
     }
 
     final basics = _basicItems(profile);
@@ -188,7 +209,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
     }
 
     if (imageIndex < images.length) {
-      children.add(_buildInlinePhoto(images[imageIndex++]));
+      final img = images[imageIndex++];
+      final overallIdx = allImagesList.indexOf(img);
+      children.add(_buildInlinePhoto(img, allImagesList, overallIdx >= 0 ? overallIdx : imageIndex));
     }
 
     final lifestyle = _lifestyleItems(profile);
@@ -216,7 +239,9 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
     }
 
     while (imageIndex < images.length) {
-      children.add(_buildInlinePhoto(images[imageIndex++]));
+      final img = images[imageIndex++];
+      final overallIdx = allImagesList.indexOf(img);
+      children.add(_buildInlinePhoto(img, allImagesList, overallIdx >= 0 ? overallIdx : imageIndex));
     }
 
     children.add(SizedBox(height: 118 + MediaQuery.of(context).padding.bottom));
@@ -252,13 +277,15 @@ class _MobileProfileDetailScreenState extends State<MobileProfileDetailScreen>
     );
   }
 
-  Widget _buildInlinePhoto(dynamic image) {
+  Widget _buildInlinePhoto(dynamic image, List<dynamic> allImages, int index) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 26),
       child: _ProfileAspectPhoto(
         image: image,
         borderRadius: BorderRadius.circular(12),
         fallbackAspectRatio: 16 / 10,
+        allImages: allImages,
+        imageIndex: index,
       ),
     );
   }
@@ -507,42 +534,60 @@ class _ProfileAspectPhoto extends StatelessWidget {
   final dynamic image;
   final BorderRadius borderRadius;
   final double fallbackAspectRatio;
+  final List<dynamic>? allImages;
+  final int imageIndex;
 
   const _ProfileAspectPhoto({
     required this.image,
     required this.borderRadius,
     required this.fallbackAspectRatio,
+    this.allImages,
+    this.imageIndex = 0,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: CachedAppImage.fromProfileImageMap(
-        image: image,
-        width: double.infinity,
-        fit: BoxFit.contain,
-        imageBuilder: (context, imageProvider) {
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth.isFinite
-                  ? constraints.maxWidth
-                  : MediaQuery.of(context).size.width;
+    final imagesList = allImages ?? [image];
+    final isBlurred = image is Map && image['isBlurred'] == true;
 
-              return Image(
-                image: imageProvider,
-                width: width,
-                fit: BoxFit.contain,
-                alignment: Alignment.center,
+    return GestureDetector(
+      onTap: isBlurred
+          ? null
+          : () {
+              FullscreenImagePreview.show(
+                context,
+                images: imagesList,
+                initialIndex: imageIndex,
               );
             },
-          );
-        },
-        placeholder: (context, url) =>
-            _PhotoPlaceholder(aspectRatio: fallbackAspectRatio),
-        errorWidget: (context, url, error) => _PhotoPlaceholder(
-          aspectRatio: fallbackAspectRatio,
-          icon: LucideIcons.image_off,
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: CachedAppImage.fromProfileImageMap(
+          image: image,
+          width: double.infinity,
+          fit: BoxFit.contain,
+          imageBuilder: (context, imageProvider) {
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth.isFinite
+                    ? constraints.maxWidth
+                    : MediaQuery.of(context).size.width;
+
+                return Image(
+                  image: imageProvider,
+                  width: width,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                );
+              },
+            );
+          },
+          placeholder: (context, url) =>
+              _PhotoPlaceholder(aspectRatio: fallbackAspectRatio),
+          errorWidget: (context, url, error) => _PhotoPlaceholder(
+            aspectRatio: fallbackAspectRatio,
+            icon: LucideIcons.image_off,
+          ),
         ),
       ),
     );

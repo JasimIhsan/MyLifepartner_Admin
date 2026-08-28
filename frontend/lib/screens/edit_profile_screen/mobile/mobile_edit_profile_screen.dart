@@ -359,7 +359,7 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
           //   height: isDirty ? MediaQuery.of(context).padding.bottom + 80 : 0,
           //   child: isDirty
           //       ? Container(
-          //           color: theme.scaffoldBackgroundColor,
+          //           color: theme.canvasColor,
           //           padding: EdgeInsets.fromLTRB(
           //             20,
           //             12,
@@ -484,7 +484,7 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
                   //     color: theme.primaryColor,
                   //     shape: BoxShape.circle,
                   //     border: Border.all(
-                  //       color: theme.scaffoldBackgroundColor,
+                  //       color: theme.canvasColor,
                   //       width: 2,
                   //     ),
                   //   ),
@@ -1210,7 +1210,7 @@ class _MobileEditProfileScreenState extends State<MobileEditProfileScreen>
           expand: false,
           builder: (_, scrollCtrl) => Container(
             decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor,
+              color: theme.canvasColor,
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24),
               ),
@@ -1569,7 +1569,7 @@ class _ProfessionPickerSheetState extends State<_ProfessionPickerSheet> {
       expand: false,
       builder: (_, scrollCtrl) => Container(
         decoration: BoxDecoration(
-          color: theme.scaffoldBackgroundColor,
+          color: theme.canvasColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.fromLTRB(
